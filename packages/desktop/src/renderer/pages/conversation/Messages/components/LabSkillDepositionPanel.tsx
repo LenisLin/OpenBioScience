@@ -523,7 +523,8 @@ export const LabSkillDepositionPanel: React.FC<{ panel: LabSkillDepositionPanelD
 
   const handleRevision = React.useCallback(() => {
     emitter.emit('sendbox.fill', '还需要修改：');
-    Message.info('已填入修改前缀。');
+    emitter.emit('sendbox.focus');
+    Message.info('请在输入框更进一步填写。');
   }, []);
 
   return (

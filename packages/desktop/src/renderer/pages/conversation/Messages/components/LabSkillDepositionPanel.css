@@ -2,8 +2,8 @@
   --lab-skill-accent: rgb(38, 43, 46);
   --lab-skill-cite: rgb(71, 79, 84);
   --lab-skill-rule: color-mix(in srgb, var(--color-border-2) 88%, transparent);
-  --lab-skill-highlight: rgba(138, 146, 150, 0.32);
-  --lab-skill-highlight-table: rgba(116, 124, 128, 0.26);
+  --lab-skill-highlight: rgba(245, 205, 92, 0.34);
+  --lab-skill-highlight-table: rgba(245, 205, 92, 0.24);
   --lab-skill-warm: rgb(112, 112, 112);
   --lab-skill-red: rgb(166, 82, 73);
   width: 100%;

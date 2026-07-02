@@ -1068,6 +1068,25 @@ const SendBox: React.FC<{
     mobileUserFocusIntentUntilRef.current = Date.now() + 1500;
   }, [isMobile]);
 
+  useAddEventListener(
+    'sendbox.focus',
+    () => {
+      requestAnimationFrame(() => {
+        const textarea = getTextareaElement();
+        if (!textarea) {
+          return;
+        }
+        markMobileFocusIntent();
+        textarea.focus();
+        const caret = textarea.value.length;
+        textarea.setSelectionRange(caret, caret);
+        setCaretPosition(caret);
+        setIsInputFocused(true);
+      });
+    },
+    [getTextareaElement, markMobileFocusIntent]
+  );
+
   const handleInputFocus = useCallback(() => {
     if (isMobile && Date.now() > mobileUserFocusIntentUntilRef.current) {
       blurActiveElement();
