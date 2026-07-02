@@ -11,11 +11,15 @@
   --skills-ink: rgb(33, 36, 39);
   --skills-muted: rgb(124, 131, 137);
   --skills-rule: color-mix(in srgb, var(--color-border-2) 86%, transparent);
-  --skills-highlight: rgba(138, 146, 150, 0.31);
+  --skills-highlight: rgba(244, 207, 92, 0.48);
   display: grid;
   gap: 22px;
   width: 100%;
   animation: skillsSettingsIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+[data-theme='dark'] .skills-settings {
+  --skills-highlight: rgba(236, 195, 74, 0.32);
 }
 
 .skills-settings__hero {

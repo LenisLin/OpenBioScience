@@ -30,15 +30,13 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
 
   const navigate = useNavigate();
   const { closePreview } = usePreviewContext();
-  const { logout, status } = useAuth();
+  const { logout } = useAuth();
   const { theme, setTheme } = useThemeContext();
   const [isBatchMode, setIsBatchMode] = useState(false);
   const { jobs: cronJobs } = useAllCronJobs();
   const isSettings = pathname.startsWith('/settings');
-  const isNewConversationPage = pathname === '/guid';
   const lastNonSettingsPathRef = useRef('/guid');
-  const showLogout =
-    typeof window !== 'undefined' && !(window as { electronAPI?: unknown }).electronAPI && status === 'authenticated';
+  const showLogout = false;
 
   useEffect(() => {
     if (!pathname.startsWith('/settings')) {
@@ -211,12 +209,10 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
                       {!collapsed && (
                         <>
                           <CronJobSiderSection jobs={cronJobs} pathname={pathname} onNavigate={handleCronNavigate} />
-                          {!isNewConversationPage && (
-                            <CollaborationProjectSiderSection
-                              pathname={pathname}
-                              onNavigate={handleCollaborationNavigate}
-                            />
-                          )}
+                          <CollaborationProjectSiderSection
+                            pathname={pathname}
+                            onNavigate={handleCollaborationNavigate}
+                          />
                         </>
                       )}
                     </>
@@ -227,21 +223,17 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
           </div>
         )}
       </div>
-      {/* The settings page already uses the whole sider as settings navigation.
-          Keep the footer only on chat-like pages so the settings entry appears once. */}
-      {!isSettings && (
-        <SiderFooter
-          isMobile={isMobile}
-          isSettings={isSettings}
-          collapsed={collapsed}
-          theme={theme}
-          siderTooltipProps={siderTooltipProps}
-          onSettingsClick={handleSettingsClick}
-          onThemeToggle={handleQuickThemeToggle}
-          showLogout={showLogout}
-          onLogoutClick={handleLogout}
-        />
-      )}
+      <SiderFooter
+        isMobile={isMobile}
+        isSettings={isSettings}
+        collapsed={collapsed}
+        theme={theme}
+        siderTooltipProps={siderTooltipProps}
+        onSettingsClick={handleSettingsClick}
+        onThemeToggle={handleQuickThemeToggle}
+        showLogout={showLogout}
+        onLogoutClick={handleLogout}
+      />
     </div>
   );
 };

@@ -24,18 +24,20 @@ const ICON_BY_MODULE: Record<CollaborationModuleId, React.ReactElement> = {
   tasks: <CollaborationIcon name='taskPage' size={21} />,
 };
 
+const COLLABORATION_SECTION_EXPANDED_KEY = 'collaboration-project-section-expanded-v2';
+
 const CollaborationProjectSiderSection: React.FC<CollaborationProjectSiderSectionProps> = ({
   pathname,
   onNavigate,
 }) => {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState<boolean>(() => {
-    const stored = localStorage.getItem('collaboration-project-section-expanded');
-    return stored === null ? true : stored === 'true';
+    const stored = localStorage.getItem(COLLABORATION_SECTION_EXPANDED_KEY);
+    return stored === 'true';
   });
 
   useEffect(() => {
-    localStorage.setItem('collaboration-project-section-expanded', String(expanded));
+    localStorage.setItem(COLLABORATION_SECTION_EXPANDED_KEY, String(expanded));
   }, [expanded]);
 
   return (

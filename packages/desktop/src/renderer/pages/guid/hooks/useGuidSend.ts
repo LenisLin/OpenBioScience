@@ -25,6 +25,7 @@ import { buildComputeConversationExtra } from '@/common/chat/compute';
 import { configService } from '@/common/config/configService';
 import { LEGACY_LOCAL_RUNTIME_ID } from '@/common/config/legacyIdentifiers';
 import { applyPaperclipCredentialFallback } from '@/common/config/paperclipConfig';
+import { RESEARCH_EVIDENCE_ENV_KEYS } from '@/common/config/researchEvidenceMcpEnv';
 import {
   BUILTIN_MEDICAL_EVIDENCE_NAME,
   BUILTIN_IMAGE_GEN_NAME,
@@ -32,8 +33,10 @@ import {
   BUILTIN_RESEARCH_EVIDENCE_NAME,
   BUILTIN_SCIENCE_ARTIFACT_NAME,
   BUILTIN_USER_INPUT_NAME,
+  type IConversationMcpStatus,
   type IMcpServer,
   type ISessionMcpServer,
+  type ResearchEvidenceConfig,
   type TProviderWithModel,
 } from '@/common/config/storage';
 import { buildAgentConversationParams } from '@/common/utils/buildAgentConversationParams';
@@ -74,6 +77,13 @@ const mergeSessionMcpServers = (servers: ISessionMcpServer[]): ISessionMcpServer
   return [...byId.values()];
 };
 
+const buildConversationMcpStatuses = (servers: ISessionMcpServer[]): IConversationMcpStatus[] =>
+  servers.map((server) => ({
+    id: server.id || server.name,
+    name: server.name,
+    status: 'loaded',
+  }));
+
 const mergeSkillIds = (...groups: Array<readonly string[] | undefined>): string[] | undefined => {
   const values = groups.flatMap((group) => group || []);
   if (!values.length) return undefined;
@@ -102,7 +112,9 @@ const resolveModeMcpCatalog = async (
 
   try {
     const { allServers } = await ensureBackendMcpCatalog();
-    return requiredBuiltinNames.every((name) => hasBuiltinMcpServer(allServers, name)) ? allServers : availableMcpServers;
+    return requiredBuiltinNames.every((name) => hasBuiltinMcpServer(allServers, name))
+      ? allServers
+      : availableMcpServers;
   } catch (error) {
     console.warn('[useGuidSend] Failed to refresh MCP catalog before mode send:', error);
     return availableMcpServers;
@@ -133,21 +145,43 @@ const resolveMedicalEvidenceSessionMcpServer = (
 
 const resolveResearchEvidenceSessionMcpServer = (
   availableMcpServers: IMcpServer[],
-  apiKey?: string,
-  baseUrl?: string
+  config?: ResearchEvidenceConfig
 ): ISessionMcpServer | undefined => {
+  if (config?.enabled === false) return undefined;
+  const paperclipReady = Boolean(config?.paperclipApiKey?.trim());
+  const bioToolsReady = config?.bioToolsEnabled === true;
+
   const server = availableMcpServers.find((item) => item.name === BUILTIN_RESEARCH_EVIDENCE_NAME);
   if (!server) return undefined;
   const sessionServer = toSessionMcpServer(server);
   if (sessionServer.transport.type !== 'stdio') return sessionServer;
+  const enabledProviders = [paperclipReady ? 'paperclip' : undefined, bioToolsReady ? 'bio_tools' : undefined].filter(
+    Boolean
+  ) as string[];
   return {
     ...sessionServer,
     transport: {
       ...sessionServer.transport,
       env: {
         ...sessionServer.transport.env,
-        ...(apiKey ? { PAPERCLIP_API_KEY: apiKey } : {}),
-        ...(baseUrl ? { PAPERCLIP_BASE_URL: baseUrl } : {}),
+        [RESEARCH_EVIDENCE_ENV_KEYS.paperclipEnabled]: paperclipReady ? 'true' : 'false',
+        [RESEARCH_EVIDENCE_ENV_KEYS.enabledProviders]: enabledProviders.join(','),
+        [RESEARCH_EVIDENCE_ENV_KEYS.bioToolsEnabled]: bioToolsReady ? 'true' : 'false',
+        ...(config?.paperclipApiKey ? { [RESEARCH_EVIDENCE_ENV_KEYS.apiKey]: config.paperclipApiKey } : {}),
+        ...(config?.paperclipBaseUrl ? { [RESEARCH_EVIDENCE_ENV_KEYS.baseUrl]: config.paperclipBaseUrl } : {}),
+        ...(config?.defaultSources?.length
+          ? { [RESEARCH_EVIDENCE_ENV_KEYS.defaultSources]: config.defaultSources.join(',') }
+          : {}),
+        ...(config?.timeoutMs ? { [RESEARCH_EVIDENCE_ENV_KEYS.timeoutMs]: String(config.timeoutMs) } : {}),
+        ...(config?.bioToolsPythonPath
+          ? { [RESEARCH_EVIDENCE_ENV_KEYS.bioToolsPythonPath]: config.bioToolsPythonPath }
+          : {}),
+        ...(config?.bioToolsServerRoot
+          ? { [RESEARCH_EVIDENCE_ENV_KEYS.bioToolsServerRoot]: config.bioToolsServerRoot }
+          : {}),
+        ...(config?.bioToolsDefaultDomains?.length
+          ? { [RESEARCH_EVIDENCE_ENV_KEYS.bioToolsDefaultDomains]: config.bioToolsDefaultDomains.join(',') }
+          : {}),
       },
     },
   };
@@ -424,11 +458,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       : undefined;
     const scienceArtifactConfig = hasScienceMode ? configService.get('tools.scienceArtifact') : undefined;
     const researchEvidenceSessionMcpServer = hasScienceMode
-      ? resolveResearchEvidenceSessionMcpServer(
-          availableMcpServersForSend,
-          researchEvidenceConfig?.paperclipApiKey,
-          researchEvidenceConfig?.paperclipBaseUrl
-        )
+      ? resolveResearchEvidenceSessionMcpServer(availableMcpServersForSend, researchEvidenceConfig)
       : undefined;
     const scienceArtifactSessionMcpServer = hasScienceMode
       ? resolveScienceArtifactSessionMcpServer(availableMcpServersForSend, scienceArtifactConfig)
@@ -455,6 +485,14 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       ...(labSkillSessionMcpServer ? [labSkillSessionMcpServer] : []),
       ...(userInputSessionMcpServer ? [userInputSessionMcpServer] : []),
     ]);
+    const selectedUserMcpServersForSnapshot = availableMcpServersForSend
+      .filter((server) => selectedUserMcpServerIdsToSend.includes(server.id))
+      .map((server) => toSessionMcpServer(server));
+    const loadedMcpServersForSnapshot = mergeSessionMcpServers([
+      ...selectedUserMcpServersForSnapshot,
+      ...selectedSessionMcpServersWithMedicalEvidence,
+    ]);
+    const loadedMcpStatusesForSnapshot = buildConversationMcpStatuses(loadedMcpServersForSnapshot);
 
     const finalEffectiveAgentType = effectiveAgentType;
     const assistantOverrideModel =
@@ -534,6 +572,10 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
           ...(!is_preset && excludeBuiltinSkills?.length ? { exclude_builtin_skills: excludeBuiltinSkills } : {}),
           selected_mcp_server_ids: selectedUserMcpServerIdsToSend,
           selected_session_mcp_servers: selectedSessionMcpServersWithMedicalEvidence,
+          mcp_server_ids: selectedUserMcpServerIdsToSend,
+          mcp_servers: loadedMcpServersForSnapshot.map((server) => server.name),
+          mcp_statuses: loadedMcpStatusesForSnapshot,
+          session_mcp_servers: selectedSessionMcpServersWithMedicalEvidence,
           ...(loopGoalForCreate ? { loop_goal: loopGoalForCreate } : {}),
           ...medicalEvidenceExtra,
           ...scienceExtra,

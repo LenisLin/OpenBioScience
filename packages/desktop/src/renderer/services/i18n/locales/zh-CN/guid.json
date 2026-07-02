@@ -112,5 +112,8 @@
     "modeActive": "知识沉淀模式已启用",
     "contextHint": "先生成报告，确认后启用",
     "closeLabel": "关闭知识沉淀模式"
+  },
+  "collaboration": {
+    "menuLabel": "协作模式"
   }
 }

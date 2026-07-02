@@ -20,4 +20,5 @@ export { default as ExcelViewer } from './ExcelViewer';
 export { default as OfficeDocViewer } from './OfficeDocViewer';
 export { default as ImageViewer } from './ImageViewer';
 export { default as URLViewer } from './URLViewer';
+export { default as KetcherViewer } from './KetcherViewer';
 export { default as MolecularStructureViewer } from './MolecularStructureViewer';

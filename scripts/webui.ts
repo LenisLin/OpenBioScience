@@ -38,6 +38,49 @@ const DEFAULT_PORT = (() => {
   return 25809;
 })();
 const BACKEND_BINARY = process.platform === 'win32' ? 'deeporganiser-core.exe' : 'deeporganiser-core';
+const OPENSCIENCE_SKILL_SYNC_MARKER = '.openscience-skills.json';
+const DEFAULT_SCIENCE_SKILL_IDS = [
+  'openscience-science',
+  'openscience-science-artifact',
+  'openscience-onboarding',
+  'openscience-workflow',
+  'openscience-writing',
+  'openscience-databases',
+  'openscience-biomodels',
+  'openscience-singlecell',
+  'openscience-compute',
+  'openscience-empirical',
+];
+const DEFAULT_RESEARCH_EVIDENCE_DOMAINS = [
+  'pubmed',
+  'biorxiv',
+  'chembl',
+  'structures-interactions',
+  'omics-archives',
+  'genes-ontologies',
+];
+
+type BackendEnvelope<T> = {
+  success?: boolean;
+  data?: T;
+  error?: string;
+};
+
+type StdioMcpTransport = {
+  type: 'stdio';
+  command: string;
+  args: string[];
+  env?: Record<string, string>;
+};
+
+type WebuiMcpServerPayload = {
+  name: string;
+  description: string;
+  enabled: boolean;
+  builtin: boolean;
+  transport: StdioMcpTransport;
+  original_json: string;
+};
 
 const __filename = fileURLToPath(import.meta.url);
 const repoRoot = path.resolve(path.dirname(__filename), '..');
@@ -163,6 +206,216 @@ function resolveBackendBinary(): string {
   );
 }
 
+function copyDirectory(source: string, target: string): void {
+  fs.rmSync(target, { recursive: true, force: true });
+  fs.cpSync(source, target, {
+    recursive: true,
+    force: true,
+    dereference: false,
+    filter: (sourcePath) => {
+      const base = path.basename(sourcePath);
+      return base !== '.git' && base !== 'node_modules' && base !== '__pycache__';
+    },
+  });
+}
+
+function readJsonFile<T>(filePath: string, fallback: T): T {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8')) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function syncOpenScienceSkills(workDir: string): void {
+  const sourceRoot = path.join(repoRoot, 'resources', 'skills');
+  if (!fs.existsSync(sourceRoot)) {
+    console.warn(`[webui] OpenScience skills source not found: ${sourceRoot}`);
+    return;
+  }
+
+  const targetRoot = path.join(workDir, 'builtin-skills');
+  fs.mkdirSync(targetRoot, { recursive: true });
+
+  const skillNames = fs
+    .readdirSync(sourceRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && fs.existsSync(path.join(sourceRoot, entry.name, 'SKILL.md')))
+    .map((entry) => entry.name)
+    .sort();
+
+  const markerPath = path.join(targetRoot, OPENSCIENCE_SKILL_SYNC_MARKER);
+  const previous = readJsonFile<{ skills?: string[] }>(markerPath, {});
+  const nextNames = new Set(skillNames);
+  for (const staleName of previous.skills ?? []) {
+    if (!nextNames.has(staleName)) {
+      fs.rmSync(path.join(targetRoot, staleName), { recursive: true, force: true });
+    }
+  }
+
+  for (const skillName of skillNames) {
+    copyDirectory(path.join(sourceRoot, skillName), path.join(targetRoot, skillName));
+  }
+
+  fs.writeFileSync(
+    markerPath,
+    `${JSON.stringify(
+      {
+        schema: 'openscience.webui.skill-sync.v1',
+        sourceRoot: path.relative(repoRoot, sourceRoot),
+        syncedAt: new Date().toISOString(),
+        skills: skillNames,
+      },
+      null,
+      2
+    )}\n`
+  );
+  console.log(`[webui] OpenScience skills synced: ${skillNames.length}`);
+}
+
+function builtinMcpScriptPath(scriptName: string): string | undefined {
+  const candidate = path.join(repoRoot, 'out', 'main', `${scriptName}.js`);
+  return fs.existsSync(candidate) ? candidate : undefined;
+}
+
+function buildStdioMcpServer(params: {
+  name: string;
+  description: string;
+  scriptName: string;
+  enabled?: boolean;
+  env?: Record<string, string>;
+}): WebuiMcpServerPayload | undefined {
+  const scriptPath = builtinMcpScriptPath(params.scriptName);
+  if (!scriptPath) {
+    console.warn(`[webui] built-in MCP script not found: ${params.scriptName}.js`);
+    return undefined;
+  }
+  const env = params.env ?? {};
+  const serverConfig = {
+    command: 'node',
+    args: [scriptPath],
+    env,
+  };
+  return {
+    name: params.name,
+    description: params.description,
+    enabled: params.enabled === true,
+    builtin: true,
+    transport: {
+      type: 'stdio',
+      command: serverConfig.command,
+      args: serverConfig.args,
+      env,
+    },
+    original_json: JSON.stringify({ mcpServers: { [params.name]: serverConfig } }, null, 2),
+  };
+}
+
+function buildStandaloneBuiltinMcpServers(): WebuiMcpServerPayload[] {
+  const servers = [
+    buildStdioMcpServer({
+      name: 'openscience-medical-evidence',
+      description: 'Built-in medical evidence bridge for PaperClip search, evidence grading, and citation panels.',
+      scriptName: 'builtin-mcp-medical-evidence',
+      env: {
+        PAPERCLIP_ENABLED: 'false',
+        PAPERCLIP_BASE_URL: 'https://paperclip.gxl.ai',
+        PAPERCLIP_DEFAULT_SOURCES: 'pmc,abstracts,biorxiv,medrxiv,arxiv',
+        PAPERCLIP_TIMEOUT_MS: '30000',
+      },
+    }),
+    buildStdioMcpServer({
+      name: 'openscience-research-evidence',
+      description: 'Unified research evidence bridge for PaperClip literature/files and Science database tools.',
+      scriptName: 'builtin-mcp-research-evidence',
+      env: {
+        PAPERCLIP_ENABLED: 'false',
+        PAPERCLIP_BASE_URL: 'https://paperclip.gxl.ai',
+        PAPERCLIP_DEFAULT_SOURCES: 'pmc,abstracts,biorxiv,medrxiv,arxiv',
+        PAPERCLIP_TIMEOUT_MS: '30000',
+        OPENSCIENCE_RESEARCH_EVIDENCE_PROVIDERS: '',
+        OPENSCIENCE_BIO_TOOLS_ENABLED: 'false',
+        OPENSCIENCE_BIO_TOOLS_DOMAINS: DEFAULT_RESEARCH_EVIDENCE_DOMAINS.join(','),
+      },
+    }),
+    buildStdioMcpServer({
+      name: 'openscience-science-artifact',
+      description: 'Built-in Science Mode artifact graph, provenance, versioning, and report panel bridge.',
+      scriptName: 'builtin-mcp-science-artifact',
+      env: {
+        OPENSCIENCE_STRICT_PROVENANCE: 'false',
+        OPENSCIENCE_WRITE_PROJECT_MANIFEST: 'true',
+        OPENSCIENCE_DEFAULT_SKILL_IDS: DEFAULT_SCIENCE_SKILL_IDS.join(','),
+        OPENSCIENCE_ALLOWED_DATABASE_HOSTS: '',
+        OPENSCIENCE_ARTIFACT_GIT_MAX_COPY_BYTES: String(25 * 1024 * 1024),
+      },
+    }),
+    buildStdioMcpServer({
+      name: 'openscience-lab-skill',
+      description: 'Built-in Lab Skill deposition bridge for SOP, protocol, evidence-ledger, and skill draft reports.',
+      scriptName: 'builtin-mcp-lab-skill',
+    }),
+    buildStdioMcpServer({
+      name: 'openscience-user-input',
+      description: 'Built-in structured user input bridge for Agent clarification questions.',
+      scriptName: 'builtin-mcp-user-input',
+      enabled: true,
+    }),
+    buildStdioMcpServer({
+      name: 'openscience-image-generation',
+      description: 'Built-in image generation tool powered by AI models. Configure the model in Settings > Tools.',
+      scriptName: 'builtin-mcp-image-gen',
+    }),
+    buildStdioMcpServer({
+      name: 'openscience-lark-project-agent',
+      description: 'Built-in Lark project-agent bridge.',
+      scriptName: 'builtin-mcp-lark-project-agent',
+    }),
+  ];
+
+  return servers.filter((server): server is WebuiMcpServerPayload => Boolean(server));
+}
+
+async function fetchBackendJson<T>(backendPort: number, pathName: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`http://127.0.0.1:${backendPort}${pathName}`, {
+    ...init,
+    headers: {
+      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(init?.headers ?? {}),
+    },
+  });
+  const text = await response.text();
+  const payload = text ? (JSON.parse(text) as BackendEnvelope<T> | T) : undefined;
+  if (!response.ok) {
+    throw new Error(`Backend ${init?.method ?? 'GET'} ${pathName} failed (${response.status}): ${text}`);
+  }
+  if (payload && typeof payload === 'object' && 'success' in payload && (payload as BackendEnvelope<T>).success === false) {
+    throw new Error((payload as BackendEnvelope<T>).error || `Backend ${pathName} returned success=false`);
+  }
+  if (payload && typeof payload === 'object' && 'data' in payload) {
+    return (payload as BackendEnvelope<T>).data as T;
+  }
+  return payload as T;
+}
+
+async function bootstrapStandaloneMcpCatalog(backendPort: number): Promise<void> {
+  try {
+    const existing = await fetchBackendJson<Array<{ name: string }>>(backendPort, '/api/mcp/servers');
+    const existingNames = new Set((existing ?? []).map((server) => server.name));
+    const missing = buildStandaloneBuiltinMcpServers().filter((server) => !existingNames.has(server.name));
+    if (missing.length === 0) {
+      console.log('[webui] OpenScience MCP catalog already present');
+      return;
+    }
+    await fetchBackendJson(backendPort, '/api/mcp/servers/import', {
+      method: 'POST',
+      body: JSON.stringify({ servers: missing }),
+    });
+    console.log(`[webui] OpenScience MCP catalog imported: ${missing.map((server) => server.name).join(', ')}`);
+  } catch (error) {
+    console.warn('[webui] could not bootstrap OpenScience MCP catalog:', error);
+  }
+}
+
 /**
  * Prepend all nvm-managed Node bin dirs to PATH. Electron's main process does
  * this (see packages/desktop/src/index.ts), otherwise CLI tools installed under
@@ -186,22 +439,6 @@ function augmentPathWithNvm(): void {
     }
   } catch {
     // best-effort
-  }
-}
-
-/**
- * Read the WebUI admin username from backend. Returns 'admin' as a best-effort
- * fallback — useful when the backend is unreachable or the SQLite users row
- * has not been seeded yet.
- */
-async function fetchAdminUsername(backendPort: number): Promise<string> {
-  try {
-    const res = await fetch(`http://127.0.0.1:${backendPort}/api/auth/internal/users/system`);
-    if (!res.ok) return 'admin';
-    const json = (await res.json()) as { data?: { username?: string } };
-    return json.data?.username || 'admin';
-  } catch {
-    return 'admin';
   }
 }
 
@@ -255,48 +492,17 @@ async function main(): Promise<void> {
     },
   });
 
+  syncOpenScienceSkills(workDir);
+  await bootstrapStandaloneMcpCatalog(handle.backendPort);
+
   console.log('');
   console.log('DeepOrganiser WebUI is ready');
   console.log(`  Local  : ${handle.localUrl}`);
   if (handle.networkUrl) console.log(`  Network: ${handle.networkUrl}`);
 
-  // If SQLite has no admin yet (fresh install), seed one via backend and print
-  // the plaintext credentials. Mirrors webuiBridge.ts:maybeSeedInitialPassword
-  // for the Electron path — SQLite is now the single source of truth.
-  //
-  // Username is surfaced explicitly: legacy dev databases may have the seeded
-  // user as `system` instead of `admin`, and Electron users can rename it via
-  // Settings. Always read it from the backend rather than assuming a value.
-  try {
-    const statusRes = await fetch(`http://127.0.0.1:${handle.backendPort}/api/auth/status`);
-    if (statusRes.ok) {
-      const status = (await statusRes.json()) as { needs_setup?: boolean };
-      if (status.needs_setup === true) {
-        const resetRes = await fetch(`http://127.0.0.1:${handle.backendPort}/api/webui/reset-password`, {
-          method: 'POST',
-        });
-        if (resetRes.ok) {
-          const payload = (await resetRes.json()) as { data?: { new_password?: string } };
-          const initialPassword = payload.data?.new_password;
-          if (initialPassword) {
-            const adminUsername = await fetchAdminUsername(handle.backendPort);
-            console.log('');
-            console.log(`Initial admin username: ${adminUsername}`);
-            console.log(`Initial admin password: ${initialPassword}`);
-            console.log('(change them after first login)');
-          }
-        }
-      } else {
-        // Credentials already exist; just remind the user what username to use.
-        const adminUsername = await fetchAdminUsername(handle.backendPort);
-        console.log('');
-        console.log(`Login username: ${adminUsername}`);
-        console.log('(forgot the password? run `bun run resetpass` to generate a new one)');
-      }
-    }
-  } catch (err) {
-    console.warn('[webui] could not query admin credentials:', err);
-  }
+  console.log('');
+  console.log('OpenScience WebUI uses no app-level login.');
+  console.log('Configure models, API keys, and local coding agents from Settings after opening the page.');
 
   if (autoOpenBrowser) {
     const openResult = openBrowserUrl(handle.localUrl);

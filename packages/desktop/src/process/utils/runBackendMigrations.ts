@@ -75,7 +75,7 @@ function findExistingBuiltinServer(existingByName: Map<string, IMcpServer>, name
 }
 
 function hasExistingBuiltinServer(existingByName: Map<string, IMcpServer>, name: string): boolean {
-  return !!findExistingBuiltinServer(existingByName, name);
+  return !!existingByName.get(name);
 }
 
 const LEGACY_BACKEND_CLIENT_PREFERENCE_KEYS = [
@@ -354,10 +354,18 @@ function logResearchEvidenceEnvResolution(
   context: 'bootstrap' | 'update'
 ): void {
   if (result.ok === true) {
+    const providers = [
+      result.config.paperclipApiKey ? 'paperclip' : undefined,
+      result.config.bioToolsEnabled ? 'bio_tools' : undefined,
+    ]
+      .filter(Boolean)
+      .join(', ');
     console.info(
-      '[Migration] research evidence MCP env resolved during %s, base url: %s, api key present: yes',
+      '[Migration] research evidence MCP env resolved during %s, providers: %s, base url: %s, paperclip key present: %s',
       context,
-      result.config.paperclipBaseUrl || 'https://paperclip.gxl.ai'
+      providers || 'none',
+      result.config.paperclipBaseUrl || 'https://paperclip.gxl.ai',
+      result.config.paperclipApiKey ? 'yes' : 'no'
     );
     return;
   }
@@ -381,7 +389,7 @@ function buildBuiltinResearchEvidenceServer(resolution: ResearchEvidenceMcpEnvRe
 
   return {
     name: BUILTIN_RESEARCH_EVIDENCE_NAME,
-    description: 'Shared PaperClip research evidence bridge for Medical Evidence Mode and Science Mode.',
+    description: 'Unified research evidence bridge for PaperClip literature/files and Science database tools.',
     enabled: false,
     builtin: true,
     transport: {
@@ -709,7 +717,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   }
 
   if (
-    existingImageServer &&
+    existingImageServer?.name === BUILTIN_IMAGE_GEN_NAME &&
     (existingImageServer.name !== BUILTIN_IMAGE_GEN_NAME ||
       existingImageServer.builtin !== true ||
       !existingImageServer.original_json ||
@@ -732,7 +740,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
 
   const existingLarkProjectAgentServer = findExistingBuiltinServer(existingByName, BUILTIN_LARK_PROJECT_AGENT_NAME);
   if (
-    existingLarkProjectAgentServer &&
+    existingLarkProjectAgentServer?.name === BUILTIN_LARK_PROJECT_AGENT_NAME &&
     (existingLarkProjectAgentServer.name !== BUILTIN_LARK_PROJECT_AGENT_NAME ||
       existingLarkProjectAgentServer.builtin !== true ||
       !existingLarkProjectAgentServer.original_json ||
@@ -754,7 +762,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
 
   const existingUserInputServer = findExistingBuiltinServer(existingByName, BUILTIN_USER_INPUT_NAME);
   if (
-    existingUserInputServer &&
+    existingUserInputServer?.name === BUILTIN_USER_INPUT_NAME &&
     (existingUserInputServer.name !== BUILTIN_USER_INPUT_NAME ||
       existingUserInputServer.builtin !== true ||
       !existingUserInputServer.original_json ||
@@ -776,7 +784,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   }
 
   if (
-    existingMedicalEvidenceServer &&
+    existingMedicalEvidenceServer?.name === BUILTIN_MEDICAL_EVIDENCE_NAME &&
     (existingMedicalEvidenceServer.name !== BUILTIN_MEDICAL_EVIDENCE_NAME ||
       existingMedicalEvidenceServer.builtin !== true ||
       !existingMedicalEvidenceServer.original_json ||
@@ -797,7 +805,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   }
 
   if (
-    existingResearchEvidenceServer &&
+    existingResearchEvidenceServer?.name === BUILTIN_RESEARCH_EVIDENCE_NAME &&
     (existingResearchEvidenceServer.name !== BUILTIN_RESEARCH_EVIDENCE_NAME ||
       existingResearchEvidenceServer.builtin !== true ||
       !existingResearchEvidenceServer.original_json ||
@@ -818,7 +826,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   }
 
   if (
-    existingScienceArtifactServer &&
+    existingScienceArtifactServer?.name === BUILTIN_SCIENCE_ARTIFACT_NAME &&
     (existingScienceArtifactServer.name !== BUILTIN_SCIENCE_ARTIFACT_NAME ||
       existingScienceArtifactServer.builtin !== true ||
       !existingScienceArtifactServer.original_json ||
@@ -839,7 +847,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   }
 
   if (
-    existingLabSkillServer &&
+    existingLabSkillServer?.name === BUILTIN_LAB_SKILL_NAME &&
     (existingLabSkillServer.name !== BUILTIN_LAB_SKILL_NAME ||
       existingLabSkillServer.builtin !== true ||
       !existingLabSkillServer.original_json ||
@@ -866,7 +874,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
 
   if (
     imageEnvResolution.ok === true &&
-    existingImageServer &&
+    existingImageServer?.name === BUILTIN_IMAGE_GEN_NAME &&
     existingImageServer.transport.type === 'stdio' &&
     imageServer.transport.type === 'stdio'
   ) {
@@ -912,7 +920,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
       });
       imageServerUpdated = true;
     }
-  } else if (existingImageServer && imageEnvResolution.ok === false) {
+  } else if (existingImageServer?.name === BUILTIN_IMAGE_GEN_NAME && imageEnvResolution.ok === false) {
     console.warn(
       '[Migration] skipped image MCP env update because provider could not be resolved, server id: %s, reason: %s',
       existingImageServer.id,
@@ -921,7 +929,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   }
 
   if (
-    existingMedicalEvidenceServer &&
+    existingMedicalEvidenceServer?.name === BUILTIN_MEDICAL_EVIDENCE_NAME &&
     existingMedicalEvidenceServer.transport.type === 'stdio' &&
     medicalEvidenceServer.transport.type === 'stdio'
   ) {
@@ -970,7 +978,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   }
 
   if (
-    existingResearchEvidenceServer &&
+    existingResearchEvidenceServer?.name === BUILTIN_RESEARCH_EVIDENCE_NAME &&
     existingResearchEvidenceServer.transport.type === 'stdio' &&
     researchEvidenceServer.transport.type === 'stdio'
   ) {
@@ -1019,7 +1027,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   }
 
   if (
-    existingScienceArtifactServer &&
+    existingScienceArtifactServer?.name === BUILTIN_SCIENCE_ARTIFACT_NAME &&
     existingScienceArtifactServer.transport.type === 'stdio' &&
     scienceArtifactServer.transport.type === 'stdio'
   ) {

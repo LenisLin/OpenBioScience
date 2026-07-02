@@ -138,7 +138,7 @@ describe('Layout sider brand Home button', () => {
 
     // No actionable role/label in chat routes.
     expect(screen.queryByLabelText(BACK_KEY)).toBeNull();
-    const wordmark = screen.getByText('DeepOrganiser');
+    const wordmark = screen.getByAltText('OpenScience');
     fireEvent.click(wordmark);
     expect(navigate).not.toHaveBeenCalled();
   });
@@ -147,21 +147,18 @@ describe('Layout sider brand Home button', () => {
     currentPathname = '/conversation/xyz';
     renderLayout();
 
-    fireEvent.click(screen.getByText('DeepOrganiser'));
+    fireEvent.click(screen.getByAltText('OpenScience'));
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it('clicking the logo icon counts toward the devtools easter-egg and never navigates', () => {
+  it('double-clicking the settings wordmark still counts toward the devtools easter-egg', () => {
     currentPathname = '/settings/about';
     sessionStorage.setItem('aion:last-non-settings-path', '/conversation/abc');
-    const { container } = renderLayout();
+    renderLayout();
 
-    // The icon is separate from the wordmark so the devtools easter-egg stays isolated.
-    const icon = container.querySelector('.layout-brand-logo') as HTMLElement;
-    expect(icon).toBeTruthy();
-    for (let i = 0; i < 4; i++) fireEvent.click(icon);
+    const brand = screen.getByLabelText(BACK_KEY);
+    for (let i = 0; i < 4; i++) fireEvent.doubleClick(brand);
     expect(openDevTools).toHaveBeenCalled();
-    expect(navigate).not.toHaveBeenCalled();
   });
 
   it('opens the update notification directly for tray update checks', () => {

@@ -140,6 +140,9 @@ export interface ScienceEvidenceItem {
   connectorId?: string;
   database?: {
     name: string;
+    provider?: 'paperclip' | 'bio_tools' | string;
+    domain?: string;
+    tool?: string;
     endpoint?: string;
     params?: Record<string, unknown>;
     accessDate?: string;
@@ -811,7 +814,8 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
       : '- No explicit project root was provided; keep paths relative and ask before accessing new roots.',
     '',
     '## Required Control Surfaces',
-    '- Use `research_evidence(action="search"|"read")` for literature, PaperClip files, and currently supported database retrieval. Do not rely only on model memory when external evidence is needed.',
+    '- Use `research_evidence(action="status"|"list_tools"|"search"|"read"|"call")` for literature, PaperClip files, and scientific database retrieval. PaperClip is active only when a key is configured; `provider="bio_tools"` exposes PubMed, ChEMBL, GEO, AlphaFold, and other JimLiu science-skills database tools through the same MCP.',
+    '- When `research_evidence` returns `evidenceDrafts`, register those drafts with `science_artifact` before using the result in a claim. If a provider is unavailable, record the gap instead of silently relying on model memory.',
     '- Use `science_artifact` as the single artifact graph control surface. Do not invent separate science_start_run, science_search, science_register_* or science_submit_panel tools.',
     '- Before modifying an existing artifact, page, evidence item, claim, or report, call `science_artifact(action="get")` and update with `baseRevision`.',
     '- Use `science_artifact(action="version")` for regenerated visible outputs, and `science_artifact(action="snapshot")` after meaningful file-producing steps.',
@@ -820,7 +824,7 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '',
     '## Science SOP',
     '1. Intake: restate the objective, authorized project root, expected deliverables, selected router skills, and unsafe or ambiguous assumptions.',
-    '2. Evidence first: register papers, database records, datasets, code, command logs, figures, tables, environments, and user decisions as evidence before using them for claims.',
+    '2. Evidence first: search/read/call external sources or local inputs with research_evidence, then register papers, database records, datasets, code, command logs, figures, tables, environments, and user decisions as evidence before using them for claims.',
     '3. Execute: run real Python/R/shell/LaTeX/notebook/project code, then record commands, cwd, logs, inputs, outputs, packages, failures, and environment.',
     '4. Artifact: every user-facing figure, table, dataset, notebook, manuscript, PDF, HTML page, scientific viewer object, or run bundle needs stable id, version, file paths, inputs, code/log/environment links, and evidence ids when known.',
     '5. Snapshot: include scripts, notebooks, logs, result folders, LaTeX sources, small tables, configs, and viewer files needed to inspect or reproduce the result. Secrets are never included; large data may be recorded as pointers with hash/size/reason.',

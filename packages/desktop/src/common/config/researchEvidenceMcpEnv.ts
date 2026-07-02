@@ -9,13 +9,27 @@ import { resolvePaperclipCredentialFields } from './paperclipConfig';
 
 export const RESEARCH_EVIDENCE_ENV_KEYS = {
   apiKey: 'PAPERCLIP_API_KEY',
+  paperclipEnabled: 'PAPERCLIP_ENABLED',
   baseUrl: 'PAPERCLIP_BASE_URL',
   defaultSources: 'PAPERCLIP_DEFAULT_SOURCES',
   timeoutMs: 'PAPERCLIP_TIMEOUT_MS',
+  enabledProviders: 'OPENSCIENCE_RESEARCH_EVIDENCE_PROVIDERS',
+  bioToolsEnabled: 'OPENSCIENCE_BIO_TOOLS_ENABLED',
+  bioToolsPythonPath: 'OPENSCIENCE_BIO_TOOLS_PYTHON',
+  bioToolsServerRoot: 'OPENSCIENCE_BIO_TOOLS_SERVER_ROOT',
+  bioToolsDefaultDomains: 'OPENSCIENCE_BIO_TOOLS_DOMAINS',
 } as const;
 
 const DEFAULT_PAPERCLIP_BASE_URL = 'https://paperclip.gxl.ai';
 const DEFAULT_PAPERCLIP_SOURCES = ['pmc', 'abstracts', 'biorxiv', 'medrxiv', 'arxiv'] as const;
+const DEFAULT_BIO_TOOLS_DOMAINS = [
+  'pubmed',
+  'biorxiv',
+  'chembl',
+  'structures-interactions',
+  'omics-archives',
+  'genes-ontologies',
+] as const;
 
 export type ResearchEvidenceMcpEnvResolveResult =
   | {
@@ -25,7 +39,7 @@ export type ResearchEvidenceMcpEnvResolveResult =
     }
   | {
       ok: false;
-      reason: 'missing_api_key';
+      reason: 'no_provider';
       message: string;
       env: Record<string, string>;
       config?: ConfigKeyMap['tools.researchEvidence'];
@@ -62,15 +76,39 @@ export function resolveResearchEvidenceMcpEnv(
         ...DEFAULT_PAPERCLIP_SOURCES,
       ]);
   const timeoutMs = shared.timeoutMs;
+  const paperclipReady = Boolean(apiKey);
+  const bioToolsEnabled = config?.bioToolsEnabled === true;
+  const bioToolsDefaultDomains = config?.bioToolsDefaultDomains?.length
+    ? config.bioToolsDefaultDomains
+    : (existingEnv?.[RESEARCH_EVIDENCE_ENV_KEYS.bioToolsDefaultDomains]?.split(',').filter(Boolean) ?? [
+        ...DEFAULT_BIO_TOOLS_DOMAINS,
+      ]);
+  const enabledProviders = [
+    paperclipReady ? 'paperclip' : undefined,
+    bioToolsEnabled ? 'bio_tools' : undefined,
+  ].filter(Boolean) as string[];
 
   const env: Record<string, string> = {
+    [RESEARCH_EVIDENCE_ENV_KEYS.paperclipEnabled]: paperclipReady ? 'true' : 'false',
     [RESEARCH_EVIDENCE_ENV_KEYS.baseUrl]: baseUrl,
     [RESEARCH_EVIDENCE_ENV_KEYS.defaultSources]: defaultSources.join(','),
     [RESEARCH_EVIDENCE_ENV_KEYS.timeoutMs]: String(timeoutMs),
+    [RESEARCH_EVIDENCE_ENV_KEYS.enabledProviders]: enabledProviders.join(','),
+    [RESEARCH_EVIDENCE_ENV_KEYS.bioToolsEnabled]: bioToolsEnabled ? 'true' : 'false',
+    [RESEARCH_EVIDENCE_ENV_KEYS.bioToolsDefaultDomains]: bioToolsDefaultDomains.join(','),
   };
 
   if (apiKey) {
     env[RESEARCH_EVIDENCE_ENV_KEYS.apiKey] = apiKey;
+  }
+  if (config?.bioToolsPythonPath?.trim()) {
+    env[RESEARCH_EVIDENCE_ENV_KEYS.bioToolsPythonPath] = config.bioToolsPythonPath.trim();
+  }
+  if (config?.bioToolsServerRoot?.trim()) {
+    env[RESEARCH_EVIDENCE_ENV_KEYS.bioToolsServerRoot] = config.bioToolsServerRoot.trim();
+  }
+
+  if (enabledProviders.length) {
     return {
       ok: true,
       env,
@@ -80,14 +118,16 @@ export function resolveResearchEvidenceMcpEnv(
         paperclipBaseUrl: baseUrl,
         defaultSources,
         timeoutMs,
+        bioToolsEnabled,
+        bioToolsDefaultDomains,
       },
     };
   }
 
   return {
     ok: false,
-    reason: 'missing_api_key',
-    message: 'PaperClip API key is not configured.',
+    reason: 'no_provider',
+    message: 'No research evidence provider is configured.',
     env,
     config,
   };

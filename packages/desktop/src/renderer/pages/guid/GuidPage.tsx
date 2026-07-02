@@ -78,7 +78,7 @@ const GuidPage: React.FC = () => {
   const [isMedicalEvidenceMode, setIsMedicalEvidenceMode] = useState(false);
   const [isSkillDepositionMode, setIsSkillDepositionMode] = useState(false);
   const [selectedComputeHostIds, setSelectedComputeHostIds] = useState<string[]>([]);
-  const { isOpen: isGuidPreviewOpen } = usePreviewContext();
+  const { isOpen: isGuidPreviewOpen, closePreview } = usePreviewContext();
   const [guidPreviewLayoutMode, setGuidPreviewLayoutMode] = useState<PreviewPanelLayoutMode>('split');
   const visibleMcpServers = useMemo(
     () =>
@@ -705,6 +705,13 @@ const GuidPage: React.FC = () => {
     );
   }, [guidInput.dir, guidInput.setInput, isSkillDepositionMode, localeKey]);
 
+  const handleOpenCollaborationMode = useCallback(() => {
+    closePreview();
+    Promise.resolve(navigate('/collaboration/messages')).catch((error) => {
+      console.error('[GuidPage] Failed to open collaboration mode:', error);
+    });
+  }, [closePreview, navigate]);
+
   // Build the action row
   const actionRowNode = (
     <GuidActionRow
@@ -771,6 +778,7 @@ const GuidPage: React.FC = () => {
       }}
       isSkillDepositionMode={isSkillDepositionMode}
       onStartSkillDepositionMode={handleStartSkillDepositionMode}
+      onOpenCollaborationMode={handleOpenCollaborationMode}
       hidePresetTag
       speechInputNode={
         <SpeechInputButton

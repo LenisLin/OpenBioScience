@@ -1,0 +1,225 @@
+.ketcher-viewer {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  flex: 1;
+  grid-template-rows: auto minmax(0, 1fr) minmax(170px, 0.32fr);
+  overflow: hidden;
+  background: var(--color-bg-1);
+  color: var(--color-text-1);
+}
+
+.ketcher-viewer__bar {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+}
+
+.ketcher-viewer__title {
+  display: grid;
+  min-width: 0;
+  margin-right: auto;
+  gap: 2px;
+}
+
+.ketcher-viewer__title span {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 760;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ketcher-viewer__title b,
+.ketcher-viewer__side b {
+  overflow: hidden;
+  color: var(--color-text-2);
+  font-size: 11.5px;
+  font-weight: 620;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ketcher-viewer__bar button {
+  border: 0;
+  border-radius: 7px;
+  background: var(--color-text-1);
+  padding: 7px 11px;
+  color: var(--color-bg-1);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 730;
+  cursor: pointer;
+  transition:
+    transform 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.ketcher-viewer__bar button:hover {
+  transform: translateY(-1px);
+}
+
+.ketcher-viewer__body {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.28fr);
+  overflow: hidden;
+}
+
+.ketcher-viewer__canvas {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  place-items: center;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--color-fill-2) 36%, transparent) 1px, transparent 1px),
+    linear-gradient(0deg, color-mix(in srgb, var(--color-fill-2) 36%, transparent) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.ketcher-viewer__molecule {
+  position: relative;
+  width: min(360px, 58vw);
+  aspect-ratio: 1.8;
+  opacity: 0.92;
+}
+
+.ketcher-viewer__node {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-text-1) 18%, transparent);
+  border-radius: 50%;
+  background: var(--color-bg-1);
+  color: var(--color-text-1);
+  font-size: 14px;
+  font-weight: 780;
+  box-shadow: 0 10px 28px rgba(17, 17, 17, 0.06);
+}
+
+.ketcher-viewer__node--a {
+  left: 8%;
+  top: 36%;
+}
+
+.ketcher-viewer__node--b {
+  left: 44%;
+  top: 12%;
+}
+
+.ketcher-viewer__node--c {
+  right: 8%;
+  top: 36%;
+}
+
+.ketcher-viewer__bond {
+  position: absolute;
+  height: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text-1) 72%, transparent);
+  transform-origin: left center;
+}
+
+.ketcher-viewer__bond--ab {
+  left: 18%;
+  top: 43%;
+  width: 34%;
+  transform: rotate(-28deg);
+}
+
+.ketcher-viewer__bond--bc {
+  left: 52%;
+  top: 32%;
+  width: 34%;
+  transform: rotate(28deg);
+}
+
+.ketcher-viewer__canvasText {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  left: 18px;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.ketcher-viewer__canvasText strong {
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.ketcher-viewer__canvasText span {
+  max-width: 620px;
+  color: var(--color-text-3);
+  font-size: 11.5px;
+  line-height: 17px;
+}
+
+.ketcher-viewer__side {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 14px 14px 14px 4px;
+}
+
+.ketcher-viewer__side > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-fill-1) 58%, transparent);
+  padding: 10px 11px;
+}
+
+.ketcher-viewer__side span,
+.ketcher-viewer__source span {
+  color: var(--color-text-3);
+  font-size: 10.5px;
+  font-weight: 760;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.ketcher-viewer__source {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  gap: 6px;
+  padding: 0 14px 14px;
+}
+
+.ketcher-viewer__source textarea {
+  min-width: 0;
+  min-height: 0;
+  resize: none;
+  border: 0;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-fill-1) 58%, transparent);
+  padding: 12px;
+  color: var(--color-text-1);
+  font: 12px/18px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  outline: none;
+}
+
+@container (max-width: 760px) {
+  .ketcher-viewer__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ketcher-viewer__side {
+    display: none;
+  }
+}

@@ -60,6 +60,10 @@ const EXTENSION_MAP: Record<string, FileTypeInfo> = {
   mol: { contentType: 'molecular_structure', editable: false, language: 'mol' },
   mol2: { contentType: 'molecular_structure', editable: false, language: 'mol2' },
   xyz: { contentType: 'molecular_structure', editable: false, language: 'xyz' },
+  smi: { contentType: 'molecular_structure', editable: false, language: 'smiles' },
+  smiles: { contentType: 'molecular_structure', editable: false, language: 'smiles' },
+  ket: { contentType: 'molecular_structure', editable: false, language: 'json' },
+  rxn: { contentType: 'molecular_structure', editable: false, language: 'mol' },
 };
 
 /**

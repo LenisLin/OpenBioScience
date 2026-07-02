@@ -183,6 +183,14 @@ describe('useGuidSend', () => {
     expect(payload.assistant?.conversation_overrides?.mcp_ids).toEqual(['mcp-user', 'builtin-mcp']);
     expect(payload.extra.selected_mcp_server_ids).toEqual(['mcp-user']);
     expect(payload.extra.selected_session_mcp_servers).toEqual([expect.objectContaining({ id: 'builtin-mcp' })]);
+    expect(payload.extra.mcp_server_ids).toEqual(['mcp-user']);
+    expect(payload.extra.session_mcp_servers).toEqual([expect.objectContaining({ id: 'builtin-mcp' })]);
+    expect(payload.extra.mcp_statuses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'mcp-user', name: 'User MCP', status: 'loaded' }),
+        expect.objectContaining({ id: 'builtin-mcp', name: 'Builtin MCP', status: 'loaded' }),
+      ])
+    );
   });
 
   it('forwards local skill overrides for non-preset CLI agents through conversation extra', async () => {
@@ -379,6 +387,27 @@ describe('useGuidSend', () => {
         expect.objectContaining({ name: BUILTIN_SCIENCE_ARTIFACT_NAME }),
         expect.objectContaining({ name: BUILTIN_USER_INPUT_NAME }),
       ])
+    );
+    expect(payload.extra.session_mcp_servers).toEqual(payload.extra.selected_session_mcp_servers);
+    expect(payload.extra.mcp_servers).toEqual(
+      expect.arrayContaining([BUILTIN_RESEARCH_EVIDENCE_NAME, BUILTIN_SCIENCE_ARTIFACT_NAME, BUILTIN_USER_INPUT_NAME])
+    );
+    expect(payload.extra.mcp_statuses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'mcp-research', name: BUILTIN_RESEARCH_EVIDENCE_NAME, status: 'loaded' }),
+        expect.objectContaining({ id: 'mcp-science', name: BUILTIN_SCIENCE_ARTIFACT_NAME, status: 'loaded' }),
+        expect.objectContaining({ id: 'mcp-user-input', name: BUILTIN_USER_INPUT_NAME, status: 'loaded' }),
+      ])
+    );
+    const researchSession = payload.extra.selected_session_mcp_servers.find(
+      (server: { name?: string }) => server.name === BUILTIN_RESEARCH_EVIDENCE_NAME
+    );
+    expect(researchSession?.transport?.env).toEqual(
+      expect.objectContaining({
+        PAPERCLIP_ENABLED: 'false',
+        OPENSCIENCE_RESEARCH_EVIDENCE_PROVIDERS: '',
+        OPENSCIENCE_BIO_TOOLS_ENABLED: 'false',
+      })
     );
   });
 });

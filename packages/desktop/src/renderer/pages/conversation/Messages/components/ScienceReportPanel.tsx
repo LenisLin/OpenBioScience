@@ -397,6 +397,9 @@ const ScienceEvidenceReference: React.FC<{
       <div className='medical-evidence-reference__meta'>
         {[
           evidence.database?.name,
+          evidence.database?.provider ? `provider: ${evidence.database.provider}` : undefined,
+          evidence.database?.domain ? `domain: ${evidence.database.domain}` : undefined,
+          evidence.database?.tool ? `tool: ${evidence.database.tool}` : undefined,
           evidence.database?.endpoint,
           evidence.database?.accessDate ? `accessed: ${evidence.database.accessDate}` : undefined,
           evidenceDatabaseCountLabel(evidence),

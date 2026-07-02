@@ -7,6 +7,7 @@
 import { ipcBridge } from '@/common';
 import type { IMcpServer } from '@/common/config/storage';
 import AgentModeSelector from '@/renderer/components/agent/AgentModeSelector';
+import CollaborationIcon from '@/renderer/components/icons/CollaborationIcon';
 import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
 import { supportsModeSwitch, type AgentModeOption } from '@/renderer/utils/model/agentModes';
 import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
@@ -67,6 +68,7 @@ type GuidActionRowProps = {
   onToggleMedicalEvidenceMode?: () => void;
   isSkillDepositionMode?: boolean;
   onStartSkillDepositionMode?: () => void;
+  onOpenCollaborationMode?: () => void;
 
   // Send button
   loading: boolean;
@@ -106,6 +108,7 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
   onToggleMedicalEvidenceMode,
   isSkillDepositionMode,
   onStartSkillDepositionMode,
+  onOpenCollaborationMode,
   hidePresetTag = false,
   loading,
   isButtonDisabled,
@@ -187,6 +190,9 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
         } else if (key === 'skill-deposition') {
           setIsPlusDropdownOpen(false);
           onStartSkillDepositionMode?.();
+        } else if (key === 'collaboration') {
+          setIsPlusDropdownOpen(false);
+          onOpenCollaborationMode?.();
         }
       }}
     >
@@ -218,6 +224,14 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
           <div className='flex items-center gap-8px' data-testid='science-menu-item'>
             <OpenScienceIcon name='modeScience' size={17} visualScale={isScienceMode ? 1.14 : 1.04} />
             <span>{t('guid.scienceProject.menuLabel')}</span>
+          </div>
+        </Menu.Item>
+      ) : null}
+      {onOpenCollaborationMode ? (
+        <Menu.Item key='collaboration'>
+          <div className='flex items-center gap-8px' data-testid='collaboration-menu-item'>
+            <CollaborationIcon name='message' size={18} />
+            <span>{t('guid.collaboration.menuLabel', { defaultValue: 'Collaboration Mode' })}</span>
           </div>
         </Menu.Item>
       ) : null}

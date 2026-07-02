@@ -19,7 +19,17 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const DEFAULT_RESEARCH_CONFIG: Required<
-  Pick<ResearchEvidenceConfig, 'enabled' | 'paperclipBaseUrl' | 'defaultSources' | 'timeoutMs'>
+  Pick<
+    ResearchEvidenceConfig,
+    | 'enabled'
+    | 'paperclipBaseUrl'
+    | 'defaultSources'
+    | 'timeoutMs'
+    | 'bioToolsEnabled'
+    | 'bioToolsPythonPath'
+    | 'bioToolsServerRoot'
+    | 'bioToolsDefaultDomains'
+  >
 > &
   Pick<ResearchEvidenceConfig, 'paperclipApiKey'> = {
   enabled: true,
@@ -27,6 +37,10 @@ const DEFAULT_RESEARCH_CONFIG: Required<
   paperclipBaseUrl: 'https://paperclip.gxl.ai',
   defaultSources: ['pmc', 'abstracts', 'biorxiv', 'medrxiv', 'arxiv'],
   timeoutMs: 30000,
+  bioToolsEnabled: false,
+  bioToolsPythonPath: 'python3',
+  bioToolsServerRoot: '',
+  bioToolsDefaultDomains: ['pubmed', 'chembl', 'omics-archives', 'structures-interactions'],
 };
 
 const DEFAULT_ARTIFACT_CONFIG: Required<
@@ -56,6 +70,9 @@ const normalizeResearchConfig = (
     paperclipBaseUrl: paperclipConfig.paperclipBaseUrl,
     timeoutMs: paperclipConfig.timeoutMs,
     defaultSources: value?.defaultSources?.length ? value.defaultSources : DEFAULT_RESEARCH_CONFIG.defaultSources,
+    bioToolsDefaultDomains: value?.bioToolsDefaultDomains?.length
+      ? value.bioToolsDefaultDomains
+      : DEFAULT_RESEARCH_CONFIG.bioToolsDefaultDomains,
   };
 };
 
@@ -326,6 +343,73 @@ const ScienceSettings: React.FC = () => {
               }
             />
           </label>
+
+          <div className='mt-14px rounded-8px bg-1 p-14px'>
+            <div className='mb-12px flex items-start justify-between gap-12px'>
+              <div>
+                <div className='text-13px font-700 text-t-primary'>
+                  {t('settings.science.bioToolsTitle', { defaultValue: 'Bio tools databases' })}
+                </div>
+                <div className='mt-3px max-w-650px text-12px leading-18px text-t-secondary'>
+                  {t('settings.science.bioToolsDesc', {
+                    defaultValue:
+                      'Route PubMed, ChEMBL, GEO, AlphaFold and other JimLiu science-skills database tools through the same research_evidence MCP.',
+                  })}
+                </div>
+              </div>
+              <Switch
+                size='small'
+                checked={researchConfig.bioToolsEnabled === true}
+                onChange={(checked) => updateResearchConfig((current) => ({ ...current, bioToolsEnabled: checked }))}
+              />
+            </div>
+            <div className='grid grid-cols-1 gap-12px md:grid-cols-2'>
+              <label className='flex flex-col gap-6px'>
+                <span className='text-13px font-600 text-t-primary'>
+                  {t('settings.science.bioToolsPythonPath', { defaultValue: 'Python executable' })}
+                </span>
+                <Input
+                  value={researchConfig.bioToolsPythonPath || DEFAULT_RESEARCH_CONFIG.bioToolsPythonPath}
+                  placeholder='python3'
+                  onChange={(value) => updateResearchConfig((current) => ({ ...current, bioToolsPythonPath: value }))}
+                />
+              </label>
+              <label className='flex flex-col gap-6px'>
+                <span className='text-13px font-600 text-t-primary'>
+                  {t('settings.science.bioToolsServerRoot', { defaultValue: 'bio-tools server root' })}
+                </span>
+                <Input
+                  value={researchConfig.bioToolsServerRoot || ''}
+                  placeholder='/path/to/science-skills/mcp-servers/bio-tools'
+                  onChange={(value) => updateResearchConfig((current) => ({ ...current, bioToolsServerRoot: value }))}
+                />
+              </label>
+            </div>
+            <label className='mt-12px flex flex-col gap-6px'>
+              <span className='text-13px font-600 text-t-primary'>
+                {t('settings.science.bioToolsDomains', { defaultValue: 'Default domains' })}
+              </span>
+              <Input.TextArea
+                autoSize={{ minRows: 2, maxRows: 5 }}
+                value={formatDelimitedList(researchConfig.bioToolsDefaultDomains)}
+                placeholder={'pubmed\nchembl\nomics-archives\nstructures-interactions'}
+                onChange={(value) =>
+                  updateResearchConfig((current) => ({
+                    ...current,
+                    bioToolsDefaultDomains: parseDelimitedList(value).length
+                      ? parseDelimitedList(value)
+                      : DEFAULT_RESEARCH_CONFIG.bioToolsDefaultDomains,
+                  }))
+                }
+              />
+              <span className='text-11px leading-16px text-t-tertiary'>
+                {t('settings.science.bioToolsHint', {
+                  defaultValue:
+                    'PaperClip stays off until an API key is present. Bio tools starts lazily only when the agent lists or calls database tools.',
+                })}
+              </span>
+            </label>
+          </div>
         </section>
 
         <section className='rounded-10px border border-solid border-2 bg-base p-18px'>

@@ -23,6 +23,7 @@ import HTMLRenderer from '../renderers/HTMLRenderer';
 import ImagePreview from '../viewers/ImageViewer';
 import MarkdownEditor from '../editors/MarkdownEditor';
 import MarkdownPreview from '../viewers/MarkdownViewer';
+import KetcherViewer, { isKetcherPreviewCandidate } from '../viewers/KetcherViewer';
 import MolecularStructureViewer from '../viewers/MolecularStructureViewer';
 import PDFPreview from '../viewers/PDFViewer';
 import OfficeDocPreview from '../viewers/OfficeDocViewer';
@@ -904,6 +905,17 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
         />
       );
     } else if (content_type === 'molecular_structure') {
+      if (isKetcherPreviewCandidate(activeScienceArtifact, metadata?.file_name || metadata?.title, metadata?.file_path)) {
+        return (
+          <KetcherViewer
+            content={content}
+            file_path={metadata?.file_path}
+            file_name={metadata?.file_name || metadata?.title}
+            workspace={metadata?.workspace}
+            artifact={activeScienceArtifact}
+          />
+        );
+      }
       return (
         <MolecularStructureViewer
           content={content}

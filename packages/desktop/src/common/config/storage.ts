@@ -618,6 +618,10 @@ export interface ResearchEvidenceConfig {
   paperclipBaseUrl?: string;
   defaultSources?: string[];
   timeoutMs?: number;
+  bioToolsEnabled?: boolean;
+  bioToolsPythonPath?: string;
+  bioToolsServerRoot?: string;
+  bioToolsDefaultDomains?: string[];
 }
 
 export interface ScienceArtifactConfig {

@@ -2669,6 +2669,10 @@ export interface ICreateConversationParams {
     preset_assistant_id?: string;
     selected_mcp_server_ids?: string[];
     selected_session_mcp_servers?: ISessionMcpServer[];
+    mcp_server_ids?: string[];
+    mcp_servers?: string[];
+    mcp_statuses?: import('@/common/config/storage').IConversationMcpStatus[];
+    session_mcp_servers?: ISessionMcpServer[];
     session_mode?: string;
     codex_model?: string;
     current_model_id?: string;
