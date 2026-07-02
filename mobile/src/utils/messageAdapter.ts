@@ -13,7 +13,6 @@ export type TMessageType =
   | 'tips'
   | 'tool_call'
   | 'tool_group'
-  | 'agent_status'
   | 'acp_permission'
   | 'acp_tool_call'
   | 'codex_permission'
@@ -86,16 +85,6 @@ export function transformMessage(message: IResponseMessage): TMessage | undefine
         content: message.data,
       };
 
-    case 'agent_status':
-      return {
-        id: uuid(),
-        type: 'agent_status',
-        msg_id: message.msg_id,
-        position: 'center',
-        conversation_id: message.conversation_id,
-        content: message.data,
-      };
-
     case 'acp_permission':
       return {
         id: uuid(),
@@ -146,11 +135,13 @@ export function transformMessage(message: IResponseMessage): TMessage | undefine
         content: message.data,
       };
 
-    // Ignored types (same as chatLib.ts)
+    // Ignored types (same as chatLib.ts, plus raw status events that would
+    // otherwise become noisy mobile chat bubbles).
     case 'thought':
     case 'start':
     case 'finish':
     case 'system':
+    case 'agent_status':
     case 'acp_model_info':
     case 'codex_model_info':
     case 'acp_context_usage':

@@ -9,7 +9,12 @@ export type ToolSummaryVO = {
 
 export type ProcessedItem = TMessage | ToolSummaryVO;
 
-const TOOL_CALL_TYPES: Set<TMessageType> = new Set(['tool_call', 'tool_group', 'acp_tool_call', 'codex_tool_call']);
+const TOOL_CALL_TYPES: Set<TMessageType> = new Set<TMessageType>([
+  'tool_call',
+  'tool_group',
+  'acp_tool_call',
+  'codex_tool_call',
+]);
 
 export function isToolCallType(type: TMessageType): boolean {
   return TOOL_CALL_TYPES.has(type);

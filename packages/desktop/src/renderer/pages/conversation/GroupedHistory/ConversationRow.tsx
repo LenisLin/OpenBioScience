@@ -27,6 +27,28 @@ import OrbitRunningLogo from './OrbitRunningLogo';
 import { getUserInputLabels } from '../user-input/userInputI18n';
 import { useHasPendingUserInput } from '../user-input/userInputStore';
 
+const SIDEBAR_ICON_SIZE = 19;
+const SIDEBAR_MENU_ICON_SIZE = 17;
+
+const formatConversationAge = (timestamp: number | undefined, language: string): string => {
+  if (!timestamp) return '';
+  const diff = Math.max(0, Date.now() - timestamp);
+  const isZh = language.toLowerCase().startsWith('zh');
+  const minute = 60_000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+
+  if (diff < minute) return isZh ? '刚刚' : 'now';
+  if (diff < hour) return isZh ? `${Math.floor(diff / minute)} 分` : `${Math.floor(diff / minute)}m`;
+  if (diff < day) return isZh ? `${Math.floor(diff / hour)} 小时` : `${Math.floor(diff / hour)}h`;
+  if (diff < 7 * day) return isZh ? `${Math.floor(diff / day)} 天` : `${Math.floor(diff / day)}d`;
+
+  return new Intl.DateTimeFormat(language || undefined, {
+    month: '2-digit',
+    day: '2-digit',
+  }).format(timestamp);
+};
+
 const ConversationRow: React.FC<ConversationRowProps> = (props) => {
   const {
     conversation,
@@ -61,10 +83,20 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
   const hasPendingUserInput = useHasPendingUserInput(conversation.id);
   const siderTooltipProps = getSiderTooltipProps(tooltipEnabled);
   const inlineNameTooltipEnabled = !collapsed && !isMobile && !!conversation.name;
+  const isConversationActive =
+    isGenerating ||
+    conversation.status === 'running' ||
+    conversation.status === 'pending' ||
+    conversation.runtime?.task_status === 'running' ||
+    conversation.runtime?.task_status === 'pending' ||
+    conversation.runtime?.is_processing === true;
+  const completionAge = formatConversationAge(conversation.modified_at || conversation.created_at, i18n.language);
+  const shouldShowCompletionAge =
+    !batchMode && !collapsed && !isMobile && !isConversationActive && !hasPendingUserInput && !!completionAge;
 
   const renderLeadingIcon = () => {
     if (cronStatus !== 'none') {
-      return <CronJobIndicator status={cronStatus} size={16} className='flex-shrink-0' />;
+      return <CronJobIndicator status={cronStatus} size={SIDEBAR_ICON_SIZE} className='flex-shrink-0' />;
     }
 
     // When the row is pinned, hovering reveals a pushpin marker that overlays
@@ -76,7 +108,7 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
       return (
         <OpenScienceIcon
           name='modeMedicalEvidence'
-          size={16}
+          size={SIDEBAR_ICON_SIZE}
           visualScale={1.1}
           title={t('guid.medicalEvidence.menuLabel')}
           className={classNames('flex-shrink-0', composedClass)}
@@ -88,7 +120,7 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
       return (
         <OpenScienceIcon
           name='modeDeposition'
-          size={16}
+          size={SIDEBAR_ICON_SIZE}
           visualScale={1.08}
           title={t('guid.skillDeposition.menuLabel')}
           className={classNames('flex-shrink-0', composedClass)}
@@ -100,7 +132,7 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
       return (
         <OpenScienceIcon
           name='modeScience'
-          size={16}
+          size={SIDEBAR_ICON_SIZE}
           visualScale={1.08}
           title={t('guid.scienceProject.menuLabel')}
           className={classNames('flex-shrink-0', composedClass)}
@@ -111,7 +143,7 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
     if (assistantInfo) {
       if (assistantInfo.isEmoji) {
         return (
-          <span className={classNames('text-16px leading-none flex-shrink-0', composedClass)}>
+          <span className={classNames('text-19px leading-none flex-shrink-0', composedClass)}>
             {assistantInfo.logo}
           </span>
         );
@@ -120,7 +152,7 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
         <img
           src={assistantInfo.logo}
           alt={assistantInfo.name}
-          className={classNames('w-16px h-16px rounded-50% flex-shrink-0', composedClass)}
+          className={classNames('w-19px h-19px rounded-50% flex-shrink-0', composedClass)}
         />
       );
     }
@@ -132,7 +164,7 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
         <img
           src={logo}
           alt={`${backendKey || 'agent'} logo`}
-          className={classNames('w-16px h-16px rounded-50% flex-shrink-0', composedClass)}
+          className={classNames('w-19px h-19px rounded-50% flex-shrink-0', composedClass)}
         />
       );
     }
@@ -140,7 +172,7 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
     return (
       <MessageOne
         theme='outline'
-        size='16'
+        size={SIDEBAR_ICON_SIZE}
         className={classNames('line-height-0 flex-shrink-0 text-t-secondary', composedClass)}
       />
     );
@@ -166,7 +198,7 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
   };
 
   const renderCompletionUnreadDot = () => {
-    if (batchMode || !hasCompletionUnread || isGenerating || hasPendingUserInput) {
+    if (batchMode || !hasCompletionUnread || isConversationActive || hasPendingUserInput || shouldShowCompletionAge) {
       return null;
     }
 
@@ -213,15 +245,15 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
             <Checkbox checked={checked} />
           </span>
         )}
-        <span className='size-22px flex items-center justify-center shrink-0 relative'>
-          {isGenerating && !batchMode ? <OrbitRunningLogo size={16} /> : renderLeadingIcon()}
+        <span className='size-24px flex items-center justify-center shrink-0 relative'>
+          {isConversationActive && !batchMode ? <OrbitRunningLogo size={SIDEBAR_ICON_SIZE} /> : renderLeadingIcon()}
           {/* Pinned indicator: only visible when row is hovered, overlays leading icon */}
-          {!batchMode && isPinned && !isMobile && !isGenerating && (
+          {!batchMode && isPinned && !isMobile && !isConversationActive && (
             <span
               className='absolute inset-0 flex-center text-t-secondary pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity'
               style={{ lineHeight: 0 }}
             >
-              <Pushpin theme='outline' size='14' />
+              <Pushpin theme='outline' size={SIDEBAR_MENU_ICON_SIZE} />
             </span>
           )}
         </span>
@@ -240,6 +272,18 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
             </div>
           </Tooltip>
         </FlexFullContainer>
+
+        {shouldShowCompletionAge && (
+          <span
+            className={classNames(
+              'ml-6px shrink-0 text-12px leading-20px text-t-tertiary transition-opacity duration-150',
+              menuVisible ? 'opacity-0' : 'opacity-100 group-hover:opacity-0'
+            )}
+            title={new Date(conversation.modified_at || conversation.created_at).toLocaleString()}
+          >
+            {completionAge}
+          </span>
+        )}
 
         {!batchMode && hasPendingUserInput && (
           <span
@@ -288,27 +332,27 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
                 >
                   <Menu.Item key='pin'>
                     <div className='flex items-center gap-8px'>
-                      <Pushpin theme='outline' size='14' />
+                      <Pushpin theme='outline' size={SIDEBAR_MENU_ICON_SIZE} />
                       <span>{isPinned ? t('conversation.history.unpin') : t('conversation.history.pin')}</span>
                     </div>
                   </Menu.Item>
                   <Menu.Item key='rename'>
                     <div className='flex items-center gap-8px'>
-                      <EditOne theme='outline' size='14' />
+                      <EditOne theme='outline' size={SIDEBAR_MENU_ICON_SIZE} />
                       <span>{t('conversation.history.rename')}</span>
                     </div>
                   </Menu.Item>
                   {onExport && (
                     <Menu.Item key='export'>
                       <div className='flex items-center gap-8px'>
-                        <Export theme='outline' size='14' />
+                        <Export theme='outline' size={SIDEBAR_MENU_ICON_SIZE} />
                         <span>{t('conversation.history.export')}</span>
                       </div>
                     </Menu.Item>
                   )}
                   <Menu.Item key='delete'>
                     <div className='flex items-center gap-8px text-[rgb(var(--warning-6))]'>
-                      <DeleteOne theme='outline' size='14' />
+                      <DeleteOne theme='outline' size={SIDEBAR_MENU_ICON_SIZE} />
                       <span>{t('conversation.history.deleteTitle')}</span>
                     </div>
                   </Menu.Item>
@@ -323,7 +367,7 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
             >
               <span
                 className={classNames(
-                  'flex-center cursor-pointer transition-colors text-t-secondary hover:text-t-primary size-20px rd-4px sider-action-btn',
+                  'flex-center cursor-pointer transition-colors text-t-secondary hover:text-t-primary size-24px rd-4px sider-action-btn',
                   {
                     flex: isMobile || menuVisible,
                     'hidden group-hover:flex': !isMobile && !menuVisible,
@@ -334,7 +378,12 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
                   onOpenMenu(conversation);
                 }}
               >
-                <MoreOne theme='outline' size='14' fill='currentColor' className='block leading-none' />
+                <MoreOne
+                  theme='outline'
+                  size={SIDEBAR_MENU_ICON_SIZE}
+                  fill='currentColor'
+                  className='block leading-none'
+                />
               </span>
             </Dropdown>
           </div>

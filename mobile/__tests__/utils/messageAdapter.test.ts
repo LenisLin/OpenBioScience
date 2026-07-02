@@ -70,9 +70,9 @@ describe('transformMessage', () => {
     expect(result).toMatchObject({ type: 'tool_group', content: data });
   });
 
-  it('transforms agent_status → center', () => {
+  it('ignores raw agent_status events on mobile', () => {
     const result = transformMessage(makeResponse({ type: 'agent_status', data: { status: 'thinking' } }));
-    expect(result).toMatchObject({ type: 'agent_status', position: 'center' });
+    expect(result).toBeUndefined();
   });
 
   it('transforms acp_permission → left', () => {

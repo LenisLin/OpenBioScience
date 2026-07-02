@@ -56,20 +56,6 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       );
     }
 
-    case 'agent_status': {
-      const status = message.content.status;
-      const agentName = message.content.agentName || message.content.backend;
-      return (
-        <View style={styles.tipRow}>
-          <View style={[styles.statusBubble, { backgroundColor: surface }]}>
-            <ThemedText type='caption'>
-              {agentName}: {status}
-            </ThemedText>
-          </View>
-        </View>
-      );
-    }
-
     case 'acp_permission':
     case 'codex_permission':
       return (
@@ -146,11 +132,6 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: 13,
     textAlign: 'center',
-  },
-  statusBubble: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
   },
   confirmContainer: {
     maxWidth: '90%',
