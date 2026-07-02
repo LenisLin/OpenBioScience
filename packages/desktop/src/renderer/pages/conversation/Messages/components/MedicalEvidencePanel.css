@@ -1,0 +1,2222 @@
+.medical-evidence-accumulator {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--color-text-2);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.medical-evidence-accumulator--compact {
+  flex: 0 1 auto;
+}
+
+.medical-evidence-accumulator__main {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.medical-evidence-accumulator__pipeline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.medical-evidence-accumulator__stage {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-text-3);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.medical-evidence-accumulator__stage i {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--color-border-3);
+  border-radius: 999px;
+  background: var(--color-bg-1);
+}
+
+.medical-evidence-accumulator__stage--seen,
+.medical-evidence-accumulator__stage--active {
+  color: var(--color-text-1);
+}
+
+.medical-evidence-accumulator__stage--seen i {
+  border-color: rgba(45, 128, 91, 0.46);
+  background: rgba(45, 128, 91, 0.34);
+}
+
+.medical-evidence-accumulator__stage--active i {
+  border-color: rgba(69, 89, 109, 0.58);
+  background: rgb(69, 89, 109);
+}
+
+.medical-evidence-accumulator__stage b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-fill-2) 72%, transparent);
+  color: var(--color-text-2);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 14px;
+}
+
+.medical-evidence-accumulator__stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.medical-evidence-accumulator__stats span {
+  white-space: nowrap;
+}
+
+.medical-evidence-accumulator__stats b {
+  margin-right: 2px;
+  color: var(--color-text-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.medical-evidence-accumulator__basket {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1 1 240px;
+  gap: 7px;
+  color: var(--color-text-3);
+}
+
+.medical-evidence-accumulator__basketIcon {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 27px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+
+.medical-evidence-accumulator__basketBase {
+  position: absolute;
+  left: 2px;
+  bottom: 0;
+}
+
+.medical-evidence-accumulator__basketSlip {
+  position: absolute;
+  left: 8px;
+  bottom: 9px;
+  transform: rotate(-9deg);
+  transform-origin: 50% 100%;
+}
+
+.medical-evidence-accumulator--has-basket .medical-evidence-accumulator__basketSlip {
+  animation: medicalEvidenceBasketSlip 0.46s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-accumulator__basketIcon > b {
+  position: absolute;
+  right: -1px;
+  top: -2px;
+  min-width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  background: rgb(69, 89, 109);
+  color: #fff;
+  padding: 0 3px;
+  font-size: 9px;
+  font-weight: 720;
+  line-height: 13px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--color-bg-1);
+  animation: medicalEvidenceNumberPop 0.28s cubic-bezier(0.2, 1.35, 0.4, 1) both;
+}
+
+.medical-evidence-accumulator__trace {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: min(360px, 100%);
+  gap: 5px;
+  overflow: hidden;
+  white-space: nowrap;
+  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 18px), transparent 100%);
+}
+
+.medical-evidence-accumulator__traceItem {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 118px;
+  gap: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-border-2) 90%, rgba(69, 89, 109, 0.1));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-bg-1) 96%, rgba(69, 89, 109, 0.035));
+  color: var(--color-text-2);
+  padding: 2px 7px 2px 5px;
+  font-size: 11px;
+  font-weight: 620;
+  line-height: 16px;
+  animation: medicalEvidenceTraceIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-accumulator__traceItem > span,
+.medical-evidence-accumulator__traceItem > em {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.medical-evidence-accumulator__traceItem > em {
+  color: var(--color-text-3);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.medical-evidence-accumulator__traceItem--empty {
+  color: var(--color-text-3);
+  border-style: dashed;
+  background: transparent;
+}
+
+.medical-evidence-accumulator__traceIcon {
+  flex: 0 0 auto;
+}
+
+.medical-evidence-accumulator__traceItem:not(.medical-evidence-accumulator__traceItem--empty)
+  .medical-evidence-accumulator__traceIcon {
+  animation: medicalEvidenceEvidenceDrop 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-panel {
+  --medical-evidence-accent: rgb(45, 116, 86);
+  --medical-evidence-cite: rgb(70, 101, 150);
+  --medical-evidence-rule: color-mix(in srgb, var(--color-border-2) 88%, transparent);
+  --medical-evidence-highlight: rgba(225, 181, 66, 0.64);
+  --medical-evidence-highlight-table: rgba(91, 145, 113, 0.38);
+  --medical-evidence-warm: rgb(183, 136, 61);
+  --medical-evidence-blue: rgb(74, 104, 145);
+  --medical-evidence-red: rgb(166, 82, 73);
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 2px 0 34px;
+  box-shadow: none;
+  animation: medicalEvidencePanelIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-copyMarkdown {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 27px;
+  border: 1px solid color-mix(in srgb, var(--color-border-2) 86%, transparent);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--color-bg-1) 96%, rgba(45, 116, 86, 0.04));
+  color: var(--color-text-3);
+  padding: 0 9px;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 27px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.medical-evidence-panel:hover .medical-evidence-copyMarkdown,
+.medical-evidence-copyMarkdown:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.medical-evidence-copyMarkdown:hover {
+  border-color: color-mix(in srgb, var(--medical-evidence-accent) 42%, var(--color-border-2));
+  background: color-mix(in srgb, var(--color-bg-1) 92%, rgba(45, 116, 86, 0.08));
+  color: var(--color-text-1);
+}
+
+.medical-evidence-copyMarkdown--copied {
+  border-color: color-mix(in srgb, var(--medical-evidence-accent) 48%, var(--color-border-2));
+  color: var(--medical-evidence-accent);
+}
+
+.medical-evidence-copyMarkdown--error {
+  border-color: color-mix(in srgb, var(--medical-evidence-red) 48%, var(--color-border-2));
+  color: var(--medical-evidence-red);
+}
+
+.medical-evidence-panel__header {
+  min-width: 0;
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--medical-evidence-rule);
+}
+
+.medical-evidence-panel__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.medical-evidence-panel__logo {
+  margin-right: 1px;
+}
+
+.medical-evidence-panel__title span {
+  color: var(--color-text-1);
+  font-size: 17px;
+  font-weight: 760;
+  line-height: 25px;
+}
+
+.medical-evidence-panel__title small {
+  color: var(--color-text-3);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.medical-evidence-section {
+  margin-top: 18px;
+  animation: medicalEvidenceContentIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-section__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 19px;
+}
+
+.medical-evidence-report {
+  display: grid;
+  gap: 24px;
+  margin-top: 0;
+}
+
+.medical-evidence-report h3 {
+  margin: 0 0 4px;
+  color: var(--color-text-1);
+  font-size: 24px;
+  font-weight: 760;
+  line-height: 32px;
+}
+
+.medical-evidence-report__section {
+  display: grid;
+  gap: 11px;
+  min-width: 0;
+  animation: medicalEvidenceReportLayerIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-report__section + .medical-evidence-report__section {
+  padding-top: 18px;
+  border-top: 1px solid color-mix(in srgb, var(--medical-evidence-rule) 72%, transparent);
+}
+
+.medical-evidence-report__section h4 {
+  margin: 0 0 4px;
+  color: var(--color-text-1);
+  font-size: 16px;
+  font-weight: 730;
+  line-height: 24px;
+}
+
+.medical-evidence-report__section--lead {
+  gap: 8px;
+  padding-bottom: 2px;
+}
+
+.medical-evidence-report__section--lead h4 {
+  color: var(--medical-evidence-accent);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 18px;
+  text-transform: uppercase;
+}
+
+.medical-evidence-report__section--lead .medical-evidence-report__paragraph {
+  color: var(--color-text-1);
+  font-size: 15px;
+  font-weight: 460;
+  line-height: 28px;
+}
+
+.medical-evidence-report__section--lead .medical-evidence-report__markdown p {
+  color: var(--color-text-1);
+  font-size: 15px;
+  font-weight: 460;
+  line-height: 28px;
+}
+
+.medical-evidence-report__paragraph,
+.medical-evidence-report__list,
+.medical-evidence-report__checklist {
+  animation: medicalEvidenceReportLayerIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-report__paragraph {
+  margin: 0;
+  color: var(--color-text-1);
+  font-size: 14.5px;
+  line-height: 26px;
+}
+
+.medical-evidence-markdown {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: var(--color-text-1);
+  animation: medicalEvidenceReportLayerIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-markdown h6,
+.medical-evidence-markdown p,
+.medical-evidence-markdown ul,
+.medical-evidence-markdown ol {
+  margin: 0;
+}
+
+.medical-evidence-markdown h6 {
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 730;
+  line-height: 20px;
+}
+
+.medical-evidence-markdown p {
+  color: var(--color-text-1);
+  font-size: 14.5px;
+  line-height: 26px;
+}
+
+.medical-evidence-markdown ul,
+.medical-evidence-markdown ol {
+  display: grid;
+  gap: 6px;
+  padding-left: 18px;
+  color: var(--color-text-1);
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.medical-evidence-markdown li::marker {
+  color: color-mix(in srgb, var(--medical-evidence-accent) 80%, transparent);
+}
+
+.medical-evidence-markdown__refs {
+  margin-top: 1px;
+}
+
+.medical-evidence-report__markdown {
+  animation-delay: inherit;
+}
+
+.medical-evidence-reportCard__markdown {
+  gap: 5px;
+}
+
+.medical-evidence-reportCard__markdown p,
+.medical-evidence-reportCard__markdown ul,
+.medical-evidence-reportCard__markdown ol {
+  color: var(--color-text-2);
+  font-size: 12.5px;
+  line-height: 19px;
+}
+
+.medical-evidence-reportCard__markdown h6 {
+  color: var(--color-text-1);
+  font-size: 12.5px;
+  line-height: 18px;
+}
+
+.medical-evidence-emphasis {
+  display: inline-block;
+  border-radius: 2px;
+  background: linear-gradient(to top, var(--medical-evidence-highlight) 0 68%, transparent 68% 100%);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  color: var(--color-text-1);
+  font-weight: 860;
+  line-height: 1.08;
+  padding: 0 1px;
+  text-shadow: 0 0 0 currentColor;
+  vertical-align: baseline;
+}
+
+.medical-evidence-report__section--lead .medical-evidence-emphasis {
+  font-weight: 900;
+}
+
+.medical-evidence-emphasis--table {
+  background: linear-gradient(to top, var(--medical-evidence-highlight-table) 0 62%, transparent 62% 100%);
+}
+
+.medical-evidence-report__paragraph:has(.medical-evidence-citationWrap:hover),
+.medical-evidence-report__paragraph:has(.medical-evidence-citationWrap:focus-within),
+.medical-evidence-report__list li:has(.medical-evidence-citationWrap:hover),
+.medical-evidence-report__list li:has(.medical-evidence-citationWrap:focus-within),
+.medical-evidence-report__check p:has(.medical-evidence-citationWrap:hover),
+.medical-evidence-report__check p:has(.medical-evidence-citationWrap:focus-within),
+.medical-evidence-figure figcaption:has(.medical-evidence-citationWrap:hover),
+.medical-evidence-figure figcaption:has(.medical-evidence-citationWrap:focus-within),
+.medical-evidence-table__caption:has(.medical-evidence-citationWrap:hover),
+.medical-evidence-table__caption:has(.medical-evidence-citationWrap:focus-within),
+.medical-evidence-appraisal:has(.medical-evidence-citationWrap:hover),
+.medical-evidence-appraisal:has(.medical-evidence-citationWrap:focus-within) {
+  position: relative;
+  z-index: 300;
+}
+
+.medical-evidence-report__list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--color-text-1);
+  font-size: 14px;
+  line-height: 25px;
+}
+
+.medical-evidence-report__list li::marker {
+  color: color-mix(in srgb, var(--medical-evidence-accent) 84%, transparent);
+}
+
+.medical-evidence-report__checklist {
+  display: grid;
+  gap: 7px;
+}
+
+.medical-evidence-report__check {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  min-width: 0;
+}
+
+.medical-evidence-report__check > span {
+  width: 8px;
+  height: 8px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--color-border-3);
+}
+
+.medical-evidence-report__check--met > span {
+  background: rgba(45, 128, 91, 0.9);
+}
+
+.medical-evidence-report__check--caution > span {
+  background: rgba(185, 127, 72, 0.9);
+}
+
+.medical-evidence-report__check--not_met > span {
+  background: rgba(174, 83, 72, 0.9);
+}
+
+.medical-evidence-report__check b {
+  display: block;
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 21px;
+}
+
+.medical-evidence-report__check p {
+  margin: 1px 0 0;
+  color: var(--color-text-2);
+  font-size: 13px;
+  line-height: 21px;
+}
+
+.medical-evidence-report__sectionRefs {
+  margin-top: 1px;
+}
+
+.medical-evidence-reportCardGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 15px;
+  animation: medicalEvidenceReportLayerIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-reportCardGrid > div {
+  min-width: 0;
+  animation: medicalEvidenceReportLayerIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-reportCard {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-sizing: border-box;
+  animation: medicalEvidenceReportLayerIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-reportCard--takeaway {
+  border-width: 1px 0;
+  border-color: color-mix(in srgb, var(--color-text-1) 20%, transparent);
+  border-radius: 0;
+  background: transparent;
+  padding: 12px 0;
+}
+
+.medical-evidence-reportCard--quality_references {
+  border-width: 1px 0;
+  border-color: color-mix(in srgb, var(--color-text-1) 28%, transparent);
+  border-radius: 0;
+  background: transparent;
+  padding: 12px 0;
+}
+
+.medical-evidence-reportCard--paperclip_trace,
+.medical-evidence-reportCard--search_strategy,
+.medical-evidence-reportCard--source_coverage {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-3);
+  padding: 0;
+}
+
+.medical-evidence-reportCard--paperclip_trace .medical-evidence-reportCard__head h5,
+.medical-evidence-reportCard--search_strategy .medical-evidence-reportCard__head h5,
+.medical-evidence-reportCard--source_coverage .medical-evidence-reportCard__head h5 {
+  color: var(--color-text-2);
+}
+
+.medical-evidence-reportCard--paperclip_trace .medical-evidence-reportCard__metric,
+.medical-evidence-reportCard--search_strategy .medical-evidence-reportCard__metric,
+.medical-evidence-reportCard--source_coverage .medical-evidence-reportCard__metric {
+  border-color: color-mix(in srgb, var(--color-border-2) 70%, transparent);
+  background: transparent;
+}
+
+.medical-evidence-reportCard--evidence_hierarchy {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.medical-evidence-reportCard__head {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  min-width: 0;
+}
+
+.medical-evidence-reportCard__head--plain {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.medical-evidence-reportCard__head h5 {
+  margin: 0;
+  color: var(--color-text-1);
+  font-size: 13.8px;
+  font-weight: 720;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+
+.medical-evidence-reportCard__head p {
+  margin: 1px 0 0;
+  color: var(--color-text-3);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.medical-evidence-reportCard__metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.medical-evidence-reportCard__metric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border-2) 78%, transparent);
+  border-radius: 0;
+  background: transparent;
+  padding: 0 0 2px;
+}
+
+.medical-evidence-reportCard__metric b {
+  display: inline-block;
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+  animation: medicalEvidenceNumberPop 0.3s cubic-bezier(0.2, 1.35, 0.4, 1) both;
+}
+
+.medical-evidence-reportCard__metric em {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text-3);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.medical-evidence-reportCard__metric--good b {
+  color: rgb(35, 103, 73);
+}
+
+.medical-evidence-reportCard__metric--caution b {
+  color: rgb(163, 104, 55);
+}
+
+.medical-evidence-reportCard__metric--risk b {
+  color: rgb(174, 83, 72);
+}
+
+.medical-evidence-reportCard__items,
+.medical-evidence-reportCard__references,
+.medical-evidence-reportCard__artifacts,
+.medical-evidence-reportCard__figures {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+
+.medical-evidence-reportCard__item {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  gap: 7px;
+  min-width: 0;
+}
+
+.medical-evidence-reportCard__status {
+  display: block;
+  width: 7px;
+  height: 7px;
+  margin-top: 7px;
+  border-radius: 999px;
+  background: var(--color-border-3);
+}
+
+.medical-evidence-reportCard__status--met {
+  background: rgba(45, 128, 91, 0.9);
+}
+
+.medical-evidence-reportCard__status--caution {
+  background: rgba(185, 127, 72, 0.9);
+}
+
+.medical-evidence-reportCard__status--not_met {
+  background: rgba(174, 83, 72, 0.9);
+}
+
+.medical-evidence-reportCard__itemHead {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 5px 7px;
+  min-width: 0;
+}
+
+.medical-evidence-reportCard__itemHead > span {
+  color: var(--color-text-1);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.medical-evidence-reportCard__itemHead > b,
+.medical-evidence-reportCard__itemHead > em,
+.medical-evidence-reportCard__itemHead > small {
+  color: var(--color-text-3);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 650;
+  line-height: 16px;
+}
+
+.medical-evidence-reportCard__item p {
+  margin: 1px 0 0;
+  color: var(--color-text-2);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.medical-evidence-reportCard__item code,
+.medical-evidence-reportCard__artifact code {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  margin-top: 4px;
+  border-radius: 5px;
+  background: var(--color-fill-1);
+  color: var(--color-text-2);
+  padding: 3px 5px;
+  font-size: 11px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.medical-evidence-reportCard__figureLink,
+.medical-evidence-reportCard__figures a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--color-text-2);
+  font-size: 12px;
+  line-height: 18px;
+  text-decoration: none;
+}
+
+.medical-evidence-reportCard__figures a {
+  justify-content: flex-start;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.medical-evidence-reportCard__figures span,
+.medical-evidence-reportCard__figures em {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.medical-evidence-reportCard__figures em {
+  color: var(--color-text-3);
+  font-style: normal;
+}
+
+.medical-evidence-reportCard__reference {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 9px;
+  min-width: 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-border-2) 80%, transparent);
+  padding-top: 9px;
+}
+
+.medical-evidence-reportCard__reference > div {
+  min-width: 0;
+}
+
+.medical-evidence-reportCard__reference:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.medical-evidence-reportCard__reference > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--medical-evidence-cite) 10%, transparent);
+  color: var(--medical-evidence-cite);
+  font-size: 11px;
+  font-weight: 740;
+  line-height: 18px;
+}
+
+.medical-evidence-reportCard__reference strong {
+  display: block;
+  min-width: 0;
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 710;
+  line-height: 20px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.medical-evidence-reportCard__reference p {
+  margin: 2px 0 4px;
+  color: var(--color-text-3);
+  font-size: 11px;
+  line-height: 16px;
+  overflow-wrap: anywhere;
+}
+
+.medical-evidence-reportCard__artifact {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-border-2) 82%, transparent);
+  padding-top: 9px;
+}
+
+.medical-evidence-reportCard__artifact > div {
+  min-width: 0;
+}
+
+.medical-evidence-reportCard__artifact:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.medical-evidence-reportCard__artifact > span {
+  color: var(--color-text-3);
+  font-size: 11px;
+  font-weight: 680;
+  line-height: 17px;
+}
+
+.medical-evidence-reportCard__artifact b {
+  display: block;
+  min-width: 0;
+  color: var(--color-text-2);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 17px;
+  overflow-wrap: anywhere;
+}
+
+.medical-evidence-reportCard__artifact code,
+.medical-evidence-reportCard__item code {
+  overflow-wrap: anywhere;
+}
+
+.medical-evidence-reportCard__artifact em {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-text-3);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 16px;
+}
+
+.medical-evidence-reportCard__bars {
+  display: grid;
+  gap: 7px;
+}
+
+.medical-evidence-reportCard__bars > div {
+  display: grid;
+  grid-template-columns: minmax(54px, 0.28fr) minmax(70px, 1fr) 22px;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-text-2);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.medical-evidence-reportCard__bars span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.medical-evidence-reportCard__bars i {
+  display: block;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-fill-2);
+}
+
+.medical-evidence-reportCard__bars b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(45, 128, 91, 0.76);
+  animation: medicalEvidenceBarGrow 0.52s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-reportCard__bars em {
+  color: var(--color-text-1);
+  font-style: normal;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.medical-evidence-figure {
+  display: grid;
+  gap: 9px;
+  margin: 8px 0 3px;
+  animation: medicalEvidenceReportLayerIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-figure__media {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--medical-evidence-rule);
+  border-radius: 6px;
+  background: color-mix(in srgb, #fff 98%, rgba(45, 128, 91, 0.02));
+}
+
+.medical-evidence-figure__image {
+  display: block;
+  width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+  background: #fff;
+}
+
+.medical-evidence-figure__placeholder {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-height: 132px;
+  padding: 18px;
+  color: var(--color-text-3);
+  text-align: center;
+}
+
+.medical-evidence-figure__placeholder span {
+  color: var(--color-text-2);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.medical-evidence-figure__placeholder em {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: var(--color-text-3);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 16px;
+}
+
+.medical-evidence-figure figcaption,
+.medical-evidence-table__caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 5px 7px;
+  color: var(--color-text-3);
+  font-size: 12px;
+  line-height: 19px;
+}
+
+.medical-evidence-figure figcaption b {
+  color: var(--color-text-1);
+  font-weight: 760;
+}
+
+.medical-evidence-chart {
+  display: grid;
+  gap: 9px;
+  padding: 16px;
+  background: #fff;
+}
+
+.medical-evidence-chart__row {
+  display: grid;
+  grid-template-columns: minmax(72px, 0.34fr) minmax(80px, 1fr) 34px;
+  align-items: center;
+  gap: 9px;
+  color: var(--color-text-2);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.medical-evidence-chart__row > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.medical-evidence-chart__row i {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-fill-2);
+}
+
+.medical-evidence-chart__row b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(45, 128, 91, 0.78);
+  animation: medicalEvidenceBarGrow 0.52s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-chart__row em {
+  color: var(--color-text-1);
+  font-style: normal;
+  font-weight: 690;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.medical-evidence-table {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 5px;
+  animation: medicalEvidenceReportLayerIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-table__title {
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 21px;
+}
+
+.medical-evidence-table__scroll {
+  min-width: 0;
+  overflow-x: auto;
+  border-top: 2px solid color-mix(in srgb, var(--color-text-1) 88%, transparent);
+  border-bottom: 1.5px solid color-mix(in srgb, var(--color-text-1) 84%, transparent);
+  border-radius: 0;
+  background: #fff;
+}
+
+.medical-evidence-table table {
+  width: 100%;
+  min-width: min(420px, 100%);
+  border-collapse: collapse;
+}
+
+.medical-evidence-table th,
+.medical-evidence-table td {
+  border-bottom: 0;
+  padding: 10px 12px;
+  color: var(--color-text-2);
+  font-size: 12.5px;
+  line-height: 19px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.medical-evidence-table th {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-1) 82%, transparent);
+  color: var(--color-text-2);
+  font-size: 11px;
+  font-weight: 720;
+  letter-spacing: 0.02em;
+  background: color-mix(in srgb, #fff 92%, rgba(69, 89, 109, 0.05));
+}
+
+.medical-evidence-table tbody tr + tr td {
+  border-top: 1px solid color-mix(in srgb, var(--color-border-2) 74%, transparent);
+}
+
+.medical-evidence-table tbody tr:hover td {
+  background: color-mix(in srgb, #fff 94%, rgba(45, 116, 86, 0.035));
+}
+
+.medical-evidence-findings {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--color-border-2);
+  border-bottom: 1px solid var(--color-border-2);
+}
+
+.medical-evidence-finding {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 9px;
+  padding: 12px 0;
+  background: transparent;
+  animation: medicalEvidenceContentIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-finding + .medical-evidence-finding {
+  border-top: 1px solid var(--color-border-2);
+}
+
+.medical-evidence-finding__icon {
+  margin-top: 1px;
+}
+
+.medical-evidence-finding__title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 19px;
+}
+
+.medical-evidence-finding__title em {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 650;
+}
+
+.medical-evidence-finding p {
+  margin: 3px 0 0;
+  color: var(--color-text-2);
+  font-size: 13px;
+  line-height: 21px;
+}
+
+.medical-evidence-finding__refs {
+  margin-top: 5px;
+}
+
+.medical-evidence-citationList {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  vertical-align: baseline;
+}
+
+.medical-evidence-citationWrap {
+  position: relative;
+  display: inline-block;
+  line-height: 1;
+  isolation: isolate;
+  z-index: 20;
+  vertical-align: super;
+}
+
+.medical-evidence-citationWrap:hover,
+.medical-evidence-citationWrap:focus-within {
+  z-index: 200;
+}
+
+.medical-evidence-citation {
+  --medical-evidence-citation-color: var(--medical-evidence-cite);
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--medical-evidence-citation-color);
+  padding: 0 1px;
+  font-size: 10px;
+  font-weight: 720;
+  line-height: 12px;
+  cursor: pointer;
+}
+
+.medical-evidence-citation--strong {
+  --medical-evidence-citation-color: rgb(31, 72, 129);
+  font-weight: 780;
+}
+
+.medical-evidence-citation--medium {
+  --medical-evidence-citation-color: rgb(67, 105, 158);
+}
+
+.medical-evidence-citation--soft {
+  --medical-evidence-citation-color: rgb(121, 149, 186);
+  font-weight: 680;
+}
+
+.medical-evidence-citation:hover {
+  color: color-mix(in srgb, var(--medical-evidence-citation-color) 82%, #000);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.medical-evidence-citation--plain {
+  cursor: default;
+}
+
+.medical-evidence-citationCard {
+  position: absolute;
+  z-index: 1000;
+  top: 50%;
+  left: calc(100% + 8px);
+  display: none;
+  width: min(320px, 78vw);
+  border: 1px solid var(--medical-evidence-rule);
+  border-radius: 6px;
+  background: var(--color-bg-1);
+  color: var(--color-text-2);
+  padding: 11px 12px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.14),
+    0 0 0 1px rgba(255, 255, 255, 0.95);
+  opacity: 0;
+  transform: translate(4px, -50%);
+  pointer-events: none;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.medical-evidence-citationWrap:hover .medical-evidence-citationCard,
+.medical-evidence-citationWrap:focus-within .medical-evidence-citationCard {
+  display: grid;
+  opacity: 1;
+  transform: translate(0, -50%);
+  pointer-events: auto;
+}
+
+.medical-evidence-citationCard__meta {
+  color: var(--medical-evidence-cite);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.medical-evidence-citationCard::before {
+  content: '';
+  position: absolute;
+  top: calc(50% - 4px);
+  left: -5px;
+  width: 8px;
+  height: 8px;
+  border-left: 1px solid var(--color-border-2);
+  border-bottom: 1px solid var(--color-border-2);
+  background: var(--color-bg-1);
+  transform: rotate(45deg);
+}
+
+.medical-evidence-citationCard strong {
+  margin-top: 4px;
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 19px;
+}
+
+.medical-evidence-citationCard .medical-evidence-qualityBadges {
+  margin-top: 6px;
+}
+
+.medical-evidence-citationCard > span:not(.medical-evidence-citationCard__meta):not(.medical-evidence-qualityBadges) {
+  margin-top: 5px;
+  color: var(--color-text-2);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.medical-evidence-citationCard blockquote {
+  max-height: 72px;
+  overflow: hidden;
+  margin: 7px 0 0;
+  border-left: 2px solid rgba(45, 128, 91, 0.34);
+  background: var(--color-fill-1);
+  color: var(--color-text-2);
+  padding: 6px 8px;
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.medical-evidence-citationCard em {
+  margin-top: 7px;
+  color: var(--color-text-3);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 16px;
+}
+
+.medical-evidence-appraisals {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-border-2) 82%, transparent);
+}
+
+.medical-evidence-appraisal {
+  border-left: 2px solid rgba(45, 128, 91, 0.34);
+  background: transparent;
+  padding: 10px 0 12px 10px;
+  animation: medicalEvidenceContentIn 0.36s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-appraisal + .medical-evidence-appraisal {
+  border-top: 1px solid color-mix(in srgb, var(--color-border-2) 78%, transparent);
+}
+
+.medical-evidence-appraisal--weighing {
+  border-left-color: rgba(185, 127, 72, 0.58);
+  background: transparent;
+}
+
+.medical-evidence-appraisal__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  color: var(--color-text-2);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 18px;
+}
+
+.medical-evidence-appraisal__head em {
+  font-style: normal;
+  font-weight: 700;
+}
+
+.medical-evidence-appraisal b {
+  display: block;
+  color: var(--color-text-1);
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.medical-evidence-appraisal p {
+  margin: 4px 0 0;
+  color: var(--color-text-2);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.medical-evidence-appraisal__duel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.medical-evidence-appraisal__candidate {
+  min-width: 0;
+  border: 1px solid var(--color-border-2);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--color-bg-1) 78%, transparent);
+  padding: 7px 8px;
+  transition:
+    border-color 0.22s ease,
+    background 0.22s ease,
+    opacity 0.22s ease,
+    transform 0.22s ease;
+  animation: medicalEvidenceWeighCandidate 0.54s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-appraisal__candidate--selected {
+  border-color: rgba(45, 128, 91, 0.48);
+  background: color-mix(in srgb, var(--color-bg-1) 86%, rgba(45, 128, 91, 0.06));
+  box-shadow: inset 0 0 0 1px rgba(45, 128, 91, 0.08);
+  transform: translateY(1px);
+}
+
+.medical-evidence-appraisal__candidate:not(.medical-evidence-appraisal__candidate--selected) {
+  opacity: 0.72;
+  border-style: dashed;
+}
+
+.medical-evidence-appraisal__candidate span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-3);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 16px;
+}
+
+.medical-evidence-appraisal__candidate strong {
+  display: block;
+  min-width: 0;
+  margin-top: 2px;
+  color: var(--color-text-1);
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.medical-evidence-appraisal__candidate small {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-text-3);
+  font-size: 11px;
+  line-height: 16px;
+  overflow-wrap: anywhere;
+}
+
+.medical-evidence-appraisal__versus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  gap: 3px;
+  color: rgb(185, 127, 72);
+  font-size: 11px;
+  font-weight: 760;
+  letter-spacing: 0;
+  animation: medicalEvidenceBalanceSettle 0.72s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-appraisal__versus::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  right: 2px;
+  height: 1px;
+  background: rgba(185, 127, 72, 0.35);
+  transform: translateY(-50%) rotate(-7deg);
+}
+
+.medical-evidence-appraisal__versus span {
+  position: relative;
+  color: rgb(185, 127, 72);
+  background: var(--color-bg-1);
+  padding: 0 3px;
+}
+
+.medical-evidence-appraisal__rationale,
+.medical-evidence-appraisal__basis {
+  margin-top: 7px;
+  color: var(--color-text-2);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.medical-evidence-appraisal__basis {
+  color: var(--color-text-3);
+}
+
+.medical-evidence-appraisal__refs {
+  margin-top: 7px;
+}
+
+.medical-evidence-references {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--medical-evidence-rule);
+}
+
+.medical-evidence-reference {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--medical-evidence-rule);
+  scroll-margin-top: 80px;
+  animation: medicalEvidenceReferenceIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.medical-evidence-reference:target,
+.medical-evidence-reference.medical-evidence-card--jumped {
+  background: color-mix(in srgb, var(--color-bg-1) 92%, var(--medical-evidence-cite) 8%);
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--medical-evidence-cite) 58%, transparent);
+}
+
+.medical-evidence-reference.medical-evidence-card--jumped {
+  animation:
+    medicalEvidenceReferenceIn 0.22s ease-out both,
+    medicalEvidenceCitationGlow 2.2s ease-out both;
+}
+
+.medical-evidence-reference__index {
+  color: var(--medical-evidence-cite);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 20px;
+}
+
+.medical-evidence-reference__body {
+  min-width: 0;
+}
+
+.medical-evidence-qualityBadges {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  min-width: 0;
+}
+
+.medical-evidence-qualityBadges--compact {
+  gap: 3px;
+}
+
+.medical-evidence-qualityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  height: 17px;
+  border-radius: 3px;
+  border: 1px solid color-mix(in srgb, var(--color-border-2) 68%, transparent);
+  background: transparent;
+  color: var(--color-text-2);
+  padding: 0 5px 0 4px;
+  font-size: 10.5px;
+  font-weight: 650;
+  line-height: 17px;
+  white-space: nowrap;
+}
+
+.medical-evidence-qualityBadges--compact .medical-evidence-qualityBadge {
+  height: 16px;
+  border-radius: 4px;
+  padding-right: 4px;
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.medical-evidence-qualityBadge--leading_journal,
+.medical-evidence-qualityBadge--guideline,
+.medical-evidence-qualityBadge--rct,
+.medical-evidence-qualityBadge--systematic_review,
+.medical-evidence-qualityBadge--anchored,
+.medical-evidence-qualityBadge--paperclip_verified,
+.medical-evidence-qualityBadge--full_text {
+  border-color: rgba(45, 128, 91, 0.24);
+  background: transparent;
+  color: rgb(35, 103, 73);
+}
+
+.medical-evidence-qualityBadge--new_research,
+.medical-evidence-qualityBadge--recent,
+.medical-evidence-qualityBadge--figure_available {
+  border-color: rgba(151, 93, 45, 0.24);
+  background: transparent;
+  color: rgb(151, 93, 45);
+}
+
+.medical-evidence-qualityBadge--safety,
+.medical-evidence-qualityBadge--drug_label,
+.medical-evidence-qualityBadge--regulatory {
+  border-color: rgba(151, 93, 45, 0.24);
+  background: transparent;
+  color: rgb(151, 93, 45);
+}
+
+.medical-evidence-qualityBadge--applicability_limited {
+  border-color: rgba(154, 70, 60, 0.24);
+  background: transparent;
+  color: rgb(154, 70, 60);
+}
+
+.medical-evidence-reference__heading {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+  margin-bottom: 3px;
+}
+
+.medical-evidence-reference__type {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 17px;
+  border-radius: 3px;
+  border: 1px solid rgba(70, 101, 150, 0.22);
+  padding: 0 5px 0 4px;
+  font-size: 10.5px;
+  font-weight: 650;
+  line-height: 17px;
+}
+
+.medical-evidence-reference__type {
+  color: rgb(70, 101, 150);
+  background: transparent;
+}
+
+.medical-evidence-tone--high {
+  color: rgb(35, 103, 73);
+}
+
+.medical-evidence-tone--moderate {
+  color: var(--color-text-2);
+}
+
+.medical-evidence-tone--low {
+  color: var(--color-text-3);
+}
+
+.medical-evidence-reference h4 {
+  flex: 1 1 220px;
+  min-width: 0;
+  margin: 0;
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 710;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+
+.medical-evidence-reference__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 4px;
+  color: var(--color-text-3);
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.medical-evidence-reference__heading + .medical-evidence-qualityBadges {
+  margin-top: 4px;
+}
+
+.medical-evidence-reference__strength {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 4px;
+  color: var(--color-text-3);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.medical-evidence-reference__strength span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.medical-evidence-reference__strength span + span::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin-right: 8px;
+  border-radius: 999px;
+  vertical-align: middle;
+  background: var(--color-border-3);
+}
+
+.medical-evidence-reference p {
+  margin: 7px 0 0;
+  color: var(--color-text-2);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.medical-evidence-reference blockquote {
+  margin: 8px 0 0;
+  border-left: 2px solid rgba(45, 128, 91, 0.34);
+  color: var(--color-text-2);
+  background: var(--color-fill-1);
+  padding: 7px 9px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.medical-evidence-reference__paperclip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  margin-top: 7px;
+  border-radius: 5px;
+  background: var(--color-fill-1);
+  color: var(--color-text-3);
+  padding: 3px 6px;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.medical-evidence-reference__paperclip span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.medical-evidence-reference__footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  color: var(--color-text-3);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.medical-evidence-anchorLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  color: var(--color-text-2);
+  white-space: nowrap;
+}
+
+.medical-evidence-anchorLabel:hover {
+  color: var(--color-text-1);
+}
+
+.medical-evidence-expand {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  margin-top: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-2);
+  padding: 0;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.medical-evidence-expand:hover {
+  color: var(--color-text-1);
+}
+
+.medical-evidence-methods {
+  margin-top: 10px;
+  border-top: 1px solid var(--color-border-2);
+  background: transparent;
+}
+
+.medical-evidence-methods summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 0 0;
+  color: var(--color-text-2);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.medical-evidence-methods summary::-webkit-details-marker {
+  display: none;
+}
+
+.medical-evidence-methods summary::before {
+  content: '›';
+  display: inline-block;
+  margin-right: 5px;
+  color: var(--color-text-3);
+  transform: translateY(-1px);
+}
+
+.medical-evidence-methods[open] summary::before {
+  transform: translateY(-1px) rotate(90deg);
+}
+
+.medical-evidence-methods__body {
+  padding: 8px 0 4px;
+}
+
+.medical-evidence-methodBlock b {
+  color: var(--color-text-1);
+  font-size: 12px;
+}
+
+.medical-evidence-methodBlock p,
+.medical-evidence-methodBlock li {
+  color: var(--color-text-2);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.medical-evidence-methodBlock ul {
+  margin: 6px 0 0 18px;
+  padding: 0;
+}
+
+.medical-evidence-methodBlock + .medical-evidence-methodBlock {
+  margin-top: 12px;
+}
+
+@keyframes medicalEvidencePanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes medicalEvidenceReferenceIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes medicalEvidenceContentIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes medicalEvidenceTraceIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes medicalEvidenceEvidenceDrop {
+  0% {
+    opacity: 0;
+    transform: translate(-10px, -8px) rotate(-12deg) scale(0.72);
+  }
+  62% {
+    opacity: 1;
+    transform: translate(1px, 1px) rotate(2deg) scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0) scale(1);
+  }
+}
+
+@keyframes medicalEvidenceBasketSlip {
+  0% {
+    opacity: 0;
+    transform: translate(-12px, -12px) rotate(-18deg) scale(0.72);
+  }
+  64% {
+    opacity: 1;
+    transform: translate(1px, 1px) rotate(-5deg) scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(-9deg) scale(1);
+  }
+}
+
+@keyframes medicalEvidenceNumberPop {
+  0% {
+    transform: translateY(1px) scale(0.82);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes medicalEvidenceBalanceSettle {
+  0% {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes medicalEvidenceWeighCandidate {
+  0% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes medicalEvidenceCitationGlow {
+  0% {
+    background: color-mix(in srgb, var(--color-bg-1) 86%, rgba(199, 86, 28, 0.14));
+  }
+  100% {
+    background: color-mix(in srgb, var(--color-bg-1) 92%, rgba(199, 86, 28, 0.08));
+  }
+}
+
+@keyframes medicalEvidenceReportLayerIn {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes medicalEvidenceBarGrow {
+  from {
+    transform: scaleX(0.08);
+    transform-origin: 0 50%;
+  }
+  to {
+    transform: scaleX(1);
+    transform-origin: 0 50%;
+  }
+}
+
+[data-theme='dark'] .medical-evidence-figure__media,
+[data-theme='dark'] .medical-evidence-figure__image,
+[data-theme='dark'] .medical-evidence-chart,
+[data-theme='dark'] .medical-evidence-table__scroll {
+  background: #fff;
+}
+
+[data-theme='dark'] .medical-evidence-chart__row,
+[data-theme='dark'] .medical-evidence-chart__row em,
+[data-theme='dark'] .medical-evidence-table th,
+[data-theme='dark'] .medical-evidence-table td {
+  color: #202427;
+}
+
+[data-theme='dark'] .medical-evidence-table th {
+  background: #f4f6f7;
+}
+
+:root[data-theme='dark'] .medical-evidence-emphasis {
+  background: linear-gradient(to top, rgba(213, 164, 63, 0.34) 0 44%, transparent 44% 100%);
+}
+
+:root[data-theme='dark'] .medical-evidence-emphasis--table {
+  background: linear-gradient(to top, rgba(85, 142, 112, 0.34) 0 48%, transparent 48% 100%);
+}
+
+@media (max-width: 720px) {
+  .medical-evidence-panel {
+    padding: 2px 0 0;
+  }
+
+  .medical-evidence-accumulator {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .medical-evidence-accumulator__main {
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .medical-evidence-accumulator__pipeline,
+  .medical-evidence-accumulator__stats {
+    gap: 7px;
+  }
+
+  .medical-evidence-accumulator__stage {
+    display: none;
+  }
+
+  .medical-evidence-accumulator__stage--active {
+    display: inline-flex;
+    font-size: 11px;
+    gap: 5px;
+  }
+
+  .medical-evidence-accumulator__basket {
+    max-width: 100%;
+  }
+
+  .medical-evidence-accumulator__trace {
+    max-width: min(320px, 68vw);
+  }
+
+  .medical-evidence-accumulator__traceItem {
+    max-width: 108px;
+  }
+
+  .medical-evidence-accumulator__traceItem > em {
+    display: none;
+  }
+
+  .medical-evidence-appraisal__duel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .medical-evidence-appraisal__versus {
+    min-height: 18px;
+  }
+
+  .medical-evidence-appraisal__versus::before {
+    left: calc(50% - 42px);
+    right: calc(50% - 42px);
+  }
+
+  .medical-evidence-reference {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+
+  .medical-evidence-reference__heading {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .medical-evidence-reference h4 {
+    flex-basis: auto;
+    max-width: 100%;
+    word-break: break-word;
+  }
+
+  .medical-evidence-reference__meta span {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .medical-evidence-reference__footer {
+    display: block;
+  }
+
+  .medical-evidence-anchorLabel {
+    margin-top: 6px;
+  }
+
+  .medical-evidence-citationCard {
+    top: calc(100% + 10px);
+    left: -6px;
+    transform: translateY(-3px);
+  }
+
+  .medical-evidence-citationWrap:hover .medical-evidence-citationCard,
+  .medical-evidence-citationWrap:focus-within .medical-evidence-citationCard {
+    transform: translateY(0);
+  }
+
+  .medical-evidence-citationCard::before {
+    top: -5px;
+    left: 16px;
+    border-left: 1px solid var(--color-border-2);
+    border-top: 1px solid var(--color-border-2);
+    border-bottom: 0;
+  }
+
+  .medical-evidence-reportCardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .medical-evidence-reportCard__artifact {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .medical-evidence-reportCard__reference strong,
+  .medical-evidence-reportCard__reference p,
+  .medical-evidence-reportCard__artifact b {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .medical-evidence-reportCard__item code,
+  .medical-evidence-reportCard__artifact code {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .medical-evidence-reportCard__metrics {
+    gap: 5px;
+  }
+
+  .medical-evidence-reportCard {
+    padding: 0;
+  }
+
+  .medical-evidence-reportCard--takeaway,
+  .medical-evidence-reportCard--quality_references {
+    padding: 12px 0;
+  }
+
+  .medical-evidence-reportCard--evidence_hierarchy {
+    padding: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medical-evidence-panel,
+  .medical-evidence-reference,
+  .medical-evidence-finding,
+  .medical-evidence-appraisal,
+  .medical-evidence-reportCard,
+  .medical-evidence-reportCardGrid,
+  .medical-evidence-reportCardGrid > div,
+  .medical-evidence-reference.medical-evidence-card--jumped,
+  .medical-evidence-accumulator--running .medical-evidence-accumulator__stage--active i,
+  .medical-evidence-accumulator--running .medical-evidence-accumulator__basketSlip,
+  .medical-evidence-accumulator__basketIcon > b,
+  .medical-evidence-accumulator__traceItem,
+  .medical-evidence-accumulator__traceItem:not(.medical-evidence-accumulator__traceItem--empty)
+    .medical-evidence-accumulator__traceIcon,
+  .medical-evidence-appraisal__candidate--selected,
+  .medical-evidence-appraisal__candidate,
+  .medical-evidence-appraisal__versus,
+  .medical-evidence-reportCard__metric b,
+  .medical-evidence-reportCard__bars b {
+    animation: none !important;
+  }
+}
+
+:root[data-theme='dark'] .medical-evidence-panel {
+  box-shadow: none;
+}
+
+:root[data-theme='dark'] .medical-evidence-citation--strong {
+  --medical-evidence-citation-color: rgb(124, 170, 234);
+}
+
+:root[data-theme='dark'] .medical-evidence-citation--medium {
+  --medical-evidence-citation-color: rgb(92, 137, 198);
+}
+
+:root[data-theme='dark'] .medical-evidence-citation--soft {
+  --medical-evidence-citation-color: rgb(118, 145, 182);
+}
+
+:root[data-theme='dark'] .medical-evidence-citationCard,
+:root[data-theme='dark'] .medical-evidence-citationCard::before {
+  background: var(--color-bg-1);
+}

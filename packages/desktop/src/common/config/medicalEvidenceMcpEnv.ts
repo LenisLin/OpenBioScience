@@ -5,6 +5,7 @@
  */
 
 import type { ConfigKeyMap } from './configKeys';
+import { resolvePaperclipCredentialFields } from './paperclipConfig';
 
 export const MEDICAL_EVIDENCE_ENV_KEYS = {
   apiKey: 'PAPERCLIP_API_KEY',
@@ -32,7 +33,7 @@ export type MedicalEvidenceMcpEnvResolveResult =
     };
 
 export function removeMedicalEvidenceEnvKeys(env?: Record<string, string>): Record<string, string> {
-  const next = { ...(env || {}) };
+  const next = { ...env };
   for (const key of Object.values(MEDICAL_EVIDENCE_ENV_KEYS)) {
     delete next[key];
   }
@@ -41,17 +42,26 @@ export function removeMedicalEvidenceEnvKeys(env?: Record<string, string>): Reco
 
 export function resolveMedicalEvidenceMcpEnv(
   config?: ConfigKeyMap['tools.medicalEvidence'],
-  existingEnv?: Record<string, string>
+  existingEnv?: Record<string, string>,
+  fallbackResearchConfig?: ConfigKeyMap['tools.researchEvidence']
 ): MedicalEvidenceMcpEnvResolveResult {
-  const apiKey = config?.paperclipApiKey?.trim() || existingEnv?.[MEDICAL_EVIDENCE_ENV_KEYS.apiKey]?.trim();
-  const baseUrl =
-    config?.paperclipBaseUrl?.trim() ||
-    existingEnv?.[MEDICAL_EVIDENCE_ENV_KEYS.baseUrl]?.trim() ||
-    DEFAULT_PAPERCLIP_BASE_URL;
+  const shared = resolvePaperclipCredentialFields(
+    config,
+    fallbackResearchConfig,
+    existingEnv,
+    MEDICAL_EVIDENCE_ENV_KEYS,
+    {
+      paperclipBaseUrl: DEFAULT_PAPERCLIP_BASE_URL,
+      timeoutMs: 30000,
+    }
+  );
+  const apiKey = shared.paperclipApiKey;
+  const baseUrl = shared.paperclipBaseUrl;
   const defaultSources = config?.defaultSources?.length
     ? config.defaultSources
-    : (existingEnv?.[MEDICAL_EVIDENCE_ENV_KEYS.defaultSources]?.split(',').filter(Boolean) ?? DEFAULT_PAPERCLIP_SOURCES);
-  const timeoutMs = config?.timeoutMs || Number(existingEnv?.[MEDICAL_EVIDENCE_ENV_KEYS.timeoutMs]) || 30000;
+    : (existingEnv?.[MEDICAL_EVIDENCE_ENV_KEYS.defaultSources]?.split(',').filter(Boolean) ??
+      DEFAULT_PAPERCLIP_SOURCES);
+  const timeoutMs = shared.timeoutMs;
   const strictAnchors = config?.strictAnchors !== false;
 
   const env: Record<string, string> = {
@@ -85,4 +95,3 @@ export function resolveMedicalEvidenceMcpEnv(
     config,
   };
 }
-
