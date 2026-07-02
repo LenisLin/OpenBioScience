@@ -394,6 +394,22 @@
   overflow-wrap: anywhere;
 }
 
+.science-evidence-supporting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+  color: var(--color-text-3);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.science-evidence-supporting > span {
+  color: var(--color-text-2);
+  font-weight: 720;
+}
+
 .science-evidence-databaseDetails {
   margin-top: 7px;
   color: var(--color-text-2);

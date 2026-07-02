@@ -1,6 +1,7 @@
 import {
   SCIENCE_EVENT_SCHEMA,
   SCIENCE_PANEL_SCHEMA,
+  buildScienceModePrompt,
   latestSciencePanel,
   resolveScienceDisplayTarget,
   summarizeScienceRuntime,
@@ -8,6 +9,15 @@ import {
 import { describe, expect, it } from 'vitest';
 
 describe('Science Mode payload parsing', () => {
+  it('tells agents to publish a structured report instead of only writing markdown', () => {
+    const prompt = buildScienceModePrompt('/tmp/project', 'zh-CN');
+
+    expect(prompt).toContain('science_artifact(action="publish", displayIntent="open")');
+    expect(prompt).toContain('A file can be both an artifact and an evidence node');
+    expect(prompt).toContain('report.sections is the canonical report object');
+    expect(prompt).toContain('supportingEvidenceIds');
+  });
+
   it('extracts the latest published Science panel from tool output', () => {
     const panel = {
       schema: SCIENCE_PANEL_SCHEMA,

@@ -386,7 +386,14 @@ const normalizeEvidence = (run: ScienceRunState, value: JsonRecord): ScienceEvid
     lineStart: value.lineStart || value.line_start ? asNumber(value.lineStart || value.line_start, 0) : undefined,
     lineEnd: value.lineEnd || value.line_end ? asNumber(value.lineEnd || value.line_end, 0) : undefined,
     artifactId: asString(value.artifactId || value.artifact_id, undefined as unknown as string),
+    artifactVersion:
+      value.artifactVersion || value.artifact_version
+        ? asNumber(value.artifactVersion || value.artifact_version, 1)
+        : undefined,
     nodeId: asString(value.nodeId || value.node_id, undefined as unknown as string),
+    supportingEvidenceIds: asArray(value.supportingEvidenceIds || value.supporting_evidence_ids).filter(
+      (item): item is string => typeof item === 'string'
+    ),
     hash: asString(value.hash, undefined as unknown as string),
     version: value.version ? asNumber(value.version, 1) : undefined,
     skillUseId: asString(value.skillUseId || value.skill_use_id, undefined as unknown as string),
@@ -607,6 +614,45 @@ const syncArtifactEdges = (run: ScienceRunState, artifact: ScienceArtifact): voi
       from: { kind: 'artifact', id: artifact.previousArtifactId || artifact.id, version: artifact.previousVersion },
       to: { kind: 'artifact', id: artifact.id, version: artifact.version },
       type: 'supersedes',
+      confidence: 'declared',
+      createdAt: now(),
+    });
+  }
+};
+
+const syncEvidenceEdges = (run: ScienceRunState, evidence: ScienceEvidenceItem): void => {
+  if (evidence.artifactId) {
+    upsertEdge(run, {
+      id: `edge_${evidence.artifactId}_${evidence.artifactVersion || 'latest'}_${evidence.id}_file_evidence`,
+      runId: run.runId,
+      from: { kind: 'artifact', id: evidence.artifactId, version: evidence.artifactVersion },
+      to: { kind: 'evidence', id: evidence.id },
+      type: 'supports',
+      label: 'file evidence',
+      confidence: 'declared',
+      createdAt: now(),
+    });
+  }
+
+  if (evidence.nodeId) {
+    upsertEdge(run, {
+      id: `edge_${evidence.nodeId}_${evidence.id}_generated`,
+      runId: run.runId,
+      from: { kind: 'node', id: evidence.nodeId },
+      to: { kind: 'evidence', id: evidence.id },
+      type: 'generated',
+      confidence: 'declared',
+      createdAt: now(),
+    });
+  }
+
+  for (const supportingEvidenceId of evidence.supportingEvidenceIds || []) {
+    upsertEdge(run, {
+      id: `edge_${supportingEvidenceId}_${evidence.id}_supports_evidence`,
+      runId: run.runId,
+      from: { kind: 'evidence', id: supportingEvidenceId },
+      to: { kind: 'evidence', id: evidence.id },
+      type: 'supports',
       confidence: 'declared',
       createdAt: now(),
     });
@@ -1031,6 +1077,7 @@ const createOrReplaceResource = (
       action === 'patch' && previous ? (deepMerge(previous, payload) as JsonRecord) : { ...payload, id };
     const evidence = normalizeEvidence(run, { ...nextPayload, id, revision: revision() });
     run.evidence.set(evidence.id, evidence);
+    syncEvidenceEdges(run, evidence);
     return { object: evidence, target: { kind, id: evidence.id }, resultingRevision: evidence.revision };
   }
 
@@ -1122,7 +1169,7 @@ async function main() {
       'Use action=status/reserve_id/get/list/create/patch/replace/append/version/snapshot/publish/annotate/focus_page.',
       'Every artifact has a stable id and version; patch/replace/version of existing objects require baseRevision from get.',
       'Use snapshot to add explicit files or folders to the project-level artifact git snapshot.',
-      'publish emits the structured Science panel rendered by the UI.',
+      'publish emits the structured Science panel rendered by the UI; the final publish should use displayIntent=open.',
     ].join(' '),
     {
       action: z.enum([
@@ -1408,7 +1455,7 @@ async function main() {
           provenanceNodeIds: panel.provenance.map((item) => item.id),
           warnings: panel.graphWarnings,
         });
-        return jsonText({ ...evt, displayIntent: displayIntent || 'background' });
+        return jsonText({ ...evt, displayIntent: displayIntent || 'open' });
       }
 
       throw new Error(`Unsupported science_artifact action: ${action}`);

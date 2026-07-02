@@ -8,11 +8,17 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LEGACY_LOCAL_RUNTIME_ID, LEGACY_LOCAL_RUNTIME_NAME } from '@/common/config/legacyIdentifiers';
 import { DEFAULT_SCIENCE_SKILL_IDS, SCIENCE_WORKFLOW_SKILL_NAME } from '@/common/chat/science';
-import type { IMcpServer } from '@/common/config/storage';
+import {
+  BUILTIN_RESEARCH_EVIDENCE_NAME,
+  BUILTIN_SCIENCE_ARTIFACT_NAME,
+  BUILTIN_USER_INPUT_NAME,
+  type IMcpServer,
+} from '@/common/config/storage';
 import { useGuidSend, type GuidSendDeps } from '@/renderer/pages/guid/hooks/useGuidSend';
 
 const createConversationInvokeMock = vi.fn();
 const swrMutateMock = vi.fn();
+const ensureBackendMcpCatalogMock = vi.hoisted(() => vi.fn());
 
 vi.mock('@/common', () => ({
   ipcBridge: {
@@ -36,6 +42,15 @@ vi.mock('swr', () => ({
 
 vi.mock('@/renderer/utils/workspace/workspaceHistory', () => ({
   updateWorkspaceTime: vi.fn(),
+}));
+
+vi.mock('@/renderer/hooks/mcp/catalog', () => ({
+  ensureBackendMcpCatalog: (...args: unknown[]) => ensureBackendMcpCatalogMock(...args),
+  toSessionMcpServer: (server: IMcpServer) => ({
+    id: server.id,
+    name: server.name,
+    transport: server.transport ?? { type: 'stdio', command: 'node', args: [] },
+  }),
 }));
 
 vi.mock('@arco-design/web-react', () => ({
@@ -105,6 +120,8 @@ describe('useGuidSend', () => {
     createConversationInvokeMock.mockResolvedValue({ id: 'conv-1' });
     swrMutateMock.mockReset();
     swrMutateMock.mockResolvedValue(undefined);
+    ensureBackendMcpCatalogMock.mockReset();
+    ensureBackendMcpCatalogMock.mockResolvedValue({ allServers: [] });
     sessionStorage.clear();
   });
 
@@ -316,5 +333,52 @@ describe('useGuidSend', () => {
       SCIENCE_WORKFLOW_SKILL_NAME,
     ]);
     expect(payload.extra.loop_goal).toEqual(expect.objectContaining({ status: 'active' }));
+  });
+
+  it('refreshes builtin MCP catalog before creating a Science conversation', async () => {
+    const deps = createDeps();
+    deps.availableMcpServers = [];
+    deps.selectedMcpServerIds = undefined;
+    ensureBackendMcpCatalogMock.mockResolvedValueOnce({
+      allServers: [
+        {
+          id: 'mcp-research',
+          name: BUILTIN_RESEARCH_EVIDENCE_NAME,
+          enabled: false,
+          builtin: true,
+          transport: { type: 'stdio', command: 'node', args: ['research.js'] },
+        },
+        {
+          id: 'mcp-science',
+          name: BUILTIN_SCIENCE_ARTIFACT_NAME,
+          enabled: false,
+          builtin: true,
+          transport: { type: 'stdio', command: 'node', args: ['science.js'] },
+        },
+        {
+          id: 'mcp-user-input',
+          name: BUILTIN_USER_INPUT_NAME,
+          enabled: true,
+          builtin: true,
+          transport: { type: 'stdio', command: 'node', args: ['user-input.js'] },
+        },
+      ],
+    });
+
+    const { result } = renderHook(() => useGuidSend(deps));
+
+    await act(async () => {
+      await result.current.handleSend();
+    });
+
+    expect(ensureBackendMcpCatalogMock).toHaveBeenCalledTimes(1);
+    const payload = createConversationInvokeMock.mock.calls[0][0];
+    expect(payload.extra.selected_session_mcp_servers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: BUILTIN_RESEARCH_EVIDENCE_NAME }),
+        expect.objectContaining({ name: BUILTIN_SCIENCE_ARTIFACT_NAME }),
+        expect.objectContaining({ name: BUILTIN_USER_INPUT_NAME }),
+      ])
+    );
   });
 });

@@ -54,6 +54,7 @@ export function normalizeScienceDefaultSkillIds(skillIds?: readonly string[]): s
 }
 
 export type ScienceEvidenceSourceType =
+  | 'file'
   | 'paper'
   | 'database_record'
   | 'code'
@@ -99,7 +100,9 @@ export interface ScienceEvidenceItem {
   lineEnd?: number;
   cellId?: string;
   artifactId?: string;
+  artifactVersion?: number;
   nodeId?: string;
+  supportingEvidenceIds?: string[];
   hash?: string;
   version?: number;
   skillUseId?: string;
@@ -143,6 +146,7 @@ export interface ScienceClaim {
 }
 
 export type ScienceArtifactType =
+  | 'report'
   | 'figure'
   | 'table'
   | 'dataset'
@@ -780,7 +784,7 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '- Use science_artifact as the single artifact graph control surface. Do not invent separate science_start_run, science_search, science_register_* or science_submit_panel tools.',
     '- Use science_artifact(action="snapshot") when a run produces or modifies files that must be reproducible, especially before publish/export or after figure/manuscript/notebook iteration.',
     '- Any file that the user can open from the Science report, Project shelf, or chat output must be declared on an artifact or included in science_artifact(action="snapshot") so the Preview menu can show where it came from.',
-    '- Use science_artifact(action="publish") before the final visible answer so the UI can render the Science Report and Artifact Ledger.',
+    '- Use science_artifact(action="publish", displayIntent="open") before the final visible answer so the UI opens the structured Science Report and Artifact Ledger.',
     '- Use the default materialized Science skill pack as first-class skills. Prefer ds-*, kdense-*, and aer-* skill ids over browsing vendor directories. The vendored catalog is only a migration/source index.',
     '- Use openscience-workflow when the next research-process stage is unclear or when routing among DeepScientist workflow skills. It manages ds-* stage selection separately from the core Science evidence/artifact contract.',
     '- Auto-Empirical Research Skills are included for social-science and empirical workflows. Start with the aer-auto-empirical-research-skills router when the exact method skill is unclear, then record the selected child skill as skill_use before relying on it.',
@@ -789,18 +793,18 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '',
     '## Science SOP',
     '1. Intake: restate the research objective, authorized project root, expected deliverables, relevant skills, and missing assumptions. Ask concise user questions only when the next action would otherwise be unsafe or scientifically ambiguous.',
-    '2. Evidence first: search/read external sources or local inputs with research_evidence, then register evidence nodes before using them to support claims. Treat papers, database records, datasets, code, command logs, figures, tables, environments, and user decisions as first-class evidence.',
+    '2. Evidence first: search/read external sources or local inputs with research_evidence, then register evidence nodes before using them to support claims. Treat papers, database records, datasets, code, command logs, figures, tables, report files, environments, and user decisions as first-class evidence. A file can be both an artifact and an evidence node; in that case link the evidence to the artifact with artifactId and cite any upstream supportingEvidenceIds.',
     '3. Execute real work: run Python, R, shell, LaTeX, notebooks, or existing project pipelines through the normal runtime. Record commands, cwd, logs, inputs, output paths, package/runtime details, and any failures.',
-    '4. Publish artifacts: create or update each user-facing figure, table, dataset, notebook, manuscript, PDF, HTML page, regression table, diagnostic plot, causal DAG, codebook, map, qualitative coding ledger, replication package, or run bundle with science_artifact. Every artifact needs a stable id, version, paths, inputs, code/log/environment links, and evidence ids when known.',
+    '4. Publish artifacts: create or update each user-facing report file, figure, table, dataset, notebook, manuscript, PDF, HTML page, regression table, diagnostic plot, causal DAG, codebook, map, qualitative coding ledger, replication package, or run bundle with science_artifact. Every artifact needs a stable id, version, paths, inputs, code/log/environment links, and evidence ids when known.',
     '5. Snapshot reproducibility: after a meaningful file-producing step, call science_artifact(action="snapshot") with includePaths for extra files/folders the artifact needs but did not already declare. Include scripts, notebooks, logs, result folders, LaTeX sources, small tables, and configuration needed to defend the result. Do not include secrets; large files may be stored as pointers.',
-    '6. File provenance: before finalizing, verify that each visible output file has a primary/preview/input/source/code/log role, a durable path, and a snapshot record. If a file cannot be snapshotted, record a pointer with hash/size/reason instead of leaving it invisible to provenance.',
+    '6. File provenance: before finalizing, verify that each visible output file has a primary/preview/input/source/code/log role, a durable path, and a snapshot record. If a file is used as evidence, create a corresponding evidence node with sourceType="file" or the specific file kind, artifactId when the file is also an artifact, path/hash, and supportingEvidenceIds when another source justifies it. If a file cannot be snapshotted, record a pointer with hash/size/reason instead of leaving it invisible to provenance.',
     '7. Write claims carefully: every result statement in the report must be backed by evidenceIds and claimType. Use hypothesis for unverified ideas, partial for incomplete support, and blocked when required provenance is missing.',
-    '8. Render the report: use science_artifact(action="publish") to expose a Science report in the existing Preview frame. The report should use evidence-report styling: narrative sections, inline [E#] citations, Reference Evidence, artifact rows, methods, and provenance warnings.',
+    '8. Render the report: use science_artifact(action="publish", displayIntent="open") to expose a structured Science report in the existing Preview frame. Do not make the report only a markdown file: report.sections is the canonical report object, and any Markdown/HTML/PDF/LaTeX report is a linked report/manuscript artifact. The report should use evidence-report styling: narrative sections, inline [E#] citations, Reference Evidence, artifact rows, methods, and provenance warnings.',
     '9. Iterate safely: before modifying an existing artifact, evidence node, claim, or page, call science_artifact(action="get") and patch/version with baseRevision. Preserve older versions unless the user explicitly asks to close or remove them.',
     '10. Final response: keep prose short and point the user to the published report/artifacts. Mention important graphWarnings plainly and never hide unresolved provenance gaps.',
     '',
     '## Artifact Discipline',
-    '- Every user-facing output file should become a Science artifact with a stable id, type, version, status, path, inputs, code, execution log, messages, environment, and evidence ids when known.',
+    '- Every user-facing output file should become a Science artifact with a stable id, type, version, status, path, inputs, code, execution log, messages, environment, and evidence ids when known. The final report file is not special-cased outside the graph; it is usually a report/manuscript/pdf/html/latex artifact that explains and links the rest of the graph.',
     '- Reserve ids with science_artifact(action="reserve_id") when you need to reference an artifact before the file exists.',
     '- Before modifying an existing artifact/page/evidence/claim, call science_artifact(action="get") and pass baseRevision to patch/replace/version. Do not blindly overwrite.',
     '- Regenerated figures, tables, PDFs, notebooks, and manuscripts should use science_artifact(action="version") rather than overwriting v1.',
@@ -831,7 +835,7 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '- For empirical social-science outputs, use regression_table, model_diagnostic, causal_dag, survey_codebook, geospatial_map, qualitative_coding, or replication_package artifact types when they better describe the object than a generic table/figure/dataset. Register estimation code, formula/specification, sample definition, diagnostics, assumptions, and robustness outputs as linked evidence.',
     '- For regression tables, use artifact.viewer={kind:"regression_table", tablePath, modelPath, codebookPath, diagnostics:[...], evidenceIds:[...]}; for causal DAGs use {kind:"causal_dag", dagPath, assumptions:[...]}; for maps use {kind:"map", mapPath, layers:[...]}; for survey/codebook objects use {kind:"codebook", codebookPath, variableDictionaryPath}; for qualitative coding use {kind:"qualitative_coding", schemaPath, dataPath}.',
     '- Do not create a separate dashboard or report rail. Science UI should extend the normal file preview surface and reuse the evidence-report visual style for reports, reference evidence, artifact rows, methods, and warnings.',
-    '- Prefer displayIntent="background" for routine updates. Use displayIntent="open" or "focus" only when the user should inspect a result now.',
+    '- Prefer displayIntent="background" for routine updates. Use displayIntent="open" or "focus" for the final report, newly requested artifacts, annotation targets, or any result the user should inspect now.',
     '- Do not close user-opened pages unless the user explicitly asked; userAuthorizedClose must be true for close-like behavior.',
     '',
     '## Final Answer',

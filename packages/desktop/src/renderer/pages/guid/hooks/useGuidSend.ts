@@ -332,6 +332,14 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const { agent_type: effectiveAgentType } = getEffectiveAgentType(agentInfo);
     const medicalEvidenceAgentBackend =
       normalizeLegacyBackend(is_preset ? effectiveAgentType : selectedAgent) || normalizeLegacyBackend(selectedAgent);
+    const requiredBuiltinMcpNames = [
+      ...(hasMedicalEvidenceMode ? [BUILTIN_MEDICAL_EVIDENCE_NAME] : []),
+      ...(hasMedicalEvidenceMode && medicalEvidenceAgentBackend === 'codex' ? [BUILTIN_IMAGE_GEN_NAME] : []),
+      ...(hasScienceMode ? [BUILTIN_RESEARCH_EVIDENCE_NAME, BUILTIN_SCIENCE_ARTIFACT_NAME] : []),
+      ...(hasSkillDepositionMode ? [BUILTIN_LAB_SKILL_NAME] : []),
+      ...(hasMedicalEvidenceMode || hasScienceMode || hasSkillDepositionMode ? [BUILTIN_USER_INPUT_NAME] : []),
+    ];
+    const availableMcpServersForSend = await resolveModeMcpCatalog(availableMcpServers, requiredBuiltinMcpNames);
 
     // Guid page's per-conversation skill overrides take precedence over the
     // assistant's saved defaults. The combined skills menu lets the user pick
@@ -357,17 +365,17 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       (is_presetAgent ? assistantDefaultDisabledBuiltinSkillIds : resolveDisabledBuiltinSkills(agentInfo));
     const selectedAllMcpServerIds = selectedMcpServerIds ?? [];
     const selectedMcpServerIdSet = new Set(selectedAllMcpServerIds);
-    const selectedUserMcpServerIds = availableMcpServers
+    const selectedUserMcpServerIds = availableMcpServersForSend
       .filter((server) => selectedMcpServerIdSet.has(server.id) && server.builtin !== true)
       .map((server) => server.id);
-    const selectedAllSessionMcpServers = availableMcpServers
+    const selectedAllSessionMcpServers = availableMcpServersForSend
       .filter((server) => selectedMcpServerIdSet.has(server.id))
       .map((server) => toSessionMcpServer(server));
-    const selectedSessionMcpServers = availableMcpServers
+    const selectedSessionMcpServers = availableMcpServersForSend
       .filter((server) => selectedMcpServerIdSet.has(server.id) && server.builtin === true)
       .map((server) => toSessionMcpServer(server));
     const defaultSelectedMcpServerIds = assistantDefaultMcpIds;
-    const defaultSelectedUserMcpServerIds = availableMcpServers
+    const defaultSelectedUserMcpServerIds = availableMcpServersForSend
       .filter((server) => (defaultSelectedMcpServerIds ?? []).includes(server.id) && server.builtin !== true)
       .map((server) => server.id);
     const assistantOverrideMcpIds =
@@ -377,7 +385,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const selectedSessionMcpServersToSend =
       selectedMcpServerIds !== undefined
         ? selectedAllSessionMcpServers
-        : availableMcpServers
+        : availableMcpServersForSend
             .filter((server) => (defaultSelectedMcpServerIds ?? []).includes(server.id))
             .map((server) => toSessionMcpServer(server));
 
@@ -406,7 +414,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
         : undefined;
     const medicalEvidenceSessionMcpServer = hasMedicalEvidenceMode
       ? resolveMedicalEvidenceSessionMcpServer(
-          availableMcpServers,
+          availableMcpServersForSend,
           medicalEvidenceConfig?.paperclipApiKey,
           medicalEvidenceConfig?.paperclipBaseUrl
         )
@@ -417,24 +425,24 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const scienceArtifactConfig = hasScienceMode ? configService.get('tools.scienceArtifact') : undefined;
     const researchEvidenceSessionMcpServer = hasScienceMode
       ? resolveResearchEvidenceSessionMcpServer(
-          availableMcpServers,
+          availableMcpServersForSend,
           researchEvidenceConfig?.paperclipApiKey,
           researchEvidenceConfig?.paperclipBaseUrl
         )
       : undefined;
     const scienceArtifactSessionMcpServer = hasScienceMode
-      ? resolveScienceArtifactSessionMcpServer(availableMcpServers, scienceArtifactConfig)
+      ? resolveScienceArtifactSessionMcpServer(availableMcpServersForSend, scienceArtifactConfig)
       : undefined;
     const labSkillSessionMcpServer = hasSkillDepositionMode
-      ? resolveBuiltinSessionMcpServer(availableMcpServers, BUILTIN_LAB_SKILL_NAME)
+      ? resolveBuiltinSessionMcpServer(availableMcpServersForSend, BUILTIN_LAB_SKILL_NAME)
       : undefined;
     const userInputSessionMcpServer =
       hasMedicalEvidenceMode || hasScienceMode || hasSkillDepositionMode
-        ? resolveBuiltinSessionMcpServer(availableMcpServers, BUILTIN_USER_INPUT_NAME)
+        ? resolveBuiltinSessionMcpServer(availableMcpServersForSend, BUILTIN_USER_INPUT_NAME)
         : undefined;
     const imageGenerationSessionMcpServer =
       hasMedicalEvidenceMode && medicalEvidenceAgentBackend === 'codex'
-        ? resolveBuiltinSessionMcpServer(availableMcpServers, BUILTIN_IMAGE_GEN_NAME)
+        ? resolveBuiltinSessionMcpServer(availableMcpServersForSend, BUILTIN_IMAGE_GEN_NAME)
         : undefined;
     const baseSelectedSessionMcpServersForExtra =
       selectedMcpServerIds !== undefined ? selectedSessionMcpServers : selectedSessionMcpServersToSend;

@@ -58,6 +58,7 @@ const TAB_ICONS: Record<ScienceArtifactInspectorTab, OpenScienceIconName> = {
 };
 
 const ARTIFACT_TYPE_ICONS: Record<ScienceArtifact['type'], OpenScienceIconName> = {
+  report: 'scienceReport',
   figure: 'artifactFigure',
   table: 'artifactTable',
   dataset: 'artifactDataset',

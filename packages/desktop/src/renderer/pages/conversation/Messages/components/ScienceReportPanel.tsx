@@ -74,6 +74,7 @@ const artifactKindLabel = (artifact: ScienceArtifact): string => {
 };
 
 const ARTIFACT_TYPE_ICONS: Record<ScienceArtifact['type'], OpenScienceIconName> = {
+  report: 'scienceReport',
   figure: 'artifactFigure',
   table: 'artifactTable',
   dataset: 'artifactDataset',
@@ -98,6 +99,7 @@ const ARTIFACT_TYPE_ICONS: Record<ScienceArtifact['type'], OpenScienceIconName> 
 };
 
 const EVIDENCE_SOURCE_ICONS: Record<ScienceEvidenceItem['sourceType'], OpenScienceIconName> = {
+  file: 'artifact',
   paper: 'connectorLiterature',
   database_record: 'settingsDatasource',
   code: 'artifactCode',
@@ -364,9 +366,10 @@ const ScienceReportBlockView: React.FC<{
 
 const ScienceEvidenceReference: React.FC<{
   evidence: ScienceEvidenceItem;
+  evidenceById: Map<string, ScienceEvidenceItem>;
   index: number;
   onOpenEvidence: (evidence: ScienceEvidenceItem) => void;
-}> = ({ evidence, index, onOpenEvidence }) => (
+}> = ({ evidence, evidenceById, index, onOpenEvidence }) => (
   <article
     id={`science-evidence-${evidence.id}`}
     className='medical-evidence-reference science-evidence-reference'
@@ -430,6 +433,14 @@ const ScienceEvidenceReference: React.FC<{
         </div>
       ) : null}
       {evidence.summary ? <p>{evidence.summary}</p> : null}
+      {evidence.supportingEvidenceIds?.length ? (
+        <div className='science-evidence-supporting'>
+          <span>Supported by</span>
+          {evidence.supportingEvidenceIds.map((id) => (
+            <ScienceCitation key={id} id={id} evidenceById={evidenceById} />
+          ))}
+        </div>
+      ) : null}
       {getEvidencePreviewPath(evidence) || evidence.url || evidence.virtualPath ? (
         <button type='button' className='science-evidence-open' onClick={() => onOpenEvidence(evidence)}>
           {pathLabel(getEvidencePreviewPath(evidence)) || evidence.virtualPath || evidence.url}
@@ -748,6 +759,7 @@ export const ScienceReportPreviewPanel: React.FC<{ panel: SciencePanelData }> = 
                 <ScienceEvidenceReference
                   key={evidence.id}
                   evidence={evidence}
+                  evidenceById={evidenceById}
                   index={index}
                   onOpenEvidence={openEvidence}
                 />
