@@ -531,10 +531,10 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       // we must keep the original selectedAgent so the correct backend/cli_path is used.
       const agent_typeChanged = is_preset && selectedAgent !== finalEffectiveAgentType;
       const acpBackend: string | undefined = agent_typeChanged
-        ? normalizeLegacyBackend(finalEffectiveAgentType)
+        ? normalizeGuidAgentBackend(finalEffectiveAgentType)
         : is_preset
-          ? normalizeLegacyBackend(finalEffectiveAgentType)
-          : normalizeLegacyBackend(selectedAgent);
+          ? normalizeGuidAgentBackend(finalEffectiveAgentType)
+          : normalizeGuidAgentBackend(selectedAgent);
 
       const acpAgentInfo = agent_typeChanged
         ? findAgentByKey(acpBackend as string)

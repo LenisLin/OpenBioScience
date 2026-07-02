@@ -287,8 +287,10 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
           }
           triggerProps={{
             trigger: 'click',
+            popupAlign: { bottom: 24 },
+            boundaryDistance: { right: 16, bottom: 16 },
             popupStyle: {
-              maxHeight: 360,
+              maxHeight: 'min(440px, calc(100vh - 64px))',
               overflowY: 'auto',
               overflowX: 'hidden',
             },
@@ -339,8 +341,10 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
           }
           triggerProps={{
             trigger: 'click',
+            popupAlign: { bottom: 24 },
+            boundaryDistance: { right: 16, bottom: 16 },
             popupStyle: {
-              maxHeight: 360,
+              maxHeight: 'min(440px, calc(100vh - 64px))',
               overflowY: 'auto',
               overflowX: 'hidden',
             },
@@ -391,8 +395,9 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
             position='tl'
             triggerProps={{
               popupAlign: { bottom: 8 },
+              boundaryDistance: { left: 16, bottom: 16 },
               popupStyle: {
-                maxHeight: 360,
+                maxHeight: 'min(420px, calc(100vh - 56px))',
                 overflowY: 'auto',
                 overflowX: 'visible',
               },
