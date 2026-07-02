@@ -124,6 +124,7 @@
     "defaultSkillPack": "默认 Science Skill Pack",
     "defaultSkillPackDesc": "新 Science 会话默认启用 {{total}} 个一等技能，其中 {{external}} 个来自外部科研技能包。",
     "skillPackCoreDesc": "Science SOP 与 artifact/provenance 协议，控制最终报告和证据链格式。",
+    "skillPackWorkflowDesc": "独立管理 DeepScientist 研究流程主链、论文生产和图表展示，负责阶段路由与 git/worktree 记录。",
     "skillPackOfficialDefault": "官方默认",
     "skillPackCustomized": "已自定义",
     "skillPackManifest": "Manifest：{{path}}",

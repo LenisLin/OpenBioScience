@@ -17,6 +17,10 @@ figures, tables, notebooks, manuscripts, or scientific claims.
   and PaperClip virtual files.
 - `science_artifact` is the durable artifact graph surface. It records, reads,
   patches, versions, publishes, and focuses research objects.
+- `openscience-workflow` is the independent research-process router for
+  DeepScientist workflow skills. Use it for stage selection across intake,
+  scouting, idea, baseline, experiment, analysis, writing, review, figures,
+  decision, and finalization.
 - OpenScience Science skill packs should be available as first-class skills
   (`ds-*`, `kdense-*`, `aer-*`, and later `sciagent-*`) through the default
   Science skill manifest. During migration, `openscience-science-vendor-catalog`

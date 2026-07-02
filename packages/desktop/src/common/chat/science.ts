@@ -19,6 +19,8 @@ export const SCIENCE_CORE_SKILL_NAME = 'openscience-science';
 export const SCIENCE_CORE_SKILL_PATH = 'resources/skills/science/SKILL.md';
 export const SCIENCE_ARTIFACT_SKILL_NAME = 'openscience-science-artifact';
 export const SCIENCE_ARTIFACT_SKILL_PATH = 'resources/skills/science-artifact/SKILL.md';
+export const SCIENCE_WORKFLOW_SKILL_NAME = 'openscience-workflow';
+export const SCIENCE_WORKFLOW_SKILL_PATH = 'resources/skills/workflow/SKILL.md';
 export const SCIENCE_VENDOR_CATALOG_SKILL_NAME = 'openscience-science-vendor-catalog';
 export const SCIENCE_VENDOR_CATALOG_SKILL_PATH = 'resources/skills/science-vendor-catalog/SKILL.md';
 
@@ -31,6 +33,7 @@ export const LEGACY_SCIENCE_DEFAULT_SKILL_IDS = [
 export const DEFAULT_SCIENCE_SKILL_IDS = [
   SCIENCE_CORE_SKILL_NAME,
   SCIENCE_ARTIFACT_SKILL_NAME,
+  SCIENCE_WORKFLOW_SKILL_NAME,
   ...SCIENCE_MATERIALIZED_SKILL_IDS,
 ] as const;
 
@@ -779,6 +782,7 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '- Any file that the user can open from the Science report, Project shelf, or chat output must be declared on an artifact or included in science_artifact(action="snapshot") so the Preview menu can show where it came from.',
     '- Use science_artifact(action="publish") before the final visible answer so the UI can render the Science Report and Artifact Ledger.',
     '- Use the default materialized Science skill pack as first-class skills. Prefer ds-*, kdense-*, and aer-* skill ids over browsing vendor directories. The vendored catalog is only a migration/source index.',
+    '- Use openscience-workflow when the next research-process stage is unclear or when routing among DeepScientist workflow skills. It manages ds-* stage selection separately from the core Science evidence/artifact contract.',
     '- Auto-Empirical Research Skills are included for social-science and empirical workflows. Start with the aer-auto-empirical-research-skills router when the exact method skill is unclear, then record the selected child skill as skill_use before relying on it.',
     '- Use artifact.viewer metadata for native scientific viewers only when it improves inspection, editing, annotation, or reproducibility: 3dmol/molstar for structures, igv for indexed genome tracks, ketcher for molecules/reactions, vitessce for prepared single-cell/spatial configs, msa for alignments, and regression_table/causal_dag/map/codebook/qualitative_coding for empirical social-science artifacts.',
     '- Do not store transient local asset URLs in prompts, reports, or evidence. Record durable project-relative paths, hashes, indexes, config files, conversion commands, logs, and evidence ids; the renderer may create short-lived URLs later.',
@@ -837,6 +841,7 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '## Default Skills',
     `- Use ${SCIENCE_CORE_SKILL_NAME}: ${SCIENCE_CORE_SKILL_PATH}.`,
     `- Use ${SCIENCE_ARTIFACT_SKILL_NAME}: ${SCIENCE_ARTIFACT_SKILL_PATH}.`,
+    `- Use ${SCIENCE_WORKFLOW_SKILL_NAME}: ${SCIENCE_WORKFLOW_SKILL_PATH}.`,
     `- Default Science skill pack manifest: ${SCIENCE_SKILL_PACK_MANIFEST_PATH}.`,
     `- Materialized external skills: ${SCIENCE_SKILL_PACK_COUNTS.total} total; ${SCIENCE_SKILL_PACK_COUNTS.deepscientist} DeepScientist, ${SCIENCE_SKILL_PACK_COUNTS.kdense} K-Dense, and ${SCIENCE_SKILL_PACK_COUNTS.autoEmpirical} Auto-Empirical Research Skills.`,
     `- Safety policy summary: ${SCIENCE_SKILL_PACK_COUNTS.quarantinedScripts} script-bearing skills are quarantined by default; ${SCIENCE_SKILL_PACK_COUNTS.restrictedDefault} skills require explicit authorization for restricted contexts.`,
@@ -984,8 +989,7 @@ export const findSciencePanelArtifact = (
   if (!artifactId) return undefined;
   return (
     panel.artifacts.find(
-      (artifact) =>
-        artifact.id === artifactId && (artifactVersion == null || artifact.version === artifactVersion)
+      (artifact) => artifact.id === artifactId && (artifactVersion == null || artifact.version === artifactVersion)
     ) || panel.artifacts.find((artifact) => artifact.id === artifactId)
   );
 };
@@ -1030,14 +1034,11 @@ export const resolveScienceDisplayTarget = (payload: SciencePayload): ScienceDis
   if (!intent || !event.panel) return undefined;
 
   const panel = event.panel;
-  const pageId = event.target?.pageId || event.pageIds?.[0] || (event.target?.kind === 'page' ? event.target.id : undefined);
+  const pageId =
+    event.target?.pageId || event.pageIds?.[0] || (event.target?.kind === 'page' ? event.target.id : undefined);
   const page = pageId ? panel.pages?.find((item) => item.id === pageId) : undefined;
   const pane = page?.panes.find((item) => SCIENCE_PREVIEW_PANE_TYPES.has(item.type));
-  const paneArtifact = findSciencePanelArtifact(
-    panel,
-    pane?.target?.artifactId,
-    pane?.target?.artifactVersion
-  );
+  const paneArtifact = findSciencePanelArtifact(panel, pane?.target?.artifactId, pane?.target?.artifactVersion);
   const panePath = pane?.target?.path || getScienceArtifactPreviewPath(paneArtifact);
   if (paneArtifact && panePath) {
     return { kind: 'artifact', intent, panel, eventId: event.eventId, pageId, artifact: paneArtifact, path: panePath };
@@ -1050,7 +1051,15 @@ export const resolveScienceDisplayTarget = (payload: SciencePayload): ScienceDis
   );
   const targetPath = getScienceArtifactPreviewPath(targetArtifact);
   if (targetArtifact && targetPath) {
-    return { kind: 'artifact', intent, panel, eventId: event.eventId, pageId, artifact: targetArtifact, path: targetPath };
+    return {
+      kind: 'artifact',
+      intent,
+      panel,
+      eventId: event.eventId,
+      pageId,
+      artifact: targetArtifact,
+      path: targetPath,
+    };
   }
 
   return { kind: 'report', intent, panel, eventId: event.eventId, pageId };

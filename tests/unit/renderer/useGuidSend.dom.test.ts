@@ -7,7 +7,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LEGACY_LOCAL_RUNTIME_ID, LEGACY_LOCAL_RUNTIME_NAME } from '@/common/config/legacyIdentifiers';
-import { DEFAULT_SCIENCE_SKILL_IDS } from '@/common/chat/science';
+import { DEFAULT_SCIENCE_SKILL_IDS, SCIENCE_WORKFLOW_SKILL_NAME } from '@/common/chat/science';
 import type { IMcpServer } from '@/common/config/storage';
 import { useGuidSend, type GuidSendDeps } from '@/renderer/pages/guid/hooks/useGuidSend';
 
@@ -295,5 +295,26 @@ describe('useGuidSend', () => {
     expect(initialMessage.input).toContain('Iterate on the onboarding flow until it feels smooth and verified.');
     expect(initialMessage.input).not.toContain('Additional user instruction for this first iteration');
     expect(result.current.isButtonDisabled).toBe(false);
+  });
+
+  it('loads Workflow by default for loop goal mode even when Science mode is off', async () => {
+    const deps = createDeps();
+    deps.input = 'Keep iterating until the refactor has tests and no regressions.';
+    deps.isLoopGoalMode = true;
+    deps.isScienceMode = false;
+    deps.assistantDefaultSkillIds = ['assistant-skill'];
+
+    const { result } = renderHook(() => useGuidSend(deps));
+
+    await act(async () => {
+      await result.current.handleSend();
+    });
+
+    const payload = createConversationInvokeMock.mock.calls[0][0];
+    expect(payload.assistant?.conversation_overrides?.skill_ids).toEqual([
+      'assistant-skill',
+      SCIENCE_WORKFLOW_SKILL_NAME,
+    ]);
+    expect(payload.extra.loop_goal).toEqual(expect.objectContaining({ status: 'active' }));
   });
 });

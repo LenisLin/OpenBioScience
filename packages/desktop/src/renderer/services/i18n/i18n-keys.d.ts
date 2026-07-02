@@ -2550,6 +2550,7 @@ export type I18nKey =
   | 'settings.science.skillPackCustomized'
   | 'settings.science.skillPackManifest'
   | 'settings.science.skillPackOfficialDefault'
+  | 'settings.science.skillPackWorkflowDesc'
   | 'settings.science.strictProvenance'
   | 'settings.science.strictProvenanceDesc'
   | 'settings.science.testConnection'

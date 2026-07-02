@@ -7,6 +7,8 @@ import {
   SCIENCE_ARTIFACT_SKILL_NAME,
   SCIENCE_CORE_SKILL_NAME,
   SCIENCE_VENDOR_CATALOG_SKILL_NAME,
+  SCIENCE_WORKFLOW_SKILL_PATH,
+  SCIENCE_WORKFLOW_SKILL_NAME,
   normalizeScienceDefaultSkillIds,
 } from '@/common/chat/science';
 import {
@@ -59,7 +61,9 @@ describe('OpenScience materialized Science skill pack', () => {
   it('loads the materialized skills by default without relying on the migration catalog', () => {
     expect(DEFAULT_SCIENCE_SKILL_IDS[0]).toBe(SCIENCE_CORE_SKILL_NAME);
     expect(DEFAULT_SCIENCE_SKILL_IDS[1]).toBe(SCIENCE_ARTIFACT_SKILL_NAME);
+    expect(DEFAULT_SCIENCE_SKILL_IDS[2]).toBe(SCIENCE_WORKFLOW_SKILL_NAME);
     expect(DEFAULT_SCIENCE_SKILL_IDS).not.toContain(SCIENCE_VENDOR_CATALOG_SKILL_NAME);
+    expect(DEFAULT_SCIENCE_SKILL_IDS).toContain('openscience-workflow');
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain('ds-science');
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain('ds-review');
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain('kdense-database-lookup');
@@ -80,6 +84,19 @@ describe('OpenScience materialized Science skill pack', () => {
     expect(aersSkills.length).toBe(SCIENCE_SKILL_PACK_COUNTS.autoEmpirical);
     expect(aersSkills.length).toBeGreaterThan(0);
     expect(aersSkills.every((skill) => skill.license === 'CC-BY-SA-4.0')).toBe(true);
+  });
+
+  it('ships Workflow as an independent built-in stage router', () => {
+    const workflowPath = path.join(repoRoot, SCIENCE_WORKFLOW_SKILL_PATH);
+    const workflowDir = path.dirname(workflowPath);
+    expect(fs.existsSync(workflowPath)).toBe(true);
+    expect(fs.existsSync(path.join(workflowDir, 'references', 'deepscientist-workflow-map.md'))).toBe(true);
+    expect(fs.existsSync(path.join(workflowDir, 'references', 'git-worktree-minimum.md'))).toBe(true);
+
+    const body = fs.readFileSync(workflowPath, 'utf8');
+    expect(body).toContain('name: openscience-workflow');
+    expect(body).toContain('Research workflow main chain');
+    expect(body).toContain('Minimal Git and Filesystem SOP');
   });
 
   it('materializes every manifest skill as a first-class SKILL.md with provenance fields', () => {

@@ -124,6 +124,7 @@
     "defaultSkillPack": "Default Science Skill Pack",
     "defaultSkillPackDesc": "New Science conversations enable {{total}} first-class skills by default, including {{external}} from external research skill packs.",
     "skillPackCoreDesc": "Science SOP plus artifact/provenance protocol; controls final reports and evidence graph shape.",
+    "skillPackWorkflowDesc": "Independently manages the DeepScientist research workflow chain, paper production, and figure/display stages with stage routing plus git/worktree records.",
     "skillPackOfficialDefault": "Official default",
     "skillPackCustomized": "Customized",
     "skillPackManifest": "Manifest: {{path}}",

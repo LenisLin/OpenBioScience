@@ -19,6 +19,7 @@ import {
   buildScienceConversationExtra,
   buildScienceModePrompt,
   DEFAULT_SCIENCE_SKILL_IDS,
+  SCIENCE_WORKFLOW_SKILL_NAME,
 } from '@/common/chat/science';
 import { buildComputeConversationExtra } from '@/common/chat/compute';
 import { configService } from '@/common/config/configService';
@@ -321,11 +322,12 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       : guidEnabledSkills?.length
         ? guidEnabledSkills
         : undefined;
+    const loopGoalSkillIds = loopGoalForCreate ? [SCIENCE_WORKFLOW_SKILL_NAME] : undefined;
     const enabled_skills_to_send = hasMedicalEvidenceMode
-      ? mergeSkillIds(base_enabled_skills_to_send, DEFAULT_MEDICAL_EVIDENCE_SKILL_IDS)
+      ? mergeSkillIds(base_enabled_skills_to_send, DEFAULT_MEDICAL_EVIDENCE_SKILL_IDS, loopGoalSkillIds)
       : hasScienceMode
-        ? mergeSkillIds(base_enabled_skills_to_send, DEFAULT_SCIENCE_SKILL_IDS)
-        : base_enabled_skills_to_send;
+        ? mergeSkillIds(base_enabled_skills_to_send, DEFAULT_SCIENCE_SKILL_IDS, loopGoalSkillIds)
+        : mergeSkillIds(base_enabled_skills_to_send, loopGoalSkillIds);
     const excludeBuiltinSkills =
       guidDisabledBuiltinSkills ??
       (is_presetAgent ? assistantDefaultDisabledBuiltinSkillIds : resolveDisabledBuiltinSkills(agentInfo));

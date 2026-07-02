@@ -186,6 +186,11 @@ const ScienceSettings: React.FC = () => {
         detail: t('settings.science.skillPackCoreDesc'),
       },
       {
+        label: 'Workflow',
+        value: 1,
+        detail: t('settings.science.skillPackWorkflowDesc'),
+      },
+      {
         label: 'DeepScientist',
         value: SCIENCE_SKILL_PACK_COUNTS.deepscientist,
         detail: t('settings.science.vendorDeepScientistDesc'),
@@ -395,7 +400,7 @@ const ScienceSettings: React.FC = () => {
                 </Tag>
               </div>
 
-              <div className='grid grid-cols-1 gap-8px lg:grid-cols-4'>
+              <div className='grid grid-cols-1 gap-8px sm:grid-cols-2 lg:grid-cols-5'>
                 {skillPackCards.map((card) => (
                   <div
                     key={card.label}
