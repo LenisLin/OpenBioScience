@@ -1,0 +1,7 @@
+{
+  "ok": false,
+  "status": 503,
+  "model": "gemini-3.1-pro",
+  "tag": "backend_protocol",
+  "error": "{\"error\":{\"code\":\"model_not_found\",\"message\":\"No available channel for model gemini-3.1-pro under group default (distributor) (request id: 20260701070736201805838268d9d6YDkBybQT)\",\"type\":\"new_api_error\"}}"
+}

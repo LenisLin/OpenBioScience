@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "status": 200,
+  "requested_model": "gemini-3.5-flash",
+  "actual_model": "gemini-3.5-flash",
+  "tag": "backend_protocol_short",
+  "content": "作为科研软件架构评审，针对Science Artifact（科研制品）后端协议设计，提出以下8条具体、可执行的架构建议：\n\n1. **【Schema】采用RO-Crate标准的JSON Schema**：定义统一的元数据Schema，兼容RO-Crate（研究对象包）标准。必须包含PID（持久标识符如DOI）、创建者、协议版本、关联文件及依赖关系，确保跨平台机器可读。\n2. **【Provenance】实现W3C PROV溯源图**：协议必须内置W3C PROV-JSON表达。每次操作需记录`Entity`（制品）、`Activity`（实验/计算步骤）和`Agent`（科研人员/AI Agent），形成不可篡改的DAG（有向无环图）溯源链。\n3. **【MCP工具】暴露标准MCP服务接口**：设计Model Context Protocol (MCP) 接口，向AI Agent暴露 `read_artifact`、`query_lineage` 和 `verify_signature` 等工具，使LLM能安全、结构化地检索和操作科研制品。\n4. **【权限】实施RBAC+ABAC混合鉴权**：采用基于角色（RBAC）与属性（ABAC）的控制。针对敏感科研数据（如患者隐私、涉密算法），根据用户角色、项目组、数据密级和IP动态判定访问权限。\n5. **【内容寻址】引入哈希唯一标识**：制品Payload（数据负载）必须采用内容寻址（如SHA-256/IPFS CID）作为唯一标识，确保数据传输与存储的防篡改与绝对一致性。\n6. **【双轨API】gRPC与GraphQL并行**：元数据查询采用GraphQL以支持复杂的溯源图检索；大文件/流式科研数据传输采用gRPC，提升高并发、大吞吐场景下的性能。\n7. **【审计日志】构建不可变操作账本**：所有针对制品的写操作和授权变更，必须同步写入Append-only（只增）的审计日志，为学术合规性与可重复性验证提供底层信任。\n8. **【自动化校验】设计契约测试流水线**：后端协议需集成自动化校验引擎。在制品入库前，自动触发Schema合规性检查、哈希校验及数字签名验证，未通过者拒绝入库。",
+  "finish_reason": "stop",
+  "raw_id": "chatcmpl-202607010718125424608748268d9d6y6EDiBJC",
+  "base_url": "https://api.bianxie.ai/v1",
+  "created_at": "2026-07-01T07:18:22.794397+00:00",
+  "file": "effective_gemini-3.5-flash_gemini-3.5-flash_backend_protocol_short.json"
+}

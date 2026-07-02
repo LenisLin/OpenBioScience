@@ -60,3 +60,75 @@
 | 新增 Light 图标总览 | `/Users/yixuan/Documents/DeepOrganiser/DeepOrganiser-git/output/imagegen/new-icons/new-icons-light-overview.png`        |
 | 新增 Dark 图标总览  | `/Users/yixuan/Documents/DeepOrganiser/DeepOrganiser-git/output/imagegen/new-icons/new-icons-dark-on-dark-overview.png` |
 | 主题预览总览        | `/Users/yixuan/Documents/DeepOrganiser/DeepOrganiser-git/output/imagegen/deepscientist-theme-assets-overview-16x9.png`  |
+
+## 医疗循证图标
+
+本组使用 `gpt-image-2` 通过 Bianxie API 生成，接入路径为：
+
+`/Users/yixuan/Documents/DeepScientist_lark/packages/desktop/src/renderer/assets/icons/generated`
+
+当前版本为 simple/direct v2：每个医学循证图标尽量只保留一个主体和一个辅助符号，减少堆叠文件、复杂表格和装饰性火花；Logo 收束为“单张临床文档 + 红色 medical plus + 金色证据线”。
+
+React 组件：
+
+`/Users/yixuan/Documents/DeepScientist_lark/packages/desktop/src/renderer/components/icons/MedicalEvidenceIcon.tsx`
+
+`/Users/yixuan/Documents/DeepScientist_lark/packages/desktop/src/renderer/components/icons/MedicalEvidenceLogo.tsx`
+
+生成脚本：
+
+`/Users/yixuan/Documents/DeepScientist_lark/scripts/generate-medical-evidence-icons-bianxie.py`
+
+`/Users/yixuan/Documents/DeepScientist_lark/scripts/generate-medical-evidence-logo-bianxie.py`
+
+### 医疗循证 Logo
+
+| 内容 | 路径 |
+| --- | --- |
+| Light logo | `/Users/yixuan/Documents/DeepScientist_lark/packages/desktop/src/renderer/assets/icons/generated/medical-evidence-logo.png` |
+| Dark logo | `/Users/yixuan/Documents/DeepScientist_lark/packages/desktop/src/renderer/assets/icons/generated/medical-evidence-logo-dark.png` |
+| Light raw | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-logo/raw/medical-evidence-logo-light.png` |
+| Dark raw | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-logo/raw/medical-evidence-logo-dark.png` |
+| Light prompt | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-logo/raw/medical-evidence-logo-light.prompt.txt` |
+| Dark prompt | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-logo/raw/medical-evidence-logo-dark.prompt.txt` |
+| Logo 总览 | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-logo/medical-evidence-logo-overview.png` |
+
+| 图标用途 | 组件 name | Light | Dark |
+| --- | --- | --- | --- |
+| 证据正在收集的主容器 | `basket` | `medical-evidence-basket.png` | `medical-evidence-basket-dark.png` |
+| 检索增强阶段 | `search` | `medical-evidence-search.png` | `medical-evidence-search-dark.png` |
+| 普通论文结果 | `paper` | `medical-evidence-paper.png` | `medical-evidence-paper-dark.png` |
+| 指南类证据 | `guideline` | `medical-evidence-guideline.png` | `medical-evidence-guideline-dark.png` |
+| RCT 证据 | `rct` | `medical-evidence-rct.png` | `medical-evidence-rct-dark.png` |
+| 系统综述/Meta | `review` | `medical-evidence-review.png` | `medical-evidence-review-dark.png` |
+| 药品说明书 | `drugLabel` | `medical-evidence-drug-label.png` | `medical-evidence-drug-label-dark.png` |
+| FDA/监管文件 | `regulatory` | `medical-evidence-regulatory.png` | `medical-evidence-regulatory-dark.png` |
+| ClinicalTrials | `trial` | `medical-evidence-trial.png` | `medical-evidence-trial-dark.png` |
+| 行级证据锚定 | `anchor` | `medical-evidence-anchor.png` | `medical-evidence-anchor-dark.png` |
+| 高等级证据 | `gradeHigh` | `medical-evidence-grade-high.png` | `medical-evidence-grade-high-dark.png` |
+| 中等证据 | `gradeMid` | `medical-evidence-grade-mid.png` | `medical-evidence-grade-mid-dark.png` |
+| 低等级证据 | `gradeLow` | `medical-evidence-grade-low.png` | `medical-evidence-grade-low-dark.png` |
+| 循证权衡 | `weigh` | `medical-evidence-weigh.png` | `medical-evidence-weigh-dark.png` |
+| 被采纳证据 | `adopt` | `medical-evidence-adopt.png` | `medical-evidence-adopt-dark.png` |
+| 降权证据 | `downgrade` | `medical-evidence-downgrade.png` | `medical-evidence-downgrade-dark.png` |
+| PICO 检索计划 | `pico` | `medical-evidence-pico.png` | `medical-evidence-pico-dark.png` |
+| 正在读取原文 | `scan` | `medical-evidence-scan.png` | `medical-evidence-scan-dark.png` |
+| 可追溯引用 | `citation` | `medical-evidence-citation.png` | `medical-evidence-citation-dark.png` |
+| 循证结果完成 | `complete` | `medical-evidence-complete.png` | `medical-evidence-complete-dark.png` |
+
+### 医疗循证图标生成 Prompt 文件
+
+| 分组 | Light prompt | Dark prompt |
+| --- | --- | --- |
+| 收集/检索/扫描/完成 | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-icons/raw/medical-evidence-flow-light.prompt.txt` | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-icons/raw/medical-evidence-flow-dark.prompt.txt` |
+| 论文/指南/药品说明书/监管 | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-icons/raw/medical-evidence-sources-light.prompt.txt` | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-icons/raw/medical-evidence-sources-dark.prompt.txt` |
+| RCT/综述/试验/PICO | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-icons/raw/medical-evidence-study-designs-light.prompt.txt` | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-icons/raw/medical-evidence-study-designs-dark.prompt.txt` |
+| 证据等级/权衡 | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-icons/raw/medical-evidence-grade-light.prompt.txt` | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-icons/raw/medical-evidence-grade-dark.prompt.txt` |
+| 采纳/降权/锚点/引用 | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-icons/raw/medical-evidence-trace-light.prompt.txt` | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-icons/raw/medical-evidence-trace-dark.prompt.txt` |
+
+### 医疗循证图标总览
+
+| 内容 | 路径 |
+| --- | --- |
+| Light 总览 | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-icons/medical-evidence-icons-light-overview.png` |
+| Dark 总览 | `/Users/yixuan/Documents/DeepScientist_lark/output/imagegen/medical-evidence-icons/medical-evidence-icons-dark-overview.png` |

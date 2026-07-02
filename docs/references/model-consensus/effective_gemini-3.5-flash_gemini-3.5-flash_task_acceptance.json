@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "status": 200,
+  "actual_model": "gemini-3.5-flash",
+  "tag": "task_acceptance",
+  "content": "",
+  "finish_reason": "length",
+  "raw_id": "chatcmpl-202607010715325984376828268d9d6DpFfWlZe",
+  "requested_model": "gemini-3.5-flash",
+  "base_url": "https://api.bianxie.ai/v1",
+  "file": "effective_gemini-3.5-flash_gemini-3.5-flash_task_acceptance.json"
+}

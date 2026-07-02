@@ -7,11 +7,11 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LEGACY_LOCAL_RUNTIME_ID, LEGACY_LOCAL_RUNTIME_NAME } from '@/common/config/legacyIdentifiers';
+import { DEFAULT_SCIENCE_SKILL_IDS } from '@/common/chat/science';
 import type { IMcpServer } from '@/common/config/storage';
 import { useGuidSend, type GuidSendDeps } from '@/renderer/pages/guid/hooks/useGuidSend';
 
 const createConversationInvokeMock = vi.fn();
-const attachProjectConversationInvokeMock = vi.fn();
 const swrMutateMock = vi.fn();
 
 vi.mock('@/common', () => ({
@@ -19,11 +19,6 @@ vi.mock('@/common', () => ({
     conversation: {
       create: {
         invoke: (...args: unknown[]) => createConversationInvokeMock(...args),
-      },
-    },
-    larkProjectAgent: {
-      attachConversation: {
-        invoke: (...args: unknown[]) => attachProjectConversationInvokeMock(...args),
       },
     },
   },
@@ -108,8 +103,6 @@ describe('useGuidSend', () => {
   beforeEach(() => {
     createConversationInvokeMock.mockReset();
     createConversationInvokeMock.mockResolvedValue({ id: 'conv-1' });
-    attachProjectConversationInvokeMock.mockReset();
-    attachProjectConversationInvokeMock.mockResolvedValue({});
     swrMutateMock.mockReset();
     swrMutateMock.mockResolvedValue(undefined);
     sessionStorage.clear();
@@ -146,7 +139,10 @@ describe('useGuidSend', () => {
     });
 
     const payload = createConversationInvokeMock.mock.calls[0][0];
-    expect(payload.assistant?.conversation_overrides?.skill_ids).toEqual(['assistant-skill']);
+    expect(payload.assistant?.conversation_overrides?.skill_ids).toEqual([
+      'assistant-skill',
+      ...DEFAULT_SCIENCE_SKILL_IDS,
+    ]);
     expect(payload.assistant?.conversation_overrides?.disabled_builtin_skill_ids).toEqual(['builtin-skill']);
     expect(payload.assistant?.conversation_overrides?.mcp_ids).toEqual(['mcp-user']);
     expect(payload.extra.selected_mcp_server_ids).toEqual(['mcp-user']);
@@ -199,7 +195,7 @@ describe('useGuidSend', () => {
 
     const payload = createConversationInvokeMock.mock.calls[0][0];
     expect(payload.assistant).toBeUndefined();
-    expect(payload.extra.enabled_skills).toEqual(['pdf-reader']);
+    expect(payload.extra.enabled_skills).toEqual(['pdf-reader', ...DEFAULT_SCIENCE_SKILL_IDS]);
     expect(payload.extra.exclude_builtin_skills).toEqual(['todo-tracker']);
   });
 
@@ -231,41 +227,8 @@ describe('useGuidSend', () => {
     expect(payload.type).toBe('acp');
     expect(payload.assistant).toBeUndefined();
     expect(payload.extra.backend).toBe('codex');
-    expect(payload.extra.enabled_skills).toEqual(['pdf-reader']);
+    expect(payload.extra.enabled_skills).toEqual(['pdf-reader', ...DEFAULT_SCIENCE_SKILL_IDS]);
     expect(payload.extra.exclude_builtin_skills).toEqual(['todo-tracker']);
-  });
-
-  it('creates a project-scoped regular agent conversation from a locked Lark tasklist context', async () => {
-    const deps = createDeps();
-    deps.input = '';
-    deps.larkProjectContext = {
-      role: 'agent',
-      tasklistGuid: 'tasklist-1',
-      tasklistName: '学术论文原创力评价系统',
-      locked: true,
-    };
-
-    const { result } = renderHook(() => useGuidSend(deps));
-
-    await act(async () => {
-      await result.current.handleSend();
-    });
-
-    const payload = createConversationInvokeMock.mock.calls[0][0];
-    expect(payload.name).toBe('学术论文原创力评价系统');
-    expect(payload.extra.context_file_name).toBe('lark-project-context.md');
-    expect(payload.extra.lark_project_tasklist_guid).toBe('tasklist-1');
-    expect(payload.extra.lark_project_tasklist_name).toBe('学术论文原创力评价系统');
-    expect(payload.extra.lark_project_role).toBe('agent');
-    expect(attachProjectConversationInvokeMock).toHaveBeenCalledWith({
-      conversationId: 'conv-1',
-      role: 'agent',
-      tasklistGuid: 'tasklist-1',
-      tasklistName: '学术论文原创力评价系统',
-      bindingId: undefined,
-      replaceExistingLeader: false,
-    });
-    expect(result.current.isButtonDisabled).toBe(false);
   });
 
   it('creates a loop goal conversation and stores the kickoff message', async () => {

@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "status": 200,
+  "requested_model": "gemini-3.1-pro",
+  "actual_model": "gemini-3.1-pro-preview",
+  "tag": "task_acceptance_short",
+  "content": "",
+  "finish_reason": "length",
+  "raw_id": "chatcmpl-202607010716509651416538268d9d6j3FPWNzL",
+  "base_url": "https://api.bianxie.ai/v1",
+  "created_at": "2026-07-01T07:18:10.732405+00:00",
+  "file": "effective_gemini-3.1-pro_gemini-3.1-pro-preview_task_acceptance_short.json"
+}

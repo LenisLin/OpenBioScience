@@ -1,0 +1,7 @@
+{
+  "ok": false,
+  "status": 503,
+  "model": "claude-opus-4.8",
+  "tag": "task_acceptance",
+  "error": "{\"error\":{\"code\":\"model_not_found\",\"message\":\"No available channel for model claude-opus-4.8 under group default (distributor) (request id: 202607010708232444921208268d9d640uZIilU)\",\"type\":\"new_api_error\"}}"
+}

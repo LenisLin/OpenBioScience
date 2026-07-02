@@ -1,0 +1,7 @@
+{
+  "ok": false,
+  "status": 503,
+  "model": "claude-opus-4.8",
+  "tag": "frontend_artifact",
+  "error": "{\"error\":{\"code\":\"model_not_found\",\"message\":\"No available channel for model claude-opus-4.8 under group default (distributor) (request id: 202607010708208971182768268d9d6v45yOBB7)\",\"type\":\"new_api_error\"}}"
+}

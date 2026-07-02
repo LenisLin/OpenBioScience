@@ -1,0 +1,10 @@
+{
+  "ok": false,
+  "status": null,
+  "actual_model": "gemini-3.1-pro-preview",
+  "tag": "task_acceptance",
+  "error": "timeout: The read operation timed out",
+  "requested_model": "gemini-3.1-pro",
+  "base_url": "https://api.bianxie.ai/v1",
+  "file": "effective_gemini-3.1-pro_gemini-3.1-pro-preview_task_acceptance.json"
+}

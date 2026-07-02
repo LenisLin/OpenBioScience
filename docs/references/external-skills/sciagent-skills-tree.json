@@ -1,0 +1,4412 @@
+{
+  "sha": "02745ef6988d5949cd2bd8091307c14047faa833",
+  "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/02745ef6988d5949cd2bd8091307c14047faa833",
+  "tree": [
+    {
+      "path": ".claude-plugin",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4c1dbb121fe9be5be5d15e044b1faf998a3545d3",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/4c1dbb121fe9be5be5d15e044b1faf998a3545d3"
+    },
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e64209dbf2535dff91df590018878dc75039f8c8",
+      "size": 940,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e64209dbf2535dff91df590018878dc75039f8c8"
+    },
+    {
+      "path": ".claude-plugin/plugin.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dc86082ca115ec4590375f64b726e80be6024838",
+      "size": 837,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/dc86082ca115ec4590375f64b726e80be6024838"
+    },
+    {
+      "path": ".claude",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "170158b84ae6fde40c5ccd2768e26fa2a1780df8",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/170158b84ae6fde40c5ccd2768e26fa2a1780df8"
+    },
+    {
+      "path": ".claude/skills",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3dff9c464816a6d9c901059c9e5f8fc276db12c2",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/3dff9c464816a6d9c901059c9e5f8fc276db12c2"
+    },
+    {
+      "path": ".claude/skills/sciagent-skill-creator",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b8d82f9f462303ee19d0423d224e81d8f62859c9",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/b8d82f9f462303ee19d0423d224e81d8f62859c9"
+    },
+    {
+      "path": ".claude/skills/sciagent-skill-creator/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ffef7f9ed683a8c1abb5be916055c9bf2639733",
+      "size": 9263,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/7ffef7f9ed683a8c1abb5be916055c9bf2639733"
+    },
+    {
+      "path": ".claude/skills/sciagent-skill-creator/scripts",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "25ec8a17d6f085740c96fead421ad78776303132",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/25ec8a17d6f085740c96fead421ad78776303132"
+    },
+    {
+      "path": ".claude/skills/sciagent-skill-creator/scripts/scaffold.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "209151589edefba28d57c2ee53535a307878f53b",
+      "size": 9386,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/209151589edefba28d57c2ee53535a307878f53b"
+    },
+    {
+      "path": ".claude/skills/sciagent-skill-creator/scripts/validate_description.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "12ef7597bfc660a1e6bd6e7032a0cd05639d3403",
+      "size": 2903,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/12ef7597bfc660a1e6bd6e7032a0cd05639d3403"
+    },
+    {
+      "path": ".github",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "083b13506c6d02350255cd859f432b1a242dfd44",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/083b13506c6d02350255cd859f432b1a242dfd44"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ca17af9fc0632b376829791cb754b282d087c851",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ca17af9fc0632b376829791cb754b282d087c851"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug_report.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ad104060f199aeb6a2e91f0d91c5743a1ac4afde",
+      "size": 406,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/ad104060f199aeb6a2e91f0d91c5743a1ac4afde"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/skill_request.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e5cf988d2be52e69a34ed5590848220cc559dc2e",
+      "size": 636,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e5cf988d2be52e69a34ed5590848220cc559dc2e"
+    },
+    {
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bddd03eb160772ccb34ba1205c9b25ef4c6ebd99",
+      "size": 689,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/bddd03eb160772ccb34ba1205c9b25ef4c6ebd99"
+    },
+    {
+      "path": ".github/workflows",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f6094ec39da8a6b36ce28501abb87b1d3090207b",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/f6094ec39da8a6b36ce28501abb87b1d3090207b"
+    },
+    {
+      "path": ".github/workflows/validate.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "adc2897f90b179e8e8d9e0d11602b8a1bec51951",
+      "size": 207,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/adc2897f90b179e8e8d9e0d11602b8a1bec51951"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "04dcd67ad79919e7d32e2da8eaccf2fde54a571f",
+      "size": 138,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/04dcd67ad79919e7d32e2da8eaccf2fde54a571f"
+    },
+    {
+      "path": "CLAUDE.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "708b121c602a1a9242a2506fbb293d53b1b5003f",
+      "size": 27142,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/708b121c602a1a9242a2506fbb293d53b1b5003f"
+    },
+    {
+      "path": "CODE_OF_CONDUCT.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "61e360c1fe0453b97b08c59f6c3c3fd4c985990d",
+      "size": 808,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/61e360c1fe0453b97b08c59f6c3c3fd4c985990d"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cabb0e1fa0c463054316bdce83c79c2e851b1666",
+      "size": 2216,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/cabb0e1fa0c463054316bdce83c79c2e851b1666"
+    },
+    {
+      "path": "LICENSE",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "93f40af233debbf5b2e2bd27a8b2ac1e63971988",
+      "size": 1225,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/93f40af233debbf5b2e2bd27a8b2ac1e63971988"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "480fca139b2db37dca8ac61761d67f2c4819f52d",
+      "size": 13276,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/480fca139b2db37dca8ac61761d67f2c4819f52d"
+    },
+    {
+      "path": "assets",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "328f2b8e09b66519977c4a04353eee0e097d6af4",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/328f2b8e09b66519977c4a04353eee0e097d6af4"
+    },
+    {
+      "path": "assets/benchmark.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d48512e87356a6076584c9b4cd0a616ac75f600",
+      "size": 91252,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/4d48512e87356a6076584c9b4cd0a616ac75f600"
+    },
+    {
+      "path": "blind_test_results.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "21ed1946bab70be3fc8eab8604df7229cce6d76e",
+      "size": 35867,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/21ed1946bab70be3fc8eab8604df7229cce6d76e"
+    },
+    {
+      "path": "integration-templates",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "53e5015d0382381066eb4a90a9024714444f9977",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/53e5015d0382381066eb4a90a9024714444f9977"
+    },
+    {
+      "path": "integration-templates/AGENTS.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6c063250c2c24c3de15c7a409cb3e4090e64be85",
+      "size": 1379,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/6c063250c2c24c3de15c7a409cb3e4090e64be85"
+    },
+    {
+      "path": "integration-templates/cursor-rules.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c80584800656c2eee263818ba645a64a122b06ad",
+      "size": 937,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c80584800656c2eee263818ba645a64a122b06ad"
+    },
+    {
+      "path": "integration-templates/windsurf-rules.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "492d7e2fb0d48c2a016edbb0428d7bffa04416b7",
+      "size": 945,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/492d7e2fb0d48c2a016edbb0428d7bffa04416b7"
+    },
+    {
+      "path": "legacy",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8350c6912c0c63a7da687829432370150f49a552",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/8350c6912c0c63a7da687829432370150f49a552"
+    },
+    {
+      "path": "legacy/opentrons-integration",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0305eb9c218a140e3942d7e1d1c8aa47a77d2a23",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/0305eb9c218a140e3942d7e1d1c8aa47a77d2a23"
+    },
+    {
+      "path": "legacy/opentrons-integration/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc657a27e638a69c4cf4e9207c0262205c07fd68",
+      "size": 17797,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/cc657a27e638a69c4cf4e9207c0262205c07fd68"
+    },
+    {
+      "path": "legacy/plotly-interactive-visualization",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fe7e20f7919c8fd07c22035e9952403dc75fd149",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/fe7e20f7919c8fd07c22035e9952403dc75fd149"
+    },
+    {
+      "path": "legacy/plotly-interactive-visualization/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e1a91e4d26f9876483ed2eeb24a505fe3c95c905",
+      "size": 18178,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e1a91e4d26f9876483ed2eeb24a505fe3c95c905"
+    },
+    {
+      "path": "legacy/seaborn-statistical-visualization",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4458b2fc7ffaec75c9d112b880fc7342e9a83078",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/4458b2fc7ffaec75c9d112b880fc7342e9a83078"
+    },
+    {
+      "path": "legacy/seaborn-statistical-visualization/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "715c42a7d7e5d86fb0adb1ee57c3e94d028d9f42",
+      "size": 16506,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/715c42a7d7e5d86fb0adb1ee57c3e94d028d9f42"
+    },
+    {
+      "path": "legacy/single-cell-annotation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d28f45768959659e5bc61705714a78c9fec22454",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d28f45768959659e5bc61705714a78c9fec22454"
+    },
+    {
+      "path": "legacy/single-cell-annotation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c47739db543bfc26119889afbd745e3521f552c7",
+      "size": 12811,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c47739db543bfc26119889afbd745e3521f552c7"
+    },
+    {
+      "path": "pixi.lock",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ee5bf74f88ee1ffdc0cf2f7863a648f0882321b",
+      "size": 30508,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/7ee5bf74f88ee1ffdc0cf2f7863a648f0882321b"
+    },
+    {
+      "path": "pixi.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f0ef3a35b0bb9e9bf18f7a28d7ca490044051384",
+      "size": 370,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/f0ef3a35b0bb9e9bf18f7a28d7ca490044051384"
+    },
+    {
+      "path": "references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2db6d5bc2694965e3d58fee7e4b56cea6eaabfa6",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/2db6d5bc2694965e3d58fee7e4b56cea6eaabfa6"
+    },
+    {
+      "path": "references/format-rules-detail.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a0e5441aa6d11e2e883a5cb572a20372a4180518",
+      "size": 7330,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a0e5441aa6d11e2e883a5cb572a20372a4180518"
+    },
+    {
+      "path": "references/migration-rules.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b6f4bbf57aad7d9baa89ca482133dc9b8c4ccad",
+      "size": 21837,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/9b6f4bbf57aad7d9baa89ca482133dc9b8c4ccad"
+    },
+    {
+      "path": "references/quality-checklist-by-type.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9a83999ace13dea735247f56348f009066abf516",
+      "size": 13879,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/9a83999ace13dea735247f56348f009066abf516"
+    },
+    {
+      "path": "references/tool-type-adaptations.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fd0acea84ff3fc6b6c8db07bfb894de559a35bbd",
+      "size": 18078,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/fd0acea84ff3fc6b6c8db07bfb894de559a35bbd"
+    },
+    {
+      "path": "registry.yaml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e8ebd995947567acd9a84a641c55c631655ba526",
+      "size": 119517,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e8ebd995947567acd9a84a641c55c631655ba526"
+    },
+    {
+      "path": "scripts",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9733f60c18e8e02313dade057cf563d862b652ec",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/9733f60c18e8e02313dade057cf563d862b652ec"
+    },
+    {
+      "path": "scripts/blind_knowledge_test.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e087ebf3595ed736ff0a1e105e5938768df0b928",
+      "size": 12682,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e087ebf3595ed736ff0a1e105e5938768df0b928"
+    },
+    {
+      "path": "scripts/validate_registry.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "15399112814cf8f935eb91e9c3547b0bb0726625",
+      "size": 3422,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/15399112814cf8f935eb91e9c3547b0bb0726625"
+    },
+    {
+      "path": "skills",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7f9db236433d74898dc9c85de88126692d39db8d",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/7f9db236433d74898dc9c85de88126692d39db8d"
+    },
+    {
+      "path": "skills/biostatistics",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c29add49f2dbaceb51275f5f85a528ec4e4fe35d",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/c29add49f2dbaceb51275f5f85a528ec4e4fe35d"
+    },
+    {
+      "path": "skills/biostatistics/pymc-bayesian-modeling",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2bfae2abff285f2dfc081aac21552144d99bd9cc",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/2bfae2abff285f2dfc081aac21552144d99bd9cc"
+    },
+    {
+      "path": "skills/biostatistics/pymc-bayesian-modeling/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "613d025884e6236edfbc23ced271b56792b039eb",
+      "size": 22869,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/613d025884e6236edfbc23ced271b56792b039eb"
+    },
+    {
+      "path": "skills/biostatistics/pymc-bayesian-modeling/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bf51aae90090bfd396dba1573a61f380c8253e65",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/bf51aae90090bfd396dba1573a61f380c8253e65"
+    },
+    {
+      "path": "skills/biostatistics/pymc-bayesian-modeling/references/advanced_workflows.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "47cb6a432dbcf63e6f1ac203d80f5c8c54a78c8e",
+      "size": 10796,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/47cb6a432dbcf63e6f1ac203d80f5c8c54a78c8e"
+    },
+    {
+      "path": "skills/biostatistics/pymc-bayesian-modeling/references/distributions_inference.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "90b10dda543e57723ba2d98876f98cfb7b3a2b01",
+      "size": 14012,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/90b10dda543e57723ba2d98876f98cfb7b3a2b01"
+    },
+    {
+      "path": "skills/biostatistics/scikit-survival-analysis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b3cd98a5af6bb487f6593a33c3d82e6ea7955750",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/b3cd98a5af6bb487f6593a33c3d82e6ea7955750"
+    },
+    {
+      "path": "skills/biostatistics/scikit-survival-analysis/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9dcfdefafe1e2361ad4b49b68e010949bf6a316d",
+      "size": 25689,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/9dcfdefafe1e2361ad4b49b68e010949bf6a316d"
+    },
+    {
+      "path": "skills/biostatistics/scikit-survival-analysis/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4ed94961d52e07dd685969300703e1bcdba36866",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/4ed94961d52e07dd685969300703e1bcdba36866"
+    },
+    {
+      "path": "skills/biostatistics/scikit-survival-analysis/references/data_competing_risks.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8417330652fca5b9f8005d8a262514c010075106",
+      "size": 14226,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/8417330652fca5b9f8005d8a262514c010075106"
+    },
+    {
+      "path": "skills/biostatistics/scikit-survival-analysis/references/models_evaluation.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d73b4f202ba20e97209504160df0a7cb65c3e48e",
+      "size": 15685,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/d73b4f202ba20e97209504160df0a7cb65c3e48e"
+    },
+    {
+      "path": "skills/biostatistics/statistical-analysis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "81b616594d8b87a4aba039d37d1120b0d706224c",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/81b616594d8b87a4aba039d37d1120b0d706224c"
+    },
+    {
+      "path": "skills/biostatistics/statistical-analysis/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0e33d91bf8228108ee8d741b1a9249ebea25efa4",
+      "size": 19303,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/0e33d91bf8228108ee8d741b1a9249ebea25efa4"
+    },
+    {
+      "path": "skills/biostatistics/statistical-analysis/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b7d413fd85a04a95e3c34d0e851a0e908d8e1a0c",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/b7d413fd85a04a95e3c34d0e851a0e908d8e1a0c"
+    },
+    {
+      "path": "skills/biostatistics/statistical-analysis/references/bayesian_statistics.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "40c01fe6aebf43635bc3971674dccb7ba36d1549",
+      "size": 16032,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/40c01fe6aebf43635bc3971674dccb7ba36d1549"
+    },
+    {
+      "path": "skills/biostatistics/statistical-analysis/references/effect_sizes_and_power.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "280e971c1f46bca5962b81351ea5e72f9829e33d",
+      "size": 12664,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/280e971c1f46bca5962b81351ea5e72f9829e33d"
+    },
+    {
+      "path": "skills/biostatistics/statistical-analysis/references/reporting_standards.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7042f6e0771cad3d1b16107b03a13d475a5717dd",
+      "size": 12496,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/7042f6e0771cad3d1b16107b03a13d475a5717dd"
+    },
+    {
+      "path": "skills/biostatistics/statsmodels-statistical-modeling",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "efeca46df89bbaffce25a77aa8a37f4c18dbb253",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/efeca46df89bbaffce25a77aa8a37f4c18dbb253"
+    },
+    {
+      "path": "skills/biostatistics/statsmodels-statistical-modeling/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "65b530f8527996d5ce32be3a8fa753dc07ffe6b0",
+      "size": 16837,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/65b530f8527996d5ce32be3a8fa753dc07ffe6b0"
+    },
+    {
+      "path": "skills/cell-biology",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "06d93ab5b005bffd36ce96d8d532768759a59cee",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/06d93ab5b005bffd36ce96d8d532768759a59cee"
+    },
+    {
+      "path": "skills/cell-biology/cellpose-cell-segmentation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "42fe87844e10c11f96106a21efd359fa2ba49b1f",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/42fe87844e10c11f96106a21efd359fa2ba49b1f"
+    },
+    {
+      "path": "skills/cell-biology/cellpose-cell-segmentation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "80d44ad966b80666a6ed1938b0b5c2bdb316cd46",
+      "size": 14183,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/80d44ad966b80666a6ed1938b0b5c2bdb316cd46"
+    },
+    {
+      "path": "skills/cell-biology/flowio-flow-cytometry",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3e55634fa08cebf53c1103af7d40926c5eb083a4",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/3e55634fa08cebf53c1103af7d40926c5eb083a4"
+    },
+    {
+      "path": "skills/cell-biology/flowio-flow-cytometry/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ef6080fb67e132f378ec52f211c4b7378f95b8b6",
+      "size": 12215,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/ef6080fb67e132f378ec52f211c4b7378f95b8b6"
+    },
+    {
+      "path": "skills/cell-biology/napari-image-viewer",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "cae6120a81b301b1802fe9567a87b5e05ac15364",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/cae6120a81b301b1802fe9567a87b5e05ac15364"
+    },
+    {
+      "path": "skills/cell-biology/napari-image-viewer/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a3473816fa50e266daacf6bce182a1f79a9edf7c",
+      "size": 13161,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a3473816fa50e266daacf6bce182a1f79a9edf7c"
+    },
+    {
+      "path": "skills/cell-biology/opencv-bioimage-analysis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "eb231835a2f31f58ca22626136a26528af5ee6be",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/eb231835a2f31f58ca22626136a26528af5ee6be"
+    },
+    {
+      "path": "skills/cell-biology/opencv-bioimage-analysis/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a9dac9ab9cd5b8df51e6087c46134e68062f6bfa",
+      "size": 15783,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a9dac9ab9cd5b8df51e6087c46134e68062f6bfa"
+    },
+    {
+      "path": "skills/cell-biology/pyimagej-fiji-bridge",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c3caaae53b6106ce955d904103b917689494feed",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/c3caaae53b6106ce955d904103b917689494feed"
+    },
+    {
+      "path": "skills/cell-biology/pyimagej-fiji-bridge/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d901197f052904aad1c250d4b73ccf193be5b2ea",
+      "size": 24908,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/d901197f052904aad1c250d4b73ccf193be5b2ea"
+    },
+    {
+      "path": "skills/cell-biology/scikit-image-processing",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "50f660a89fc65f42fe60d29d4f33bacdc40255ed",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/50f660a89fc65f42fe60d29d4f33bacdc40255ed"
+    },
+    {
+      "path": "skills/cell-biology/scikit-image-processing/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c57cd2621917407ce7cf6cf58fb7aaf196d8890c",
+      "size": 17713,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c57cd2621917407ce7cf6cf58fb7aaf196d8890c"
+    },
+    {
+      "path": "skills/cell-biology/trackpy-particle-tracking",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "34c1d236b970b40cc5282b32e5b2fea53bcb0b63",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/34c1d236b970b40cc5282b32e5b2fea53bcb0b63"
+    },
+    {
+      "path": "skills/cell-biology/trackpy-particle-tracking/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3a575ed8a1a5723b6e4e2522a74666fb11e41fd2",
+      "size": 27751,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/3a575ed8a1a5723b6e4e2522a74666fb11e41fd2"
+    },
+    {
+      "path": "skills/data-visualization",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5a5d07e8e3bdd76bcd34155f8b4197cf2cc0be7f",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/5a5d07e8e3bdd76bcd34155f8b4197cf2cc0be7f"
+    },
+    {
+      "path": "skills/data-visualization/matplotlib-scientific-plotting",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "32c989fdaaa79e99e34873554afc916d343efbd6",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/32c989fdaaa79e99e34873554afc916d343efbd6"
+    },
+    {
+      "path": "skills/data-visualization/matplotlib-scientific-plotting/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "27e40ca2be442dbed9094bbbe3f0498cc210a5e2",
+      "size": 15927,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/27e40ca2be442dbed9094bbbe3f0498cc210a5e2"
+    },
+    {
+      "path": "skills/data-visualization/plotly-interactive-plots",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7c77f6731d3ec1d3a62c22c6c3fcc995e02bf7d3",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/7c77f6731d3ec1d3a62c22c6c3fcc995e02bf7d3"
+    },
+    {
+      "path": "skills/data-visualization/plotly-interactive-plots/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "935251f4bb7ee3b6bae95af92f320a213b692ae7",
+      "size": 32944,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/935251f4bb7ee3b6bae95af92f320a213b692ae7"
+    },
+    {
+      "path": "skills/data-visualization/scientific-visualization",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a063a946eb3ab65e77b53b35546c0975a4902c44",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/a063a946eb3ab65e77b53b35546c0975a4902c44"
+    },
+    {
+      "path": "skills/data-visualization/scientific-visualization/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4505327f6208c1b00fb817400fad3009af0582e5",
+      "size": 14573,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/4505327f6208c1b00fb817400fad3009af0582e5"
+    },
+    {
+      "path": "skills/data-visualization/seaborn-statistical-plots",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "714a4aff8983764670299d2637b9d7e403939cd3",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/714a4aff8983764670299d2637b9d7e403939cd3"
+    },
+    {
+      "path": "skills/data-visualization/seaborn-statistical-plots/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3564a31ffa93ebbb311b210f40e6aea915455efe",
+      "size": 34417,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/3564a31ffa93ebbb311b210f40e6aea915455efe"
+    },
+    {
+      "path": "skills/data-visualization/statistical-significance-annotation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8f564e839282f35a96eba0cfb8d7a3b08d113af6",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/8f564e839282f35a96eba0cfb8d7a3b08d113af6"
+    },
+    {
+      "path": "skills/data-visualization/statistical-significance-annotation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0403c7bbc226493b2da690bfd1b7ee1224c0a350",
+      "size": 11896,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/0403c7bbc226493b2da690bfd1b7ee1224c0a350"
+    },
+    {
+      "path": "skills/genomics-bioinformatics",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ae8884cc82e9a470fedaba303b557ffa8d8d130a",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ae8884cc82e9a470fedaba303b557ffa8d8d130a"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/alignment",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1b92a3e11b56a6d7ab76ca7c63b33bd9b059665f",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/1b92a3e11b56a6d7ab76ca7c63b33bd9b059665f"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/alignment/bwa-mem2-dna-aligner",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "970ba4611a25ea612a15773c0a6a02f30037bf94",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/970ba4611a25ea612a15773c0a6a02f30037bf94"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/alignment/bwa-mem2-dna-aligner/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c9fde77d0e9477575b2de511969c4e7a2a72ddb8",
+      "size": 12373,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c9fde77d0e9477575b2de511969c4e7a2a72ddb8"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/alignment/pysam-genomic-files",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7d786670f91bddb162565eb3bce2d9f429a30d4f",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/7d786670f91bddb162565eb3bce2d9f429a30d4f"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/alignment/pysam-genomic-files/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f243bb4e455ae8f1426546bdfa4e3318f7b6e329",
+      "size": 19367,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/f243bb4e455ae8f1426546bdfa4e3318f7b6e329"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/alignment/samtools-bam-processing",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "04435cc1bceadf8d0d23aaea3ca8153c5d021a5b",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/04435cc1bceadf8d0d23aaea3ca8153c5d021a5b"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/alignment/samtools-bam-processing/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c4ada2ef5861f911661712d1e191e99260baeb74",
+      "size": 14440,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c4ada2ef5861f911661712d1e191e99260baeb74"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/alignment/star-rna-seq-aligner",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8a8885b2f6af87a6765d5ecee9e41d9a145b7690",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/8a8885b2f6af87a6765d5ecee9e41d9a145b7690"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/alignment/star-rna-seq-aligner/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a029015a7609f41fd67dde24e4ee2fc6b9f5ea77",
+      "size": 14096,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a029015a7609f41fd67dde24e4ee2fc6b9f5ea77"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/annotation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ca7e34283115f89acda1d73f4f17f8e0fa7a9c0b",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ca7e34283115f89acda1d73f4f17f8e0fa7a9c0b"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/annotation/bakta-genome-annotation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "db126cb4a6632fd130feba323838663630d2bdb5",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/db126cb4a6632fd130feba323838663630d2bdb5"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/annotation/bakta-genome-annotation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e8dc3dfc12374a4e5ba996f8cbf14ff04f25b657",
+      "size": 21537,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e8dc3dfc12374a4e5ba996f8cbf14ff04f25b657"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/annotation/prokka-genome-annotation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1b26e51f57861bb2197915d2f48af17af76016cf",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/1b26e51f57861bb2197915d2f48af17af76016cf"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/annotation/prokka-genome-annotation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ff19a374d800a9a0025a0b9cd2375bf469422f3e",
+      "size": 22478,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/ff19a374d800a9a0025a0b9cd2375bf469422f3e"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/annotation/roary-pangenome",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "781b693b418982bd0936fae20381cea48f838991",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/781b693b418982bd0936fae20381cea48f838991"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/annotation/roary-pangenome/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2b80ab78af709fb458e7e765d1e360da65a20204",
+      "size": 20824,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/2b80ab78af709fb458e7e765d1e360da65a20204"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/arboreto-grn-inference",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d164b1baa9f0ef95ce710ad6e9fe74cf4740ae70",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d164b1baa9f0ef95ce710ad6e9fe74cf4740ae70"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/arboreto-grn-inference/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b45be094c086249e9072e1be63d51554e41d4908",
+      "size": 19473,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/b45be094c086249e9072e1be63d51554e41d4908"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/biopython-molecular-biology",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ae281ae9e76de68753629f80fba7647303418deb",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ae281ae9e76de68753629f80fba7647303418deb"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/biopython-molecular-biology/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bfb048c941462e654ec219dde48075f3cb89056e",
+      "size": 24218,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/bfb048c941462e654ec219dde48075f3cb89056e"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/biopython-sequence-analysis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "cb8757eb31124700e0e4895aa00135cfb8183823",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/cb8757eb31124700e0e4895aa00135cfb8183823"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/biopython-sequence-analysis/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7c641a8b3a021ffef2c100e4e891ecf19b1f3f7e",
+      "size": 33989,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/7c641a8b3a021ffef2c100e4e891ecf19b1f3f7e"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c2b1ac416c8db2b80e727f801196dbe593d6520f",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/c2b1ac416c8db2b80e727f801196dbe593d6520f"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/archs4-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "cab5b2235aaf8aae92233a2ad0ef83774bd0cdd2",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/cab5b2235aaf8aae92233a2ad0ef83774bd0cdd2"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/archs4-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f757986abd0fcbd5214950e8873871da4e88b77a",
+      "size": 27246,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/f757986abd0fcbd5214950e8873871da4e88b77a"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/bioservices-multi-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "51ea345c0589e24e4af1003ccee724faef8c1de1",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/51ea345c0589e24e4af1003ccee724faef8c1de1"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/bioservices-multi-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "89819826c86d7a84fbb6a6ce57f5b1961ee5b79d",
+      "size": 24477,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/89819826c86d7a84fbb6a6ce57f5b1961ee5b79d"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/bioservices-multi-database/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "feb2e2afdb259f58ae2d8a1d1a81cca1801b8923",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/feb2e2afdb259f58ae2d8a1d1a81cca1801b8923"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/bioservices-multi-database/references/identifier_mapping_guide.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bb3fd866ab714970ac1fd478922f928ccf77982e",
+      "size": 13481,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/bb3fd866ab714970ac1fd478922f928ccf77982e"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/bioservices-multi-database/references/services_catalog.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4ff83a0fd8d0d716660fd7cd9b825abd728a3282",
+      "size": 10139,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/4ff83a0fd8d0d716660fd7cd9b825abd728a3282"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/cbioportal-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "38e177c43e5690b49ca57f7f06aeb5f95af65ca2",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/38e177c43e5690b49ca57f7f06aeb5f95af65ca2"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/cbioportal-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "78318365965ac5bb0cd78a284e755436048a9ee7",
+      "size": 34150,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/78318365965ac5bb0cd78a284e755436048a9ee7"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/clinpgx-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bfe66a425b7866347f9a55b237c8d931c89db8c1",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/bfe66a425b7866347f9a55b237c8d931c89db8c1"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/clinpgx-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "21586ce45cf7bbb52cc81c78223138c6a9d6e8cc",
+      "size": 29037,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/21586ce45cf7bbb52cc81c78223138c6a9d6e8cc"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/clinvar-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "200026266fcbbbe48faa2e20fd09d5f25838e267",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/200026266fcbbbe48faa2e20fd09d5f25838e267"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/clinvar-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "26595a22b6ed05310651f31d11835868bc852433",
+      "size": 19710,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/26595a22b6ed05310651f31d11835868bc852433"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/cosmic-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b50154fe2f3563ea9813e94d14a13cf1fe16c438",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/b50154fe2f3563ea9813e94d14a13cf1fe16c438"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/cosmic-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a754ef78bac3f12217621afc2b3b68783f1452e6",
+      "size": 18255,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a754ef78bac3f12217621afc2b3b68783f1452e6"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/dbsnp-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "36fdaa98fc4c7bc25ba93ea855094660860ab076",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/36fdaa98fc4c7bc25ba93ea855094660860ab076"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/dbsnp-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d49421b1000c2fe24c827dcbbceaacba29f8c76b",
+      "size": 29143,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/d49421b1000c2fe24c827dcbbceaacba29f8c76b"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/depmap-crispr-essentiality",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "21416eeb9ae56f69d20330736a1efce7d937c50f",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/21416eeb9ae56f69d20330736a1efce7d937c50f"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/depmap-crispr-essentiality/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a705a917f0825d4c0439a013ddee6df1e3984b99",
+      "size": 14938,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a705a917f0825d4c0439a013ddee6df1e3984b99"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/ena-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "35f0f59b86bd599e49f60dda0034d2d30fd11346",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/35f0f59b86bd599e49f60dda0034d2d30fd11346"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/ena-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "10037c2f3e2f0c57bfc649e929f0dd17dd6d08fa",
+      "size": 21392,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/10037c2f3e2f0c57bfc649e929f0dd17dd6d08fa"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/encode-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ec4dc0376299339f482aac087d41b1cda4ebd0fe",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ec4dc0376299339f482aac087d41b1cda4ebd0fe"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/encode-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "82f9020412b5a072a8cf87952013e9cefbfb6904",
+      "size": 34061,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/82f9020412b5a072a8cf87952013e9cefbfb6904"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/ensembl-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a11465794c6570cdfbc2688f09dc581b127fbd56",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/a11465794c6570cdfbc2688f09dc581b127fbd56"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/ensembl-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "396efe72674d5e0b8fc77531a6ce713695b77afc",
+      "size": 15983,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/396efe72674d5e0b8fc77531a6ce713695b77afc"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/gene-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4f9682648380c5f9834e8a9772d7871920b78702",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/4f9682648380c5f9834e8a9772d7871920b78702"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/gene-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d121142b417e82a0d88198d178358e222c413cdf",
+      "size": 17748,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/d121142b417e82a0d88198d178358e222c413cdf"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/geo-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b4b6c92e6a5051776417274187a4acdd82e29306",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/b4b6c92e6a5051776417274187a4acdd82e29306"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/geo-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "55214c8aaa672ddbe4a7985a220bc216b53a8381",
+      "size": 17136,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/55214c8aaa672ddbe4a7985a220bc216b53a8381"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/gget-genomic-databases",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "617e10633f5e67109a87fe314f14a2f58697bd58",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/617e10633f5e67109a87fe314f14a2f58697bd58"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/gget-genomic-databases/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ef26a8e6f534793fd7f3fe5cf79a36a1e0a6858",
+      "size": 21051,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/8ef26a8e6f534793fd7f3fe5cf79a36a1e0a6858"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/gget-genomic-databases/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "952fcc4e8cf7b69ed7a2e8dca1cd758137e3efea",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/952fcc4e8cf7b69ed7a2e8dca1cd758137e3efea"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/gget-genomic-databases/references/databases_workflows.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "749c408cbfab035bd1f7c7e697f7cd43632212dc",
+      "size": 18633,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/749c408cbfab035bd1f7c7e697f7cd43632212dc"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/gget-genomic-databases/references/module_parameters.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2b6a1992224a3ec762d15b4059cfea0035e2277f",
+      "size": 12530,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/2b6a1992224a3ec762d15b4059cfea0035e2277f"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/gnomad-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "da5268f6316350308f4459532b509f4a1b25fbbe",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/da5268f6316350308f4459532b509f4a1b25fbbe"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/gnomad-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a7e192fd131a869bae1ddd8286a0fe805dd648b1",
+      "size": 28674,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a7e192fd131a869bae1ddd8286a0fe805dd648b1"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/gwas-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "57eed9a3bb492d4fafd47d3688956202eb7be735",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/57eed9a3bb492d4fafd47d3688956202eb7be735"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/gwas-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b9c52c744b8730925b64339cf1199f696838caf",
+      "size": 27275,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/4b9c52c744b8730925b64339cf1199f696838caf"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/gwas-database/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "803892806670c9d3ada970d9727ad92f26441ce0",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/803892806670c9d3ada970d9727ad92f26441ce0"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/gwas-database/references/api_endpoints.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c8188ca062d88aae73ad109dbc460671df4a07eb",
+      "size": 8276,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c8188ca062d88aae73ad109dbc460671df4a07eb"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/jaspar-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f5fc60ee184000a70cb9185c18b8e7f10ead1708",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/f5fc60ee184000a70cb9185c18b8e7f10ead1708"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/jaspar-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6fe97054ca25a498b2fa9a3017b254ba5f168405",
+      "size": 28361,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/6fe97054ca25a498b2fa9a3017b254ba5f168405"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/kegg-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "32b0d06026b06e5d0fa0c18f6761a5db33323874",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/32b0d06026b06e5d0fa0c18f6761a5db33323874"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/kegg-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4078c24b2aede28867ce4f4452272d2fcba3cedb",
+      "size": 18418,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/4078c24b2aede28867ce4f4452272d2fcba3cedb"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/monarch-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "41c8cf4a9f518ec8b73779e2c0f82a4df1a93019",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/41c8cf4a9f518ec8b73779e2c0f82a4df1a93019"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/monarch-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e0ca62dadc8afdff2a2b7b04a0eb6f2d82725149",
+      "size": 26569,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e0ca62dadc8afdff2a2b7b04a0eb6f2d82725149"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/mouse-phenome-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ea7f0334a5d44f3a8565b48fd6f30d6879438814",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ea7f0334a5d44f3a8565b48fd6f30d6879438814"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/mouse-phenome-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "af17ebc1ed9393a2f0c78ba7e4eb38f26d666c47",
+      "size": 27887,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/af17ebc1ed9393a2f0c78ba7e4eb38f26d666c47"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/quickgo-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8ed64509dbabe02e3e0f58c09632f4cb2187ca6b",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/8ed64509dbabe02e3e0f58c09632f4cb2187ca6b"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/quickgo-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c5717a42869dd11a343d7ec02fc4566cc56c09a0",
+      "size": 27758,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c5717a42869dd11a343d7ec02fc4566cc56c09a0"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/regulomedb-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6d2d65f5e2bfb361eadb9bbfdcc4ef3bf8c4bbfa",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/6d2d65f5e2bfb361eadb9bbfdcc4ef3bf8c4bbfa"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/regulomedb-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b117508ad0518328dd60857dbf2d61d9a2f4278",
+      "size": 21261,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/9b117508ad0518328dd60857dbf2d61d9a2f4278"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/remap-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9a41e6d852b6f156a096d520800d8c2615d49a1b",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/9a41e6d852b6f156a096d520800d8c2615d49a1b"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/remap-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ff12dbba4d3a710193b24aa5d318dbd4d6f0a1a2",
+      "size": 28744,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/ff12dbba4d3a710193b24aa5d318dbd4d6f0a1a2"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/ucsc-genome-browser",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e59f950cdf983135f2b45db8623359474b37fb88",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/e59f950cdf983135f2b45db8623359474b37fb88"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/databases/ucsc-genome-browser/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eb043aa8f565fdfb8acd70bc930b8a57089eb6f2",
+      "size": 24007,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/eb043aa8f565fdfb8acd70bc930b8a57089eb6f2"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/etetoolkit",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bebe25c53725eca88d167874413e35a499c67e72",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/bebe25c53725eca88d167874413e35a499c67e72"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/etetoolkit/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "db9f67642d8713ef8baafe988e7d219748f76032",
+      "size": 21381,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/db9f67642d8713ef8baafe988e7d219748f76032"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/homer-motif-analysis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e32053913ce8a608ab7b3197ab5d8665f06f7e30",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/e32053913ce8a608ab7b3197ab5d8665f06f7e30"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/homer-motif-analysis/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bce532bd3dbeca6e15a240436e3b9b22603e88a4",
+      "size": 23458,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/bce532bd3dbeca6e15a240436e3b9b22603e88a4"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/interval-ops",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bb23a813c80c93a9004fd9fe7db4747b8add3830",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/bb23a813c80c93a9004fd9fe7db4747b8add3830"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/interval-ops/bedtools-genomic-intervals",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ea814ea77467883f53cc5c6ceb0d60341a850980",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ea814ea77467883f53cc5c6ceb0d60341a850980"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/interval-ops/bedtools-genomic-intervals/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "224ec5b109c431c267166a4116f3863dabc0f7a9",
+      "size": 15678,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/224ec5b109c431c267166a4116f3863dabc0f7a9"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/interval-ops/deeptools-ngs-analysis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2fda173508c8fb27c63ff6bcc3b7cbd1e7dd1382",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/2fda173508c8fb27c63ff6bcc3b7cbd1e7dd1382"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/interval-ops/deeptools-ngs-analysis/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "903516ef085b350bf43a545675afb4df12a456b6",
+      "size": 13855,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/903516ef085b350bf43a545675afb4df12a456b6"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/interval-ops/geniml",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "790f09ba575f2cc918ed6fee739a2c756296c93f",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/790f09ba575f2cc918ed6fee739a2c756296c93f"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/interval-ops/geniml/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "346ee5a6b94a4fc68accf044e9228dc8474977ce",
+      "size": 17372,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/346ee5a6b94a4fc68accf044e9228dc8474977ce"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/interval-ops/gtars",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e7bb510af6215fea0c1c52bf11d4a94a9186009f",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/e7bb510af6215fea0c1c52bf11d4a94a9186009f"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/interval-ops/gtars/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "913efc00b1f5117b351ef0602c5105291338356b",
+      "size": 16638,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/913efc00b1f5117b351ef0602c5105291338356b"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/macs3-peak-calling",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9715bea2b445faee6570b9794c352914b9e0d056",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/9715bea2b445faee6570b9794c352914b9e0d056"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/macs3-peak-calling/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a18cb526c87d2c0bbf4132e5e851755ecd1a4354",
+      "size": 11826,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a18cb526c87d2c0bbf4132e5e851755ecd1a4354"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/qc",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "16c4c432ca9172582bf215c39052ed5f5ae3856b",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/16c4c432ca9172582bf215c39052ed5f5ae3856b"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/qc/busco-status-interpretation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "28753cf3bc47c95b4bba3398727f7b5250c94c11",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/28753cf3bc47c95b4bba3398727f7b5250c94c11"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/qc/busco-status-interpretation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "603c0c0e232f49e13c89b916e71fc8fc6b344257",
+      "size": 15484,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/603c0c0e232f49e13c89b916e71fc8fc6b344257"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/qc/fastp-fastq-preprocessing",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2c5f84e3978cdaa69931a8e6f521b940e12161ac",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/2c5f84e3978cdaa69931a8e6f521b940e12161ac"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/qc/fastp-fastq-preprocessing/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "43fdf1452ff44ccd31822703ed2f076671e2037b",
+      "size": 13788,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/43fdf1452ff44ccd31822703ed2f076671e2037b"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/qc/multiqc-qc-reports",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d2de153e24e5cc5cd16bfa37e4875bb20c0a9a74",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d2de153e24e5cc5cd16bfa37e4875bb20c0a9a74"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/qc/multiqc-qc-reports/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "25659d4d8e2dea9309025fb88879e1a57973abbc",
+      "size": 10383,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/25659d4d8e2dea9309025fb88879e1a57973abbc"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/rnaseq",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7f9f355508cc5f4c513a0d7bbefa4ef574decdae",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/7f9f355508cc5f4c513a0d7bbefa4ef574decdae"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/rnaseq/deseq2-differential-expression",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "019ad927f512266d3cc31987708b979906f3bb88",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/019ad927f512266d3cc31987708b979906f3bb88"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/rnaseq/deseq2-differential-expression/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c79795bacc2a1abae64812bd52887a3c56a442f9",
+      "size": 23685,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c79795bacc2a1abae64812bd52887a3c56a442f9"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/rnaseq/featurecounts-rna-counting",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "15057c3745a53c36c5bac0ff5d1208f8b077fd3c",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/15057c3745a53c36c5bac0ff5d1208f8b077fd3c"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/rnaseq/featurecounts-rna-counting/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e48cb664683b286045146037f7e84770e4741625",
+      "size": 13180,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e48cb664683b286045146037f7e84770e4741625"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/rnaseq/gseapy-gene-enrichment",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "355c3df7a13ea61fb38396b1e354c2692aeaf1e0",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/355c3df7a13ea61fb38396b1e354c2692aeaf1e0"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/rnaseq/gseapy-gene-enrichment/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b7a6de1fcf930152c3a40bb437b78d049f4799b8",
+      "size": 14094,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/b7a6de1fcf930152c3a40bb437b78d049f4799b8"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/rnaseq/pydeseq2-differential-expression",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "62678edfb29ff3624a1a7fbe3164da53d0f120c4",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/62678edfb29ff3624a1a7fbe3164da53d0f120c4"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/rnaseq/pydeseq2-differential-expression/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a7c596de26cad85759fe31a3a00a28e9aef8eb48",
+      "size": 13909,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a7c596de26cad85759fe31a3a00a28e9aef8eb48"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/rnaseq/salmon-rna-quantification",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "de5d9bade7346bbd94864f6a81455cd96c4dc83a",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/de5d9bade7346bbd94864f6a81455cd96c4dc83a"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/rnaseq/salmon-rna-quantification/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c4a5801c1fc0a2cb8d0eed21f9f82926118bd95b",
+      "size": 14109,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c4a5801c1fc0a2cb8d0eed21f9f82926118bd95b"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/scikit-bio",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b28cbfe244c68b292b270f9152ad938a4ded9d90",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/b28cbfe244c68b292b270f9152ad938a4ded9d90"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/scikit-bio/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a1385fe3de24e07d4ed1e82e125d0f559618a42a",
+      "size": 17721,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a1385fe3de24e07d4ed1e82e125d0f559618a42a"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/scikit-bio/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6ca476a63502d1cf5a283a0bb4518564de96b9e8",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/6ca476a63502d1cf5a283a0bb4518564de96b9e8"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/scikit-bio/references/extended_api.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "717b0e972c512445ded386c143953525d95a57d7",
+      "size": 7377,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/717b0e972c512445ded386c143953525d95a57d7"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c44241a094b5d06ba3e9e444e9ac4d37a32068b2",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/c44241a094b5d06ba3e9e444e9ac4d37a32068b2"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/anndata-data-structure",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2b63128535c6d83c64409258fec708eea1bc8a8f",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/2b63128535c6d83c64409258fec708eea1bc8a8f"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/anndata-data-structure/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a3de0ab22364dd8a312d416abaf9ae89dbcac919",
+      "size": 23287,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a3de0ab22364dd8a312d416abaf9ae89dbcac919"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/anndata-data-structure/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "dd0ce06a8ab0208631a45929f66ae393149cc963",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/dd0ce06a8ab0208631a45929f66ae393149cc963"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/anndata-data-structure/references/data_structure_io.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7b8526ca7d316741ed449be277991a882d551cef",
+      "size": 11373,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/7b8526ca7d316741ed449be277991a882d551cef"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/anndata-data-structure/references/manipulation_concatenation.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cdc36b4ec2d979df4fa20779ce2dadb86c8d59de",
+      "size": 14258,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/cdc36b4ec2d979df4fa20779ce2dadb86c8d59de"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/celltypist-cell-annotation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6ea1b53a735b2224059fbdeb1a12e3c63f50a21d",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/6ea1b53a735b2224059fbdeb1a12e3c63f50a21d"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/celltypist-cell-annotation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1c4baeac5f015a41f44745a502b01da3da040e0e",
+      "size": 18074,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/1c4baeac5f015a41f44745a502b01da3da040e0e"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/cellxgene-census",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d07e418708618a01aa08bef5d1fd0f47172533d1",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d07e418708618a01aa08bef5d1fd0f47172533d1"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/cellxgene-census/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "21856483e24a71914a2bb5fc94a0d26f69c3106d",
+      "size": 15198,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/21856483e24a71914a2bb5fc94a0d26f69c3106d"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/harmony-batch-correction",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ff1f7525ffb00bd1c06752d34d87b2b05ccb5d47",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ff1f7525ffb00bd1c06752d34d87b2b05ccb5d47"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/harmony-batch-correction/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "47e52da2c00311246b6e2a3c2df38d83a66ff9f2",
+      "size": 20516,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/47e52da2c00311246b6e2a3c2df38d83a66ff9f2"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/popv-cell-annotation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "64b9acc3b8bbaf648511125c0dcd9043d4d8ecea",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/64b9acc3b8bbaf648511125c0dcd9043d4d8ecea"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/popv-cell-annotation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0178d7ec3d1a5b5f5c6366bc9e14403dfa5d3965",
+      "size": 24930,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/0178d7ec3d1a5b5f5c6366bc9e14403dfa5d3965"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/scanpy-scrna-seq",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f6790d40159a1a76bc5824ba172cca1ebb25ec3a",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/f6790d40159a1a76bc5824ba172cca1ebb25ec3a"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/scanpy-scrna-seq/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aa89a7a2001da335d8ae8ae85e50274385b075cb",
+      "size": 15780,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/aa89a7a2001da335d8ae8ae85e50274385b075cb"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/scanpy-scrna-seq/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fdbd8c3f32a90a05ab1faccf2ebe6649910cab92",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/fdbd8c3f32a90a05ab1faccf2ebe6649910cab92"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/scanpy-scrna-seq/references/api_reference.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ff9f3c3d02592013817e28d355aef89475ef566",
+      "size": 7476,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/8ff9f3c3d02592013817e28d355aef89475ef566"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/scanpy-scrna-seq/references/plotting_guide.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd6bacc89918754fe96cddd68e01965c469fa121",
+      "size": 5451,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/cd6bacc89918754fe96cddd68e01965c469fa121"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/scanpy-scrna-seq/references/standard_workflow.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "346e84c43fcc3b3f20a49e373570c7e68bf75510",
+      "size": 6653,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/346e84c43fcc3b3f20a49e373570c7e68bf75510"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/scvi-tools-single-cell",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ba49991af85641c737a798b7a7a0876adee57aaf",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ba49991af85641c737a798b7a7a0876adee57aaf"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/scvi-tools-single-cell/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0942d082b580f6272425af7d56469592f9a2814f",
+      "size": 26596,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/0942d082b580f6272425af7d56469592f9a2814f"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/single-cell-annotation-guide",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "cfe2368393e95591216e447ff9474d96ca8190ec",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/cfe2368393e95591216e447ff9474d96ca8190ec"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/single-cell/single-cell-annotation-guide/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e6491fe76ea14d199f22b114539b1878ce706df5",
+      "size": 31107,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e6491fe76ea14d199f22b114539b1878ce706df5"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/variant",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "202b23e84b58a5a00039cdf32fe068b37a0f8043",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/202b23e84b58a5a00039cdf32fe068b37a0f8043"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/variant/bcftools-variant-manipulation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "02d00fa0a8783ecbef2ced97fc168e4f865c7d5e",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/02d00fa0a8783ecbef2ced97fc168e4f865c7d5e"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/variant/bcftools-variant-manipulation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fef08eb6d89abdc8993d2b8c9bc2caaac004dabb",
+      "size": 17379,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/fef08eb6d89abdc8993d2b8c9bc2caaac004dabb"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/variant/cnvkit-copy-number",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d47b41c584051a86c9152bdb1c6cf1659ab647b2",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d47b41c584051a86c9152bdb1c6cf1659ab647b2"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/variant/cnvkit-copy-number/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a91a1b4f444d0a0bc9077f2ab7b044b610b4f744",
+      "size": 22168,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a91a1b4f444d0a0bc9077f2ab7b044b610b4f744"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/variant/gatk-variant-calling",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4445d0e5a387b90d3ccc4c597af9ba3f5997d916",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/4445d0e5a387b90d3ccc4c597af9ba3f5997d916"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/variant/gatk-variant-calling/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "108aced5bd164dfd0ab911c1882c3ed8e8eb3be5",
+      "size": 13024,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/108aced5bd164dfd0ab911c1882c3ed8e8eb3be5"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/variant/plink2-gwas-analysis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9049ecbf75785b99791f802cdf9c1462cf6fab7c",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/9049ecbf75785b99791f802cdf9c1462cf6fab7c"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/variant/plink2-gwas-analysis/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8263e03289ec3777b934b13b7da293fbb025a8f8",
+      "size": 12755,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/8263e03289ec3777b934b13b7da293fbb025a8f8"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/variant/snpeff-variant-annotation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a214c4c5eb1c5b043f41299e703e0e8650fcc82d",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/a214c4c5eb1c5b043f41299e703e0e8650fcc82d"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/variant/snpeff-variant-annotation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1a3ae5a55158ae46a3cb29e722dd6a3026e2b98c",
+      "size": 20527,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/1a3ae5a55158ae46a3cb29e722dd6a3026e2b98c"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/variant/vcf-variant-filtering",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "cfdee3f0113f9ddedfc627653167a41c064955eb",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/cfdee3f0113f9ddedfc627653167a41c064955eb"
+    },
+    {
+      "path": "skills/genomics-bioinformatics/variant/vcf-variant-filtering/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a94fccc44bec9de52cf0bb8c5385d66b6183ee11",
+      "size": 17595,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a94fccc44bec9de52cf0bb8c5385d66b6183ee11"
+    },
+    {
+      "path": "skills/lab-automation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4bd3da955c2bf31ee55c8afc44b7c61158fbbec1",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/4bd3da955c2bf31ee55c8afc44b7c61158fbbec1"
+    },
+    {
+      "path": "skills/lab-automation/benchling-integration",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "37cf4fd18cb4a90446d0334d00ea384583fcc4c8",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/37cf4fd18cb4a90446d0334d00ea384583fcc4c8"
+    },
+    {
+      "path": "skills/lab-automation/benchling-integration/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3cd6a8cf649e80b820099adda2bead15f4dede40",
+      "size": 17243,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/3cd6a8cf649e80b820099adda2bead15f4dede40"
+    },
+    {
+      "path": "skills/lab-automation/opentrons-protocol-api",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "aad10092c9c0fb87d7da6ace0dd2add4d699d151",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/aad10092c9c0fb87d7da6ace0dd2add4d699d151"
+    },
+    {
+      "path": "skills/lab-automation/opentrons-protocol-api/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "55d8d0acd7eb691885c551b4c466e578043eb930",
+      "size": 30944,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/55d8d0acd7eb691885c551b4c466e578043eb930"
+    },
+    {
+      "path": "skills/lab-automation/protocolsio-integration",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5a8fe6a76d60416ec9f2a288ad7143bf982cb32c",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/5a8fe6a76d60416ec9f2a288ad7143bf982cb32c"
+    },
+    {
+      "path": "skills/lab-automation/protocolsio-integration/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "edba0027710bb9ff2dc003329850a940945791b2",
+      "size": 17216,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/edba0027710bb9ff2dc003329850a940945791b2"
+    },
+    {
+      "path": "skills/lab-automation/pylabrobot",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ce13882b99e4f96dca2d76b2674cee6e1db8a3f0",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ce13882b99e4f96dca2d76b2674cee6e1db8a3f0"
+    },
+    {
+      "path": "skills/lab-automation/pylabrobot/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "789c144707ea5f4ae78108e07fd62425f948653d",
+      "size": 16200,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/789c144707ea5f4ae78108e07fd62425f948653d"
+    },
+    {
+      "path": "skills/lab-automation/western-blot-quantification",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7cca239d2aef8edb96407c07c39e4dc5bdced475",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/7cca239d2aef8edb96407c07c39e4dc5bdced475"
+    },
+    {
+      "path": "skills/lab-automation/western-blot-quantification/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e12fd3bbf989837ce38fbc6dccb47fca73641414",
+      "size": 20819,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e12fd3bbf989837ce38fbc6dccb47fca73641414"
+    },
+    {
+      "path": "skills/medical-imaging",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bc223bc1a631cb735ed3bcdc5b6ad606dd07a23b",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/bc223bc1a631cb735ed3bcdc5b6ad606dd07a23b"
+    },
+    {
+      "path": "skills/medical-imaging/histolab-wsi-processing",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ce06427f8062df7065008f9ffbb5495031e01820",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ce06427f8062df7065008f9ffbb5495031e01820"
+    },
+    {
+      "path": "skills/medical-imaging/histolab-wsi-processing/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0f6782c6f54ed9cc7410172e9459c0f1e9ef8290",
+      "size": 23035,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/0f6782c6f54ed9cc7410172e9459c0f1e9ef8290"
+    },
+    {
+      "path": "skills/medical-imaging/histolab-wsi-processing/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4c594afa0686e4cb84549b689ec39dc1a6ae6cea",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/4c594afa0686e4cb84549b689ec39dc1a6ae6cea"
+    },
+    {
+      "path": "skills/medical-imaging/histolab-wsi-processing/references/filters_preprocessing.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0cd65bae8c5ecb95c2ec6bdb0e4fdfb323e07c35",
+      "size": 9858,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/0cd65bae8c5ecb95c2ec6bdb0e4fdfb323e07c35"
+    },
+    {
+      "path": "skills/medical-imaging/histolab-wsi-processing/references/tile_extraction.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8a22b1a9186ad7195178fe0f2a64dd3277ec79ef",
+      "size": 9058,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/8a22b1a9186ad7195178fe0f2a64dd3277ec79ef"
+    },
+    {
+      "path": "skills/medical-imaging/histolab-wsi-processing/references/visualization_slides.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ce661ffbe7dd11d4fb1a8723c1c1e293725cf295",
+      "size": 13901,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/ce661ffbe7dd11d4fb1a8723c1c1e293725cf295"
+    },
+    {
+      "path": "skills/medical-imaging/imaging-data-commons",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a47e79b8fd686bbb6cbc4f8214a14ab034143393",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/a47e79b8fd686bbb6cbc4f8214a14ab034143393"
+    },
+    {
+      "path": "skills/medical-imaging/imaging-data-commons/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ebfdb9b5f45da89fd5d844a0f3f8f0fafeaa05ac",
+      "size": 18827,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/ebfdb9b5f45da89fd5d844a0f3f8f0fafeaa05ac"
+    },
+    {
+      "path": "skills/medical-imaging/nnunet-segmentation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e075979b08572346131231b271192517a0d6ca20",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/e075979b08572346131231b271192517a0d6ca20"
+    },
+    {
+      "path": "skills/medical-imaging/nnunet-segmentation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5e29fb0e4655ed52f97cfc78d199d3d93dea1fe8",
+      "size": 27388,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/5e29fb0e4655ed52f97cfc78d199d3d93dea1fe8"
+    },
+    {
+      "path": "skills/medical-imaging/omero-integration",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "83b0cff46d05905334cee4c3beffd23b2b9092be",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/83b0cff46d05905334cee4c3beffd23b2b9092be"
+    },
+    {
+      "path": "skills/medical-imaging/omero-integration/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8c522a3bae05b89484f52c2702b83df947410d03",
+      "size": 16105,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/8c522a3bae05b89484f52c2702b83df947410d03"
+    },
+    {
+      "path": "skills/medical-imaging/pathml",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "65c6462c4128d223c8bf690bee0437ac8ea39e70",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/65c6462c4128d223c8bf690bee0437ac8ea39e70"
+    },
+    {
+      "path": "skills/medical-imaging/pathml/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f6ea7a0ef5c58e2d274edf470a33e8667b318b1c",
+      "size": 10951,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/f6ea7a0ef5c58e2d274edf470a33e8667b318b1c"
+    },
+    {
+      "path": "skills/medical-imaging/pydicom-medical-imaging",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "44dd48d8a5576cc2cd09a3b211e0801ed58db574",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/44dd48d8a5576cc2cd09a3b211e0801ed58db574"
+    },
+    {
+      "path": "skills/medical-imaging/pydicom-medical-imaging/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f09e127c582632d50d85cfcae89808868e69d3ad",
+      "size": 30196,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/f09e127c582632d50d85cfcae89808868e69d3ad"
+    },
+    {
+      "path": "skills/medical-imaging/pydicom-medical-imaging/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "eb8e6d5c2603362adad1f75d453d9086733d9265",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/eb8e6d5c2603362adad1f75d453d9086733d9265"
+    },
+    {
+      "path": "skills/medical-imaging/pydicom-medical-imaging/references/dicom_standards.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "39e1c5c95c9fdc152bfa3d2ac9fbb6e8d8a1082f",
+      "size": 12503,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/39e1c5c95c9fdc152bfa3d2ac9fbb6e8d8a1082f"
+    },
+    {
+      "path": "skills/medical-imaging/simpleitk-image-registration",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "34232272ad0bcc4b5fad691db3e74d0a56131873",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/34232272ad0bcc4b5fad691db3e74d0a56131873"
+    },
+    {
+      "path": "skills/medical-imaging/simpleitk-image-registration/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ab93dd641920a87b0fea587a28cfc06d477018df",
+      "size": 37030,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/ab93dd641920a87b0fea587a28cfc06d477018df"
+    },
+    {
+      "path": "skills/molecular-biology",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d2ffbfb164bf67ab8897e22afd00a9f4f68c32fd",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d2ffbfb164bf67ab8897e22afd00a9f4f68c32fd"
+    },
+    {
+      "path": "skills/molecular-biology/plannotate-plasmid-annotation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d7b4c93e121006fc3e2993dac243871260b18491",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d7b4c93e121006fc3e2993dac243871260b18491"
+    },
+    {
+      "path": "skills/molecular-biology/plannotate-plasmid-annotation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f22a6add94bcf023c865219fc8bd5e49bb09da32",
+      "size": 18690,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/f22a6add94bcf023c865219fc8bd5e49bb09da32"
+    },
+    {
+      "path": "skills/molecular-biology/sgrna-design-guide",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ab5d1a68abfb5f11d5cb3707b688ba2b50aec91d",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ab5d1a68abfb5f11d5cb3707b688ba2b50aec91d"
+    },
+    {
+      "path": "skills/molecular-biology/sgrna-design-guide/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0141575666cd648decce46790170a6b292ea4b99",
+      "size": 24817,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/0141575666cd648decce46790170a6b292ea4b99"
+    },
+    {
+      "path": "skills/molecular-biology/sgrna-design-guide/resource",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f94f82146c1c75dca8c0e84e9ae7027e97f58dd5",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/f94f82146c1c75dca8c0e84e9ae7027e97f58dd5"
+    },
+    {
+      "path": "skills/molecular-biology/sgrna-design-guide/resource/CRISPick_download_links.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3f7e86d4b202458215ef658bc91f4d0e78fcf6c6",
+      "size": 38053,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/3f7e86d4b202458215ef658bc91f4d0e78fcf6c6"
+    },
+    {
+      "path": "skills/molecular-biology/sgrna-design-guide/resource/addgene_grna_sequences.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "43ffcd9aef5563c42c3d09f042a40a9b5b21164e",
+      "size": 54648,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/43ffcd9aef5563c42c3d09f042a40a9b5b21164e"
+    },
+    {
+      "path": "skills/molecular-biology/viennarna-structure-prediction",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5cf2b37abd96a1ed947f979a340706e7987afb16",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/5cf2b37abd96a1ed947f979a340706e7987afb16"
+    },
+    {
+      "path": "skills/molecular-biology/viennarna-structure-prediction/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ad1f094039ba7dc050b69264cb45f00a1c848dc6",
+      "size": 21720,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/ad1f094039ba7dc050b69264cb45f00a1c848dc6"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ae83cdf94f740f534d21a80190231b24f617df2d",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ae83cdf94f740f534d21a80190231b24f617df2d"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/adaptyv-bio",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "dcf5cd27b79e2e41ba7b60bcb72bebb08b55fa39",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/dcf5cd27b79e2e41ba7b60bcb72bebb08b55fa39"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/adaptyv-bio/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b78eb05e6a6afa93a0a547dc1024e751d8996023",
+      "size": 18702,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/b78eb05e6a6afa93a0a547dc1024e751d8996023"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/esm-protein-language-model",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "37db27e9fc4c785be132a2fb3738c5c17755946e",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/37db27e9fc4c785be132a2fb3738c5c17755946e"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/esm-protein-language-model/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f7e7b50b29be02910ebfb4dca41f59853d95f130",
+      "size": 16139,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/f7e7b50b29be02910ebfb4dca41f59853d95f130"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/hmdb-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ecc1c329b1ac44432f1d69f36e400872c040248f",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ecc1c329b1ac44432f1d69f36e400872c040248f"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/hmdb-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8f637f2498093f81a3c7e56c73fb6a651238b811",
+      "size": 24509,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/8f637f2498093f81a3c7e56c73fb6a651238b811"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/interpro-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "66d1c72369d79a1ab1eb99e41d54c8ef1ae7da3b",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/66d1c72369d79a1ab1eb99e41d54c8ef1ae7da3b"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/interpro-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "961df3b7bcb4e0f0e6f28282004e1ea24c9f91eb",
+      "size": 30318,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/961df3b7bcb4e0f0e6f28282004e1ea24c9f91eb"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/matchms-spectral-matching",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "04da63c21111c1d4f28a06f3d7182e48d1c0e8ba",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/04da63c21111c1d4f28a06f3d7182e48d1c0e8ba"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/matchms-spectral-matching/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "915d034c1d335acf28bd9810c522a8cb902c92df",
+      "size": 23245,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/915d034c1d335acf28bd9810c522a8cb902c92df"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/matchms-spectral-matching/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f323a00bb4ab29650907dd85bdbe3edbac88c30b",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/f323a00bb4ab29650907dd85bdbe3edbac88c30b"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/matchms-spectral-matching/references/filtering_catalog.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bb44ad0708659463ccda95aee81a46feecad5e18",
+      "size": 8737,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/bb44ad0708659463ccda95aee81a46feecad5e18"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/matchms-spectral-matching/references/workflows_similarity.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5cb8d6f45365541a642fbef821391b839604d47e",
+      "size": 16415,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/5cb8d6f45365541a642fbef821391b839604d47e"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/maxquant-proteomics",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e456b5e98f192bf2e46d24ac94e2bb0bdd999ac7",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/e456b5e98f192bf2e46d24ac94e2bb0bdd999ac7"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/maxquant-proteomics/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ec1e03f0e26233d37689bbae989b9a59124e6f68",
+      "size": 28241,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/ec1e03f0e26233d37689bbae989b9a59124e6f68"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/metabolomics-workbench-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "186ab1a8799ff7e01d1957fbed003fd5244d5d89",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/186ab1a8799ff7e01d1957fbed003fd5244d5d89"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/metabolomics-workbench-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b6c6b6cc805683387021f65b02c312a48e31ef0",
+      "size": 21307,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/9b6c6b6cc805683387021f65b02c312a48e31ef0"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/pride-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0cb0a7808662ac3ed79dccdda7c03dfc5250d0d9",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/0cb0a7808662ac3ed79dccdda7c03dfc5250d0d9"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/pride-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5ced1cb321a2613bd6399c68179cd1335702d8c2",
+      "size": 32728,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/5ced1cb321a2613bd6399c68179cd1335702d8c2"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/pyopenms-mass-spectrometry",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3710d156fc7cee37dc29c418bbd522bcd1658fa7",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/3710d156fc7cee37dc29c418bbd522bcd1658fa7"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/pyopenms-mass-spectrometry/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aa6ec00356813695304fb21f580ab4dc64e04953",
+      "size": 22032,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/aa6ec00356813695304fb21f580ab4dc64e04953"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/pyopenms-mass-spectrometry/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "673666c500665c9e6b81023c80b9c1d175890aec",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/673666c500665c9e6b81023c80b9c1d175890aec"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/pyopenms-mass-spectrometry/references/data_structures_reference.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b7e1f9bf2c17af6878ca588f0df750670b259202",
+      "size": 7550,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/b7e1f9bf2c17af6878ca588f0df750670b259202"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/pyopenms-mass-spectrometry/references/identification_metabolomics.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc01228b9d16a278a537ea0b48e33f968040090d",
+      "size": 11538,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/cc01228b9d16a278a537ea0b48e33f968040090d"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/pyopenms-mass-spectrometry/references/signal_feature_processing.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ebb4c09a276e5d389359f505a7358c6dec7b1bba",
+      "size": 10113,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/ebb4c09a276e5d389359f505a7358c6dec7b1bba"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/uniprot-protein-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f336a7ce663dc5215ad12f7896be263c7825a2a7",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/f336a7ce663dc5215ad12f7896be263c7825a2a7"
+    },
+    {
+      "path": "skills/proteomics-protein-engineering/uniprot-protein-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9aa659f8291891abb137de09a3ec8643ce023609",
+      "size": 13829,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/9aa659f8291891abb137de09a3ec8643ce023609"
+    },
+    {
+      "path": "skills/scientific-computing",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "727f645e8723b334d3137c0937b0894b1b36bffc",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/727f645e8723b334d3137c0937b0894b1b36bffc"
+    },
+    {
+      "path": "skills/scientific-computing/aeon",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bdf253b649e098f57d4d699f098d0bcdce2184b6",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/bdf253b649e098f57d4d699f098d0bcdce2184b6"
+    },
+    {
+      "path": "skills/scientific-computing/aeon/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "747fdba20f041dd0a4f5eeee90856ab2069392c4",
+      "size": 15852,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/747fdba20f041dd0a4f5eeee90856ab2069392c4"
+    },
+    {
+      "path": "skills/scientific-computing/astropy-astronomy",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fb008681657a30cfe3039f6e1b1c27ebfa0d58e4",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/fb008681657a30cfe3039f6e1b1c27ebfa0d58e4"
+    },
+    {
+      "path": "skills/scientific-computing/astropy-astronomy/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c512a6e832a3203fd7fd056829d478b6aea0647e",
+      "size": 22237,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c512a6e832a3203fd7fd056829d478b6aea0647e"
+    },
+    {
+      "path": "skills/scientific-computing/astropy-astronomy/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ffbe65dc98c35168dc5ee3f4bd78dbb58d9b1358",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ffbe65dc98c35168dc5ee3f4bd78dbb58d9b1358"
+    },
+    {
+      "path": "skills/scientific-computing/astropy-astronomy/references/auxiliary_modules.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d6c89c4b804ae2b6ffb2247a143bd1d3681cf6b1",
+      "size": 8108,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/d6c89c4b804ae2b6ffb2247a143bd1d3681cf6b1"
+    },
+    {
+      "path": "skills/scientific-computing/astropy-astronomy/references/coordinates_time_cosmology.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6cfab6af990a01c546161aceaa7d3b21b0a95ef3",
+      "size": 8928,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/6cfab6af990a01c546161aceaa7d3b21b0a95ef3"
+    },
+    {
+      "path": "skills/scientific-computing/astropy-astronomy/references/data_io_guide.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "029cdeaa39bdd0ba4a0baa3b03472759800722e0",
+      "size": 7459,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/029cdeaa39bdd0ba4a0baa3b03472759800722e0"
+    },
+    {
+      "path": "skills/scientific-computing/dask-parallel-computing",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "487e93f0bf95f60e41cca788fb6ec229d6155b41",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/487e93f0bf95f60e41cca788fb6ec229d6155b41"
+    },
+    {
+      "path": "skills/scientific-computing/dask-parallel-computing/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "74ad7b19666dcea2e8edc360d7b341aeb125764f",
+      "size": 16312,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/74ad7b19666dcea2e8edc360d7b341aeb125764f"
+    },
+    {
+      "path": "skills/scientific-computing/dask-parallel-computing/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "22af6c716a793ca97463026674c55a8cba1f629c",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/22af6c716a793ca97463026674c55a8cba1f629c"
+    },
+    {
+      "path": "skills/scientific-computing/dask-parallel-computing/references/collections_guide.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bb6500e6159c5eb91f21e4ecbf5f5a0b27dce2a1",
+      "size": 7692,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/bb6500e6159c5eb91f21e4ecbf5f5a0b27dce2a1"
+    },
+    {
+      "path": "skills/scientific-computing/dask-parallel-computing/references/distributed_computing.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e05112a9dd79f5a12565ebbcbbf49cf9d01a5098",
+      "size": 7906,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e05112a9dd79f5a12565ebbcbbf49cf9d01a5098"
+    },
+    {
+      "path": "skills/scientific-computing/degenerate-input-filtering",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "672722f7486c834ca5ae701607513d8cc58273fc",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/672722f7486c834ca5ae701607513d8cc58273fc"
+    },
+    {
+      "path": "skills/scientific-computing/degenerate-input-filtering/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "87945f58eb811311fe110995f02820fd0dc695d9",
+      "size": 14892,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/87945f58eb811311fe110995f02820fd0dc695d9"
+    },
+    {
+      "path": "skills/scientific-computing/exploratory-data-analysis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "54ed5abeb6eaf3229d4fd0d1d0db2a1a74fa9ec0",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/54ed5abeb6eaf3229d4fd0d1d0db2a1a74fa9ec0"
+    },
+    {
+      "path": "skills/scientific-computing/exploratory-data-analysis/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7a8e3cd73aa81575974d6fe1d24eee78d4a30d13",
+      "size": 12613,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/7a8e3cd73aa81575974d6fe1d24eee78d4a30d13"
+    },
+    {
+      "path": "skills/scientific-computing/exploratory-data-analysis/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "32880b1ca4d5190b1a015338e140ea151f8bb88a",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/32880b1ca4d5190b1a015338e140ea151f8bb88a"
+    },
+    {
+      "path": "skills/scientific-computing/exploratory-data-analysis/references/file_format_reference.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "725e9fabfef5749fa900700e790a35c92e21ade7",
+      "size": 8476,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/725e9fabfef5749fa900700e790a35c92e21ade7"
+    },
+    {
+      "path": "skills/scientific-computing/geopandas-geospatial",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d96fd0c395dec089d8cb4e51c755a0e88c7f85b9",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d96fd0c395dec089d8cb4e51c755a0e88c7f85b9"
+    },
+    {
+      "path": "skills/scientific-computing/geopandas-geospatial/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7eb734520ce74d43f97bbdf4d6b93cca93db6be4",
+      "size": 15039,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/7eb734520ce74d43f97bbdf4d6b93cca93db6be4"
+    },
+    {
+      "path": "skills/scientific-computing/hypogenic-hypothesis-generation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e1aafb47ba5940712e041d8b768a846b62df43f5",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/e1aafb47ba5940712e041d8b768a846b62df43f5"
+    },
+    {
+      "path": "skills/scientific-computing/hypogenic-hypothesis-generation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5d3eaeb4011101311b502255cb2c80a721d1d174",
+      "size": 15670,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/5d3eaeb4011101311b502255cb2c80a721d1d174"
+    },
+    {
+      "path": "skills/scientific-computing/matlab-scientific-computing",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ccc13a9cf8b0993980cb87358c3204e2f91bb903",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ccc13a9cf8b0993980cb87358c3204e2f91bb903"
+    },
+    {
+      "path": "skills/scientific-computing/matlab-scientific-computing/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b1e44689a07e559c13ff43824abaff57f0c49e60",
+      "size": 15061,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/b1e44689a07e559c13ff43824abaff57f0c49e60"
+    },
+    {
+      "path": "skills/scientific-computing/nan-safe-correlation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "60411704bb068ce1d5292b9f3487bca677cf6a87",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/60411704bb068ce1d5292b9f3487bca677cf6a87"
+    },
+    {
+      "path": "skills/scientific-computing/nan-safe-correlation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7999b29144130943da6eca2ec7d654b43c24b316",
+      "size": 11624,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/7999b29144130943da6eca2ec7d654b43c24b316"
+    },
+    {
+      "path": "skills/scientific-computing/networkx-graph-analysis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4ffaa904b84cfb130047da6f95191175f3ab13d8",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/4ffaa904b84cfb130047da6f95191175f3ab13d8"
+    },
+    {
+      "path": "skills/scientific-computing/networkx-graph-analysis/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "18919a7825d43a1887337b074eaf975e7458ea89",
+      "size": 23070,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/18919a7825d43a1887337b074eaf975e7458ea89"
+    },
+    {
+      "path": "skills/scientific-computing/networkx-graph-analysis/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b53a5bcaca7208c728db551d57f1984295e2a57c",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/b53a5bcaca7208c728db551d57f1984295e2a57c"
+    },
+    {
+      "path": "skills/scientific-computing/networkx-graph-analysis/references/algorithms_generators.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5b39505737d66c746e5f2b6724351ab5d80de14b",
+      "size": 11365,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/5b39505737d66c746e5f2b6724351ab5d80de14b"
+    },
+    {
+      "path": "skills/scientific-computing/networkx-graph-analysis/references/io_visualization.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b784039004db6ef2ef2abea48cd6df21d7e21760",
+      "size": 13074,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/b784039004db6ef2ef2abea48cd6df21d7e21760"
+    },
+    {
+      "path": "skills/scientific-computing/neurokit2",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fc63f8e6b302a93660896620b0506adedf5c05c5",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/fc63f8e6b302a93660896620b0506adedf5c05c5"
+    },
+    {
+      "path": "skills/scientific-computing/neurokit2/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3908c5eab9a04e4e80b2e72f937a38e2787c99b3",
+      "size": 16647,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/3908c5eab9a04e4e80b2e72f937a38e2787c99b3"
+    },
+    {
+      "path": "skills/scientific-computing/neuropixels-analysis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7b3dff26fe41d5e862188bb70650d48a5f958012",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/7b3dff26fe41d5e862188bb70650d48a5f958012"
+    },
+    {
+      "path": "skills/scientific-computing/neuropixels-analysis/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "34afbaa696ea4bbdb88d609f8e348a00efb15edb",
+      "size": 14810,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/34afbaa696ea4bbdb88d609f8e348a00efb15edb"
+    },
+    {
+      "path": "skills/scientific-computing/nextflow-workflow-engine",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3debe99294465c7046e50ca7b0fb0cf55f585552",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/3debe99294465c7046e50ca7b0fb0cf55f585552"
+    },
+    {
+      "path": "skills/scientific-computing/nextflow-workflow-engine/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb495a938be08a01630966e5e80e6d2f403dd86c",
+      "size": 14351,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/cb495a938be08a01630966e5e80e6d2f403dd86c"
+    },
+    {
+      "path": "skills/scientific-computing/polars-dataframes",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f5986d0ab880e1f5f073370e9110a6d5a3c127f8",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/f5986d0ab880e1f5f073370e9110a6d5a3c127f8"
+    },
+    {
+      "path": "skills/scientific-computing/polars-dataframes/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cfc584b369fd89bb2dc39d5cc83c15662fe6ae05",
+      "size": 25943,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/cfc584b369fd89bb2dc39d5cc83c15662fe6ae05"
+    },
+    {
+      "path": "skills/scientific-computing/polars-dataframes/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5a22b80cd6964a1d5075b732837de5b14186c233",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/5a22b80cd6964a1d5075b732837de5b14186c233"
+    },
+    {
+      "path": "skills/scientific-computing/polars-dataframes/references/advanced_operations.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "597a76282b2eecc672b9d53d31c08698ad079921",
+      "size": 16478,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/597a76282b2eecc672b9d53d31c08698ad079921"
+    },
+    {
+      "path": "skills/scientific-computing/polars-dataframes/references/io_best_practices.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3fb93a804c22dbbc633497caf16c71cea8f09d2b",
+      "size": 18466,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/3fb93a804c22dbbc633497caf16c71cea8f09d2b"
+    },
+    {
+      "path": "skills/scientific-computing/polars-dataframes/references/pandas_migration.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3ca246678df3a81497e2b3a807e10c6b55d441e7",
+      "size": 12052,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/3ca246678df3a81497e2b3a807e10c6b55d441e7"
+    },
+    {
+      "path": "skills/scientific-computing/pyhealth",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "645e5e248063ec3f3f64ef5089a112d6ddc66cee",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/645e5e248063ec3f3f64ef5089a112d6ddc66cee"
+    },
+    {
+      "path": "skills/scientific-computing/pyhealth/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "994e41ceb7313c17e77df0246e70ed64e5e36fd4",
+      "size": 19014,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/994e41ceb7313c17e77df0246e70ed64e5e36fd4"
+    },
+    {
+      "path": "skills/scientific-computing/pymatgen",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "054529dc84b5c14fd9603fc64c6f533d12f3bd9c",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/054529dc84b5c14fd9603fc64c6f533d12f3bd9c"
+    },
+    {
+      "path": "skills/scientific-computing/pymatgen/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d6f0d4d097236e483f2cc7f6a25a3875562b0183",
+      "size": 15674,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/d6f0d4d097236e483f2cc7f6a25a3875562b0183"
+    },
+    {
+      "path": "skills/scientific-computing/pymoo",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2deb7ddae09535820ead59028540e85b721075a3",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/2deb7ddae09535820ead59028540e85b721075a3"
+    },
+    {
+      "path": "skills/scientific-computing/pymoo/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1f63df109acb3d179bbb874df39d79ad8e732f5c",
+      "size": 19550,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/1f63df109acb3d179bbb874df39d79ad8e732f5c"
+    },
+    {
+      "path": "skills/scientific-computing/scikit-learn-machine-learning",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4242215a4d2150aee0b5b6e9c65a98e2f0fb314d",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/4242215a4d2150aee0b5b6e9c65a98e2f0fb314d"
+    },
+    {
+      "path": "skills/scientific-computing/scikit-learn-machine-learning/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fcb5d34ab5a10df4cf7afffe303a1f1afc36afa1",
+      "size": 16057,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/fcb5d34ab5a10df4cf7afffe303a1f1afc36afa1"
+    },
+    {
+      "path": "skills/scientific-computing/shap-model-explainability",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a6d5490e2c26d8a4219e055cc51c235f8176c950",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/a6d5490e2c26d8a4219e055cc51c235f8176c950"
+    },
+    {
+      "path": "skills/scientific-computing/shap-model-explainability/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c224cca5a00599c1fb75d231867d5929b53a0575",
+      "size": 15040,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c224cca5a00599c1fb75d231867d5929b53a0575"
+    },
+    {
+      "path": "skills/scientific-computing/shap-model-explainability/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "67782f1725ea72bc0034ea34e55052d282678536",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/67782f1725ea72bc0034ea34e55052d282678536"
+    },
+    {
+      "path": "skills/scientific-computing/shap-model-explainability/references/theory.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "30379b569590f559caf5d646146605c57585538f",
+      "size": 6343,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/30379b569590f559caf5d646146605c57585538f"
+    },
+    {
+      "path": "skills/scientific-computing/simpy-discrete-event-simulation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c280220caa57623221b7f948fbaedd54e5b31689",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/c280220caa57623221b7f948fbaedd54e5b31689"
+    },
+    {
+      "path": "skills/scientific-computing/simpy-discrete-event-simulation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bc72b10a56580df4fac8ae73fe72fa240e84eda8",
+      "size": 21611,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/bc72b10a56580df4fac8ae73fe72fa240e84eda8"
+    },
+    {
+      "path": "skills/scientific-computing/simpy-discrete-event-simulation/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bfc8f954283869f5bb46ba1d0011683de12297e6",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/bfc8f954283869f5bb46ba1d0011683de12297e6"
+    },
+    {
+      "path": "skills/scientific-computing/simpy-discrete-event-simulation/references/process_events_guide.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "acdb314555b2a4b355cc259b078b966fbf80fffe",
+      "size": 7961,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/acdb314555b2a4b355cc259b078b966fbf80fffe"
+    },
+    {
+      "path": "skills/scientific-computing/simpy-discrete-event-simulation/references/resources_monitoring_guide.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2c6d1c4dc61719989f9ccbd92355040f48acf9cb",
+      "size": 12466,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/2c6d1c4dc61719989f9ccbd92355040f48acf9cb"
+    },
+    {
+      "path": "skills/scientific-computing/snakemake-workflow-engine",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6d80eaa5ade63cabc8dbaadc24869ed30cb2a5a3",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/6d80eaa5ade63cabc8dbaadc24869ed30cb2a5a3"
+    },
+    {
+      "path": "skills/scientific-computing/snakemake-workflow-engine/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8894851cab8189142d2cebf075226dd194f09e77",
+      "size": 18852,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/8894851cab8189142d2cebf075226dd194f09e77"
+    },
+    {
+      "path": "skills/scientific-computing/spikeinterface-electrophysiology",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a7d4eaee89c235f5c2d3bc7471516ba0e11d67ea",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/a7d4eaee89c235f5c2d3bc7471516ba0e11d67ea"
+    },
+    {
+      "path": "skills/scientific-computing/spikeinterface-electrophysiology/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "31acb9d69e0bf6fe3e0becdf70492d5b9a9db36c",
+      "size": 31474,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/31acb9d69e0bf6fe3e0becdf70492d5b9a9db36c"
+    },
+    {
+      "path": "skills/scientific-computing/sympy-symbolic-math",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5fca62ff7a91e74fb5da0a082f7c9b7218c8e202",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/5fca62ff7a91e74fb5da0a082f7c9b7218c8e202"
+    },
+    {
+      "path": "skills/scientific-computing/sympy-symbolic-math/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dddee547c35a6b0bae4eefc4b8f4eeb471943bc0",
+      "size": 15729,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/dddee547c35a6b0bae4eefc4b8f4eeb471943bc0"
+    },
+    {
+      "path": "skills/scientific-computing/torch-geometric-graph-neural-networks",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "76316c73e7b89cfd094bed7e6e503fe871ed6f6e",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/76316c73e7b89cfd094bed7e6e503fe871ed6f6e"
+    },
+    {
+      "path": "skills/scientific-computing/torch-geometric-graph-neural-networks/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3d0acae511cb4c976a0450efcb94ac0eb2845a30",
+      "size": 20581,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/3d0acae511cb4c976a0450efcb94ac0eb2845a30"
+    },
+    {
+      "path": "skills/scientific-computing/torch-geometric-graph-neural-networks/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8e9f54db742c2ac00f1136c4d1b34dfdb223fb3c",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/8e9f54db742c2ac00f1136c4d1b34dfdb223fb3c"
+    },
+    {
+      "path": "skills/scientific-computing/torch-geometric-graph-neural-networks/references/datasets_catalog.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1fff523d08daaa3707f762837187953929464862",
+      "size": 10667,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/1fff523d08daaa3707f762837187953929464862"
+    },
+    {
+      "path": "skills/scientific-computing/torch-geometric-graph-neural-networks/references/layers_transforms_reference.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e32760ec4a919138255dca85ff6a0e61dc4217a",
+      "size": 15701,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/2e32760ec4a919138255dca85ff6a0e61dc4217a"
+    },
+    {
+      "path": "skills/scientific-computing/transformers-bio-nlp",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d556d7ecf476c9f0b2830adcf3ef3af58eaf9288",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d556d7ecf476c9f0b2830adcf3ef3af58eaf9288"
+    },
+    {
+      "path": "skills/scientific-computing/transformers-bio-nlp/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "64a800445cf16f646be1761e3ad71b8fc8bb5370",
+      "size": 19790,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/64a800445cf16f646be1761e3ad71b8fc8bb5370"
+    },
+    {
+      "path": "skills/scientific-computing/umap-learn",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c84b8967ec184c7afb45e2a225359800cac70d7a",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/c84b8967ec184c7afb45e2a225359800cac70d7a"
+    },
+    {
+      "path": "skills/scientific-computing/umap-learn/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fc4eef6fc986238c9af0281a9ebd004b408fbe5a",
+      "size": 19001,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/fc4eef6fc986238c9af0281a9ebd004b408fbe5a"
+    },
+    {
+      "path": "skills/scientific-computing/umap-learn/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6fd92e1a511d547bca18e3ef8c0fc8086ca497fe",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/6fd92e1a511d547bca18e3ef8c0fc8086ca497fe"
+    },
+    {
+      "path": "skills/scientific-computing/umap-learn/references/api_reference.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a1e659ec73aa421cf886d05e6e1fd0adfffeb4df",
+      "size": 7938,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a1e659ec73aa421cf886d05e6e1fd0adfffeb4df"
+    },
+    {
+      "path": "skills/scientific-computing/uspto-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "714b423e0870c58a66da8d0bca0ba190fcb02521",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/714b423e0870c58a66da8d0bca0ba190fcb02521"
+    },
+    {
+      "path": "skills/scientific-computing/uspto-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fd937bf1fa7b7d1d5fcfc281c9637eb0f84bb961",
+      "size": 18439,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/fd937bf1fa7b7d1d5fcfc281c9637eb0f84bb961"
+    },
+    {
+      "path": "skills/scientific-computing/vaex-dataframes",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "205adccd6a4e767603e2a16d7c631fd90456eb36",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/205adccd6a4e767603e2a16d7c631fd90456eb36"
+    },
+    {
+      "path": "skills/scientific-computing/vaex-dataframes/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3d0b863da30822ea4ec160f4b33450049e6a7b46",
+      "size": 24905,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/3d0b863da30822ea4ec160f4b33450049e6a7b46"
+    },
+    {
+      "path": "skills/scientific-computing/vaex-dataframes/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "14d6d4b7b83eae696259fe67c786a7e2496461d0",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/14d6d4b7b83eae696259fe67c786a7e2496461d0"
+    },
+    {
+      "path": "skills/scientific-computing/vaex-dataframes/references/io_performance.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "30805aa9e86f02847fb36998b6e15f8c9e4a991e",
+      "size": 17423,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/30805aa9e86f02847fb36998b6e15f8c9e4a991e"
+    },
+    {
+      "path": "skills/scientific-computing/vaex-dataframes/references/ml_visualization.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cf8a968cf8a71482b9d1e2e0c635c983076541d4",
+      "size": 21367,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/cf8a968cf8a71482b9d1e2e0c635c983076541d4"
+    },
+    {
+      "path": "skills/scientific-computing/zarr-python",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "cd7cd6040599a1cb98121c0b9f44b7b4cacf27a5",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/cd7cd6040599a1cb98121c0b9f44b7b4cacf27a5"
+    },
+    {
+      "path": "skills/scientific-computing/zarr-python/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "456089a118f5cfaa98c0ae0af2ebcbfa3193b994",
+      "size": 17752,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/456089a118f5cfaa98c0ae0af2ebcbfa3193b994"
+    },
+    {
+      "path": "skills/scientific-writing",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "cc9d2c41c7a3193bc31a31206a9da88af4c96418",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/cc9d2c41c7a3193bc31a31206a9da88af4c96418"
+    },
+    {
+      "path": "skills/scientific-writing/biorxiv-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9317fa08f42bfed77f934ee623e5fc235286df30",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/9317fa08f42bfed77f934ee623e5fc235286df30"
+    },
+    {
+      "path": "skills/scientific-writing/biorxiv-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b90775acab2f098414061fe173a9bc1760b6450d",
+      "size": 20370,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/b90775acab2f098414061fe173a9bc1760b6450d"
+    },
+    {
+      "path": "skills/scientific-writing/cancer-research-figure-guide",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4109f5632da6be1f6069e37ea68eb4850de10395",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/4109f5632da6be1f6069e37ea68eb4850de10395"
+    },
+    {
+      "path": "skills/scientific-writing/cancer-research-figure-guide/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "97a7b45d3d9639b8830e7d8771ff88069936af8b",
+      "size": 11326,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/97a7b45d3d9639b8830e7d8771ff88069936af8b"
+    },
+    {
+      "path": "skills/scientific-writing/cell-figure-guide",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "45beef550827b90d6605416f6e6ed25ce01aaa9a",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/45beef550827b90d6605416f6e6ed25ce01aaa9a"
+    },
+    {
+      "path": "skills/scientific-writing/cell-figure-guide/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e7aa52c11d995c2f99f22e45b2a0b97a038c7721",
+      "size": 14573,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e7aa52c11d995c2f99f22e45b2a0b97a038c7721"
+    },
+    {
+      "path": "skills/scientific-writing/citation-management",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d715ee01c6e021e1319711161f01f186c8f9fe94",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d715ee01c6e021e1319711161f01f186c8f9fe94"
+    },
+    {
+      "path": "skills/scientific-writing/citation-management/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "db0ced5ea931ba99f25616b87564fee0c00a0372",
+      "size": 19755,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/db0ced5ea931ba99f25616b87564fee0c00a0372"
+    },
+    {
+      "path": "skills/scientific-writing/clinical-decision-support-documents",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "94c00fac3400a263e2cbf28e23e8dc15f29b581c",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/94c00fac3400a263e2cbf28e23e8dc15f29b581c"
+    },
+    {
+      "path": "skills/scientific-writing/clinical-decision-support-documents/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0421432237ef9da46e9ada26c5419abdfc450e5a",
+      "size": 12207,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/0421432237ef9da46e9ada26c5419abdfc450e5a"
+    },
+    {
+      "path": "skills/scientific-writing/elife-figure-guide",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ff169e3f966adbc7450659fc7d19c1bfd67bd009",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ff169e3f966adbc7450659fc7d19c1bfd67bd009"
+    },
+    {
+      "path": "skills/scientific-writing/elife-figure-guide/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2af8142cc883a3256ae44d862d41ebe143a65a70",
+      "size": 12902,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/2af8142cc883a3256ae44d862d41ebe143a65a70"
+    },
+    {
+      "path": "skills/scientific-writing/general-figure-guide",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "79f4ceda203ad61fa0c13a6084f8ea65d3e64c57",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/79f4ceda203ad61fa0c13a6084f8ea65d3e64c57"
+    },
+    {
+      "path": "skills/scientific-writing/general-figure-guide/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e7c8837d4901b45c7eb3fc421642861691ae71e9",
+      "size": 7247,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e7c8837d4901b45c7eb3fc421642861691ae71e9"
+    },
+    {
+      "path": "skills/scientific-writing/hypothesis-generation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0023a9bfc2bd3a63acae7cbaec22300d337ed070",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/0023a9bfc2bd3a63acae7cbaec22300d337ed070"
+    },
+    {
+      "path": "skills/scientific-writing/hypothesis-generation/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a8691a3d9b3d4b996d2f2c6234d22d24c275c54c",
+      "size": 10669,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a8691a3d9b3d4b996d2f2c6234d22d24c275c54c"
+    },
+    {
+      "path": "skills/scientific-writing/lancet-figure-guide",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ed6f1cbd634fb374fe12ba22fcd8f35fc6dcf04a",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ed6f1cbd634fb374fe12ba22fcd8f35fc6dcf04a"
+    },
+    {
+      "path": "skills/scientific-writing/lancet-figure-guide/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7892067236507ce81d67f7aeb3fd3895adb474ee",
+      "size": 11350,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/7892067236507ce81d67f7aeb3fd3895adb474ee"
+    },
+    {
+      "path": "skills/scientific-writing/latex-research-posters",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "590dde0e6708ec1b17e6580eed565de4228e8170",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/590dde0e6708ec1b17e6580eed565de4228e8170"
+    },
+    {
+      "path": "skills/scientific-writing/latex-research-posters/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2098a6803d2a11b15c285607bcb6f5f659891dfe",
+      "size": 13803,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/2098a6803d2a11b15c285607bcb6f5f659891dfe"
+    },
+    {
+      "path": "skills/scientific-writing/latex-research-posters/assets",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "43c550587ffaa8728be3d725ed58cb2c393ea4e7",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/43c550587ffaa8728be3d725ed58cb2c393ea4e7"
+    },
+    {
+      "path": "skills/scientific-writing/latex-research-posters/assets/baposter_template.tex",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3067dc5a928c3422584e1a938ff641a9339e30ae",
+      "size": 3955,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/3067dc5a928c3422584e1a938ff641a9339e30ae"
+    },
+    {
+      "path": "skills/scientific-writing/latex-research-posters/assets/beamerposter_template.tex",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3659810e9179277fa021f9c9d3746b03ef59d781",
+      "size": 5340,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/3659810e9179277fa021f9c9d3746b03ef59d781"
+    },
+    {
+      "path": "skills/scientific-writing/latex-research-posters/assets/tikzposter_template.tex",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c65e4e628b82a1a9f3bc8ee49455cc0f2ce4e2d9",
+      "size": 4298,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c65e4e628b82a1a9f3bc8ee49455cc0f2ce4e2d9"
+    },
+    {
+      "path": "skills/scientific-writing/literature-review",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b8c4438f2294aec7919cadf668d7a60019c0d4ed",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/b8c4438f2294aec7919cadf668d7a60019c0d4ed"
+    },
+    {
+      "path": "skills/scientific-writing/literature-review/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "08fe81a2757202675a0987e8f5632c991c78d34f",
+      "size": 16418,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/08fe81a2757202675a0987e8f5632c991c78d34f"
+    },
+    {
+      "path": "skills/scientific-writing/nature-figure-guide",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6b13e068668d72c878ccb75f0907181b38f58cb5",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/6b13e068668d72c878ccb75f0907181b38f58cb5"
+    },
+    {
+      "path": "skills/scientific-writing/nature-figure-guide/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd388920c868a8f42f88d2d23b25e4adb9dc7609",
+      "size": 14625,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/cd388920c868a8f42f88d2d23b25e4adb9dc7609"
+    },
+    {
+      "path": "skills/scientific-writing/nejm-figure-guide",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0c451f72b54f58e504ed7f3863455b606e863d4b",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/0c451f72b54f58e504ed7f3863455b606e863d4b"
+    },
+    {
+      "path": "skills/scientific-writing/nejm-figure-guide/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "78884434a181f8bddf53dd737082fff0509420f9",
+      "size": 12487,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/78884434a181f8bddf53dd737082fff0509420f9"
+    },
+    {
+      "path": "skills/scientific-writing/openalex-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "321d05a5e0471cf549c902f530b33ef9812d4f47",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/321d05a5e0471cf549c902f530b33ef9812d4f47"
+    },
+    {
+      "path": "skills/scientific-writing/openalex-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0db5a41e63584ec4cea91d7bbad445ec8d1e06b8",
+      "size": 19206,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/0db5a41e63584ec4cea91d7bbad445ec8d1e06b8"
+    },
+    {
+      "path": "skills/scientific-writing/peer-review-methodology",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7780690e1f68310a4f94fcff38ccd808698b16aa",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/7780690e1f68310a4f94fcff38ccd808698b16aa"
+    },
+    {
+      "path": "skills/scientific-writing/peer-review-methodology/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "609b71050928df32c7ed8771956a12eebb0dd1e1",
+      "size": 11745,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/609b71050928df32c7ed8771956a12eebb0dd1e1"
+    },
+    {
+      "path": "skills/scientific-writing/pnas-figure-guide",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "97eba7f338a60054a143aeefc42cd82483a08623",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/97eba7f338a60054a143aeefc42cd82483a08623"
+    },
+    {
+      "path": "skills/scientific-writing/pnas-figure-guide/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "40af17d22809b8116789a7600d007d77474fa266",
+      "size": 14803,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/40af17d22809b8116789a7600d007d77474fa266"
+    },
+    {
+      "path": "skills/scientific-writing/pubmed-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ad6fc59c0af06e69f5a5969ef8141b1522d609d2",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ad6fc59c0af06e69f5a5969ef8141b1522d609d2"
+    },
+    {
+      "path": "skills/scientific-writing/pubmed-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "54f9b9a08d5840e7749705abbe8ed83686e8427b",
+      "size": 17749,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/54f9b9a08d5840e7749705abbe8ed83686e8427b"
+    },
+    {
+      "path": "skills/scientific-writing/pubmed-database/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "60d4248179675526368ada862502a25fe99786d0",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/60d4248179675526368ada862502a25fe99786d0"
+    },
+    {
+      "path": "skills/scientific-writing/pubmed-database/references/common_queries.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2db65c96e7b101c8321a03d110c8e53e9c9de07c",
+      "size": 7331,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/2db65c96e7b101c8321a03d110c8e53e9c9de07c"
+    },
+    {
+      "path": "skills/scientific-writing/pubmed-database/references/search_syntax.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b641ba46b0a202877095cc7344d920e24d83e646",
+      "size": 6410,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/b641ba46b0a202877095cc7344d920e24d83e646"
+    },
+    {
+      "path": "skills/scientific-writing/science-figure-guide",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8d6df69a836dfe0a42b946b7d985e71818a8da17",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/8d6df69a836dfe0a42b946b7d985e71818a8da17"
+    },
+    {
+      "path": "skills/scientific-writing/science-figure-guide/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c6993f9b2fbe7d85782a815b2f7099f0d06361a3",
+      "size": 12537,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c6993f9b2fbe7d85782a815b2f7099f0d06361a3"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-brainstorming",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6a01fb29eadde2763cfe13c5cfd59c20b9fbed6b",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/6a01fb29eadde2763cfe13c5cfd59c20b9fbed6b"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-brainstorming/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5407825dbb91c61e0aad4c6e415ae691d8b5eb99",
+      "size": 28847,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/5407825dbb91c61e0aad4c6e415ae691d8b5eb99"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-critical-thinking",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ba5d74b75a4719b5d1f8743cc5a66b2f51ae3bed",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ba5d74b75a4719b5d1f8743cc5a66b2f51ae3bed"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-critical-thinking/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "54b3ea7214123fbeb6b848ee371f6649e9c93375",
+      "size": 19169,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/54b3ea7214123fbeb6b848ee371f6649e9c93375"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-literature-search",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8fbf3019df4682574ea3f4f647ebc7b029386051",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/8fbf3019df4682574ea3f4f647ebc7b029386051"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-literature-search/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4585817f1f8d6fade3ddf16c936fccf8b3354de9",
+      "size": 22847,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/4585817f1f8d6fade3ddf16c936fccf8b3354de9"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-manuscript-writing",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "455196e54d54c2096e645e0d796f0606ca800925",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/455196e54d54c2096e645e0d796f0606ca800925"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-manuscript-writing/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2688be75196796a099461d6540b47ff0c8c6a5a0",
+      "size": 19146,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/2688be75196796a099461d6540b47ff0c8c6a5a0"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-schematics",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "005eed8ec936d10dab77006a6e519693e37f699a",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/005eed8ec936d10dab77006a6e519693e37f699a"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-schematics/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd4dc766fbbf0f8a1c69ab407ead42a6bf2b661c",
+      "size": 15467,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/cd4dc766fbbf0f8a1c69ab407ead42a6bf2b661c"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-slides",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "dad5142719ca618b76d78b62b8937524cec5e785",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/dad5142719ca618b76d78b62b8937524cec5e785"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-slides/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "07bdccab4703c3eaf232a1c623f3bb17d7a29474",
+      "size": 14152,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/07bdccab4703c3eaf232a1c623f3bb17d7a29474"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-slides/assets",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b48424ba276df267e13495af2c612ba0346b21fc",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/b48424ba276df267e13495af2c612ba0346b21fc"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-slides/assets/beamer_template_conference.tex",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0977bc4fcc177d0925116b7e44085100b56b6f79",
+      "size": 5167,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/0977bc4fcc177d0925116b7e44085100b56b6f79"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-slides/assets/beamer_template_defense.tex",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "595218508c02f5f452bb6d8ae391c1a7077fefff",
+      "size": 10624,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/595218508c02f5f452bb6d8ae391c1a7077fefff"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-slides/assets/beamer_template_seminar.tex",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6282c7d415d384f27f3dab05df1fbbd5d2537916",
+      "size": 8804,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/6282c7d415d384f27f3dab05df1fbbd5d2537916"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-slides/assets/timing_guidelines.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b19ddd1207409f44986b59855b1e716139d6d5b",
+      "size": 5330,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/4b19ddd1207409f44986b59855b1e716139d6d5b"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-slides/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "04c62cefd15e54b8cd79fc4f6b3c7c58dbadcc3d",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/04c62cefd15e54b8cd79fc4f6b3c7c58dbadcc3d"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-slides/references/slide_design_guide.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e47773b356a2bbbeeb27f96039572eb534a28ab2",
+      "size": 8117,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/e47773b356a2bbbeeb27f96039572eb534a28ab2"
+    },
+    {
+      "path": "skills/scientific-writing/scientific-slides/references/talk_types_guide.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f8b203adea8dcdd487be99dde9db64c332fe1707",
+      "size": 9553,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/f8b203adea8dcdd487be99dde9db64c332fe1707"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "30afc5a457076e962f683f99eb35b9f8c1328276",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/30afc5a457076e962f683f99eb35b9f8c1328276"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/alphafold-database-access",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c39b74c5f4087c96e0b5b327da82dd7335516733",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/c39b74c5f4087c96e0b5b327da82dd7335516733"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/alphafold-database-access/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0d36c194649073fc6bcf09ba29a08e07cca55132",
+      "size": 16631,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/0d36c194649073fc6bcf09ba29a08e07cca55132"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/alphafold-database-access/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c7329be579bfeee2530f38d999b5f7ed11d62325",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/c7329be579bfeee2530f38d999b5f7ed11d62325"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/alphafold-database-access/references/api_schemas_reference.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4046e9060c1eb2e29f89e84f9f59a0913ec0015a",
+      "size": 8086,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/4046e9060c1eb2e29f89e84f9f59a0913ec0015a"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/autodock-vina-docking",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "861c9c6589a46cdf278ab68d40e1771ab399e8cf",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/861c9c6589a46cdf278ab68d40e1771ab399e8cf"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/autodock-vina-docking/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5bc8034786dbb79e5982eb05dfa7a1690e5fc963",
+      "size": 15860,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/5bc8034786dbb79e5982eb05dfa7a1690e5fc963"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/autodock-vina-docking/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "501228fdda73757d4f5248adf0a049c52ba6b1e2",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/501228fdda73757d4f5248adf0a049c52ba6b1e2"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/autodock-vina-docking/references/receptor_preparation_guide.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b3c84012f29511dcb570fdc0848d3d2c426c5db7",
+      "size": 4347,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/b3c84012f29511dcb570fdc0848d3d2c426c5db7"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/autodock-vina-docking/references/scoring_functions_comparison.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7b95aadff2c80ffa99d0bba2d05fead7b0749335",
+      "size": 3612,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/7b95aadff2c80ffa99d0bba2d05fead7b0749335"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/chembl-database-bioactivity",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d17b2f40ee11ce735b655eba176a8fb6657a0ed0",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d17b2f40ee11ce735b655eba176a8fb6657a0ed0"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/chembl-database-bioactivity/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1aa27401c4cf4cedbf4c4f4e74774f39569a5602",
+      "size": 25803,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/1aa27401c4cf4cedbf4c4f4e74774f39569a5602"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/clinicaltrials-database-search",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "993873cdedd1148bac8f9a382b670b7e783fa651",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/993873cdedd1148bac8f9a382b670b7e783fa651"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/clinicaltrials-database-search/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1e9984240e7d101734914842a939e0628cff437f",
+      "size": 18605,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/1e9984240e7d101734914842a939e0628cff437f"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/dailymed-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1b9678a00210d779e2b7b8b82a15bc47ab6047a4",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/1b9678a00210d779e2b7b8b82a15bc47ab6047a4"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/dailymed-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "46e021d0e8bd9ae03a2c370709d0d9fe7766585b",
+      "size": 24054,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/46e021d0e8bd9ae03a2c370709d0d9fe7766585b"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/datamol-cheminformatics",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d3e2822ae390a32ef8e1d4b2bc84de17ef5e0026",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d3e2822ae390a32ef8e1d4b2bc84de17ef5e0026"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/datamol-cheminformatics/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "955c9e8a58bf628089b51e2d15a0d449496ce458",
+      "size": 17739,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/955c9e8a58bf628089b51e2d15a0d449496ce458"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/ddinter-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f6e1ce99ddfcfa7c5f2c6af863f97a9c14f28bd0",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/f6e1ce99ddfcfa7c5f2c6af863f97a9c14f28bd0"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/ddinter-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ed5a79233d624d020e09e3188ba5bb45a94c1fb",
+      "size": 29344,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/8ed5a79233d624d020e09e3188ba5bb45a94c1fb"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/deepchem",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ab3074c61edac9c3d553fe71c9f944fa9055d98b",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/ab3074c61edac9c3d553fe71c9f944fa9055d98b"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/deepchem/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9d501dcfca71b12002f58c13b306e5c3ea5532f0",
+      "size": 23405,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/9d501dcfca71b12002f58c13b306e5c3ea5532f0"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/deepchem/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "693f0740e15ab0d9de4a0a424d594215ee4fcf4a",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/693f0740e15ab0d9de4a0a424d594215ee4fcf4a"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/deepchem/references/workflows_model_catalog.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "afecb14e1f22eaf8286aa68abd76cf3f6b301049",
+      "size": 16589,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/afecb14e1f22eaf8286aa68abd76cf3f6b301049"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/diffdock",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d01036bd5e78f6c56e7e0c14919f73251b5fb8c4",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d01036bd5e78f6c56e7e0c14919f73251b5fb8c4"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/diffdock/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "41924755516af6917d9a5d2e305840c6fe754fed",
+      "size": 12952,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/41924755516af6917d9a5d2e305840c6fe754fed"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/drugbank-database-access",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6d4bb606d6d9043e3dbd19d1fce46728a242e701",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/6d4bb606d6d9043e3dbd19d1fce46728a242e701"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/drugbank-database-access/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "642a943eed7a09aaccdeb2947d2ab99ec1933ee4",
+      "size": 23267,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/642a943eed7a09aaccdeb2947d2ab99ec1933ee4"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/drugbank-database-access/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d45a6250dbb1081dcbefa2507e34ac0cb012bdcc",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/d45a6250dbb1081dcbefa2507e34ac0cb012bdcc"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/drugbank-database-access/references/chemical_analysis.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cfc2596bcc27fdc187e965a049aef50af6232e8c",
+      "size": 10424,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/cfc2596bcc27fdc187e965a049aef50af6232e8c"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/drugbank-database-access/references/interactions_targets.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f8499ac4dc2fa76e907b369acb716e1a25c9cefc",
+      "size": 16947,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/f8499ac4dc2fa76e907b369acb716e1a25c9cefc"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/emdb-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "96f4243053225767f6a7eaefd0c850f31e5d2a19",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/96f4243053225767f6a7eaefd0c850f31e5d2a19"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/emdb-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "22ed4af44c1a7b3652db15a9e10a2a55d01758d4",
+      "size": 19861,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/22ed4af44c1a7b3652db15a9e10a2a55d01758d4"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/fda-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "02f7e0ca5417f2b20009cb6c300dd4d0dfd78dae",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/02f7e0ca5417f2b20009cb6c300dd4d0dfd78dae"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/fda-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "09d14012d6f8a5029450dab896c2c04c935c0b4a",
+      "size": 18045,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/09d14012d6f8a5029450dab896c2c04c935c0b4a"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/gtopdb-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "30ccd12d29982bcf86fff42c23635f789da5752d",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/30ccd12d29982bcf86fff42c23635f789da5752d"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/gtopdb-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a1eb28635d99f642efe1dac3de1468b57aade867",
+      "size": 19496,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a1eb28635d99f642efe1dac3de1468b57aade867"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/mdanalysis-trajectory",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2f91ca35fecc5f38dde3b9218d4606f84d198083",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/2f91ca35fecc5f38dde3b9218d4606f84d198083"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/mdanalysis-trajectory/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "612c939e8110f1c886c8e0517bdd2c2830cae00f",
+      "size": 14272,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/612c939e8110f1c886c8e0517bdd2c2830cae00f"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/mdtraj-trajectory-analysis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4590023b1878c454ebb3abe2d814e719733df3f5",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/4590023b1878c454ebb3abe2d814e719733df3f5"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/mdtraj-trajectory-analysis/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9c8dc1d7ff98c43770161110560f83e51aff1660",
+      "size": 20046,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/9c8dc1d7ff98c43770161110560f83e51aff1660"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/medchem",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f29c6df8b904c77e408cd54bcd9e5adf7129a1fc",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/f29c6df8b904c77e408cd54bcd9e5adf7129a1fc"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/medchem/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9a6083cd5f5e91e6d7ce1065879980bdb1404040",
+      "size": 17851,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/9a6083cd5f5e91e6d7ce1065879980bdb1404040"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/medchem/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "11a1919ba6b4c7c8431dea5c972b74b696b4c4fd",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/11a1919ba6b4c7c8431dea5c972b74b696b4c4fd"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/medchem/references/rules_catalog.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "27bf4f0164c35f1a90efe543b9458c4846db1fd9",
+      "size": 7020,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/27bf4f0164c35f1a90efe543b9458c4846db1fd9"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/molfeat-molecular-featurization",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a7009ce5be3fe0fbfdbf75727b0f7eddd37504d3",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/a7009ce5be3fe0fbfdbf75727b0f7eddd37504d3"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/molfeat-molecular-featurization/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4ac173a3fa77ef0874250f9cca681c47e19cdf93",
+      "size": 17401,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/4ac173a3fa77ef0874250f9cca681c47e19cdf93"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/molfeat-molecular-featurization/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "95ba1b63e9ebfdd76b75a7dff778e12bbce110d2",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/95ba1b63e9ebfdd76b75a7dff778e12bbce110d2"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/molfeat-molecular-featurization/references/api_reference.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "238071318f2554ae719f75391a08ba5e33e93b22",
+      "size": 8083,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/238071318f2554ae719f75391a08ba5e33e93b22"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/molfeat-molecular-featurization/references/available_featurizers.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4afaee0bdf12ebd50e90eec694ff05b0071a5bc6",
+      "size": 6453,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/4afaee0bdf12ebd50e90eec694ff05b0071a5bc6"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/opentargets-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "533d0a317cb7de5191e5269b91736b953e0f4f95",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/533d0a317cb7de5191e5269b91736b953e0f4f95"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/opentargets-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b3d4786196dad9fcf101911f1f5de3c5a22e6a57",
+      "size": 20412,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/b3d4786196dad9fcf101911f1f5de3c5a22e6a57"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/pdb-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "925ff273918636963d1968092e5366f7beaafba9",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/925ff273918636963d1968092e5366f7beaafba9"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/pdb-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b35dbdc3dacc27222f1ac3757357c9a81d0aaba0",
+      "size": 31067,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/b35dbdc3dacc27222f1ac3757357c9a81d0aaba0"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/pubchem-compound-search",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "439e9442a0675068dc9fcfa30abd44239ed550df",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/439e9442a0675068dc9fcfa30abd44239ed550df"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/pubchem-compound-search/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d50ee96ffad44a928f617913b6524156e66466fc",
+      "size": 28306,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/d50ee96ffad44a928f617913b6524156e66466fc"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/pytdc-therapeutics-data-commons",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8e14ae5088f4383ea696246b1de8d27e51c62ad8",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/8e14ae5088f4383ea696246b1de8d27e51c62ad8"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/pytdc-therapeutics-data-commons/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a5188863632633ddf7f9a0d8515fad4447b7a8d",
+      "size": 17933,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/0a5188863632633ddf7f9a0d8515fad4447b7a8d"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/pytdc-therapeutics-data-commons/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "91f5f139b46237b6b2ce4828425e748d87a7ed4e",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/91f5f139b46237b6b2ce4828425e748d87a7ed4e"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/pytdc-therapeutics-data-commons/references/datasets_catalog.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c062d2f5e19204bc8ee6b2d0a5be3c91a6861ed0",
+      "size": 8646,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c062d2f5e19204bc8ee6b2d0a5be3c91a6861ed0"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/pytdc-therapeutics-data-commons/references/oracles_utilities.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a6ae21a3b75e1463a90bbce509b00ee92a6af3db",
+      "size": 16384,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a6ae21a3b75e1463a90bbce509b00ee92a6af3db"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/rdkit-cheminformatics",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "111a7d59d3ac0d80ea50a90952291c9d4bf93b5e",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/111a7d59d3ac0d80ea50a90952291c9d4bf93b5e"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/rdkit-cheminformatics/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c86327a8365c59ba2202d35c1f1a1dc5f094c670",
+      "size": 17876,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c86327a8365c59ba2202d35c1f1a1dc5f094c670"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/rdkit-cheminformatics/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c8c4f8470be78b4a7c66b82d17dbe33e9601c411",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/c8c4f8470be78b4a7c66b82d17dbe33e9601c411"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/rdkit-cheminformatics/references/api_reference.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "91e45f38c352995dbf7bf5e7679cb5860d99974b",
+      "size": 5958,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/91e45f38c352995dbf7bf5e7679cb5860d99974b"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/rdkit-cheminformatics/references/descriptors_guide.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "21601f18a1e07938c09a0bfc4dbb4713735f4d82",
+      "size": 6297,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/21601f18a1e07938c09a0bfc4dbb4713735f4d82"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/rdkit-cheminformatics/references/smarts_patterns.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "35399102f7b46fefa33add8c01b483eb74a22f0e",
+      "size": 5233,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/35399102f7b46fefa33add8c01b483eb74a22f0e"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/rowan",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fdf8135c4876e59785e97a197a6d533925c4edd6",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/fdf8135c4876e59785e97a197a6d533925c4edd6"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/rowan/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "44d610a820c1cf693e8fb393918980c4ebb29486",
+      "size": 15465,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/44d610a820c1cf693e8fb393918980c4ebb29486"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/sar-analysis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3e7bd86ac0e20baf48c9580f3fb2d661f879a9c9",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/3e7bd86ac0e20baf48c9580f3fb2d661f879a9c9"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/sar-analysis/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "63ba8c64fbd5258b264f013f69e28f553c7336da",
+      "size": 23276,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/63ba8c64fbd5258b264f013f69e28f553c7336da"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/smina-molecular-docking",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f25bd066cf906199954592e94efc29056dc27bdb",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/f25bd066cf906199954592e94efc29056dc27bdb"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/smina-molecular-docking/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "525677b4b7492d25dbd5484c73ed78b35dc82fdf",
+      "size": 14751,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/525677b4b7492d25dbd5484c73ed78b35dc82fdf"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/torchdrug",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "10c355c252eec6476550be48720a7082ae4ee922",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/10c355c252eec6476550be48720a7082ae4ee922"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/torchdrug/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ba72d7892d1000df3f49964c5088b7b8837fd777",
+      "size": 18811,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/ba72d7892d1000df3f49964c5088b7b8837fd777"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/unichem-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "38e4eac825faff93a8b4670bc50e91e73c97f74e",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/38e4eac825faff93a8b4670bc50e91e73c97f74e"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/unichem-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c06ddc22747e68e6e0543eb96a06cab3d228d7dd",
+      "size": 35006,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c06ddc22747e68e6e0543eb96a06cab3d228d7dd"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/zinc-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1391af0aa6b3d4acb7641fef1d20db100b7daf67",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/1391af0aa6b3d4acb7641fef1d20db100b7daf67"
+    },
+    {
+      "path": "skills/structural-biology-drug-discovery/zinc-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ddf0d82111f56e46030a6ebae97d09b64d1ac04f",
+      "size": 14826,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/ddf0d82111f56e46030a6ebae97d09b64d1ac04f"
+    },
+    {
+      "path": "skills/systems-biology-multiomics",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "df7957130c37f39834154a4b6a661c6c50317bc9",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/df7957130c37f39834154a4b6a661c6c50317bc9"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/brenda-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a7b9b194b273a7ff3371607ae3cd8b253ceca288",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/a7b9b194b273a7ff3371607ae3cd8b253ceca288"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/brenda-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "32a6e6cbb1a4ee04d9d19ca936fa579ecc89c2cc",
+      "size": 18330,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/32a6e6cbb1a4ee04d9d19ca936fa579ecc89c2cc"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/cellchat-cell-communication",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "48a4ecca5b7abceab10fe96877723c4cb8f73ed0",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/48a4ecca5b7abceab10fe96877723c4cb8f73ed0"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/cellchat-cell-communication/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c4fa905cf2e7c808e04dcc20969445c55b9a24e2",
+      "size": 25025,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c4fa905cf2e7c808e04dcc20969445c55b9a24e2"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/cobrapy-metabolic-modeling",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6ef5cf8f9791fdb2784e75dd63ef8afdf40ce54e",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/6ef5cf8f9791fdb2784e75dd63ef8afdf40ce54e"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/cobrapy-metabolic-modeling/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "090511597538e466de30f925855806dd487a717f",
+      "size": 17380,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/090511597538e466de30f925855806dd487a717f"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/cobrapy-metabolic-modeling/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c1a71c0611881135ffc367bee2c67ad0d43ae16c",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/c1a71c0611881135ffc367bee2c67ad0d43ae16c"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/cobrapy-metabolic-modeling/references/api_workflows.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "94783b763cd6c50ab9e7dc574d9023640d57a039",
+      "size": 14731,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/94783b763cd6c50ab9e7dc574d9023640d57a039"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/kegg-pathway-analysis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "71b9a147f369fdc6e79a061b9d213c2d9856da53",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/71b9a147f369fdc6e79a061b9d213c2d9856da53"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/kegg-pathway-analysis/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c25331cade8f4135cb6acad8e4d313a433ae0519",
+      "size": 17508,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c25331cade8f4135cb6acad8e4d313a433ae0519"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/lamindb-data-management",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a79c9b7be2ba47b42d663caad4b890e99c1028ca",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/a79c9b7be2ba47b42d663caad4b890e99c1028ca"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/lamindb-data-management/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a4f532313631a873b2c3f309efd20178eb71ee90",
+      "size": 15998,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/a4f532313631a873b2c3f309efd20178eb71ee90"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/libsbml-network-modeling",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "21f6ea96e4e95bf5f2b397b21eb2e01164c43add",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/21f6ea96e4e95bf5f2b397b21eb2e01164c43add"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/libsbml-network-modeling/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5a6268d5efcecca0fd27c67e87eb3bc2ad7938ca",
+      "size": 35168,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/5a6268d5efcecca0fd27c67e87eb3bc2ad7938ca"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/mofaplus-multi-omics",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fdf74ef4a0f77783d33a2e7d8cc476e25fb9398f",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/fdf74ef4a0f77783d33a2e7d8cc476e25fb9398f"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/mofaplus-multi-omics/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ec239baefb15822ceb2ae3b1df9d9ea79b822560",
+      "size": 25064,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/ec239baefb15822ceb2ae3b1df9d9ea79b822560"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/muon-multiomics-singlecell",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6705828bfd5f636732db1599de3f88f8ff61cc0d",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/6705828bfd5f636732db1599de3f88f8ff61cc0d"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/muon-multiomics-singlecell/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b28f927303f113480e8644f58818a035299dd02",
+      "size": 30612,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/9b28f927303f113480e8644f58818a035299dd02"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/omics-analysis-guide",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9a1e30fefaba43ac3b4bd26c361c9f4f769f5da4",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/9a1e30fefaba43ac3b4bd26c361c9f4f769f5da4"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/omics-analysis-guide/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7625c2e7eda6a13317cc698696f72e9f581355b6",
+      "size": 27365,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/7625c2e7eda6a13317cc698696f72e9f581355b6"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/reactome-database",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f380609d39654411148bc8a6a3e54e0fcfd4f981",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/f380609d39654411148bc8a6a3e54e0fcfd4f981"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/reactome-database/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "970d8c958d6cde0fb75b19094a0752bc9914fefe",
+      "size": 20810,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/970d8c958d6cde0fb75b19094a0752bc9914fefe"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/string-database-ppi",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "24a25a2d4a9adf99f768fbdd514e48304d2f4eb2",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/24a25a2d4a9adf99f768fbdd514e48304d2f4eb2"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/string-database-ppi/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c12d4fe65d8cdb977c4ac070ed48c68923f8db54",
+      "size": 16859,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/c12d4fe65d8cdb977c4ac070ed48c68923f8db54"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/string-database-ppi/references",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1be7956350d2a1ea0a25b7e4943e244d263f04da",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/1be7956350d2a1ea0a25b7e4943e244d263f04da"
+    },
+    {
+      "path": "skills/systems-biology-multiomics/string-database-ppi/references/api_advanced.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7a32672fdb5995d9d8d125ae51f157d54bbd3d8d",
+      "size": 7052,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/7a32672fdb5995d9d8d125ae51f157d54bbd3d8d"
+    },
+    {
+      "path": "templates",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "14c97ec8adf38d69bf660bf4f5ea6346ef7dce64",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/14c97ec8adf38d69bf660bf4f5ea6346ef7dce64"
+    },
+    {
+      "path": "templates/SKILL_TEMPLATE.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3bbf24a9da382ba9e00075a4adbcbc13ea62a7a2",
+      "size": 5539,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/3bbf24a9da382ba9e00075a4adbcbc13ea62a7a2"
+    },
+    {
+      "path": "templates/SKILL_TEMPLATE_PROSE.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3b13bcb2f44cd9851f140dd79196775b73c88163",
+      "size": 4720,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/3b13bcb2f44cd9851f140dd79196775b73c88163"
+    },
+    {
+      "path": "templates/SKILL_TEMPLATE_TOOLKIT.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "be6c6d87a142c6ee1784f32529a262f17ffca07f",
+      "size": 9889,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/be6c6d87a142c6ee1784f32529a262f17ffca07f"
+    },
+    {
+      "path": "tests",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5dbd9264835e8eaeb9f194c0ad0e6c4cfb58b372",
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/trees/5dbd9264835e8eaeb9f194c0ad0e6c4cfb58b372"
+    },
+    {
+      "path": "tests/test_registry.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "62ccfff1f2edb3f97e921ad272206a61a746b0de",
+      "size": 4346,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/62ccfff1f2edb3f97e921ad272206a61a746b0de"
+    },
+    {
+      "path": "tests/test_skill_quality.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "da2f93e0a5452b1d487a1eed3577b04194648363",
+      "size": 27809,
+      "url": "https://api.github.com/repos/jaechang-hits/SciAgent-Skills/git/blobs/da2f93e0a5452b1d487a1eed3577b04194648363"
+    }
+  ],
+  "truncated": false
+}

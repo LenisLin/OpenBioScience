@@ -1,0 +1,7 @@
+{
+  "ok": false,
+  "status": 503,
+  "model": "gemini-3.1-pro",
+  "tag": "task_acceptance",
+  "error": "{\"error\":{\"code\":\"model_not_found\",\"message\":\"No available channel for model gemini-3.1-pro under group default (distributor) (request id: 202607010707391571794078268d9d6feHiTCnO)\",\"type\":\"new_api_error\"}}"
+}

@@ -3,6 +3,8 @@ import { classifyBackendStartupFailure } from '@/process/startup/backendStartupF
 import { detectStartupArchitectureMismatch } from '@/process/startup/architectureCompatibility';
 import { getInstallationIntegrityModalActions } from '@/renderer/components/layout/InstallationIntegrityDialog';
 
+const identityT = (key: string) => key;
+
 describe('classifyBackendStartupFailure', () => {
   it('classifies missing GLIBC symbols as an incompatible backend runtime', () => {
     const error = new Error('DeepOrganiser Core exited before health check passed') as Error & {
@@ -208,16 +210,14 @@ describe('detectStartupArchitectureMismatch', () => {
 });
 
 describe('getInstallationIntegrityModalActions', () => {
-  it('exposes diagnostics reporting next to download-latest for blocking dialogs', () => {
-    const t = (key: string) => key;
-    const onReportDiagnostics = vi.fn();
+  it('exposes download-latest for blocking dialogs', () => {
+    const onDownloadLatest = vi.fn();
 
-    const actions = getInstallationIntegrityModalActions(t, { onReportDiagnostics });
+    const actions = getInstallationIntegrityModalActions(identityT, { onDownloadLatest });
 
     expect(actions.downloadText).toBe('common.backendStartup.incompleteInstallation.downloadLatest');
-    expect(actions.reportText).toBe('common.backendStartup.incompleteInstallation.sendDiagnostics');
 
-    actions.onReportDiagnostics();
-    expect(onReportDiagnostics).toHaveBeenCalledOnce();
+    actions.onDownloadLatest();
+    expect(onDownloadLatest).toHaveBeenCalledOnce();
   });
 });

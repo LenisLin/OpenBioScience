@@ -73,6 +73,12 @@ describe('fileUtils', () => {
       expect(getContentTypeByExtension('changes.diff')).toBe('diff');
     });
 
+    it('returns molecular_structure for scientific coordinate files', () => {
+      expect(getContentTypeByExtension('1abc.pdb')).toBe('molecular_structure');
+      expect(getContentTypeByExtension('alphafold_model.cif')).toBe('molecular_structure');
+      expect(getContentTypeByExtension('ligand.sdf')).toBe('molecular_structure');
+    });
+
     it('returns code as default for unknown extension', () => {
       expect(getContentTypeByExtension('script.ts')).toBe('code');
       expect(getContentTypeByExtension('app.jsx')).toBe('code');
@@ -132,6 +138,12 @@ describe('fileUtils', () => {
     it('contains image extensions', () => {
       expect(FILE_EXTENSION_MAP.image).toContain('png');
       expect(FILE_EXTENSION_MAP.image).toContain('svg');
+    });
+
+    it('contains molecular structure extensions', () => {
+      expect(FILE_EXTENSION_MAP.molecular_structure).toContain('pdb');
+      expect(FILE_EXTENSION_MAP.molecular_structure).toContain('cif');
+      expect(FILE_EXTENSION_MAP.molecular_structure).toContain('sdf');
     });
   });
 });

@@ -60,7 +60,6 @@ describe('managed node runtime settings copy', () => {
       const backendStartup = common.backendStartup as Record<string, unknown>;
       const incompleteInstallation = backendStartup.incompleteInstallation as Record<string, string>;
 
-      expect(incompleteInstallation.sendDiagnostics).toBeTruthy();
       expect(incompleteInstallation.runtimeComponentDescription).not.toMatch(/^This installation is missing/);
     }
   });

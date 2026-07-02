@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "status": 200,
+  "actual_model": "gemini-3.5-flash",
+  "tag": "backend_protocol",
+  "content": "",
+  "finish_reason": "length",
+  "raw_id": "chatcmpl-202607010714396286327388268d9d6N9DTSNvB",
+  "requested_model": "gemini-3.5-flash",
+  "base_url": "https://api.bianxie.ai/v1",
+  "file": "effective_gemini-3.5-flash_gemini-3.5-flash_backend_protocol.json"
+}

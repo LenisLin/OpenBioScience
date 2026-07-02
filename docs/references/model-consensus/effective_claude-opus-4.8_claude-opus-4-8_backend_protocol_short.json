@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "status": 200,
+  "requested_model": "claude-opus-4.8",
+  "actual_model": "claude-opus-4-8",
+  "tag": "backend_protocol_short",
+  "content": "# OpenScience 后端协议迁移评审：医学循证 → Science Artifact\n\n## 十条具体建议\n\n**1. 证据分级模型必须解耦为可扩展枚举**\n医学的 GRADE/牛津分级（RCT>队列>病例）是领域硬编码。Science artifact 涵盖数据集、代码、模型、复现记录，无法套用金字塔。协议层应将 `evidence_level` 从固定枚举改为 `grading_scheme_id + score` 的二元组，允许不同学科注册自己的分级方案。\n\n**2. Artifact 需引入内容寻址标识（CID）**\n医学循证以 DOI/PMID 指向静态文献。Artifact 是可变、可执行的。建议在协议中强制 `content_hash`（如 SHA-256 或 IPFS CID）作为主键，DOI 降级为别名，保证同一 artifact 的字节级可验证性。\n\n**3. 版本与溯源改为 DAG 而非线性 revision**\n文献版本是线性 errata。代码/数据集是分叉、合并、依赖的有向无环图。协议应支持 `provenance: {parents: [cid...], derivation_type}`，取代医学系统常见的 `previous_version_id` 单指针。\n\n**4. 引用关系语义化（Typed Citation）**\n医学引用多为\"支持/引用\"。Artifact 依赖需区分 `uses / extends / refutes / reproduces / depends-on`。建议采用 CiTO 本体，协议字段为 `relation_type` 必填，否则复现网络无法计算。\n\n**5. 复现状态作为一等公民**\n医学系统无\"复现\"字段。Artifact 协议应新增 `reproducibility: {status, executor, environment_hash, timestamp}`，并支持第三方独立提交复现报告（多对一）。\n\n**6. 环境与依赖必须机器可读**\n迁移时把 medical 的自由文本 `methods` 字段升级为结构化 `environment_manifest`（容器镜像、依赖锁文件、硬件规格）。协议应校验 manifest 完整性，否则 artifact 标记为 `not-executable`。\n\n**7. 撤稿模型泛化为生命周期状态机**\n医学的 retraction 是二元的。Artifact 需要 `deprecated / superseded / flawed / withdrawn` 多态状态，且撤稿需级联通知下游依赖者（webhook / 订阅）。\n\n**8. 许可与访问控制分层**\n医学文献多为统一版权。Artifact 混合代码许可（MIT/GPL）、数据许可（CC）、伦理限制（受控访问）。协议需 `license_bundle` 支持每个 component 独立授权，并在 API 层做访问决策。\n\n**9. 大对象走异步存储协议**\n循证系统是元数据中心，负载小。Artifact 含 GB 级数据/模型，同步 REST 会崩。建议元数据用 REST/GraphQL，正文用 S3 兼容分块上传 + 预签名 URL，协议返回 `storage_ref` 而非内联。\n\n**10. 评审改为持续、可追加的审计日志**\n医学同行评审是一次性事件。Artifact 质量随复现累积。协议应把 review 建为 append-only event stream，支持后验证据修改置信度而不重写历史。\n\n## 最大矛盾\n\n**核心矛盾在于：医学循证系统假设\"证据是静态、可被权威一次性分级的陈述\"，而 Science artifact 本质是\"可变、可执行、依赖网络化的动态对象\"。**\n\n这不是字段增减问题，而是数据模型范式冲突：循证系统的信任来自**权威分级（自上而下）**，artifact 系统的信任来自**可复现性验证（自下而上、分布式、持续演化）**。若直接迁移 schema，会把 artifact 强行塞进静态文献模型，导致溯源 DAG 退化为线性、复现信号丢失、可执行性无法表达——系统表面能跑，但丧失了 artifact 生态的核心价值。\n\n**建议：不做字段级迁移，而是保留医学系统的标识/引用/评审三大子系统作为参考，重建以 content-addressed DAG 为核心的新数据层，医学模式仅作为一种可插拔的 grading_scheme。**",
+  "finish_reason": "stop",
+  "raw_id": "msg_01EnPynbfJ4gPBbhY67pZZzT",
+  "base_url": "https://api.bianxie.ai/v1",
+  "created_at": "2026-07-01T07:19:08.608310+00:00",
+  "file": "effective_claude-opus-4.8_claude-opus-4-8_backend_protocol_short.json"
+}

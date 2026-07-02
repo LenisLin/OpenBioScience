@@ -81,10 +81,12 @@ export async function navigateTo(page: Page, hash: string): Promise<void> {
   if (!targetIsSettings) {
     // Target is non-settings (guid, conversation, etc.)
     if (isOnSettings) {
-      // Click the sider back button to leave settings
-      const siderBtn = page.locator('.sider-footer div').first();
-      await siderBtn.waitFor({ state: 'visible', timeout: 10_000 });
-      await siderBtn.click();
+      // Click the wordmark back affordance to leave settings. Settings pages no
+      // longer render the normal chat footer, so the settings sider has a
+      // single clear navigation surface.
+      const brandBackBtn = page.locator('.layout-brand-wordmark[role="button"]').first();
+      await brandBackBtn.waitFor({ state: 'visible', timeout: 10_000 });
+      await brandBackBtn.click();
       // Wait for hash to change away from settings
       await page
         .waitForFunction(() => !window.location.hash.includes('/settings/'), { timeout: 10_000 })

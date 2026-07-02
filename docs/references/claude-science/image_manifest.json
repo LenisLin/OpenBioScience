@@ -1,0 +1,875 @@
+[
+  {
+    "index": 1,
+    "file": "001.png",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/689f4a9aff1f63fde75cf733_favicon.png",
+    "size_bytes": 1588,
+    "width": 32,
+    "height": 32,
+    "codec_name": "png"
+  },
+  {
+    "index": 2,
+    "file": "002.png",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/68c33859cc6cd903686c66a2_apple-touch-icon.png",
+    "size_bytes": 104425,
+    "width": 256,
+    "height": 256,
+    "codec_name": "png"
+  },
+  {
+    "index": 3,
+    "file": "003.jpg",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a429b9909aa1b063a203021_life-sciences-tn.jpg",
+    "size_bytes": 19218,
+    "width": 1200,
+    "height": 675,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 4,
+    "file": "004.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a58f43b21a26c5934eab_lab-09.avif",
+    "size_bytes": 40779,
+    "width": 1200,
+    "height": 800,
+    "codec_name": "av1"
+  },
+  {
+    "index": 5,
+    "file": "005.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a58f5976daa13ef855a0_lab-24.avif",
+    "size_bytes": 11553,
+    "width": 1200,
+    "height": 800,
+    "codec_name": "av1"
+  },
+  {
+    "index": 6,
+    "file": "006.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a59091e5af0154705f5c_lab-08.avif",
+    "size_bytes": 16789,
+    "width": 1200,
+    "height": 796,
+    "codec_name": "av1"
+  },
+  {
+    "index": 7,
+    "file": "007.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a597262c41201a0290f3_lab-03.avif",
+    "size_bytes": 40876,
+    "width": 1200,
+    "height": 796,
+    "codec_name": "av1"
+  },
+  {
+    "index": 8,
+    "file": "008.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a597263a2780ef6fd15a_lab-01.avif",
+    "size_bytes": 20406,
+    "width": 1200,
+    "height": 796,
+    "codec_name": "av1"
+  },
+  {
+    "index": 9,
+    "file": "009.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a597334b25b98850987d_lab-23.avif",
+    "size_bytes": 11906,
+    "width": 1200,
+    "height": 800,
+    "codec_name": "av1"
+  },
+  {
+    "index": 10,
+    "file": "010.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a597b04cdc439826608d_lab-17.avif",
+    "size_bytes": 26804,
+    "width": 1200,
+    "height": 800,
+    "codec_name": "av1"
+  },
+  {
+    "index": 11,
+    "file": "011.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a597cb0de5291e56a248_lab-21.avif",
+    "size_bytes": 26650,
+    "width": 1200,
+    "height": 800,
+    "codec_name": "av1"
+  },
+  {
+    "index": 12,
+    "file": "012.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a597e2a48c1f4b59a191_lab-18.avif",
+    "size_bytes": 11094,
+    "width": 1200,
+    "height": 800,
+    "codec_name": "av1"
+  },
+  {
+    "index": 13,
+    "file": "013.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a599262c41201a0291bc_lab-26.avif",
+    "size_bytes": 21950,
+    "width": 1200,
+    "height": 800,
+    "codec_name": "av1"
+  },
+  {
+    "index": 14,
+    "file": "014.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a599263a2780ef6fd3c3_lab-12.avif",
+    "size_bytes": 11750,
+    "width": 1200,
+    "height": 800,
+    "codec_name": "av1"
+  },
+  {
+    "index": 15,
+    "file": "015.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5996a550680f0d99a1d_lab-16.avif",
+    "size_bytes": 19955,
+    "width": 1200,
+    "height": 800,
+    "codec_name": "av1"
+  },
+  {
+    "index": 16,
+    "file": "016.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a599994990363a5fd569_lab-05.avif",
+    "size_bytes": 71892,
+    "width": 1200,
+    "height": 796,
+    "codec_name": "av1"
+  },
+  {
+    "index": 17,
+    "file": "017.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a599a7b3e9049f05e4a3_lab-14.avif",
+    "size_bytes": 23586,
+    "width": 1200,
+    "height": 800,
+    "codec_name": "av1"
+  },
+  {
+    "index": 18,
+    "file": "018.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a599bc5bc0c490b65560_lab-25.avif",
+    "size_bytes": 46227,
+    "width": 1200,
+    "height": 800,
+    "codec_name": "av1"
+  },
+  {
+    "index": 19,
+    "file": "019.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a599cb15d5a851974864_lab-13.avif",
+    "size_bytes": 18931,
+    "width": 1200,
+    "height": 800,
+    "codec_name": "av1"
+  },
+  {
+    "index": 20,
+    "file": "020.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a59eacf6624bb1d4740c_lab-02.avif",
+    "size_bytes": 32884,
+    "width": 1200,
+    "height": 796,
+    "codec_name": "av1"
+  },
+  {
+    "index": 21,
+    "file": "021.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5a03afe3e4b6dd7ab14_lab-06.avif",
+    "size_bytes": 19267,
+    "width": 1200,
+    "height": 796,
+    "codec_name": "av1"
+  },
+  {
+    "index": 22,
+    "file": "022.avif",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5a0bc6baec6923017df_lab-22.avif",
+    "size_bytes": 16379,
+    "width": 1200,
+    "height": 800,
+    "codec_name": "av1"
+  },
+  {
+    "index": 23,
+    "file": "023.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d45976daa13ef88f08_science-pillars-3-p-1080.webp",
+    "size_bytes": 79662,
+    "width": 1080,
+    "height": 627,
+    "codec_name": "webp"
+  },
+  {
+    "index": 24,
+    "file": "024.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d45976daa13ef88f08_science-pillars-3-p-1600.webp",
+    "size_bytes": 138742,
+    "width": 1600,
+    "height": 930,
+    "codec_name": "webp"
+  },
+  {
+    "index": 25,
+    "file": "025.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d45976daa13ef88f08_science-pillars-3-p-500.webp",
+    "size_bytes": 20748,
+    "width": 500,
+    "height": 290,
+    "codec_name": "webp"
+  },
+  {
+    "index": 26,
+    "file": "026.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d45976daa13ef88f08_science-pillars-3-p-800.webp",
+    "size_bytes": 48926,
+    "width": 800,
+    "height": 465,
+    "codec_name": "webp"
+  },
+  {
+    "index": 27,
+    "file": "027.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d45976daa13ef88f08_science-pillars-3.webp",
+    "size_bytes": 151822,
+    "width": 2000,
+    "height": 1162,
+    "codec_name": "webp"
+  },
+  {
+    "index": 28,
+    "file": "028.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d70cb6b4480ed0f16f_science-pillars-2-p-1080.webp",
+    "size_bytes": 58558,
+    "width": 1080,
+    "height": 627,
+    "codec_name": "webp"
+  },
+  {
+    "index": 29,
+    "file": "029.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d70cb6b4480ed0f16f_science-pillars-2-p-1600.webp",
+    "size_bytes": 95952,
+    "width": 1600,
+    "height": 930,
+    "codec_name": "webp"
+  },
+  {
+    "index": 30,
+    "file": "030.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d70cb6b4480ed0f16f_science-pillars-2-p-500.webp",
+    "size_bytes": 18044,
+    "width": 500,
+    "height": 290,
+    "codec_name": "webp"
+  },
+  {
+    "index": 31,
+    "file": "031.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d70cb6b4480ed0f16f_science-pillars-2-p-800.webp",
+    "size_bytes": 37926,
+    "width": 800,
+    "height": 465,
+    "codec_name": "webp"
+  },
+  {
+    "index": 32,
+    "file": "032.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d70cb6b4480ed0f16f_science-pillars-2.webp",
+    "size_bytes": 150132,
+    "width": 2000,
+    "height": 1162,
+    "codec_name": "webp"
+  },
+  {
+    "index": 33,
+    "file": "033.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d70ebe75212a0ec830_science-pillars-1-p-1080.webp",
+    "size_bytes": 81852,
+    "width": 1080,
+    "height": 627,
+    "codec_name": "webp"
+  },
+  {
+    "index": 34,
+    "file": "034.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d70ebe75212a0ec830_science-pillars-1-p-1600.webp",
+    "size_bytes": 136426,
+    "width": 1600,
+    "height": 930,
+    "codec_name": "webp"
+  },
+  {
+    "index": 35,
+    "file": "035.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d70ebe75212a0ec830_science-pillars-1-p-500.webp",
+    "size_bytes": 24382,
+    "width": 500,
+    "height": 290,
+    "codec_name": "webp"
+  },
+  {
+    "index": 36,
+    "file": "036.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d70ebe75212a0ec830_science-pillars-1-p-800.webp",
+    "size_bytes": 52648,
+    "width": 800,
+    "height": 465,
+    "codec_name": "webp"
+  },
+  {
+    "index": 37,
+    "file": "037.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5d70ebe75212a0ec830_science-pillars-1.webp",
+    "size_bytes": 147276,
+    "width": 2000,
+    "height": 1162,
+    "codec_name": "webp"
+  },
+  {
+    "index": 38,
+    "file": "038.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f25539c9423e18b8a0_Single-cell-RNA-seq-p-1080.webp",
+    "size_bytes": 84070,
+    "width": 1080,
+    "height": 734,
+    "codec_name": "webp"
+  },
+  {
+    "index": 39,
+    "file": "039.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f25539c9423e18b8a0_Single-cell-RNA-seq-p-500.webp",
+    "size_bytes": 21450,
+    "width": 500,
+    "height": 340,
+    "codec_name": "webp"
+  },
+  {
+    "index": 40,
+    "file": "040.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f25539c9423e18b8a0_Single-cell-RNA-seq-p-800.webp",
+    "size_bytes": 49128,
+    "width": 800,
+    "height": 543,
+    "codec_name": "webp"
+  },
+  {
+    "index": 41,
+    "file": "041.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f25539c9423e18b8a0_Single-cell-RNA-seq.webp",
+    "size_bytes": 151290,
+    "width": 2076,
+    "height": 1410,
+    "codec_name": "webp"
+  },
+  {
+    "index": 42,
+    "file": "042.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f291e5af015470b943_Evolutionary%20analysis-p-1080.webp",
+    "size_bytes": 56148,
+    "width": 1080,
+    "height": 735,
+    "codec_name": "webp"
+  },
+  {
+    "index": 43,
+    "file": "043.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f291e5af015470b943_Evolutionary%20analysis-p-1600.webp",
+    "size_bytes": 91894,
+    "width": 1600,
+    "height": 1088,
+    "codec_name": "webp"
+  },
+  {
+    "index": 44,
+    "file": "044.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f291e5af015470b943_Evolutionary%20analysis-p-2000.webp",
+    "size_bytes": 117858,
+    "width": 2000,
+    "height": 1360,
+    "codec_name": "webp"
+  },
+  {
+    "index": 45,
+    "file": "045.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f291e5af015470b943_Evolutionary%20analysis-p-500.webp",
+    "size_bytes": 17494,
+    "width": 500,
+    "height": 340,
+    "codec_name": "webp"
+  },
+  {
+    "index": 46,
+    "file": "046.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f291e5af015470b943_Evolutionary%20analysis-p-800.webp",
+    "size_bytes": 36396,
+    "width": 800,
+    "height": 544,
+    "codec_name": "webp"
+  },
+  {
+    "index": 47,
+    "file": "047.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f291e5af015470b943_Evolutionary%20analysis.webp",
+    "size_bytes": 152362,
+    "width": 2076,
+    "height": 1412,
+    "codec_name": "webp"
+  },
+  {
+    "index": 48,
+    "file": "048.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f2cb0de5291e56f344_Cheminformatics-p-1080.webp",
+    "size_bytes": 26130,
+    "width": 1080,
+    "height": 734,
+    "codec_name": "webp"
+  },
+  {
+    "index": 49,
+    "file": "049.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f2cb0de5291e56f344_Cheminformatics-p-1600.webp",
+    "size_bytes": 41208,
+    "width": 1600,
+    "height": 1088,
+    "codec_name": "webp"
+  },
+  {
+    "index": 50,
+    "file": "050.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f2cb0de5291e56f344_Cheminformatics-p-2000.webp",
+    "size_bytes": 54492,
+    "width": 2000,
+    "height": 1360,
+    "codec_name": "webp"
+  },
+  {
+    "index": 51,
+    "file": "051.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f2cb0de5291e56f344_Cheminformatics-p-500.webp",
+    "size_bytes": 9534,
+    "width": 500,
+    "height": 340,
+    "codec_name": "webp"
+  },
+  {
+    "index": 52,
+    "file": "052.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f2cb0de5291e56f344_Cheminformatics-p-800.webp",
+    "size_bytes": 17640,
+    "width": 800,
+    "height": 544,
+    "codec_name": "webp"
+  },
+  {
+    "index": 53,
+    "file": "053.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f2cb0de5291e56f344_Cheminformatics.webp",
+    "size_bytes": 66900,
+    "width": 2074,
+    "height": 1410,
+    "codec_name": "webp"
+  },
+  {
+    "index": 54,
+    "file": "054.webp",
+    "url": "https://cdn.prod.website-files.com/6889473510b50328dbb70ae6/6a43a5f3ce797c8a88d04528_Protein%20structure-mobie.webp",
+    "size_bytes": 49188,
+    "width": 1038,
+    "height": 705,
+    "codec_name": "webp"
+  },
+  {
+    "index": 55,
+    "file": "055.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/68f40abd3881758799d733d3_latch-bio-light.svg",
+    "size_bytes": 6265,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 56,
+    "file": "056.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/68f40ac01e1b5a5101fc2bdf_latch-bio-light-1.svg",
+    "size_bytes": 6261,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 57,
+    "file": "057.jpg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/690abdfc622a31cabb4ed418_Benchling.jpg",
+    "size_bytes": 9898,
+    "width": 160,
+    "height": 160,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 58,
+    "file": "058.jpg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/690abe5cecad201acb193aa2_BioRender.jpg",
+    "size_bytes": 24800,
+    "width": 160,
+    "height": 160,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 59,
+    "file": "059.jpg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/690ac0d0062f6400d634c165_PubMed.jpg",
+    "size_bytes": 10296,
+    "width": 160,
+    "height": 160,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 60,
+    "file": "060.jpg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/690ac0fc1d56f274313a882a_Scholar%20Gateway.jpg",
+    "size_bytes": 5859,
+    "width": 160,
+    "height": 160,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 61,
+    "file": "061.jpg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/690ac13f62f6fe3fff49fedb_Synapse.jpg",
+    "size_bytes": 16189,
+    "width": 160,
+    "height": 160,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 62,
+    "file": "062.jpg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/695f3e9e884bd175dbadbf06_cms.jpg",
+    "size_bytes": 8780,
+    "width": 160,
+    "height": 160,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 63,
+    "file": "063.jpg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/695f3ed486c00439706bad8d_npi.jpg",
+    "size_bytes": 9929,
+    "width": 160,
+    "height": 160,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 64,
+    "file": "064.jpg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/695f3ef5bcc23b924b6da7b7_OWKIN.jpg",
+    "size_bytes": 24435,
+    "width": 160,
+    "height": 160,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 65,
+    "file": "065.jpg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/695f3f052f1932d948bc6d21_biorx.jpg",
+    "size_bytes": 12794,
+    "width": 160,
+    "height": 160,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 66,
+    "file": "066.jpg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/695f3f1ba62e131168eafdfd_chembl.jpg",
+    "size_bytes": 19153,
+    "width": 160,
+    "height": 160,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 67,
+    "file": "067.jpg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/695f3f34a5d8bf093e154de4_open-targets.jpg",
+    "size_bytes": 8471,
+    "width": 160,
+    "height": 160,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 68,
+    "file": "068.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6963241073e3facf8ccc4053_medidata.svg",
+    "size_bytes": 11676,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 69,
+    "file": "069.jpg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/69f14fa63e5cc00c8c2fe439_scite.jpg",
+    "size_bytes": 6032,
+    "width": 480,
+    "height": 480,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 70,
+    "file": "070.jpeg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/69f81c99cf86df125c6570a3_synthesize_bio_logo.jpeg",
+    "size_bytes": 2981,
+    "width": 200,
+    "height": 200,
+    "codec_name": "mjpeg"
+  },
+  {
+    "index": 71,
+    "file": "071.png",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/69fa2ac6f0eef6e0d2b6c052_adisinsight_logo-p-500.png",
+    "size_bytes": 18245,
+    "width": 500,
+    "height": 500,
+    "codec_name": "png"
+  },
+  {
+    "index": 72,
+    "file": "072.png",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/69fa2ac6f0eef6e0d2b6c052_adisinsight_logo.png",
+    "size_bytes": 86433,
+    "width": 800,
+    "height": 800,
+    "codec_name": "png"
+  },
+  {
+    "index": 73,
+    "file": "073.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/69fa2ad9aca0a7df8e686e29_consensus-logo.svg",
+    "size_bytes": 2023,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 74,
+    "file": "074.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/69fa2b1c2e254ab3cf0f27f8_cortellis_logo.svg",
+    "size_bytes": 1031,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 75,
+    "file": "075.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a04e1ca183ffb71715f8892_SandboxLogoBlack%20-%20TJ%20Mustard.svg",
+    "size_bytes": 583,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 76,
+    "file": "076.png",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a20a3b05a2e775b9030f21e_logo_garvan-light-mode-p-500.png",
+    "size_bytes": 15967,
+    "width": 500,
+    "height": 159,
+    "codec_name": "png"
+  },
+  {
+    "index": 77,
+    "file": "077.png",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a20a3b05a2e775b9030f21e_logo_garvan-light-mode.png",
+    "size_bytes": 24584,
+    "width": 680,
+    "height": 216,
+    "codec_name": "png"
+  },
+  {
+    "index": 78,
+    "file": "078.png",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a20a3b4d95709c4930c47bc_logo_garvan-dark-mode-p-500.png",
+    "size_bytes": 16410,
+    "width": 500,
+    "height": 159,
+    "codec_name": "png"
+  },
+  {
+    "index": 79,
+    "file": "079.png",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a20a3b4d95709c4930c47bc_logo_garvan-dark-mode.png",
+    "size_bytes": 27058,
+    "width": 680,
+    "height": 216,
+    "codec_name": "png"
+  },
+  {
+    "index": 80,
+    "file": "080.png",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a3d3f978c39a25d73b98833_ctg.png",
+    "size_bytes": 16864,
+    "width": 222,
+    "height": 222,
+    "codec_name": "png"
+  },
+  {
+    "index": 81,
+    "file": "081.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a3d40a59f1ba418b13e9aa8_turquoise.svg",
+    "size_bytes": 210,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 82,
+    "file": "082.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a4308dd3b101e9f6c1b75f7_xaira_light.svg",
+    "size_bytes": 2005,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 83,
+    "file": "083.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a4308e0b72754104b563d99_xaira_dark.svg",
+    "size_bytes": 2005,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 84,
+    "file": "084.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a43ac80994990363a651d46_allen-institute_light.svg",
+    "size_bytes": 6203,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 85,
+    "file": "085.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a43ac82e34ad450422b4249_allen-institute_dark.svg",
+    "size_bytes": 6203,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 86,
+    "file": "086.png",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a43aebc1bc85393b3abd8b2_everycure_light.png",
+    "size_bytes": 11945,
+    "width": 220,
+    "height": 71,
+    "codec_name": "png"
+  },
+  {
+    "index": 87,
+    "file": "087.png",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a43aebebc5bc0c490bd9212_everycure_dark.png",
+    "size_bytes": 6260,
+    "width": 220,
+    "height": 72,
+    "codec_name": "png"
+  },
+  {
+    "index": 88,
+    "file": "088.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a43b1d291e5af015479f323_ucsf_light.svg",
+    "size_bytes": 2172,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 89,
+    "file": "089.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a43b1d96a550680f0e3fb41_ucsf_dark.svg",
+    "size_bytes": 2170,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 90,
+    "file": "090.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a43b23c319c2ec71411c048_Helix_light.svg",
+    "size_bytes": 3097,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 91,
+    "file": "091.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a43b23fa5ab51665090f997_Helix_dark.svg",
+    "size_bytes": 3085,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 92,
+    "file": "092.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a43b48211ddd166c20f74c5_shendure-lab_light.svg",
+    "size_bytes": 7840,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 93,
+    "file": "093.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a43b48543af9d4fe43c6bec_shendure-lab_dark.svg",
+    "size_bytes": 7840,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 94,
+    "file": "094.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a43e33823ce9116fd2e42d9_whitehead_light.svg",
+    "size_bytes": 7038,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 95,
+    "file": "095.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a43e33a13c07abd44b7c7e9_whitehead_dark.svg",
+    "size_bytes": 7032,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 96,
+    "file": "096.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a441bae467b0f68c2025780_Manifold_light.svg",
+    "size_bytes": 6958,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  },
+  {
+    "index": 97,
+    "file": "097.svg",
+    "url": "https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/6a441bbfb687f16f869fdcdd_Manifold_dark.svg",
+    "size_bytes": 6930,
+    "width": 0,
+    "height": 0,
+    "codec_name": "svg"
+  }
+]

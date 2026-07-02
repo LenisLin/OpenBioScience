@@ -72,6 +72,15 @@ test.describe('Settings Pages', () => {
 // ── Cross-page navigation ────────────────────────────────────────────────────
 
 test.describe('Sidebar Navigation', () => {
+  test('shows the settings footer only outside settings pages', async ({ page }) => {
+    await goToGuid(page);
+    await expect(page.locator('.sider-footer')).toHaveCount(1);
+
+    await goToSettings(page, 'model');
+    await expect(page.locator('.settings-sider')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('.sider-footer')).toHaveCount(0);
+  });
+
   test('can navigate between pages via URL', async ({ page }) => {
     await goToGuid(page);
     expect(page.url()).toContain('guid');

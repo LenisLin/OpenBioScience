@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Simplified build script for DeepOrganiser
+ * Simplified build script for DeepScientist Pro
  * Coordinates electron-vite (bundling) and electron-builder (packaging)
  *
  * Features:
@@ -544,15 +544,15 @@ try {
     const winUnpackedDir = path.join(outDir, 'win-unpacked');
     let cleaned = tryRemoveDir(winUnpackedDir);
     if (!cleaned) {
-      const aionRunning = isProcessRunningWindows('DeepOrganiser.exe');
+      const aionRunning = isProcessRunningWindows('DeepScientist-Pro.exe');
       const electronRunning = isProcessRunningWindows('electron.exe');
       if (aionRunning || electronRunning) {
-        console.log('⚠️  Detected running DeepOrganiser/Electron process. Attempting to close...');
-        killWindowsProcesses(['DeepOrganiser.exe', 'electron.exe']);
+        console.log('⚠️  Detected running DeepScientist Pro/Electron process. Attempting to close...');
+        killWindowsProcesses(['DeepScientist-Pro.exe', 'DeepOrganiser.exe', 'electron.exe']);
         cleaned = tryRemoveDir(winUnpackedDir);
         if (!cleaned) {
           console.log(
-            '⚠️  Directory still locked. Please close any running DeepOrganiser/Electron processes and retry.'
+            '⚠️  Directory still locked. Please close any running DeepScientist Pro/Electron processes and retry.'
           );
         }
       }
@@ -568,7 +568,7 @@ try {
   try {
     buildWithDmgRetry(builderCommand, targetArch);
   } catch (error) {
-    const winExePath = path.join(outDir, 'win-unpacked', 'DeepOrganiser.exe');
+    const winExePath = path.join(outDir, 'win-unpacked', 'DeepScientist-Pro.exe');
     const firstError = formatExecError(error);
     const canRetryWithoutExecutableEdit =
       process.platform === 'win32' && isWindowsBuild && process.env.CI !== 'true' && fs.existsSync(winExePath);
@@ -577,7 +577,7 @@ try {
       throw error;
     }
 
-    console.log('⚠️  Windows local build failed after DeepOrganiser.exe was produced.');
+    console.log('⚠️  Windows local build failed after DeepScientist-Pro.exe was produced.');
     if (firstError) {
       console.log('   First failure summary:');
       console.log(
@@ -590,7 +590,7 @@ try {
     }
     console.log('   Retrying local build with win.signAndEditExecutable=false...');
     console.log('   This fallback is intended for transient rcedit / file-lock failures on developer machines.');
-    killWindowsProcesses(['DeepOrganiser.exe', 'electron.exe']);
+    killWindowsProcesses(['DeepScientist-Pro.exe', 'DeepOrganiser.exe', 'electron.exe']);
     cleanupWindowsPackOutput();
 
     try {

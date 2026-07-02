@@ -30,8 +30,10 @@ function resolvePackagedApp(projectRoot) {
 
   if (process.platform === 'win32') {
     for (const dir of ['win-unpacked', 'win-x64-unpacked', 'win-arm64-unpacked']) {
-      const exe = path.join(outDir, dir, 'DeepOrganiser.exe');
-      if (fs.existsSync(exe)) return { executablePath: exe, cwd: path.join(outDir, dir) };
+      for (const name of ['DeepScientist-Pro.exe', 'DeepOrganiser.exe']) {
+        const exe = path.join(outDir, dir, name);
+        if (fs.existsSync(exe)) return { executablePath: exe, cwd: path.join(outDir, dir) };
+      }
     }
   } else if (process.platform === 'darwin') {
     for (const dir of ['mac-arm64', 'mac-x64', 'mac', 'mac-universal']) {
@@ -39,14 +41,16 @@ function resolvePackagedApp(projectRoot) {
       if (!fs.existsSync(macDir)) continue;
       const appBundle = fs.readdirSync(macDir).find((f) => f.endsWith('.app'));
       if (!appBundle) continue;
-      const exe = path.join(macDir, appBundle, 'Contents', 'MacOS', 'DeepOrganiser');
-      if (fs.existsSync(exe)) return { executablePath: exe, cwd: macDir };
+      for (const name of ['DeepScientist-Pro', 'DeepOrganiser']) {
+        const exe = path.join(macDir, appBundle, 'Contents', 'MacOS', name);
+        if (fs.existsSync(exe)) return { executablePath: exe, cwd: macDir };
+      }
     }
   } else {
     for (const dir of ['linux-unpacked', 'linux-x64-unpacked', 'linux-arm64-unpacked']) {
       const dirPath = path.join(outDir, dir);
       if (!fs.existsSync(dirPath)) continue;
-      for (const name of ['deeporganiser', 'DeepOrganiser']) {
+      for (const name of ['DeepScientist-Pro', 'deepscientist-pro', 'deeporganiser', 'DeepOrganiser']) {
         const exe = path.join(dirPath, name);
         if (fs.existsSync(exe)) return { executablePath: exe, cwd: dirPath };
       }
@@ -70,6 +74,8 @@ async function main() {
   }
 
   if (shouldClean) {
+    await killProcessByName('DeepScientist-Pro.exe');
+    await killProcessByName('DeepScientist-Pro');
     await killProcessByName('DeepOrganiser.exe');
     await killProcessByName('DeepOrganiser');
     await killProcessByName('electron.exe');
