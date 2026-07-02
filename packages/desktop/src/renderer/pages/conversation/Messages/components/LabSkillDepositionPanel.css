@@ -1,0 +1,903 @@
+.lab-skill-panel {
+  --lab-skill-accent: rgb(38, 43, 46);
+  --lab-skill-cite: rgb(71, 79, 84);
+  --lab-skill-rule: color-mix(in srgb, var(--color-border-2) 88%, transparent);
+  --lab-skill-highlight: rgba(138, 146, 150, 0.32);
+  --lab-skill-highlight-table: rgba(116, 124, 128, 0.26);
+  --lab-skill-warm: rgb(112, 112, 112);
+  --lab-skill-red: rgb(166, 82, 73);
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 2px 0 0;
+  box-shadow: none;
+  animation: labSkillPanelIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.lab-skill-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  min-width: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--lab-skill-rule);
+}
+
+.lab-skill-header > div:first-child {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.lab-skill-titleline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.lab-skill-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--lab-skill-accent);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 18px;
+  text-transform: uppercase;
+}
+
+.lab-skill-header h2 {
+  margin: 7px 0 4px;
+  color: var(--color-text-1);
+  font-size: 24px;
+  font-weight: 760;
+  line-height: 32px;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.lab-skill-header p {
+  max-width: 880px;
+  margin: 0;
+  color: var(--color-text-2);
+  font-size: 13px;
+  line-height: 21px;
+  overflow-wrap: anywhere;
+}
+
+.lab-skill-status {
+  display: inline-flex;
+  align-items: center;
+  height: 19px;
+  border: 1px solid color-mix(in srgb, var(--color-border-2) 72%, transparent);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--color-text-3);
+  padding: 0 6px;
+  font-size: 10.5px;
+  font-weight: 720;
+  line-height: 19px;
+  text-transform: uppercase;
+}
+
+.lab-skill-status--ready,
+.lab-skill-status--enabled {
+  border-color: color-mix(in srgb, var(--color-text-1) 28%, transparent);
+  color: var(--color-text-1);
+}
+
+.lab-skill-status--blocked {
+  border-color: rgba(174, 83, 72, 0.3);
+  color: rgb(174, 83, 72);
+}
+
+.lab-skill-buttons {
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.lab-skill-primary,
+.lab-skill-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 44px;
+  border-radius: 8px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 690;
+  line-height: 44px;
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.lab-skill-primary {
+  border: 1px solid var(--lab-skill-accent);
+  background: var(--lab-skill-accent);
+  color: #fff;
+}
+
+.lab-skill-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.44;
+}
+
+.lab-skill-secondary {
+  border: 1px solid var(--color-border-2);
+  background: transparent;
+  color: var(--color-text-1);
+}
+
+.lab-skill-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--lab-skill-accent) 88%, #000);
+}
+
+.lab-skill-secondary:hover {
+  border-color: color-mix(in srgb, var(--color-text-1) 22%, var(--color-border-2));
+  background: color-mix(in srgb, var(--color-fill-1) 54%, transparent);
+}
+
+.lab-skill-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 0 0;
+}
+
+.lab-skill-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 12px;
+}
+
+.lab-skill-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border-2) 78%, transparent);
+  color: var(--color-text-3);
+  padding: 0 0 2px;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.lab-skill-stat b {
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+  animation: labSkillNumberPop 0.3s cubic-bezier(0.2, 1.35, 0.4, 1) both;
+}
+
+.lab-skill-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
+  gap: 24px;
+  align-items: start;
+  margin-top: 24px;
+}
+
+.lab-skill-report {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+.lab-skill-section {
+  display: grid;
+  gap: 11px;
+  min-width: 0;
+  animation: labSkillReportLayerIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.lab-skill-section + .lab-skill-section {
+  padding-top: 18px;
+  border-top: 1px solid color-mix(in srgb, var(--lab-skill-rule) 72%, transparent);
+}
+
+.lab-skill-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 1px;
+  color: var(--color-text-1);
+  font-size: 16px;
+  font-weight: 730;
+  line-height: 24px;
+  letter-spacing: 0;
+}
+
+.lab-skill-section h3::after {
+  content: '';
+  flex: 1 1 auto;
+  height: 1px;
+  background: color-mix(in srgb, var(--color-text-1) 18%, var(--color-border-2));
+}
+
+.lab-skill-section--summary {
+  gap: 8px;
+  padding-bottom: 2px;
+}
+
+.lab-skill-section--summary h3 {
+  color: var(--lab-skill-accent);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 18px;
+  text-transform: uppercase;
+}
+
+.lab-skill-section--summary .lab-skill-markdown p {
+  color: var(--color-text-1);
+  font-size: 15px;
+  font-weight: 460;
+  line-height: 28px;
+}
+
+.lab-skill-markdown {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: var(--color-text-1);
+  animation: labSkillReportLayerIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.lab-skill-markdown h5,
+.lab-skill-markdown p,
+.lab-skill-markdown ul,
+.lab-skill-markdown ol {
+  margin: 0;
+}
+
+.lab-skill-markdown h5 {
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 730;
+  line-height: 20px;
+}
+
+.lab-skill-markdown p {
+  color: var(--color-text-1);
+  font-size: 14.5px;
+  line-height: 26px;
+}
+
+.lab-skill-markdown ul,
+.lab-skill-markdown ol {
+  display: grid;
+  gap: 6px;
+  padding-left: 18px;
+  color: var(--color-text-1);
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.lab-skill-markdown li::marker {
+  color: color-mix(in srgb, var(--color-text-1) 70%, transparent);
+}
+
+.lab-skill-markdown a {
+  color: var(--lab-skill-cite);
+  text-decoration: none;
+}
+
+.lab-skill-markdown a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.lab-skill-markdown code,
+.lab-skill-report code {
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--color-fill-1) 86%, transparent);
+  color: var(--color-text-2);
+  padding: 2px 5px;
+  font-size: 0.92em;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.lab-skill-emphasis {
+  display: inline-block;
+  border-radius: 2px;
+  background: linear-gradient(to top, var(--lab-skill-highlight) 0 68%, transparent 68% 100%);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  color: var(--color-text-1);
+  font-weight: 860;
+  line-height: 1.08;
+  padding: 0 1px;
+  text-shadow: 0 0 0 currentColor;
+  vertical-align: baseline;
+}
+
+.lab-skill-emphasis--table {
+  background: linear-gradient(to top, var(--lab-skill-highlight-table) 0 62%, transparent 62% 100%);
+}
+
+.lab-skill-table {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 4px;
+  animation: labSkillReportLayerIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.lab-skill-table__scroll {
+  min-width: 0;
+  overflow-x: auto;
+  border-top: 2px solid color-mix(in srgb, var(--color-text-1) 88%, transparent);
+  border-bottom: 1.5px solid color-mix(in srgb, var(--color-text-1) 84%, transparent);
+  background: color-mix(in srgb, #fff 98%, rgba(80, 86, 90, 0.03));
+}
+
+.lab-skill-table table {
+  width: 100%;
+  min-width: min(420px, 100%);
+  border-collapse: collapse;
+}
+
+.lab-skill-table th,
+.lab-skill-table td {
+  padding: 10px 12px;
+  border-bottom: 0;
+  color: var(--color-text-2);
+  font-size: 12.5px;
+  line-height: 19px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.lab-skill-table th {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-1) 82%, transparent);
+  background: color-mix(in srgb, #fff 92%, rgba(69, 89, 109, 0.05));
+  color: var(--color-text-2);
+  font-size: 11px;
+  font-weight: 720;
+  letter-spacing: 0.02em;
+}
+
+.lab-skill-table tbody tr + tr td {
+  border-top: 1px solid color-mix(in srgb, var(--color-border-2) 74%, transparent);
+}
+
+.lab-skill-table tbody tr:hover td {
+  background: color-mix(in srgb, #fff 94%, rgba(65, 70, 74, 0.045));
+}
+
+.lab-skill-evidence-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 1px;
+  vertical-align: baseline;
+}
+
+.lab-skill-citationWrap {
+  position: relative;
+  z-index: 20;
+  display: inline-block;
+  line-height: 1;
+  isolation: isolate;
+  vertical-align: super;
+}
+
+.lab-skill-citationWrap:hover,
+.lab-skill-citationWrap:focus-within {
+  z-index: 200;
+}
+
+.lab-skill-citation {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--lab-skill-cite);
+  padding: 0 1px;
+  font-size: 10px;
+  font-weight: 730;
+  line-height: 12px;
+  cursor: pointer;
+}
+
+.lab-skill-citation:hover {
+  color: color-mix(in srgb, var(--lab-skill-cite) 82%, #000);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.lab-skill-citationCard {
+  position: absolute;
+  z-index: 1000;
+  top: 50%;
+  left: calc(100% + 8px);
+  display: none;
+  width: min(320px, 78vw);
+  border: 1px solid var(--lab-skill-rule);
+  border-radius: 6px;
+  background: var(--color-bg-1);
+  color: var(--color-text-2);
+  padding: 11px 12px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.14),
+    0 0 0 1px rgba(255, 255, 255, 0.95);
+  opacity: 0;
+  transform: translate(4px, -50%);
+  pointer-events: none;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.lab-skill-citationWrap:hover .lab-skill-citationCard,
+.lab-skill-citationWrap:focus-within .lab-skill-citationCard {
+  display: grid;
+  gap: 4px;
+  opacity: 1;
+  transform: translate(0, -50%);
+  pointer-events: auto;
+}
+
+.lab-skill-citationCard::before {
+  content: '';
+  position: absolute;
+  top: calc(50% - 4px);
+  left: -5px;
+  width: 8px;
+  height: 8px;
+  border-left: 1px solid var(--color-border-2);
+  border-bottom: 1px solid var(--color-border-2);
+  background: var(--color-bg-1);
+  transform: rotate(45deg);
+}
+
+.lab-skill-citationCard > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--lab-skill-cite);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.lab-skill-citationCard strong {
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 19px;
+}
+
+.lab-skill-citationCard em {
+  color: var(--color-text-2);
+  font-size: 12px;
+  font-style: normal;
+  line-height: 18px;
+}
+
+.lab-skill-citationCard code {
+  display: block;
+  max-height: 48px;
+  overflow: hidden;
+  margin-top: 2px;
+  color: var(--color-text-3);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.lab-skill-claims,
+.lab-skill-protocols,
+.lab-skill-findings,
+.lab-skill-source-list,
+.lab-skill-file-list,
+.lab-skill-graph {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+
+.lab-skill-claim,
+.lab-skill-protocol,
+.lab-skill-source,
+.lab-skill-finding {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-border-2) 80%, transparent);
+  background: transparent;
+  padding: 10px 0 0;
+  animation: labSkillContentIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.lab-skill-claim:first-child,
+.lab-skill-protocol:first-child,
+.lab-skill-source:first-child,
+.lab-skill-finding:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.lab-skill-claim > div,
+.lab-skill-protocol > div,
+.lab-skill-source > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.lab-skill-claim b,
+.lab-skill-protocol b,
+.lab-skill-source b {
+  color: var(--lab-skill-accent);
+  font-size: 12px;
+  font-weight: 740;
+  line-height: 18px;
+}
+
+.lab-skill-claim span,
+.lab-skill-protocol span,
+.lab-skill-source span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-3);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 16px;
+}
+
+.lab-skill-claim p,
+.lab-skill-protocol p,
+.lab-skill-source p,
+.lab-skill-finding p {
+  margin: 0;
+  color: var(--color-text-2);
+  font-size: 13px;
+  line-height: 21px;
+}
+
+.lab-skill-protocol strong,
+.lab-skill-source strong {
+  display: block;
+  min-width: 0;
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 710;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+
+.lab-skill-protocol button,
+.lab-skill-source button,
+.lab-skill-source a,
+.lab-skill-file-list button,
+.lab-skill-kv button {
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text-2);
+  cursor: pointer;
+}
+
+.lab-skill-protocol button,
+.lab-skill-source button,
+.lab-skill-source a {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 1px;
+  padding: 0;
+  color: var(--lab-skill-cite);
+  font-size: 12px;
+  line-height: 18px;
+  text-decoration: none;
+}
+
+.lab-skill-inspector {
+  min-width: 0;
+  border-left: 1px solid var(--lab-skill-rule);
+  padding-left: 18px;
+}
+
+.lab-skill-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  min-width: 0;
+  border-bottom: 1px solid var(--lab-skill-rule);
+  padding-bottom: 8px;
+}
+
+.lab-skill-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--color-text-3);
+  padding: 5px 0 4px;
+  font-size: 12px;
+  font-weight: 670;
+  line-height: 17px;
+  cursor: pointer;
+}
+
+.lab-skill-tabs .lab-skill-tabs__item--active {
+  border-bottom-color: var(--lab-skill-accent);
+  color: var(--color-text-1);
+}
+
+.lab-skill-inspector-body {
+  padding-top: 12px;
+}
+
+.lab-skill-kv {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 8px 10px;
+  align-items: baseline;
+  color: var(--color-text-3);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.lab-skill-kv b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text-1);
+  font-size: 12px;
+  font-weight: 710;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lab-skill-kv button {
+  overflow: hidden;
+  color: var(--lab-skill-cite);
+  padding: 0;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lab-skill-file-list button {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 9px;
+  min-width: 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-border-2) 80%, transparent);
+  padding: 9px 0 0;
+  text-align: left;
+}
+
+.lab-skill-file-list button:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.lab-skill-file-list span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-3);
+  font-size: 11px;
+  font-weight: 680;
+  line-height: 17px;
+}
+
+.lab-skill-file-list b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text-2);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lab-skill-finding--blocking,
+.lab-skill-finding--error {
+  border-left: 2px solid rgba(174, 83, 72, 0.58);
+  padding-left: 10px;
+}
+
+.lab-skill-finding--warning {
+  border-left: 2px solid rgba(185, 127, 72, 0.58);
+  padding-left: 10px;
+}
+
+.lab-skill-finding b {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 19px;
+}
+
+.lab-skill-finding code {
+  display: inline-flex;
+  margin-top: 2px;
+  color: var(--color-text-3);
+  font-size: 11px;
+}
+
+.lab-skill-graph div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 7px;
+  align-items: center;
+  min-width: 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-border-2) 80%, transparent);
+  padding-top: 8px;
+}
+
+.lab-skill-graph div:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.lab-skill-graph code {
+  min-width: 0;
+  overflow: hidden;
+  background: transparent;
+  padding: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lab-skill-graph span {
+  color: var(--lab-skill-accent);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 16px;
+}
+
+.lab-skill-empty {
+  border: 1px dashed color-mix(in srgb, var(--color-border-2) 88%, transparent);
+  border-radius: 6px;
+  color: var(--color-text-3);
+  padding: 12px;
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.lab-skill-next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 24px;
+  border-top: 1px solid var(--lab-skill-rule);
+  padding-top: 12px;
+  color: var(--color-text-2);
+  font-size: 13px;
+  line-height: 21px;
+}
+
+.lab-skill-next b {
+  color: var(--color-text-1);
+}
+
+.lab-skill-card--jumped {
+  animation: labSkillCitationGlow 2.2s ease-out both;
+}
+
+[data-theme='dark'] .lab-skill-table__scroll,
+[data-theme='dark'] .lab-skill-table th {
+  background: color-mix(in srgb, var(--color-bg-1) 92%, rgba(150, 156, 160, 0.08));
+}
+
+[data-theme='dark'] .lab-skill-citationCard {
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.36),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+@keyframes labSkillPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes labSkillReportLayerIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes labSkillContentIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes labSkillNumberPop {
+  from {
+    opacity: 0;
+    transform: translateY(3px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes labSkillCitationGlow {
+  0% {
+    background: color-mix(in srgb, var(--color-bg-1) 90%, var(--lab-skill-cite) 10%);
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--lab-skill-cite) 58%, transparent);
+  }
+
+  100% {
+    background: transparent;
+    box-shadow: inset 0 0 0 transparent;
+  }
+}
+
+@media (max-width: 900px) {
+  .lab-skill-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lab-skill-buttons {
+    justify-content: flex-end;
+  }
+
+  .lab-skill-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .lab-skill-inspector {
+    border-top: 1px solid var(--lab-skill-rule);
+    border-left: 0;
+    padding-top: 16px;
+    padding-left: 0;
+  }
+}
