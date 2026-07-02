@@ -87,40 +87,6 @@ A quick look at the OpenScience experience: start from **Research Projects**, mo
 | 5 | Open the result panel | figure, table, report, manuscript, source trail, review state |
 | 6 | Revise and export | new versions, comments, PDF, Word, LaTeX, notebook, project record |
 
-### Core pages
-
-<table>
-<tr>
-<td valign="top">
-<img src="./resources/readme/product-home.png" alt="OpenScience home and research project entry" /><br/>
-<sub><b>Research projects</b> — start from a study, dataset, figure, manuscript, or clinical question. Recent projects show the state of evidence, artifacts, compute, and writing.</sub>
-</td>
-</tr>
-</table>
-
-<table>
-<tr>
-<td width="50%" valign="top">
-<img src="./resources/readme/product-artifact.png" alt="OpenScience research result panel with source trail" /><br/>
-<sub><b>Research result panel</b> — the preview panel becomes a research output workspace: open the figure, inspect code, see inputs, check logs, review the source trail, and export.</sub>
-</td>
-<td width="50%" valign="top">
-<img src="./resources/readme/product-evidence.png" alt="OpenScience medical evidence mode report" /><br/>
-<sub><b>Medical Evidence Mode</b> — clinical and biomedical questions become structured evidence reports with source labels, study strength, regulatory context, conflicts, and conclusions.</sub>
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-<img src="./resources/readme/product-compute.png" alt="OpenScience compute and database workflow" /><br/>
-<sub><b>Compute and data</b> — keep laptop runs, SSH machines, Slurm jobs, GPU sweeps, project files, and scientific databases attached to the research trail.</sub>
-</td>
-<td width="50%" valign="top">
-<img src="./resources/preview.gif" alt="OpenScience native preview panel" /><br/>
-<sub><b>Native previews</b> — open PDFs, CSVs, images, Markdown, code, diffs, Office files, and generated outputs without leaving the workspace.</sub>
-</td>
-</tr>
-</table>
-
 ### Result studio — many scientific outputs in one project
 
 Inside a research project, the same conversation can produce multiple result types:
@@ -467,7 +433,7 @@ Use [Discussions](https://github.com/ResearAI/OpenScience/discussions) for ideas
 
 ## Developers and Maintainers
 
-OpenScience is developed by the WestlakeNLP 和中关村学院. See the [developer list](./docs/developers.md) for the current development team and contact information.
+OpenScience is developed by WestlakeNLP and Zhongguancun Academy. See the [developer list](./docs/developers.md) for the current development team and contact information.
 
 For research collaboration, long-term internship, PhD, or research assistant opportunities, contact Professor Yue Zhang at `zhangyue@westlake.edu.cn`.
 
