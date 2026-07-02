@@ -565,29 +565,29 @@
 .skillDepositionContextBadge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 28px;
+  gap: 5px;
+  min-height: 22px;
   max-width: 100%;
-  padding: 0 7px 0 10px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, rgb(32, 132, 120) 22%, var(--color-border-2));
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.28)),
-    color-mix(in srgb, rgb(32, 132, 120) 8%, var(--bg-base));
-  color: color-mix(in srgb, rgb(20, 92, 88) 78%, var(--color-text-1));
+  padding: 0 2px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: color-mix(in srgb, rgb(20, 92, 88) 64%, var(--color-text-2));
   font-size: 12px;
-  font-weight: 680;
-  line-height: 1;
+  font-weight: 500;
+  line-height: 18px;
   white-space: nowrap;
-  box-shadow:
-    0 1px 6px rgba(15, 23, 42, 0.035),
-    inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  box-shadow: none;
+}
+
+.skillDepositionContextBadge :global(svg) {
+  opacity: 0.72;
 }
 
 .skillDepositionContextBadgeHint {
-  color: color-mix(in srgb, rgb(153, 108, 32) 64%, var(--color-text-3));
+  color: color-mix(in srgb, rgb(63, 88, 82) 58%, var(--color-text-3));
   font-size: 11px;
-  font-weight: 560;
+  font-weight: 500;
 }
 
 .skillDepositionContextBadgeClose {
@@ -596,12 +596,12 @@
   justify-content: center;
   width: 18px;
   height: 18px;
-  margin-left: 1px;
+  margin-left: 2px;
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: color-mix(in srgb, rgb(32, 132, 120) 10%, transparent);
-  color: currentColor;
+  background: transparent;
+  color: var(--color-text-3);
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
@@ -612,7 +612,8 @@
 
 .skillDepositionContextBadgeClose:hover {
   transform: scale(1.04);
-  background: color-mix(in srgb, rgb(32, 132, 120) 18%, transparent);
+  background: color-mix(in srgb, var(--color-fill-3) 58%, transparent);
+  color: var(--color-text-2);
 }
 
 @media (max-width: 960px) {
@@ -904,19 +905,14 @@
 }
 
 :global([data-theme='dark']) .skillDepositionContextBadge {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
-    color-mix(in srgb, rgb(83, 112, 103) 14%, var(--color-fill-2));
-  border-color: rgba(111, 145, 134, 0.26);
-  color: color-mix(in srgb, rgb(166, 196, 186) 70%, var(--color-text-1));
-  box-shadow:
-    0 8px 22px rgba(0, 0, 0, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background: transparent;
+  border-color: transparent;
+  color: color-mix(in srgb, rgb(136, 214, 201) 58%, var(--color-text-2));
+  box-shadow: none;
 }
 
-:global([data-theme='dark']) .skillDepositionContextBadge {
-  border-color: rgba(65, 163, 151, 0.28);
-  color: color-mix(in srgb, rgb(136, 214, 201) 70%, var(--color-text-1));
+:global([data-theme='dark']) .skillDepositionContextBadgeHint {
+  color: color-mix(in srgb, rgb(166, 196, 186) 54%, var(--color-text-3));
 }
 
 /* 方案E：模型 + 权限各自独立 tb-btn，中间有竖线分隔 */
@@ -1250,8 +1246,9 @@
   }
 
   .skillDepositionContextBadge {
-    height: 26px;
+    min-height: 22px;
     max-width: calc(100% - 8px);
+    white-space: normal;
   }
 
   .guidSpectacleStage {

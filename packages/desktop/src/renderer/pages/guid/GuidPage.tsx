@@ -859,7 +859,6 @@ const GuidPage: React.FC = () => {
   const skillDepositionContextBadge = isSkillDepositionMode ? (
     <span className={styles.skillDepositionContextBadge}>
       <OpenScienceIcon name='modeDeposition' size={15} visualScale={1.12} />
-      <span>{t('guid.skillDeposition.menuLabel')}</span>
       <span className={styles.skillDepositionContextBadgeHint}>{t('guid.skillDeposition.contextHint')}</span>
       <button
         type='button'

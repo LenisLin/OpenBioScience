@@ -110,7 +110,7 @@
   "skillDeposition": {
     "menuLabel": "Knowledge Deposition Mode",
     "modeActive": "Knowledge Deposition Mode is on",
-    "contextHint": "Draft a report first; enable after approval",
+    "contextHint": "Tip: Knowledge Deposition summarizes past research experience and creates your own scientific Skills",
     "closeLabel": "Close Knowledge Deposition Mode"
   },
   "collaboration": {

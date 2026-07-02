@@ -110,7 +110,7 @@
   "skillDeposition": {
     "menuLabel": "知识沉淀模式",
     "modeActive": "知识沉淀模式已启用",
-    "contextHint": "先生成报告，确认后启用",
+    "contextHint": "提示：知识沉淀模式会总结历史经验，创建专属于你的科研 Skills",
     "closeLabel": "关闭知识沉淀模式"
   },
   "collaboration": {
