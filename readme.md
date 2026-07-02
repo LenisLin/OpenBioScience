@@ -3,11 +3,11 @@
 </p>
 
 <p align="center">
-  <strong>The open-source Science Mode workspace for rigorous, reproducible research.</strong>
+  <strong>The open-source workspace for AI-assisted, evidence-backed research across disciplines.</strong>
 </p>
 
 <p align="center">
-  Start a research project, search evidence, run analysis, generate artifacts, and keep every scientific result traceable in your own workspace.
+  Start a research project, search evidence, run analysis, generate figures, reports, notebooks, and manuscripts, and keep every result traceable in your own workspace.
 </p>
 
 <p align="center">
@@ -40,7 +40,9 @@
 
 **Search evidence. Run analysis. Ship reproducible science.** OpenScience is a local-first AI research workspace inspired by the Claude Science product direction, built as an open-source desktop app. It is not another chat box. It is a place where a scientist can open a research project, ask a question, search evidence, run code, inspect files, revise outputs, and export the work with a source trail.
 
-It combines **Science Mode** for general research with a stricter **Medical Evidence Mode** for clinical and biomedical questions. The evidence layer is designed to search and analyze **11M+ papers**, **225K+ drug and device documents**, **1M+ clinical trials**, and **150M+ research abstracts**, while also keeping local files, code runs, figures, tables, notebooks, and reviewer notes connected to the final artifact.
+The same workspace should make sense to a wet-lab biologist checking a gene list, a clinician comparing guidelines, a chemist reviewing molecules, an engineer reading simulation logs, a social scientist auditing a replication package, or an ML researcher turning experiments into figures. The important part is the same: the answer should stay connected to the evidence, files, code, and decisions that produced it.
+
+It combines **Science Mode** for general research with a stricter **Medical Evidence Mode** for clinical and biomedical questions. The evidence layer is designed to search and analyze **11M+ papers**, **225K+ drug and device documents**, **1M+ clinical trials**, and **150M+ research abstracts**, while also keeping local files, code runs, figures, tables, notebooks, and reviewer notes connected to the final result.
 
 > Not a single answer. A durable research record: evidence, code, figures, notebooks, manuscripts, and every step needed to reproduce, review, and defend the result.
 
@@ -49,14 +51,40 @@ It combines **Science Mode** for general research with a stricter **Medical Evid
 | Research projects, not loose chats | A folder-backed workspace for sources, data, scripts, outputs, comments, and exports |
 | Evidence first | Claims can point back to papers, trials, regulatory documents, datasets, code, or generated results |
 | Run the analysis | Python, R, shell, notebooks, and existing project pipelines stay inside the same workflow |
-| Artifacts with provenance | Figures, tables, reports, manuscripts, and notebooks keep code, inputs, logs, and review notes attached |
+| Results you can reopen | Figures, tables, reports, manuscripts, and notebooks keep code, inputs, logs, and review notes attached |
 | Local-first by default | Files stay close to the laptop, lab machine, workstation, or approved infrastructure |
 
 ---
 
-## Product tour
+## Across research fields
 
-A quick look at the OpenScience experience: start from **Research Projects**, move into a **Science Artifact** view, use **Medical Evidence Mode** when evidence discipline matters, and scale toward local or remote compute without leaving the project.
+OpenScience is built around research objects rather than one narrow domain. The first version focuses on the project workspace, evidence reports, result previews, local code runs, exports, and reusable skills; discipline-specific viewers and remote compute are being added on top of that foundation.
+
+| Field | Language OpenScience should understand | Useful outputs |
+|---|---|---|
+| Biomedical evidence | guideline, RCT, cohort, label, contraindication, endpoint, subgroup, GRADE, FDA/EMA document | evidence report, source table, recommendation summary, conflict and limitation notes |
+| Single-cell and genomics | scRNA-seq, AnnData, UMAP, marker genes, batch effect, FASTQ/BAM/VCF, GEO, Ensembl | analysis notebook, QC table, marker list, figure panels, methods text |
+| Protein and structural biology | FASTA, PDB/mmCIF, AlphaFold, domain, binding pocket, alignment, mutation | structure notes, sequence table, model comparison, figure-ready panels |
+| Chemistry and drug discovery | SMILES, SDF, ChEMBL, assay, docking, ADMET, scaffold, SAR | molecule table, assay summary, docking report, chemistry rationale |
+| Ecology and phylogeny | species tree, trait matrix, sequence alignment, habitat covariates, bootstrap | tree figure, alignment notes, dataset audit, reproducible script |
+| Engineering and simulation | mesh, solver, boundary condition, sweep, residual, CFD/FEA, sensor log | parameter table, run log, plots, technical report |
+| Social science and empirical research | survey, codebook, panel data, DiD, IV, RDD, robustness, replication package | model table, robustness appendix, codebook notes, replication report |
+| AI, ML, and systems | baseline, ablation, benchmark, seed, GPU run, latency, error analysis | experiment table, leaderboard, plots, paper-ready result summary |
+
+---
+
+## What you see in the app
+
+A quick look at the OpenScience experience: start from **Research Projects**, move into a research result panel, use **Medical Evidence Mode** when evidence discipline matters, and scale toward local or remote compute without leaving the project.
+
+| Step | What you do | What OpenScience keeps |
+|---:|---|---|
+| 1 | Create or reopen a research project | project folder, settings, sources, outputs |
+| 2 | Choose Science, Medical Evidence, Goal, or Knowledge Distillation Mode | the right working rules for the task |
+| 3 | Ask a natural-language research question | task, assumptions, files, clarifying answers |
+| 4 | Search evidence or run code | source labels, scripts, commands, notebooks, logs |
+| 5 | Open the result panel | figure, table, report, manuscript, source trail, review state |
+| 6 | Revise and export | new versions, comments, PDF, Word, LaTeX, notebook, project record |
 
 ### Core pages
 
@@ -72,8 +100,8 @@ A quick look at the OpenScience experience: start from **Research Projects**, mo
 <table>
 <tr>
 <td width="50%" valign="top">
-<img src="./resources/readme/product-artifact.png" alt="OpenScience science artifact preview with provenance" /><br/>
-<sub><b>Science artifacts</b> — the preview panel becomes a research output workspace: open the figure, inspect code, see inputs, check logs, review provenance, and export.</sub>
+<img src="./resources/readme/product-artifact.png" alt="OpenScience research result panel with source trail" /><br/>
+<sub><b>Research result panel</b> — the preview panel becomes a research output workspace: open the figure, inspect code, see inputs, check logs, review the source trail, and export.</sub>
 </td>
 <td width="50%" valign="top">
 <img src="./resources/readme/product-evidence.png" alt="OpenScience medical evidence mode report" /><br/>
@@ -92,9 +120,9 @@ A quick look at the OpenScience experience: start from **Research Projects**, mo
 </tr>
 </table>
 
-### Artifact studio — many scientific outputs in one project
+### Result studio — many scientific outputs in one project
 
-Inside a research project, the same conversation can produce multiple artifact types:
+Inside a research project, the same conversation can produce multiple result types:
 
 <table>
 <tr>
@@ -121,7 +149,20 @@ Inside a research project, the same conversation can produce multiple artifact t
 
 ---
 
-## Evidence Engine
+## Four ways to work
+
+OpenScience modes are not just different prompt templates. They change the working rules: whether the agent should bind the task to a research project, search evidence, create a traceable result, keep a long-running goal alive, or turn a useful workflow into a reusable skill.
+
+| Mode | Use it when | What you should get |
+|---|---|---|
+| **Science Mode** | You need literature review, data analysis, computational experiments, figures, notebooks, or a manuscript draft | A research result with sources, code, inputs, logs, versions, and export options |
+| **Medical Evidence Mode** | You need a disciplined clinical, biomedical, guideline, trial, label, or regulatory evidence answer | A structured evidence report with source labels, strength, conflicts, limits, and conclusion |
+| **Goal Mode** | The task will take multiple rounds, such as paper revision, long experiments, project planning, or continuing analysis | A persistent goal with progress, next steps, blockers, and recoverable context |
+| **Knowledge Distillation Mode** | A good workflow, lab protocol, figure style, review routine, or analysis method should be reused later | A reviewable SOP or skill draft with sources, privacy notes, conflicts, and enable/modify choices |
+
+---
+
+## Evidence and source trail
 
 OpenScience's evidence story is simple: a result should never be just text. It should point to the material behind it.
 
@@ -137,6 +178,14 @@ OpenScience's evidence story is simple: a result should never be just text. It s
 | **150M+ abstracts** | fast discovery before deep reading |
 | **Local files and generated outputs** | PDFs, datasets, scripts, figures, notebooks, logs, reports, comments |
 
+| Research object | Examples OpenScience should keep connected |
+|---|---|
+| Paper or clinical source | PMID, DOI, guideline section, trial record, FDA label, abstract, uploaded PDF |
+| Dataset or table | CSV/TSV, AnnData metadata, assay table, survey codebook, simulation parameters |
+| Biological object | gene list, marker table, FASTA sequence, PDB/mmCIF structure, alignment |
+| Chemical object | SMILES, SDF, scaffold, assay result, docking score, ADMET filter |
+| Code and run record | script, notebook cell, shell command, environment note, run log, exported figure |
+
 | Source label | Can point to |
 |---|---|
 | `E1`, `E2`, `E3` | papers, trials, regulatory records, guidelines, abstracts, uploaded PDFs |
@@ -146,9 +195,9 @@ OpenScience's evidence story is simple: a result should never be just text. It s
 
 ---
 
-## Scientific Artifacts
+## Artifacts: results you can reopen
 
-Claude Science made one product point very clear: scientific AI becomes useful when the output and its history stay together. OpenScience builds around the same artifact-first loop.
+A scientific artifact is not just a file attachment. It is a result object you can reopen: the rendered figure or report stays next to the code, input files, logs, environment notes, conversation, review status, and export targets that produced it. OpenScience builds around that loop because scientific AI becomes useful only when the output and its history stay together.
 
 | Artifact | What stays attached | Export target |
 |---|---|---|
@@ -158,6 +207,16 @@ Claude Science made one product point very clear: scientific AI becomes useful w
 | Evidence report | findings, citations, study strength, conflicts, limitations | Markdown, PDF, Word |
 | Manuscript | sections, citations, figures, tables, build notes | Markdown, LaTeX, DOCX, PDF |
 | Project record | sources, commands, outputs, versions, reviewer notes | local folder or archive |
+
+| Artifact panel | Why it matters |
+|---|---|
+| Preview | Inspect the figure, table, PDF, notebook, Markdown report, manuscript, or generated file in the same workspace |
+| Code | See or download the script, notebook cell, shell command, or generation recipe behind the result |
+| Inputs | Open the datasets, source documents, configuration files, or previous artifacts used to produce the result |
+| Execution log | Check what ran, what failed, what changed, and which files were written |
+| Environment | Record package, kernel, model, machine, or agent notes needed to rerun the work |
+| Messages | Keep the task request, clarifications, edits, and agent reasoning trail close to the result |
+| Review | Track warnings, unresolved questions, source mismatches, and human comments |
 
 | Natural-language revision | What should happen |
 |---|---|
@@ -185,7 +244,7 @@ OpenScience is an app around models, coding agents, local files, evidence workfl
 
 ## Why OpenScience
 
-> Claude Science shows where scientific AI is going: not only answering questions, but running analyses, searching databases, producing artifacts, and preserving provenance. OpenScience takes that direction into an open-source, local-first desktop workspace.
+> Claude Science shows where scientific AI is going: not only answering questions, but running analyses, searching databases, producing research results, and preserving the source trail. OpenScience takes that direction into an open-source, local-first desktop workspace.
 
 | | General AI chat | Claude Science | **OpenScience** |
 |---|---|---|---|
@@ -193,7 +252,7 @@ OpenScience is an app around models, coding agents, local files, evidence workfl
 | Local project folder | Sometimes | Yes | **Yes, local-first** |
 | Evidence-labeled medical reports | Usually manual | General science review | **First-class Medical Evidence Mode** |
 | Run code and inspect files | Tool-dependent | Yes | **Yes, through local coding workflows** |
-| Artifacts with provenance | Rare | Yes | **Designed around artifact history** |
+| Results with source trails | Rare | Yes | **Designed around result history** |
 | Model choice | Often fixed | Anthropic models | **Multi-provider and local endpoint support** |
 | Existing lab workflows | Manual glue | Connectors and compute | **Designed for local scripts, project folders, and future remote compute** |
 
@@ -201,17 +260,48 @@ OpenScience is an app around models, coding agents, local files, evidence workfl
 
 ## Quick start
 
-### Download the desktop app
+### Option 1: install the desktop app
 
-The fastest path is the packaged app from [GitHub Releases](https://github.com/ResearAI/OpenScience/releases). OpenScience is designed as a desktop research workspace: create a research project, choose Science Mode or Medical Evidence Mode, and begin from your files.
+The fastest path is the packaged app from [GitHub Releases](https://github.com/ResearAI/OpenScience/releases). Choose the file that matches your computer:
 
-### Run from source
+| System | Download |
+|---|---|
+| macOS Apple Silicon | `OpenScience-*-arm64.dmg` |
+| macOS Intel | `OpenScience-*-x64.dmg` |
+| Windows | `OpenScience-*-x64.exe` |
+| Linux | `OpenScience-*.AppImage` or `OpenScience-*.deb` |
+
+After installation, open OpenScience. No app-level login is required: the app opens directly to the home page. Create or reopen a research project, then start with **Science Mode**, **Medical Evidence Mode**, **Goal Mode**, or **Knowledge Distillation Mode**.
+
+Before the first real agent run, open **Settings** and configure at least one model provider, local model endpoint, or coding agent such as Claude Code, Codex, Qwen Code, or another supported local CLI. If a packaged release is not available yet, use the source workflow below.
+
+### Option 2: run from source
 
 ```bash
 git clone https://github.com/ResearAI/OpenScience.git
 cd OpenScience
-bun install
-bun run dev
+bun install --frozen-lockfile
+bun run start
+```
+
+You need Git and Bun. If Bun is not installed, follow <https://bun.sh/docs/installation>, then rerun the commands above.
+
+For a clean browser/WebUI run that does not reuse your desktop data directory:
+
+```bash
+DEEPORGANISER_DATA_DIR=/tmp/openscience-webui-clean bun run webui -- --port 25809
+```
+
+The WebUI startup path automatically syncs the bundled OpenScience skills and built-in MCP catalog. You should not run `bun run skills:science:materialize` during a normal install; that script is for maintainers regenerating the vendored science skill pack.
+
+Before the first real Science or Medical Evidence task, install and sign in to at least one local coding agent, such as Codex CLI (`codex`), Claude Code (`claude`), or OpenCode (`opencode`). OpenScience can start without them, but research execution depends on one of these agent backends or a configured model/provider.
+
+### Ask Claude Code or Codex to install it for you
+
+If you are not comfortable with terminal setup, paste this prompt into Claude Code, Codex, or another local coding agent:
+
+```text
+Please install and run OpenScience on this computer. The repository is https://github.com/ResearAI/OpenScience. First check whether git, bun, and at least one local coding agent such as Codex CLI, Claude Code, or OpenCode are available. If something is missing, tell me exactly what to install. Then clone the repository, run `bun install --frozen-lockfile`, and start the desktop app with `bun run start`. For a clean browser run, use `DEEPORGANISER_DATA_DIR=/tmp/openscience-webui-clean bun run webui -- --port 25809`. Do not run `bun run skills:science:materialize` unless I am maintaining the vendored skill pack. Do not delete or overwrite any existing personal files. If there are dependency, permission, port, Electron, or native-module problems, diagnose them step by step and fix them when safe. When OpenScience starts successfully, tell me that it opens without an app-level login, then show me where to configure model/API keys or local coding agents in Settings.
 ```
 
 ### A full workflow — from question to artifact
@@ -237,7 +327,11 @@ bun run dev
 | You start with | OpenScience should help produce |
 |---|---|
 | "Compare these single-cell integration methods on my dataset" | notebook, benchmark table, UMAP panels, method notes, rerunnable commands |
-| "Is this treatment claim supported?" | evidence report with papers, trials, regulatory context, conflicts, confidence notes |
+| "Which evidence supports this clinical treatment claim?" | medical evidence report with guidelines, trials, labels, contraindications, conflicts, and confidence notes |
+| "Summarize these AlphaFold models and mutations" | sequence and structure notes, comparison table, figure panels, caveats, source links |
+| "Screen these compounds against assay and ADMET constraints" | molecule table, filter rationale, assay summary, exported CSV, review notes |
+| "Reproduce this economics paper's main table" | replication log, cleaned dataset notes, model table, robustness appendix, code references |
+| "Turn this CFD parameter sweep into a report" | run summary, plots, parameter table, solver logs, PDF or Markdown report |
 | "Make this figure publication-ready" | regenerated figure, plotting script, input table, style notes, export files |
 | "Turn this analysis into a manuscript section" | Markdown or LaTeX-oriented text with citations, figures, limitations, source labels |
 | "Review this result before I share it" | checklist of numbers, claims, sources, code-output consistency, and unresolved risks |
@@ -252,7 +346,7 @@ bun run dev
 | Multi-model and coding-agent support | Available |
 | Medical Evidence Mode | Available and improving |
 | Science Mode project entry | In progress |
-| Artifact preview with provenance tabs | In progress |
+| Artifact preview with source-trail tabs | In progress |
 | Figure annotation and code-level regeneration | In progress |
 | Notebook, PDF, manuscript, and document export polish | In progress |
 | Molecule, protein, genome track, alignment, social-science model/codebook/map, and structure viewers | Planned |
