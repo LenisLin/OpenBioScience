@@ -1,11 +1,12 @@
 /**
  * WebUI static server.
  *
- * Serves out/renderer/ as the SPA and reverse-proxies /api/*, /ws, /api/stt/stream,
- * /login and /logout to DeepOrganiser Core. All auth goes to the backend auth module;
- * /login and /logout are top-level auth paths, the rest live under
- * /api/auth/*. /ws and /api/stt/stream are WebSocket/stream upgrades spliced at
- * TCP level; /api/stt/stream is the STT streaming endpoint.
+ * Serves out/renderer/ as the SPA and reverse-proxies /api/*, /ws, and
+ * /api/stt/stream to DeepOrganiser Core. OpenScience hides the app-level
+ * login flow, so the WebUI host answers auth status probes locally while the
+ * rest of the API remains proxied to the backend. /ws and /api/stt/stream are
+ * WebSocket/stream upgrades spliced at TCP level; /api/stt/stream is the STT
+ * streaming endpoint.
  *
  * Design: Node native http + serve-handler. No Express. No business routes.
  */
@@ -64,6 +65,43 @@ function forwardToBackend(req: IncomingMessage, res: ServerResponse, backendPort
     }
   });
   req.pipe(proxy);
+}
+
+function sendJson(res: ServerResponse, statusCode: number, data: unknown): void {
+  res.writeHead(statusCode, { 'content-type': 'application/json' });
+  res.end(JSON.stringify(data));
+}
+
+function sendNoLoginAuthResponse(req: IncomingMessage, res: ServerResponse): boolean {
+  const pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
+
+  if (pathname === '/api/auth/user' && req.method === 'GET') {
+    sendJson(res, 200, {
+      success: true,
+      user: {
+        id: 'local_user',
+        username: 'OpenScience',
+      },
+    });
+    return true;
+  }
+
+  if (pathname === '/api/auth/status' && req.method === 'GET') {
+    sendJson(res, 200, {
+      success: true,
+      needs_setup: false,
+      user_count: 1,
+      is_authenticated: true,
+    });
+    return true;
+  }
+
+  if (pathname === '/login' || pathname === '/logout') {
+    sendJson(res, 200, { success: true });
+    return true;
+  }
+
+  return false;
 }
 
 // Max bytes we peek before forcing a routing decision. An HTTP request-line
@@ -149,10 +187,13 @@ export async function startStaticServer(opts: StaticServerOptions): Promise<Stat
         return;
       }
 
-      // /api/* — reverse proxy to backend (includes /api/auth/*).
-      // /login and /logout are top-level auth endpoints: proxy them too
-      // so WebUI browser clients reach the backend without a path-rewrite.
-      if (req.url.startsWith('/api/') || req.url.startsWith('/api?') || req.url === '/login' || req.url === '/logout') {
+      if (sendNoLoginAuthResponse(req, res)) {
+        return;
+      }
+
+      // /api/* — reverse proxy to backend. Auth status endpoints are handled
+      // above because OpenScience no longer asks users to sign in before use.
+      if (req.url.startsWith('/api/') || req.url.startsWith('/api?')) {
         forwardToBackend(req, res, opts.backendPort);
         return;
       }

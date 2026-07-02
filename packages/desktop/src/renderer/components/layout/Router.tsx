@@ -18,8 +18,6 @@ const LarkAutomationSettings = React.lazy(() => import('@renderer/pages/settings
 const PetSettings = React.lazy(() => import('@renderer/pages/settings/PetSettings'));
 const DiagnosticsSettings = React.lazy(() => import('@renderer/pages/settings/DiagnosticsSettings'));
 const ExtensionSettingsPage = React.lazy(() => import('@renderer/pages/settings/ExtensionSettingsPage'));
-const LoginPage = React.lazy(() => import('@renderer/pages/login'));
-const RegisterPage = React.lazy(() => import('@renderer/pages/register'));
 const ComponentsShowcase = React.lazy(() => import('@renderer/pages/TestShowcase'));
 const ScheduledTasksPage = React.lazy(() => import('@renderer/pages/cron/ScheduledTasksPage'));
 const TaskDetailPage = React.lazy(() => import('@renderer/pages/cron/ScheduledTasksPage/TaskDetailPage'));
@@ -39,9 +37,7 @@ const TitleSync: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (!location.pathname.startsWith('/login') && !location.pathname.startsWith('/register')) {
-      document.title = 'OpenScience';
-    }
+    document.title = 'OpenScience';
   }, [location.pathname]);
 
   return null;
@@ -54,10 +50,6 @@ const ProtectedLayout: React.FC<{ layout: React.ReactElement }> = ({ layout }) =
     return <AppLoader />;
   }
 
-  if (status !== 'authenticated') {
-    return <Navigate to='/login' replace />;
-  }
-
   return (
     <>
       <TitleSync />
@@ -67,16 +59,11 @@ const ProtectedLayout: React.FC<{ layout: React.ReactElement }> = ({ layout }) =
 };
 
 const PanelRoute: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
-  const { status } = useAuth();
-
   return (
     <HashRouter>
       <Routes>
-        <Route
-          path='/login'
-          element={status === 'authenticated' ? <Navigate to='/guid' replace /> : withRouteFallback(LoginPage)}
-        />
-        <Route path='/register' element={withRouteFallback(RegisterPage)} />
+        <Route path='/login' element={<Navigate to='/guid' replace />} />
+        <Route path='/register' element={<Navigate to='/guid' replace />} />
         <Route element={<ProtectedLayout layout={layout} />}>
           <Route index element={<Navigate to='/guid' replace />} />
           <Route path='/guid' element={withRouteFallback(Guid)} />
@@ -109,7 +96,7 @@ const PanelRoute: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
           <Route path='/collaboration/:moduleId/*' element={withRouteFallback(CollaborationWorkspacePage)} />
           <Route path='/collaboration' element={<Navigate to='/collaboration/messages' replace />} />
         </Route>
-        <Route path='*' element={<Navigate to={status === 'authenticated' ? '/guid' : '/login'} replace />} />
+        <Route path='*' element={<Navigate to='/guid' replace />} />
       </Routes>
     </HashRouter>
   );

@@ -179,18 +179,6 @@ export type DesktopWebUIHandle = {
 };
 
 let currentHandle: (WebHostHandle & { allowRemote: boolean }) | null = null;
-// First-use plaintext password for the active handle. Set by webui.start IPC
-// handler before startDesktopWebUI() when the backend reports needs_setup=true,
-// so Settings can display the generated password exactly once. Cleared on stop.
-let currentInitialPassword: string | undefined;
-
-/**
- * Stash the plaintext password to surface on the next `getDesktopWebUIStatus()`
- * or IPC start response. Call with `undefined` to clear.
- */
-export function setDesktopWebUIInitialPassword(password: string | undefined): void {
-  currentInitialPassword = password;
-}
 
 const getLanIP = (): string | null => {
   const nets = networkInterfaces();
@@ -211,7 +199,6 @@ const toDesktopHandle = (handle: WebHostHandle, allowRemote: boolean): DesktopWe
   localUrl: handle.localUrl,
   networkUrl: handle.networkUrl,
   lanIP: handle.lanIP,
-  initialPassword: currentInitialPassword,
 });
 
 /**
@@ -279,7 +266,6 @@ export async function stopDesktopWebUI(): Promise<void> {
   const handle = currentHandle;
   if (!handle) return;
   currentHandle = null;
-  currentInitialPassword = undefined;
   try {
     await handle.stop();
   } catch (err) {
@@ -317,7 +303,6 @@ export function getDesktopWebUIStatus(): {
     localUrl: currentHandle.localUrl,
     networkUrl: currentHandle.networkUrl,
     lanIP: currentHandle.lanIP,
-    initialPassword: currentInitialPassword,
   };
 }
 

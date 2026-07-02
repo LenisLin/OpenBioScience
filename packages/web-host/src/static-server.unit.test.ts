@@ -99,17 +99,9 @@ describe('static-server', () => {
     expect(json.path).toBe('/api/anything');
   });
 
-  it('/login reverse-proxies to backend (no local handler)', async () => {
-    const backend = await startMockBackend((req, res) => {
-      if (req.url === '/login' && req.method === 'POST') {
-        res.writeHead(200, {
-          'content-type': 'application/json',
-          'set-cookie': 'deeporganiser-session=backend-token; Path=/; HttpOnly',
-        });
-        res.end(JSON.stringify({ success: true, proxied: true }));
-        return;
-      }
-      res.writeHead(404).end();
+  it('/login is handled locally in no-login mode', async () => {
+    const backend = await startMockBackend((_req, res) => {
+      res.writeHead(500).end();
     });
     stopBackend = backend.close;
     handle = await startStaticServer({ staticDir, backendPort: backend.port, port: 0 });
@@ -120,19 +112,14 @@ describe('static-server', () => {
       body: JSON.stringify({ username: 'admin', password: 'anything' }),
     });
     expect(r.status).toBe(200);
-    expect(r.headers.get('set-cookie')).toMatch(/deeporganiser-session=backend-token/);
-    const json = (await r.json()) as { proxied: boolean };
-    expect(json.proxied).toBe(true);
+    expect(r.headers.get('set-cookie')).toBeNull();
+    const json = (await r.json()) as { success: boolean };
+    expect(json.success).toBe(true);
   });
 
-  it('/api/auth/user reverse-proxies to backend (no local handler)', async () => {
-    const backend = await startMockBackend((req, res) => {
-      if (req.url === '/api/auth/user' && req.method === 'GET') {
-        res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ success: true, user: { username: 'from-backend', id: 'from-backend' } }));
-        return;
-      }
-      res.writeHead(404).end();
+  it('/api/auth/user is handled locally in no-login mode', async () => {
+    const backend = await startMockBackend((_req, res) => {
+      res.writeHead(500).end();
     });
     stopBackend = backend.close;
     handle = await startStaticServer({ staticDir, backendPort: backend.port, port: 0 });
@@ -140,27 +127,33 @@ describe('static-server', () => {
     const r = await fetch(`${handle.localUrl}/api/auth/user`);
     expect(r.status).toBe(200);
     const json = (await r.json()) as { user: { username: string } };
-    expect(json.user.username).toBe('from-backend');
+    expect(json.user.username).toBe('OpenScience');
   });
 
-  it('/logout reverse-proxies to backend (no local handler)', async () => {
-    const backend = await startMockBackend((req, res) => {
-      if (req.url === '/logout' && req.method === 'POST') {
-        res.writeHead(200, {
-          'content-type': 'application/json',
-          'set-cookie': 'deeporganiser-session=; Path=/; Max-Age=0',
-        });
-        res.end(JSON.stringify({ success: true, proxied: true }));
-        return;
-      }
-      res.writeHead(404).end();
+  it('/logout is handled locally in no-login mode', async () => {
+    const backend = await startMockBackend((_req, res) => {
+      res.writeHead(500).end();
     });
     stopBackend = backend.close;
     handle = await startStaticServer({ staticDir, backendPort: backend.port, port: 0 });
 
     const r = await fetch(`${handle.localUrl}/logout`, { method: 'POST' });
     expect(r.status).toBe(200);
-    expect(r.headers.get('set-cookie')).toMatch(/Max-Age=0/);
+    expect(r.headers.get('set-cookie')).toBeNull();
+  });
+
+  it('/api/auth/status is handled locally in no-login mode', async () => {
+    const backend = await startMockBackend((_req, res) => {
+      res.writeHead(500).end();
+    });
+    stopBackend = backend.close;
+    handle = await startStaticServer({ staticDir, backendPort: backend.port, port: 0 });
+
+    const r = await fetch(`${handle.localUrl}/api/auth/status`);
+    expect(r.status).toBe(200);
+    const json = (await r.json()) as { needs_setup: boolean; is_authenticated: boolean };
+    expect(json.needs_setup).toBe(false);
+    expect(json.is_authenticated).toBe(true);
   });
 
   it('/api proxy returns 502 when backend unreachable', async () => {
