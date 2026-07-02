@@ -27,6 +27,7 @@ import { LEGACY_LOCAL_RUNTIME_ID } from '@/common/config/legacyIdentifiers';
 import { applyPaperclipCredentialFallback } from '@/common/config/paperclipConfig';
 import {
   BUILTIN_MEDICAL_EVIDENCE_NAME,
+  BUILTIN_IMAGE_GEN_NAME,
   BUILTIN_LAB_SKILL_NAME,
   BUILTIN_RESEARCH_EVIDENCE_NAME,
   BUILTIN_SCIENCE_ARTIFACT_NAME,
@@ -36,7 +37,7 @@ import {
   type TProviderWithModel,
 } from '@/common/config/storage';
 import { buildAgentConversationParams } from '@/common/utils/buildAgentConversationParams';
-import { toSessionMcpServer } from '@/renderer/hooks/mcp/catalog';
+import { ensureBackendMcpCatalog, toSessionMcpServer } from '@/renderer/hooks/mcp/catalog';
 import { emitter } from '@/renderer/utils/emitter';
 import { updateWorkspaceTime } from '@/renderer/utils/workspace/workspaceHistory';
 import { Message } from '@arco-design/web-react';
@@ -85,6 +86,27 @@ const resolveBuiltinSessionMcpServer = (
 ): ISessionMcpServer | undefined => {
   const server = availableMcpServers.find((item) => item.name === name);
   return server ? toSessionMcpServer(server) : undefined;
+};
+
+const hasBuiltinMcpServer = (servers: IMcpServer[], name: string): boolean =>
+  servers.some((server) => server.name === name && server.builtin === true);
+
+const resolveModeMcpCatalog = async (
+  availableMcpServers: IMcpServer[],
+  requiredBuiltinNames: string[]
+): Promise<IMcpServer[]> => {
+  if (!requiredBuiltinNames.length) return availableMcpServers;
+  if (requiredBuiltinNames.every((name) => hasBuiltinMcpServer(availableMcpServers, name))) {
+    return availableMcpServers;
+  }
+
+  try {
+    const { allServers } = await ensureBackendMcpCatalog();
+    return requiredBuiltinNames.every((name) => hasBuiltinMcpServer(allServers, name)) ? allServers : availableMcpServers;
+  } catch (error) {
+    console.warn('[useGuidSend] Failed to refresh MCP catalog before mode send:', error);
+    return availableMcpServers;
+  }
 };
 
 const resolveMedicalEvidenceSessionMcpServer = (
@@ -308,6 +330,8 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const preset_assistant_id = is_preset ? agentInfo?.custom_agent_id : undefined;
 
     const { agent_type: effectiveAgentType } = getEffectiveAgentType(agentInfo);
+    const medicalEvidenceAgentBackend =
+      normalizeLegacyBackend(is_preset ? effectiveAgentType : selectedAgent) || normalizeLegacyBackend(selectedAgent);
 
     // Guid page's per-conversation skill overrides take precedence over the
     // assistant's saved defaults. The combined skills menu lets the user pick
@@ -365,7 +389,12 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const medicalEvidenceSources = normalizeMedicalEvidenceSources(medicalEvidenceConfig?.defaultSources);
     const medicalEvidenceStrictAnchors = medicalEvidenceConfig?.strictAnchors !== false;
     const medicalEvidencePrompt = hasMedicalEvidenceMode
-      ? buildMedicalEvidenceModePrompt(medicalEvidenceSources, medicalEvidenceStrictAnchors, localeKey)
+      ? buildMedicalEvidenceModePrompt(
+          medicalEvidenceSources,
+          medicalEvidenceStrictAnchors,
+          localeKey,
+          medicalEvidenceAgentBackend
+        )
       : undefined;
     const sciencePrompt = hasScienceMode ? buildScienceModePrompt(finalWorkspace, localeKey) : undefined;
     const labSkillDepositionPrompt = hasSkillDepositionMode
@@ -403,11 +432,16 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       hasMedicalEvidenceMode || hasScienceMode || hasSkillDepositionMode
         ? resolveBuiltinSessionMcpServer(availableMcpServers, BUILTIN_USER_INPUT_NAME)
         : undefined;
+    const imageGenerationSessionMcpServer =
+      hasMedicalEvidenceMode && medicalEvidenceAgentBackend === 'codex'
+        ? resolveBuiltinSessionMcpServer(availableMcpServers, BUILTIN_IMAGE_GEN_NAME)
+        : undefined;
     const baseSelectedSessionMcpServersForExtra =
       selectedMcpServerIds !== undefined ? selectedSessionMcpServers : selectedSessionMcpServersToSend;
     const selectedSessionMcpServersWithMedicalEvidence = mergeSessionMcpServers([
       ...baseSelectedSessionMcpServersForExtra,
       ...(medicalEvidenceSessionMcpServer ? [medicalEvidenceSessionMcpServer] : []),
+      ...(imageGenerationSessionMcpServer ? [imageGenerationSessionMcpServer] : []),
       ...(researchEvidenceSessionMcpServer ? [researchEvidenceSessionMcpServer] : []),
       ...(scienceArtifactSessionMcpServer ? [scienceArtifactSessionMcpServer] : []),
       ...(labSkillSessionMcpServer ? [labSkillSessionMcpServer] : []),

@@ -499,9 +499,22 @@ const medicalEvidenceSourceTierPrompt = MEDICAL_EVIDENCE_SOURCE_TIER_RULES.map((
 export const buildMedicalEvidenceModePrompt = (
   sources: string[],
   strictAnchors = true,
-  preferredLocale?: string
-): string =>
-  [
+  preferredLocale?: string,
+  agentBackend?: string
+): string => {
+  const isCodexRuntime = agentBackend === 'codex';
+  const codexImageFigureInstructions = isCodexRuntime
+    ? [
+        '- Codex runtime image workflow: when a non-trivial report would benefit from a single explanatory figure, prefer requesting the configured image generation tool/model rather than hand-drawing the final image. Ask for GPT-IMAGE-2, or the newest available image generation model if GPT-IMAGE-2 is unavailable.',
+        '- For Codex-generated medical evidence figures, request a 4K or highest-available-resolution image on a pure white background. The figure must adapt all visible text to the user/report language, use large readable typography, and show only the information that most helps the reader understand the clinical conclusion.',
+        '- Keep Codex image prompts compact and editorial: one clear title, 3-5 labeled nodes or regions, evidence-aware labels, no dense paragraphs, no decorative medical stock imagery, no dark background, and no information overload. The image should explain the answer, not replace the evidence ledger.',
+        '- After the image is generated, attach the saved image through evidence_attach_figure or panel.figures with kind:"image", imagePath or previewPngPath, title, caption, alt text, and evidenceIds. If generation fails or no image model is configured, fall back to the non-Codex diagram workflow below or omit the figure.',
+      ]
+    : [
+        '- Non-Codex runtime workflow: continue using the existing editable figure path. Prefer Graphviz/Mermaid/draw.io-friendly diagrams for pathways and Python/matplotlib for data charts. Draw.io is preferred when the diagram may need later manual editing. If you create or receive a drawio file, also provide previewSvgPath or previewPngPath when possible.',
+      ];
+
+  return [
     '# Medical Evidence Mode',
     '',
     `You are running inside OpenScience Medical Evidence Mode. Use the existing agent runtime as usual, but treat medical claims as evidence-bound work. From the first paragraph of the final report, write in the editorial style adapted from ${MEDICAL_EVIDENCE_WRITING_SKILL_NAME}: reader cognition first, clear story spine, compact clinical background, one job per paragraph, explicit transitions, and plain-language interpretation of evidence, tables, figures, and cards before expecting the user to inspect details.`,
@@ -532,7 +545,7 @@ export const buildMedicalEvidenceModePrompt = (
     '- Step G: Grade. Assign high/moderate/low/very_low and explain downgrades for indirectness, age mismatch, outdated evidence, small samples, surrogate outcomes, missing anchor, or safety uncertainty. Each conclusion should cite at least one appropriate high-tier source when available; if only low-tier evidence exists, say so plainly.',
     '- Step H: Claim audit. Before writing the final report, list the intended clinical conclusions internally and verify that each has matching evidenceIds, anchors, applicability notes, and confidence. Delete or soften any conclusion that fails this audit.',
     '- Step I: Reader onboarding. Before synthesis, make a short internal draft of the reader path: what clinical background the user needs, why this question matters, what evidence was prioritized, what the conclusion means in plain language, and what remains uncertain. This is adapted from the bundled oral-paper writing skill: write for reader cognition, use section/paragraph jobs, introduce tables/figures before expecting the user to interpret them, and never dump results without interpretation.',
-    '- Step J: Visual plan. Usually try to include one evidence-bound visual element when it improves comprehension: a clinical decision path, evidence hierarchy/source weighting diagram, source distribution chart, mechanism sketch, medication safety table figure, or “applies / does not apply” pathway. Prefer editable draw.io/Graphviz/Mermaid-style diagrams for pathways and SVG/PNG previews for rendering. Skip the visual only when it would be decorative, unsupported, or less clear than prose.',
+    `- Step J: Visual plan. Usually try to include one evidence-bound visual element when it improves comprehension: a clinical decision path, evidence hierarchy/source weighting diagram, source distribution chart, mechanism sketch, medication safety table figure, or “applies / does not apply” pathway. ${isCodexRuntime ? 'In Codex, prefer a generated high-resolution explanatory image when it best helps the reader; otherwise use the editable diagram workflow.' : 'Prefer editable draw.io/Graphviz/Mermaid-style diagrams for pathways and SVG/PNG previews for rendering.'} Skip the visual only when it would be decorative, unsupported, or less clear than prose.`,
     '- Step K: Synthesize. Produce a clinically readable report: bottom-line conclusion, one or two plain-language background/motivation sentences when needed, point-by-point answer, conditions where it applies, when not to apply it, what information is still needed, and what to verify with a clinician.',
     '- Step L: Submit. Use evidence_submit_panel. Prefer report.sections over a short free-text answer; use findings as concise highlights and evidence as the traceable reference ledger.',
     '',
@@ -589,8 +602,8 @@ export const buildMedicalEvidenceModePrompt = (
     `- Medical Evidence Mode enables the bundled ${MEDICAL_EVIDENCE_FIGURE_SKILL_NAME} skill by default: ${MEDICAL_EVIDENCE_FIGURE_SKILL_PATH}. Use it whenever a visual would make the clinical reasoning more legible.`,
     '- A figure is evidence, not decoration. Usually attempt one compact visual for non-trivial reports, but only keep it when it clarifies a quantitative comparison, evidence hierarchy, clinical decision path, source distribution, mechanism, or applicability boundary.',
     '- Before creating a figure, write a compact figure contract internally: Claim, Evidence map, Figure type, Output contract, Review risks.',
+    ...codexImageFigureInstructions,
     `- For data figures, use Python/matplotlib with ${MEDICAL_EVIDENCE_FIGURE_SKILL_PATH.replace('/SKILL.md', '/scripts/pubfig.py')} when available. Prefer SVG/PDF first, PNG preview second.`,
-    '- For workflows or clinical pathways, prefer Graphviz/Mermaid/draw.io-friendly diagrams. Draw.io is preferred when the diagram may need later manual editing. If you create or receive a drawio file, also provide previewSvgPath or previewPngPath when possible.',
     '- Attach figures through evidence_attach_figure or panel.figures. Every figure/table must have title/caption and evidenceIds when it supports a medical claim.',
     '- Good default figure choices: evidence source distribution, evidence certainty bar, “when this applies / does not apply” pathway, clinical decision flow, mechanism sketch, or a table-like medication/safety summary. Do not invent effect sizes or pseudo-data.',
     '',
@@ -616,6 +629,7 @@ export const buildMedicalEvidenceModePrompt = (
     '## Safety',
     'This mode supports clinical reasoning and literature review. It must not present itself as a substitute for a licensed clinician, and must recommend professional evaluation for diagnosis, treatment changes, emergencies, pregnancy, pediatrics, complex comorbidity, or medication safety decisions.',
   ].join('\n');
+};
 
 const toRecord = (value: unknown): Record<string, unknown> | undefined =>
   value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
