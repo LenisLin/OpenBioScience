@@ -294,7 +294,7 @@ Use [Discussions](https://github.com/ResearAI/OpenScience/discussions) for ideas
 
 ## Developers and Maintainers
 
-OpenScience is developed by the ResearAI and WestlakeNLP research community. See the [developer list](./docs/developers.md) for the current development team and contact information.
+OpenScience is developed by the WestlakeNLP 和中关村学院. See the [developer list](./docs/developers.md) for the current development team and contact information.
 
 For research collaboration, long-term internship, PhD, or research assistant opportunities, contact Professor Yue Zhang at `zhangyue@westlake.edu.cn`.
 

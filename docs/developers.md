@@ -1,6 +1,6 @@
 # OpenScience Developers
 
-OpenScience is developed by the ResearAI and WestlakeNLP research community as an open-source, local-first workspace for evidence-backed scientific work.
+OpenScience is developed by the WestlakeNLP 和中关村学院 as an open-source, local-first workspace for evidence-backed scientific work.
 
 ## Development Team
 
