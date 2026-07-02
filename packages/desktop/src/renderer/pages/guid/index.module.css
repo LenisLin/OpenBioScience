@@ -1,0 +1,1606 @@
+.guidLayout {
+  --assistant-surface-bg: color-mix(in srgb, var(--bg-2) 65%, transparent);
+  --assistant-surface-bg-hover: color-mix(in srgb, var(--bg-2) 85%, transparent);
+  width: clamp(var(--app-min-width, 360px), calc(100% - 32px), 800px);
+  max-width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  transition:
+    width 0.58s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.58s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.guidLayoutLoopGoal {
+  width: clamp(var(--app-min-width, 360px), calc(100% - 32px), 920px);
+}
+
+.guidLayoutCollaboration {
+  width: min(1320px, calc(100% - 48px));
+  display: grid;
+  grid-template-columns: minmax(360px, 460px) 18px minmax(520px, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto 20px auto minmax(0, 1fr);
+  row-gap: 0;
+  align-items: start;
+}
+
+.guidLayoutCollaboration .guidHeroStack {
+  grid-column: 3;
+  grid-row: 2;
+  justify-self: stretch;
+  padding-top: 0;
+}
+
+.guidLayoutCollaboration .guidSpectacleStageOpen {
+  display: contents;
+}
+
+.guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleLeft {
+  grid-column: 1;
+  grid-row: 1 / 6;
+  max-height: min(82vh, 860px);
+}
+
+.guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleBridge {
+  grid-column: 2;
+  grid-row: 4;
+  align-self: center;
+}
+
+.guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleRight {
+  grid-column: 3;
+  grid-row: 4;
+  align-self: start;
+  width: 100%;
+  margin-top: 0;
+}
+
+.guidSpectacleStage {
+  --spectacle-left-width: 0px;
+  --spectacle-gap: 0px;
+  --spectacle-bridge-width: 0px;
+  --spectacle-join-y: 278px;
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--spectacle-left-width) var(--spectacle-bridge-width) minmax(430px, 1fr);
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  transition:
+    grid-template-columns 0.62s cubic-bezier(0.16, 1, 0.3, 1),
+    gap 0.62s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.guidSpectacleStageOpen {
+  --spectacle-left-width: minmax(360px, 460px);
+  --spectacle-bridge-width: 18px;
+  --spectacle-join-y: 250px;
+}
+
+.guidHeroStack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.guidHeroStack .heroHeader,
+.guidHeroStack .heroSubtitle,
+.guidHeroStack .agentPillSection {
+  margin-bottom: 0;
+}
+
+.guidSpectacleLeft {
+  position: relative;
+  min-width: 0;
+  height: 0;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(32px) scale(0.97);
+  pointer-events: none;
+  filter: blur(8px);
+  z-index: 2;
+  transition:
+    max-height 0.56s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.34s ease,
+    transform 0.62s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.42s ease;
+}
+
+.guidSpectacleStageOpen .guidSpectacleLeft {
+  height: auto;
+  max-height: 820px;
+  overflow: visible;
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+  filter: blur(0);
+}
+
+.guidSpectacleBridge {
+  position: relative;
+  align-self: center;
+  height: 36px;
+  margin-top: 0;
+  opacity: 0;
+  transform: scaleX(0.28);
+  transform-origin: center;
+  z-index: 1;
+  transition:
+    opacity 0.28s ease 0.08s,
+    transform 0.52s cubic-bezier(0.16, 1, 0.3, 1) 0.04s;
+}
+
+.guidSpectacleStageOpen .guidSpectacleBridge {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.guidSpectacleBridge::before {
+  content: '';
+  position: absolute;
+  inset: 0 -24px;
+  border-radius: 999px;
+  background: var(--bg-2);
+  box-shadow:
+    0 10px 26px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 color-mix(in srgb, var(--color-white) 50%, transparent);
+}
+
+.guidSpectacleRight {
+  min-width: 0;
+  width: 100%;
+  align-self: center;
+  z-index: 2;
+  transition:
+    transform 0.62s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.42s ease;
+}
+
+.guidSpectacleStageOpen .guidSpectacleRight {
+  animation: guidLensSettle 0.68s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes guidLensSettle {
+  0% {
+    transform: translateX(-42px) scale(0.985);
+  }
+  62% {
+    transform: translateX(3px) scale(1.002);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+.heroHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.heroHeaderControls {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 36px;
+  flex-wrap: nowrap;
+}
+
+.heroHeaderLeft {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 36px;
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+
+.heroHeaderRight {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 36px;
+  flex: 0 0 auto;
+  padding-right: 2px;
+}
+
+.heroBackButton {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  color: var(--color-text-2) !important;
+  border-radius: 999px !important;
+  background: var(--color-fill-2) !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+}
+
+.heroBackButton:hover {
+  background: var(--color-fill-3) !important;
+}
+
+.heroBackButton :global(svg),
+.heroTitleEdit :global(svg),
+.heroAgentSwitchButton :global(svg) {
+  display: block;
+}
+
+.heroBackButton :global(.arco-btn-icon) {
+  margin: 0 !important;
+  line-height: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroTitleEdit {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  color: var(--color-text-3) !important;
+  background: transparent !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(1px);
+}
+
+.heroTitleEdit:hover {
+  background: transparent !important;
+  color: var(--color-text-2) !important;
+}
+
+.heroAgentSwitchButton {
+  color: var(--color-text-2) !important;
+  padding: 0 6px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  display: inline-flex !important;
+  align-items: center;
+  transform: translateY(1px);
+}
+
+.heroAgentSwitchIcon {
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.heroTitle {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.heroTitleInlineIcon {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-0);
+  flex-shrink: 0;
+}
+
+.heroTitleInlineIcon img {
+  display: block;
+}
+
+.heroTitleEmoji {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.heroSubtitle {
+  margin: 0 auto 14px;
+  max-width: 760px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 20px;
+  color: var(--color-text-2);
+  background: var(--assistant-surface-bg);
+  border: none;
+  line-height: 20px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.heroSubtitle:hover {
+  background: var(--assistant-surface-bg-hover);
+}
+
+.heroSubtitleExpanded {
+  align-items: flex-start;
+  padding: 10px 14px;
+  border-radius: 16px;
+  cursor: default;
+}
+
+.heroSubtitleExpanded:hover {
+  background: var(--assistant-surface-bg);
+}
+
+.heroSubtitleExpanded .heroSubtitleBack {
+  margin-top: 2px;
+}
+
+.heroSubtitleBack {
+  flex-shrink: 0;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  color: var(--color-text-2) !important;
+  border-color: var(--color-border-2) !important;
+  background: var(--bg-active) !important;
+}
+
+.heroSubtitleBack:hover {
+  background: var(--bg-3) !important;
+}
+
+.heroSubtitleToggle {
+  flex-shrink: 0;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: var(--color-text-3) !important;
+  transition: transform 0.2s ease;
+}
+
+.heroSubtitleToggle:hover {
+  background: transparent !important;
+  color: var(--color-text-2) !important;
+}
+
+.heroSubtitleToggleExpanded {
+  transform: rotate(180deg);
+}
+
+.heroSubtitleText {
+  flex: 1;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 20px;
+}
+
+.heroSubtitleTextExpanded {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+  white-space: normal;
+  line-height: 1.6;
+}
+
+.heroSubtitleDetail {
+  flex-shrink: 0;
+  height: 22px !important;
+  min-height: 22px !important;
+  padding: 0 6px !important;
+  border-radius: 10px !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: var(--color-text-3) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  opacity: 0.9;
+}
+
+.heroSubtitleDetail:hover {
+  background: var(--color-fill-2) !important;
+  color: var(--color-text-2) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
+
+.heroSubtitleDetail:focus,
+.heroSubtitleDetail:focus-visible,
+.heroSubtitleDetail:active {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.assistantPromptChip {
+  background: var(--assistant-surface-bg);
+}
+
+.assistantPromptHint {
+  color: var(--color-text-3);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.assistantPromptAgentSwitcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 12px;
+  background: var(--color-fill-1);
+  border: 1px solid var(--color-border-2);
+  color: var(--color-text-2);
+  cursor: pointer;
+  user-select: none;
+  transform: translateY(-1px);
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+
+.assistantPromptAgentSwitcher:hover {
+  background: var(--color-fill-2);
+  border-color: var(--color-border-3);
+  color: var(--color-text-1);
+}
+
+.assistantPromptAgentSwitcherName {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+.assistantPromptAgentSwitcherDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgb(var(--success-6));
+  flex-shrink: 0;
+}
+
+.assistantPromptAgentSwitcherLogo {
+  width: 13px;
+  height: 13px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.assistantPromptChip:hover {
+  background: var(--assistant-surface-bg-hover);
+}
+
+.guidInputCard {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.guidInputCardWrap {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-2);
+  border-radius: 24px;
+  overflow: visible;
+}
+
+.guidInputInner {
+  background: var(--bg-base, #fff);
+  border: 1px solid var(--color-border-3);
+  border-radius: 24px;
+  box-sizing: border-box;
+}
+
+:global([data-theme='dark']) .guidInputInner {
+  background: #262626;
+  border-color: #3a3a3a;
+}
+
+.guidContextRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  margin-top: 0;
+  padding: 6px 10px 10px;
+  border: 0;
+  border-radius: 0 0 24px 24px;
+  background: var(--bg-2);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-border-2) 34%, transparent);
+  box-sizing: border-box;
+}
+
+.actionRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.actionTools {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.actionEntry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  margin-right: 0;
+}
+
+.loopGoalModeIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--color-border-2) 78%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-bg-1) 94%, var(--color-fill-2));
+  color: var(--color-text-1);
+  box-shadow:
+    0 7px 20px rgba(15, 23, 42, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  line-height: 1;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease,
+    color 0.16s ease;
+}
+
+.loopGoalModeIndicator:hover {
+  transform: translateY(-1px);
+  background: var(--color-bg-1);
+  color: var(--color-primary-6);
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.medicalEvidenceModeIndicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, rgb(45, 128, 91) 36%, var(--color-border-2));
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(45, 128, 91, 0.1), transparent 68%),
+    color-mix(in srgb, var(--color-bg-1) 94%, var(--color-fill-2));
+  color: rgb(35, 103, 73);
+  box-shadow:
+    0 7px 20px rgba(15, 23, 42, 0.07),
+    0 0 0 4px rgba(45, 128, 91, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  line-height: 1;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease,
+    color 0.16s ease;
+}
+
+.medicalEvidenceModeIndicator::after {
+  content: '';
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(45, 128, 91);
+  box-shadow: 0 0 0 3px rgba(45, 128, 91, 0.12);
+}
+
+.medicalEvidenceModeIndicator:hover {
+  transform: translateY(-1px);
+  background: var(--color-bg-1);
+  color: rgb(24, 89, 60);
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.1),
+    0 0 0 5px rgba(45, 128, 91, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+:global([data-theme='dark']) .loopGoalModeIndicator {
+  background: color-mix(in srgb, var(--color-fill-2) 82%, #111);
+  border-color: color-mix(in srgb, var(--color-border-2) 70%, transparent);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+:global([data-theme='dark']) .medicalEvidenceModeIndicator {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(88, 183, 129, 0.12), transparent 68%),
+    color-mix(in srgb, var(--color-fill-2) 82%, #111);
+  border-color: rgba(88, 183, 129, 0.28);
+  color: rgb(139, 215, 172);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.22),
+    0 0 0 4px rgba(88, 183, 129, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* 方案E：模型 + 权限各自独立 tb-btn，中间有竖线分隔 */
+.actionConfigGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+/* 首页输入框右下「模型 / 模式」按钮：与对话框 .sendbox-tools/.sendbox-actions 同款 */
+.actionSubmit :global(.sendbox-model-btn),
+.actionSubmit :global(.sendbox-model-btn:hover),
+.actionSubmit :global(.sendbox-model-btn:active),
+.actionSubmit :global(.sendbox-model-btn:focus),
+.actionSubmit :global(.sendbox-model-btn:focus-visible) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--text-secondary) !important;
+}
+
+.actionSubmit :global(.sendbox-model-btn:hover),
+.actionSubmit :global(.sendbox-model-btn:active),
+.actionSubmit :global(.sendbox-model-btn:focus),
+.actionSubmit :global(.sendbox-model-btn:focus-visible) {
+  color: var(--text-primary) !important;
+}
+
+.actionConfigGroup :global(.sendbox-model-btn .arco-btn-content) {
+  gap: 0 !important;
+}
+
+.actionConfigGroup :global(.sendbox-model-btn .arco-btn-content > span:first-child) {
+  gap: 4px !important;
+}
+
+.actionSubmit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.workspaceFootnote {
+  display: flex;
+  align-items: center;
+  justify-content: stretch;
+  gap: 0;
+  min-width: 0;
+  width: 100%;
+  padding: 0;
+  background: transparent;
+}
+
+.workspaceEmptyBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  font-size: 14px;
+  font-weight: 560;
+  color: var(--color-text-3);
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    color 0.15s,
+    background 0.15s,
+    box-shadow 0.18s;
+  line-height: 1;
+}
+
+.workspaceEmptyBtn:hover {
+  color: var(--color-text-2);
+  background: var(--color-fill-3);
+}
+
+.workspaceEmptyBtnActive {
+  color: var(--color-text-1);
+  background: var(--bg-base);
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.035),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-white) 56%, transparent);
+}
+
+.workspaceEmptyBtnActive:hover {
+  color: var(--color-text-1);
+  background: var(--bg-base);
+}
+
+.collaborationEmptyBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  font-size: 14px;
+  font-weight: 550;
+  color: var(--color-text-3);
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    color 0.15s,
+    background 0.15s,
+    box-shadow 0.18s;
+  line-height: 1;
+}
+
+.collaborationEmptyBtn:hover {
+  color: var(--color-text-2);
+  background: var(--color-fill-3);
+}
+
+.collaborationEmptyBtnActive {
+  color: var(--color-text-1);
+  background: var(--bg-base);
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.035),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-white) 56%, transparent);
+}
+
+.collaborationEmptyBtnActive:hover {
+  color: var(--color-text-1);
+  background: var(--bg-base);
+}
+
+.collaborationContextName {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+  opacity: 0.72;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 选中态：和空状态同色系，不做颜色跳变 */
+.workspacePill {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: none;
+}
+
+.workspacePillActive {
+  background: var(--bg-base);
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.035),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-white) 56%, transparent);
+}
+
+.workspacePillActive .workspacePillMain {
+  color: var(--color-text-1);
+}
+
+.workspacePillMain {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  font-size: 14px;
+  font-weight: 560;
+  color: var(--color-text-2);
+  background: transparent;
+  border: none;
+  padding: 6px 8px 6px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    background 0.12s,
+    color 0.12s;
+  max-width: none;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.workspacePillMain:hover {
+  background: var(--color-fill-3);
+  color: var(--color-text-1);
+}
+
+.workspacePillName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspacePillClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 5px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--color-text-4);
+  flex-shrink: 0;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.workspacePillClose:hover {
+  background: var(--color-fill-3);
+  color: var(--color-text-2);
+}
+
+/* workspace dropdown popup — portal-rendered, position set via JS */
+.wsDropdown {
+  background: var(--bg-base, #fff);
+  border: 1px solid var(--color-border-2);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow:
+    0 10px 32px rgba(0, 0, 0, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.06);
+  min-width: 230px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.wsDropdownSearch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  background: var(--color-fill-2);
+  border-radius: 8px;
+}
+
+.wsDropdownSearchInput {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 12px;
+  color: var(--color-text-1);
+  width: 100%;
+  font-family: inherit;
+}
+
+.wsDropdownSearchInput::placeholder {
+  color: var(--color-text-4);
+}
+
+.wsDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-text-1);
+  transition: background 0.1s;
+}
+
+.wsDropdownItem:hover {
+  background: var(--color-fill-2);
+}
+
+.wsDropdownItemActive {
+  color: var(--aou-7);
+  font-weight: 600;
+}
+
+.wsDropdownItemAccent {
+  color: var(--aou-7);
+}
+
+.wsDropdownItemMuted {
+  color: var(--color-text-2);
+  font-style: italic;
+}
+
+.wsDropdownItemMuted:hover {
+  color: var(--color-text-1);
+}
+
+.wsDropdownItemMutedDisabled {
+  color: var(--color-text-3);
+  font-style: italic;
+}
+
+.wsDropdownSep {
+  height: 1px;
+  background: var(--color-border-2);
+  margin: 4px 0;
+}
+
+.lightPlaceholder::placeholder {
+  color: #b4b5bc;
+  opacity: 1;
+}
+
+.plusButtonRotate {
+  animation: rotate-animation 0.3s ease-in-out;
+}
+
+@keyframes rotate-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(45deg);
+  }
+}
+
+/* Skeleton shimmer animation */
+@keyframes guid-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-fill-2) 25%, var(--color-fill-3) 50%, var(--color-fill-2) 75%);
+  background-size: 200% 100%;
+  animation: guid-shimmer 1.5s ease-in-out infinite;
+  border-radius: 50%;
+}
+
+.skeletonPill {
+  background: linear-gradient(90deg, var(--color-fill-2) 25%, var(--color-fill-3) 50%, var(--color-fill-2) 75%);
+  background-size: 200% 100%;
+  animation: guid-shimmer 1.5s ease-in-out infinite;
+  border-radius: 100px;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .guidLayout {
+    width: clamp(var(--app-min-width, 360px), calc(100% - 24px), 100%);
+    padding: 0 12px;
+    padding-bottom: 100px; /* 为底部快捷按钮留出空间 */
+    box-sizing: border-box;
+  }
+
+  .guidLayoutCollaboration {
+    display: block;
+    width: clamp(var(--app-min-width, 360px), calc(100% - 24px), 100%);
+  }
+
+  .guidLayoutCollaboration .guidHeroStack,
+  .guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleLeft,
+  .guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleBridge,
+  .guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleRight {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .guidLayoutCollaboration .guidSpectacleStageOpen {
+    display: flex;
+  }
+
+  .guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleRight {
+    margin-top: 0;
+  }
+
+  .guidContainerCollaboration {
+    justify-content: center;
+    padding-top: 10px;
+  }
+
+  .guidInputCard {
+    width: 100%;
+  }
+
+  .guidSpectacleStage,
+  .guidSpectacleStageOpen {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-left: 0;
+    transform: none;
+  }
+
+  .guidSpectacleLeft {
+    max-height: 0;
+    overflow: hidden;
+    transform: translateY(18px) scale(0.98);
+    transition:
+      max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.28s ease,
+      transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+      filter 0.32s ease;
+  }
+
+  .guidSpectacleStageOpen .guidSpectacleLeft {
+    max-height: 540px;
+    margin-bottom: 10px;
+  }
+
+  .guidSpectacleBridge {
+    display: none;
+  }
+
+  .actionRow {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .actionTools {
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .actionTools::-webkit-scrollbar {
+    display: none;
+  }
+
+  .actionTools > * {
+    flex: 0 0 auto;
+  }
+
+  .actionEntry {
+    margin-right: 0;
+  }
+
+  .actionConfigGroup {
+    gap: 0;
+  }
+
+  .actionConfigGroupWithDivider > :first-child::after {
+    right: -6px;
+    height: 16px;
+  }
+
+  .actionSubmit {
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+}
+
+/* 小屏手机再收窄一点安全边距，提升可操作面积 */
+@media (max-width: 420px) {
+  .guidLayout {
+    width: clamp(var(--app-min-width, 360px), calc(100% - 20px), 100%);
+    padding: 0 10px;
+  }
+}
+
+/* 移动端容器滚动支持 */
+.guidContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  position: relative;
+}
+
+.guidContainerCollaboration {
+  justify-content: center;
+  padding-top: 10px;
+}
+
+.guidContainer .guidLayout {
+  margin-top: 0;
+}
+
+@media (max-width: 768px) {
+  .guidContainerCollaboration {
+    justify-content: center;
+    padding-top: 10px;
+  }
+}
+
+/* Agent 选中时：先放大再回落至略大（pop 动效） */
+@keyframes agentSelectPop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1.02);
+  }
+}
+
+.agentItemSelected {
+  background-color: var(--fill-0);
+  transition:
+    opacity 0.5s cubic-bezier(0.2, 0.8, 0.3, 1),
+    background-color 0.25s ease-out;
+  animation: agentSelectPop 0.4s ease-out forwards;
+}
+
+.agentPillSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto 18px;
+}
+
+.agentPillBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 30px;
+  background: var(--color-guid-agent-bar, var(--aou-2));
+  color: var(--text-primary);
+  transition: background-color 0.35s ease;
+}
+
+.agentPillItem {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 0.72;
+  color: var(--text-primary);
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.agentPillItem:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--fill-0) 70%, transparent);
+}
+
+.agentPillItemSelected {
+  opacity: 1;
+  background: var(--fill-0);
+  animation: agentSelectPop 0.4s ease-out forwards;
+}
+
+.agentPillItemMissing {
+  opacity: 0.42;
+  border: 1px dashed var(--color-border-3);
+  background: transparent;
+  color: var(--color-text-3);
+}
+
+.agentPillItemMissing:hover {
+  opacity: 0.75;
+  background: var(--color-fill-1);
+}
+
+.agentPillLogo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.agentPillLabel {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.agentPillDivider {
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px;
+  opacity: 0.3;
+  user-select: none;
+}
+
+.agentInstallNotice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: min(100%, 620px);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-3);
+  font: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.agentInstallNotice:hover {
+  color: var(--color-text-2);
+}
+
+.agentInstallNoticeAction {
+  flex-shrink: 0;
+  transform: translateY(1px);
+}
+
+/* 底部快捷按钮：基础间距 + 安全区 */
+.guidQuickActions {
+  bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 768px) {
+  .guidContainer {
+    justify-content: flex-start;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-top: 20px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .guidContainer .guidLayout {
+    margin-top: 0;
+  }
+}
+
+/* 浅色占位符 */
+.lightPlaceholder :global(textarea::placeholder) {
+  color: #b4b5bc !important;
+  opacity: 1 !important;
+}
+
+/* 助手卡片网格（首页 list view） */
+.assistantCardScrollWrap {
+  position: relative;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px 6px 4px 4px;
+  scrollbar-width: thin;
+}
+
+.assistantCardScrollWrapScrollable {
+  -webkit-mask-image: linear-gradient(to bottom, black 0, black calc(100% - 56px), transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0, black calc(100% - 56px), transparent 100%);
+}
+
+.assistantCardScrollWrap::-webkit-scrollbar {
+  width: 6px;
+}
+
+.assistantCardScrollWrap::-webkit-scrollbar-thumb {
+  background: var(--color-fill-3);
+  border-radius: 3px;
+}
+
+.assistantCardScrollWrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.assistantCardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.assistantCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px 14px;
+  background: var(--bg-base, #fff);
+  border: 1px solid color-mix(in srgb, var(--color-border-2) 70%, transparent);
+  border-radius: 14px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.assistantCard:hover {
+  border-color: var(--color-border-3);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+:global([data-theme='dark']) .assistantCard {
+  background: #262626;
+}
+
+:global([data-theme='dark']) .assistantCard:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.assistantCardAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-fill-2);
+  overflow: hidden;
+}
+
+.assistantCardAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.assistantCardEmoji {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.assistantCardMeta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.assistantCardName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assistantCardDesc {
+  font-size: 12px;
+  color: var(--color-text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assistantCardAdd {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  padding: 12px 14px;
+  background: var(--color-fill-1);
+  border: 1px dashed color-mix(in srgb, var(--color-border-2) 70%, transparent);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  color: var(--color-text-3);
+}
+
+.assistantCardAdd:hover {
+  background: var(--color-fill-2);
+  color: var(--color-text-2);
+}
+
+@media (max-width: 640px) {
+  .assistantCardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 预设助手标签 */
+.presetAgentTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  background: var(--color-fill-2);
+  border: 1px solid var(--color-border-2);
+  padding: 0;
+  border-radius: 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.presetAgentTag:hover {
+  background: color-mix(in srgb, var(--color-fill-3) 92%, transparent);
+}
+
+.presetAgentTagActiveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgb(var(--success-6));
+  box-shadow: 0 0 8px color-mix(in srgb, rgb(var(--success-6)) 45%, transparent);
+  flex-shrink: 0;
+}
+
+/* Left clickable area: agent logo + avatar + name */
+.presetAgentTagMain {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 12px;
+  min-width: 0;
+}
+
+.presetAgentTagMain:hover {
+  background: var(--color-fill-3);
+  border-radius: 16px 0 0 16px;
+}
+
+.presetAgentTagAgentLogo {
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Inner divider between agent logo and assistant avatar/name */
+.presetAgentTagInnerDivider {
+  width: 1px;
+  height: 14px;
+  background: var(--color-border-3);
+  flex-shrink: 0;
+}
+
+/* Vertical divider between main area and right chevron/close */
+.presetAgentTagDivider {
+  width: 1px;
+  height: 14px;
+  background: var(--color-border-3);
+  flex-shrink: 0;
+}
+
+.presetAgentTagName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+/* Chevron (right side dropdown trigger) */
+.presetAgentTagChevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-left: 2px;
+  margin-right: 6px;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.presetAgentTagChevron:hover {
+  background: var(--color-fill-4);
+}
+
+.presetAgentTagClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin-left: 2px;
+  margin-right: 8px;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.presetAgentTagClose:hover {
+  background: var(--color-fill-4);
+}
+
+/* 移动端助手标签优化 */
+@media (max-width: 768px) {
+  .presetAgentTagName {
+    max-width: 120px;
+  }
+
+  .actionTools {
+    gap: 6px;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+  }
+}
+
+/* iPhone专门优化 */
+@supports (-webkit-touch-callout: none) {
+  .actionRow {
+    flex-wrap: nowrap !important;
+  }
+
+  .actionTools {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+  }
+
+  .actionSubmit {
+    flex-shrink: 0;
+  }
+
+  .presetAgentTagName {
+    max-width: 100px;
+  }
+}

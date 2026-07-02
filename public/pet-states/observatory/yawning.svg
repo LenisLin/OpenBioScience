@@ -1,0 +1,95 @@
+<svg viewBox="-28 -28 156 156" width="500" height="500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs><style>
+    
+    .ink{stroke:#2b2b33;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+    .fine{stroke:#2b2b33;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+    .face{stroke:#2b2b33;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .face-bold{stroke:#2b2b33;stroke-width:3.8;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .face-fill{fill:#2b2b33}
+    .gold-fill{fill:#d4a63c}
+    .gold-line{stroke:#d4a63c;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .warn-fill{fill:#e8602c}
+    .good-fill{fill:#4fb477}
+    .shadow{fill:#2b2b33;opacity:.12;animation:petShadow 3s ease-in-out infinite;transform-origin:50px 86px}
+    .spark{animation:petSpark 2.2s ease-in-out infinite;transform-origin:center}
+    .spark2{animation-delay:.35s}
+    .dot1{animation:petDot 1.35s ease-in-out infinite}
+    .dot2{animation:petDot 1.35s ease-in-out .22s infinite}
+    .dot3{animation:petDot 1.35s ease-in-out .44s infinite}
+    .drift{animation:petDrift 2.4s ease-in-out infinite}
+    .eye-look{animation:petEyeLook 4s ease-in-out infinite}
+    @keyframes petShadow{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.82);opacity:.09}}
+    @keyframes petSpark{0%,100%{transform:scale(.88);opacity:.55}50%{transform:scale(1.12);opacity:1}}
+    @keyframes petDot{0%,100%{transform:translateY(0);opacity:.45}50%{transform:translateY(-2px);opacity:1}}
+    @keyframes petDrift{0%,100%{transform:translate(0,0);opacity:.35}50%{transform:translate(5px,-4px);opacity:1}}
+    @keyframes petEyeLook{0%,100%{transform:translateX(0)}32%{transform:translateX(2.5px)}68%{transform:translateX(-2.5px)}}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+  
+    .obs-shell{fill:#fbfdff;stroke:#2b2b33;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+    .obs-dome{fill:#eaf3f8;stroke:#2b2b33;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+    .obs-base{fill:#ffffff;stroke:#2b2b33;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+    .obs-window{fill:#eef8fb;stroke:#2b2b33;stroke-width:4}
+    .obs-window-good{fill:#effcf5}
+    .obs-window-error{fill:#fff3f0}
+    .obs-window-dim{fill:#edf2f7}
+    .obs-window-sleep{fill:#e7eef5}
+    .obs-core{fill:#ffffff;opacity:.58}
+    .obs-glass{fill:none;stroke:#ffffff;stroke-width:2.4;stroke-linecap:round;opacity:.7}
+    .obs-accent-line{stroke:#5d8fb2;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .obs-accent-fill{fill:#5d8fb2}
+    .obs-float{animation:obsFloat 3.2s ease-in-out infinite;transform-origin:50px 52px}
+    .obs-think{animation:obsThink 2.5s ease-in-out infinite;transform-origin:50px 52px}
+    .obs-work{animation:obsWork 1.25s ease-in-out infinite;transform-origin:50px 52px}
+    .obs-pop{animation:obsPop 1.4s cubic-bezier(.2,1.45,.34,1) infinite;transform-origin:50px 52px}
+    .obs-happy{animation:obsHappy 1.8s ease-in-out infinite;transform-origin:50px 52px}
+    .obs-shake{animation:obsShake .5s ease-in-out infinite;transform-origin:50px 52px}
+    .obs-drag{animation:obsDrag 1.1s ease-in-out infinite;transform-origin:50px 52px}
+    .obs-poke-left{animation:obsPokeLeft 1.35s ease-in-out infinite;transform-origin:50px 52px}
+    .obs-poke-right{animation:obsPokeRight 1.35s ease-in-out infinite;transform-origin:50px 52px}
+    .obs-read{animation:obsRead 3s ease-in-out infinite;transform-origin:50px 52px}
+    .obs-yawn{animation:obsYawn 2.7s ease-in-out infinite;transform-origin:50px 52px}
+    .obs-doze{animation:obsDoze 3.6s ease-in-out infinite;transform-origin:50px 52px}
+    .obs-sleep{animation:obsSleep 4.4s ease-in-out infinite;transform-origin:50px 56px}
+    .obs-wake{animation:obsWake 1.4s ease-out infinite;transform-origin:50px 52px}
+    .obs-juggle{animation:obsJuggle 1.5s ease-in-out infinite;transform-origin:50px 52px}
+    .obs-carry{animation:obsCarry .9s ease-in-out infinite;transform-origin:50px 52px}
+    .obs-antenna{animation:obsAntenna 2.6s ease-in-out infinite;transform-origin:50px 13px}
+    .obs-tick{animation:obsTick 1.8s ease-in-out infinite}
+    @keyframes obsFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.2px)}}
+    @keyframes obsThink{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(3deg) translateY(-1px)}}
+    @keyframes obsWork{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-1px) scale(1.015,.985)}}
+    @keyframes obsPop{0%,100%{transform:scale(1)}45%{transform:scale(1.08)}70%{transform:scale(.985)}}
+    @keyframes obsHappy{0%,100%{transform:rotate(0) translateY(0)}35%{transform:rotate(-3deg) translateY(-2px)}70%{transform:rotate(3deg)}}
+    @keyframes obsShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-1.5px)}75%{transform:translateX(1.5px)}}
+    @keyframes obsDrag{0%,100%{transform:translateY(-3px) rotate(2deg)}50%{transform:translateY(-7px) rotate(-2deg)}}
+    @keyframes obsPokeLeft{0%,100%{transform:rotate(0)}38%{transform:rotate(-8deg) translateX(-2px)}70%{transform:rotate(2deg)}}
+    @keyframes obsPokeRight{0%,100%{transform:rotate(0)}38%{transform:rotate(8deg) translateX(2px)}70%{transform:rotate(-2deg)}}
+    @keyframes obsRead{0%,100%{transform:translateY(0)}50%{transform:translateY(1.4px)}}
+    @keyframes obsYawn{0%,100%{transform:scale(1)}45%{transform:translateY(2px) scale(1.03,.94)}}
+    @keyframes obsDoze{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(2px) rotate(-1.5deg)}}
+    @keyframes obsSleep{0%,100%{transform:translateY(4px) scale(.98,.86)}50%{transform:translateY(2px) scale(1,.9)}}
+    @keyframes obsWake{0%{transform:translateY(5px) scale(.94,.8)}45%{transform:translateY(-2px) scale(1.06)}100%{transform:scale(1)}}
+    @keyframes obsJuggle{0%,100%{transform:translateY(0)}50%{transform:translateY(2px)}}
+    @keyframes obsCarry{0%,100%{transform:translateX(-1px) translateY(2px)}50%{transform:translateX(1.5px) translateY(4px)}}
+    @keyframes obsAntenna{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(4deg)}}
+    @keyframes obsTick{0%,100%{opacity:.4}50%{opacity:1}}
+  </style></defs>
+  <ellipse class="shadow" cx="50" cy="89" rx="20" ry="3.5"/>
+  <circle class="gold-fill dot1" cx="72" cy="22" r="2.2"/><circle class="gold-fill dot2" cx="79" cy="16" r="1.8"/>
+  <g class="idle-track">
+    <g class="obs-yawn">
+      <g transform="">
+        <path class="obs-dome" d="M17 55q5-38 33-38t33 38z"/>
+        <path class="obs-base" d="M20 52h60l-6 24q-3 12-16 13H42q-13-1-16-13z"/>
+        <circle class="obs-accent-fill spark" cx="50" cy="12" r="4.4"/>
+        <circle class="obs-window obs-window-dim" cx="50" cy="52" r="21"/>
+        <circle class="obs-core" cx="50" cy="52" r="16"/>
+        <path class="obs-glass" d="M40 37q6-4 14-3"/>
+        <path class="obs-accent-line obs-tick" d="M71 44l5-2M73 55h6M69 63l4 3"/>
+        <path class="fine" d="M35 86v6M65 86v6"/>
+        <g class="idle-pupil"><path class="face" d="M37 49q5 2 10 0M53 49q5 2 10 0"/></g>
+        <ellipse cx="50" cy="59" rx="4.3" ry="5.5" class="face"/>
+      </g>
+    </g>
+  </g>
+</svg>

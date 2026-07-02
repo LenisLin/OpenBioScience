@@ -1,0 +1,88 @@
+/**
+ * @license
+ * Copyright 2026 DeepOrganiser (deepscientist.cc)
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+.message-file-changes-panel--result {
+  --file-panel-border: color-mix(in srgb, var(--color-border-2, #e5e6eb) 74%, var(--color-text-1, #1d2129) 26%);
+  --file-panel-border-soft: color-mix(in srgb, var(--file-panel-border) 48%, transparent);
+  --file-panel-bg: color-mix(in srgb, var(--color-bg-1, #fff) 96%, var(--color-fill-1, #f7f8fa));
+  --file-panel-header-bg: color-mix(in srgb, var(--color-fill-1, #f7f8fa) 72%, var(--color-bg-1, #fff));
+  --file-panel-hover: color-mix(in srgb, var(--color-fill-2, #f2f3f5) 74%, var(--color-bg-1, #fff));
+  border-color: var(--file-panel-border) !important;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--file-panel-header-bg) 66%, transparent), transparent 74%),
+    var(--file-panel-bg) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-bg-1, #fff) 65%, transparent),
+    0 1px 2px color-mix(in srgb, #000 7%, transparent) !important;
+}
+
+.message-file-changes-panel__header {
+  border-bottom: 1px solid var(--file-panel-border-soft);
+  background: var(--file-panel-header-bg);
+}
+
+.message-file-changes-panel__icon {
+  border: 1px solid var(--file-panel-border-soft);
+  background: color-mix(in srgb, var(--color-bg-1, #fff) 82%, var(--color-fill-2, #f2f3f5)) !important;
+}
+
+.message-file-changes-panel__actions {
+  padding-right: 1px;
+}
+
+.message-file-changes-panel__body {
+  border-top-color: var(--file-panel-border-soft) !important;
+  background: var(--file-panel-bg) !important;
+}
+
+.message-file-changes-panel__row {
+  border-top: 1px solid var(--file-panel-border-soft);
+}
+
+.message-file-changes-panel__row:first-child {
+  border-top: 0;
+}
+
+.message-file-changes-panel__row:hover {
+  background: var(--file-panel-hover) !important;
+}
+
+.message-file-changes-panel__stats {
+  background: color-mix(in srgb, var(--color-bg-1, #fff) 76%, transparent);
+  border: 1px solid color-mix(in srgb, var(--file-panel-border-soft) 78%, transparent);
+}
+
+.message-file-changes-panel__preview-icon {
+  color: var(--color-text-3, #86909c);
+}
+
+html[data-theme='dark'] .message-file-changes-panel--result,
+body[arco-theme='dark'] .message-file-changes-panel--result {
+  --file-panel-border: color-mix(in srgb, var(--color-border-2, #484849) 68%, var(--color-text-1, #f2f3f5) 32%);
+  --file-panel-border-soft: color-mix(in srgb, var(--file-panel-border) 42%, transparent);
+  --file-panel-bg: color-mix(in srgb, var(--color-bg-2, #171717) 92%, #000);
+  --file-panel-header-bg: color-mix(in srgb, var(--color-fill-1, #262626) 72%, var(--color-bg-2, #171717));
+  --file-panel-hover: color-mix(in srgb, var(--color-fill-2, #333) 72%, var(--color-bg-2, #171717));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #fff 5%, transparent),
+    0 1px 2px color-mix(in srgb, #000 22%, transparent) !important;
+}
+
+html[data-theme='dark'] .message-file-changes-panel__stats,
+body[arco-theme='dark'] .message-file-changes-panel__stats {
+  background: color-mix(in srgb, var(--color-bg-2, #171717) 78%, transparent);
+}
+
+@media (max-width: 560px) {
+  .message-file-changes-panel__row {
+    align-items: flex-start;
+  }
+
+  .message-file-changes-panel__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

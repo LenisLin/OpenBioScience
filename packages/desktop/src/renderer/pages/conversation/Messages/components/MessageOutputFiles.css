@@ -1,0 +1,91 @@
+/**
+ * @license
+ * Copyright 2026 DeepOrganiser (deepscientist.cc)
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+.message-output-files {
+  --file-panel-border: color-mix(in srgb, var(--color-border-2, #e5e6eb) 74%, var(--color-text-1, #1d2129) 26%);
+  --file-panel-border-soft: color-mix(in srgb, var(--file-panel-border) 48%, transparent);
+  --file-panel-bg: color-mix(in srgb, var(--color-bg-1, #fff) 96%, var(--color-fill-1, #f7f8fa));
+  --file-panel-header-bg: color-mix(in srgb, var(--color-fill-1, #f7f8fa) 72%, var(--color-bg-1, #fff));
+  --file-panel-hover: color-mix(in srgb, var(--color-fill-2, #f2f3f5) 74%, var(--color-bg-1, #fff));
+  border-color: var(--file-panel-border) !important;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--file-panel-header-bg) 66%, transparent), transparent 74%),
+    var(--file-panel-bg) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-bg-1, #fff) 65%, transparent),
+    0 1px 2px color-mix(in srgb, #000 7%, transparent) !important;
+}
+
+.message-output-files__header {
+  border-bottom-color: var(--file-panel-border-soft) !important;
+  background: var(--file-panel-header-bg);
+}
+
+.message-output-files__row {
+  position: relative;
+  padding-right: 20px !important;
+}
+
+.message-output-files__row:hover {
+  background: var(--file-panel-hover) !important;
+}
+
+.message-output-files__row--divided {
+  border-top-color: var(--file-panel-border-soft) !important;
+}
+
+.message-output-files__icon-box {
+  border: 1px solid var(--file-panel-border-soft);
+  background: color-mix(in srgb, var(--color-bg-1, #fff) 76%, var(--color-fill-1, #f7f8fa)) !important;
+}
+
+.message-output-files__icon-box--file {
+  background: color-mix(in srgb, var(--color-bg-1, #fff) 82%, var(--color-fill-2, #f2f3f5)) !important;
+}
+
+.message-output-files__actions {
+  min-width: max-content;
+  padding-right: 6px;
+}
+
+.message-output-files__button.arco-btn {
+  box-sizing: border-box;
+  border-color: var(--file-panel-border-soft) !important;
+  background: color-mix(in srgb, var(--color-bg-1, #fff) 88%, var(--color-fill-1, #f7f8fa)) !important;
+}
+
+.message-output-files__button.arco-btn:hover {
+  border-color: var(--file-panel-border) !important;
+  background: var(--file-panel-hover) !important;
+}
+
+html[data-theme='dark'] .message-output-files,
+body[arco-theme='dark'] .message-output-files {
+  --file-panel-border: color-mix(in srgb, var(--color-border-2, #484849) 68%, var(--color-text-1, #f2f3f5) 32%);
+  --file-panel-border-soft: color-mix(in srgb, var(--file-panel-border) 42%, transparent);
+  --file-panel-bg: color-mix(in srgb, var(--color-bg-2, #171717) 92%, #000);
+  --file-panel-header-bg: color-mix(in srgb, var(--color-fill-1, #262626) 72%, var(--color-bg-2, #171717));
+  --file-panel-hover: color-mix(in srgb, var(--color-fill-2, #333) 72%, var(--color-bg-2, #171717));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #fff 5%, transparent),
+    0 1px 2px color-mix(in srgb, #000 22%, transparent) !important;
+}
+
+@media (max-width: 560px) {
+  .message-output-files__row {
+    align-items: flex-start;
+    padding-right: 14px !important;
+  }
+
+  .message-output-files__actions {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .message-output-files__button.arco-btn {
+    min-width: 32px;
+  }
+}

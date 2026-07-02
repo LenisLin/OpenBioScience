@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DeepOrganiser 下载中心</title>
+    <link rel="icon" href="deeporganiser-logo.svg?v=20260629-icons" />
+    <link rel="stylesheet" href="styles.css?v=20260629-icons" />
+  </head>
+  <body>
+    <div class="ambient-grid" aria-hidden="true"></div>
+    <main class="page-shell">
+      <nav class="topbar" aria-label="DeepOrganiser">
+        <a class="brand-lockup" href="./">
+          <img class="brand-lockup__mark" src="deeporganiser-logo.svg?v=20260629-icons" alt="" />
+          <span class="brand-lockup__text">
+            <strong>DeepOrganiser</strong>
+            <small>科研智治</small>
+          </span>
+        </a>
+        <div class="nav-links">
+          <a href="#downloads">
+            <img class="nav-icon" src="icons/generated/origin-nav-download.png?v=20260629-icons" alt="" />
+            <span>下载</span>
+          </a>
+          <a href="#workflow">
+            <img class="nav-icon" src="icons/generated/origin-nav-workspace.png?v=20260629-icons" alt="" />
+            <span>工作台</span>
+          </a>
+          <a href="api/status">
+            <img class="nav-icon" src="icons/generated/origin-nav-update.png?v=20260629-icons" alt="" />
+            <span>更新源</span>
+          </a>
+        </div>
+      </nav>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="release-pill">
+            <img class="pill-icon" src="icons/generated/origin-version-status.png?v=20260629-icons" alt="" />
+            <span id="latestVersion">正在读取版本</span>
+          </div>
+          <h1>把项目、任务和协作关系整理成可推进的工作台</h1>
+          <p>
+            DeepOrganiser 面向科研智治与团队项目，把桌面会话、协作任务、文档与流程放在一起。下载桌面端后，应用会持续连接此更新源并提示升级。
+          </p>
+          <div class="hero-actions">
+            <a class="primary-button magnetic" id="primaryDownload" href="#downloads">
+              <img class="button-icon button-icon--light" src="icons/generated/origin-primary-download.png?v=20260629-icons" alt="" />
+              <span>下载最新版本</span>
+            </a>
+            <a class="secondary-button" href="api/status">
+              <img class="button-icon" src="icons/generated/origin-nav-update.png?v=20260629-icons" alt="" />
+              <span>查看更新状态</span>
+            </a>
+          </div>
+          <div class="meta-row">
+            <span>
+              <img class="meta-icon" src="icons/generated/origin-auto-update.png?v=20260629-icons" alt="" />
+              <em id="updatedAt">检查更新源中</em>
+            </span>
+            <span>
+              <img class="meta-icon" src="icons/generated/origin-update-url.png?v=20260629-icons" alt="" />
+              <em>自动更新地址：<strong id="baseUrl">https://deepscientist.cc/DeepOrganiser</strong></em>
+            </span>
+          </div>
+        </div>
+
+        <div class="product-stage product-stage--globe" aria-label="DeepOrganiser 协作网络">
+          <div class="download-globe" id="downloadGlobe">
+            <div class="download-globe__halo download-globe__halo--inner" aria-hidden="true"></div>
+            <div class="download-globe__halo download-globe__halo--outer" aria-hidden="true"></div>
+            <canvas id="downloadGlobeCanvas" class="download-globe__canvas"></canvas>
+          </div>
+          <div class="floating-panel panel-sync">
+            <img src="icons/generated/origin-collab-project.png?v=20260629-icons" alt="" />
+            <div>
+              <strong>协作项目</strong>
+              <small>任务清单、联系人和进展同步展示</small>
+            </div>
+          </div>
+          <div class="floating-panel panel-update">
+            <img src="icons/generated/origin-auto-update.png?v=20260629-icons" alt="" />
+            <div>
+              <strong>自动更新</strong>
+              <small>按平台读取最新安装包</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="download-section" id="downloads">
+        <div class="section-heading">
+          <div>
+            <img class="section-heading__icon" src="icons/generated/origin-nav-download.png?v=20260629-icons" alt="" />
+            <span class="eyebrow">Download</span>
+            <h2>选择你的系统</h2>
+          </div>
+          <p>如果还没有正式发布包，此处会保持等待状态；发布后会优先展示推荐安装包。</p>
+        </div>
+        <div class="download-grid">
+          <article class="download-card" data-platform="macOS">
+            <div class="card-top">
+              <img src="icons/generated/origin-platform-macos.png?v=20260629-icons" alt="" />
+              <span>macOS</span>
+            </div>
+            <p>适合 Apple Silicon 与 Intel Mac，推荐使用 DMG 安装。</p>
+            <div class="asset-list" id="macOSAssets"><span class="empty">等待发布包上传</span></div>
+          </article>
+          <article class="download-card" data-platform="Windows">
+            <div class="card-top">
+              <img src="icons/generated/origin-platform-windows.png?v=20260629-icons" alt="" />
+              <span>Windows</span>
+            </div>
+            <p>支持 x64 与 ARM64，推荐使用安装器完成桌面集成。</p>
+            <div class="asset-list" id="WindowsAssets"><span class="empty">等待发布包上传</span></div>
+          </article>
+          <article class="download-card" data-platform="Linux">
+            <div class="card-top">
+              <img src="icons/generated/origin-platform-linux.png?v=20260629-icons" alt="" />
+              <span>Linux</span>
+            </div>
+            <p>适合工作站和服务器环境，优先展示 DEB/RPM 包。</p>
+            <div class="asset-list" id="LinuxAssets"><span class="empty">等待发布包上传</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="workflow-section" id="workflow">
+        <div class="section-heading">
+          <div>
+            <img class="section-heading__icon" src="icons/generated/origin-nav-workspace.png?v=20260629-icons" alt="" />
+            <span class="eyebrow">Workspace</span>
+            <h2>安装后得到一个干净的项目入口</h2>
+          </div>
+          <p>桌面端负责本地运行、协作绑定、任务整理与版本更新，尽量减少用户在不同工具之间来回切换。</p>
+        </div>
+        <div class="workflow-grid">
+          <article>
+            <img class="workflow-icon" src="icons/generated/origin-workflow-bind.png?v=20260629-icons" alt="" />
+            <h3>绑定协作空间</h3>
+            <p>登录并绑定后，项目任务、清单、评论和联系人会汇总到同一入口。</p>
+          </article>
+          <article>
+            <img class="workflow-icon" src="icons/generated/origin-workflow-organize.png?v=20260629-icons" alt="" />
+            <h3>组织项目推进</h3>
+            <p>按项目清单展开任务与负责人会话，支持后续接入自动化 SOP。</p>
+          </article>
+          <article>
+            <img class="workflow-icon" src="icons/generated/origin-workflow-update.png?v=20260629-icons" alt="" />
+            <h3>保持持续更新</h3>
+            <p>客户端读取此服务器的 metadata，下载匹配系统的最新包并完成安装。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="status-section">
+        <div class="section-heading">
+          <div>
+            <img class="section-heading__icon" src="icons/generated/origin-channel-feed.png?v=20260629-icons" alt="" />
+            <span class="eyebrow">Update Feed</span>
+            <h2>更新通道</h2>
+          </div>
+          <p>每个平台会读取对应 metadata 文件；灰色表示还没有上传该平台的正式发布信息。</p>
+        </div>
+        <div class="channel-list" id="channelList"></div>
+      </section>
+    </main>
+    <script src="app.js?v=20260629-icons"></script>
+  </body>
+</html>

@@ -1,0 +1,97 @@
+<svg viewBox="-28 -28 156 156" width="500" height="500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs><style>
+    
+    .ink{stroke:#2b2b33;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+    .fine{stroke:#2b2b33;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+    .face{stroke:#2b2b33;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .face-bold{stroke:#2b2b33;stroke-width:3.8;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .face-fill{fill:#2b2b33}
+    .gold-fill{fill:#d4a63c}
+    .gold-line{stroke:#d4a63c;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .warn-fill{fill:#e8602c}
+    .good-fill{fill:#4fb477}
+    .shadow{fill:#2b2b33;opacity:.12;animation:petShadow 3s ease-in-out infinite;transform-origin:50px 86px}
+    .spark{animation:petSpark 2.2s ease-in-out infinite;transform-origin:center}
+    .spark2{animation-delay:.35s}
+    .dot1{animation:petDot 1.35s ease-in-out infinite}
+    .dot2{animation:petDot 1.35s ease-in-out .22s infinite}
+    .dot3{animation:petDot 1.35s ease-in-out .44s infinite}
+    .drift{animation:petDrift 2.4s ease-in-out infinite}
+    .eye-look{animation:petEyeLook 4s ease-in-out infinite}
+    @keyframes petShadow{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.82);opacity:.09}}
+    @keyframes petSpark{0%,100%{transform:scale(.88);opacity:.55}50%{transform:scale(1.12);opacity:1}}
+    @keyframes petDot{0%,100%{transform:translateY(0);opacity:.45}50%{transform:translateY(-2px);opacity:1}}
+    @keyframes petDrift{0%,100%{transform:translate(0,0);opacity:.35}50%{transform:translate(5px,-4px);opacity:1}}
+    @keyframes petEyeLook{0%,100%{transform:translateX(0)}32%{transform:translateX(2.5px)}68%{transform:translateX(-2.5px)}}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+  
+    .paper-main{fill:#fffdf8;stroke:#2b2b33;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+    .paper-panel-a{fill:#fff3df}
+    .paper-panel-b{fill:#f3ecdf}
+    .paper-panel-c{fill:#ffffff;opacity:.9}
+    .paper-anchor{fill:#d4a63c;stroke:#2b2b33;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper-warm{fill:#e8602c}
+    .paper-crease{stroke:#9d9485;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:.36}
+    .paper-crease-strong{stroke:#2b2b33;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:.62}
+    .paper-card{fill:#fff8eb;stroke:#2b2b33;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+    .paper-soft-line{stroke:#8d8678;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:.78}
+    .pf-float{animation:pfFloat 3.2s ease-in-out infinite;transform-origin:50px 52px}
+    .pf-think{animation:pfThink 2.4s ease-in-out infinite;transform-origin:50px 52px}
+    .pf-work{animation:pfWork 1.2s ease-in-out infinite;transform-origin:50px 52px}
+    .pf-pop{animation:pfPop 1.35s cubic-bezier(.2,1.45,.34,1) infinite;transform-origin:50px 52px}
+    .pf-happy{animation:pfHappy 1.8s ease-in-out infinite;transform-origin:50px 52px}
+    .pf-shake{animation:pfShake .5s ease-in-out infinite;transform-origin:50px 52px}
+    .pf-drag{animation:pfDrag 1.1s ease-in-out infinite;transform-origin:50px 52px}
+    .pf-poke-left{animation:pfPokeLeft 1.35s ease-in-out infinite;transform-origin:50px 52px}
+    .pf-poke-right{animation:pfPokeRight 1.35s ease-in-out infinite;transform-origin:50px 52px}
+    .pf-read{animation:pfRead 3s ease-in-out infinite;transform-origin:50px 52px}
+    .pf-yawn{animation:pfYawn 2.7s ease-in-out infinite;transform-origin:50px 52px}
+    .pf-doze{animation:pfDoze 3.6s ease-in-out infinite;transform-origin:50px 52px}
+    .pf-sleep{animation:pfSleep 4.4s ease-in-out infinite;transform-origin:50px 56px}
+    .pf-wake{animation:pfWake 1.4s ease-out infinite;transform-origin:50px 52px}
+    .pf-juggle{animation:pfJuggle 1.5s ease-in-out infinite;transform-origin:50px 52px}
+    .pf-carry{animation:pfCarry .9s ease-in-out infinite;transform-origin:50px 52px}
+    .pf-corner{animation:pfCorner 4s ease-in-out infinite;transform-origin:36px 29px}
+    .pf-ribbon{animation:pfRibbon 3s ease-in-out infinite;transform-origin:31px 24px}
+    @keyframes pfFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3.2px)}}
+    @keyframes pfThink{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(5.5deg) translateY(-1.8px)}}
+    @keyframes pfWork{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-2.4px) rotate(-2.1deg)}}
+    @keyframes pfPop{0%,100%{transform:scale(1)}45%{transform:scale(1.115)}70%{transform:scale(.98)}}
+    @keyframes pfHappy{0%,100%{transform:rotate(0) translateY(0)}35%{transform:rotate(-5.5deg) translateY(-3px)}70%{transform:rotate(5deg)}}
+    @keyframes pfShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2.3px)}75%{transform:translateX(2.3px)}}
+    @keyframes pfDrag{0%,100%{transform:translateY(-4px) rotate(3deg)}50%{transform:translateY(-9px) rotate(-4.2deg) scale(.965,1.07)}}
+    @keyframes pfPokeLeft{0%,100%{transform:rotate(0)}38%{transform:rotate(-10.5deg) translateX(-3px)}70%{transform:rotate(3deg)}}
+    @keyframes pfPokeRight{0%,100%{transform:rotate(0)}38%{transform:rotate(10.5deg) translateX(3px)}70%{transform:rotate(-3deg)}}
+    @keyframes pfRead{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(2.2px) rotate(-1.8deg)}}
+    @keyframes pfYawn{0%,100%{transform:scale(1)}45%{transform:translateY(3px) scale(1.055,.91)}}
+    @keyframes pfDoze{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(3px) rotate(-2.8deg)}}
+    @keyframes pfSleep{0%,100%{transform:translateY(5px) scale(1.08,.66)}50%{transform:translateY(2px) scale(1.055,.72)}}
+    @keyframes pfWake{0%{transform:translateY(6px) scale(.93,.68)}45%{transform:translateY(-3px) scale(1.075)}100%{transform:scale(1)}}
+    @keyframes pfJuggle{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+    @keyframes pfCarry{0%,100%{transform:translateX(-1.7px) translateY(2.5px)}50%{transform:translateX(2.4px) translateY(4.8px)}}
+    @keyframes pfCorner{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(-7deg)}96%{transform:rotate(4deg)}}
+    @keyframes pfRibbon{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(4deg)}}
+  </style></defs>
+  <ellipse class="shadow" cx="50" cy="90" rx="23" ry="3.8"/>
+  
+  <g class="idle-track">
+    <g transform="translate(-3.5 -4) scale(1.07)">
+      <g class="pf-yawn">
+      <g transform="">
+        <path class="paper-main" d="M22 46 36 20 50 34 64 20 78 46 70 73 56 88H44L30 73z"/>
+        <path class="paper-panel-a" d="M23 46 36 20 42 42z"/>
+        <path class="paper-panel-b" d="M77 46 64 20 58 42z"/>
+        <path class="paper-panel-c" d="M35 43 50 34 65 43 60 71 50 80 40 71z"/>
+        <path class="paper-panel-b" d="M30 73 35 43 40 72 44 86z"/>
+        <path class="paper-panel-a" d="M70 73 65 43 60 72 56 86z"/>
+        <path class="paper-anchor pf-corner" d="M36 22 40 39 27 43z"/>
+        <path class="paper-anchor" d="M64 22 60 39 73 43z"/>
+        <path class="paper-crease-strong" d="M36 43h28"/>
+        <path class="paper-crease" d="M42 42 50 34 58 42M41 72l9 8 9-8M31 72l9-29M69 72l-9-29"/>
+        <g class="idle-pupil"><path class="face" d="M35 49q5 3 10 0M55 49q5 3 10 0"/></g>
+        <ellipse cx="50" cy="59" rx="4.5" ry="5.5" class="face"/>
+      </g>
+      </g>
+    </g>
+  </g>
+</svg>

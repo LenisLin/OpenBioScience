@@ -1,0 +1,14 @@
+Use case: logo-brand
+        Asset type: 2x2 UI icon sprite sheet for a desktop app
+        Primary request: Create four separate hand-drawn cartoon line icons in one 2x2 grid for task ownership and secondary actions.
+        Style/medium: playful minimal line-art icon set matching the handmade DeepScientist UI icon style shown in the user's references; thick rounded marker strokes; slightly imperfect but polished; simple open interiors; cute, clear, and professional; no realistic rendering.
+        Composition/framing: square 1024x1024 sheet split into four equal quadrants; one centered icon per quadrant; generous padding around each icon; no overlap between quadrants; each silhouette should feel distinct at 16px.
+        Scene/backdrop: perfectly flat pure white background (#ffffff), no shadows, no gradients, no texture, no paper grain, no border lines between quadrants.
+        Palette: dark-mode variant: warm off-white thick outline (#f4f0e6), transparent or very subtle empty interiors, muted gold accents (#c4a33f); no black fill, no charcoal fill, no dark solid body; use gold only as small accent dots, small sparkles, seals, or tiny motion highlights.
+        Icon assignments:
+        - top-left: task owner and followers; draw two profile nodes connected by a short line above a small task card.
+- top-right: complete action; draw a bold circular checkmark with tiny gold celebration marks.
+- bottom-left: reopen action; draw a circular arrow wrapping around a small task card.
+- bottom-right: open original task link; draw a task card with a small arrow leaving its upper corner, no external brand mark.
+        Constraints: no text, no letters, no numbers, no labels, no watermark, no UI screenshot, no brand logos, no QR code that can scan, no gradients, no drop shadows, no transparent background in the generated source, no colored square app-icon background. Keep every icon visually distinct, centered, simple, and recognizable at small UI sizes. For dark-mode sheets, use off-white strokes instead of black strokes and do not fill icon bodies with dark colors.
+        Avoid: thin strokes, photorealism, emoji style, generic stock icons, brand marks, overly complex details, identical card/document shapes across all icons.

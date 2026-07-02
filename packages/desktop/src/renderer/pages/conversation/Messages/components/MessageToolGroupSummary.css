@@ -1,0 +1,137 @@
+.tool-status-icon {
+  display: inline-flex;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.tool-group-summary {
+  margin: 4px 0;
+}
+
+.tool-group-summary__header {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 3px 6px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 13px;
+  font: inherit;
+  color: var(--color-text-2, var(--text-secondary));
+  cursor: pointer;
+  user-select: none;
+  line-height: 18px;
+  transition:
+    color 140ms ease,
+    background-color 140ms ease;
+}
+
+.tool-group-summary__header:hover {
+  color: var(--color-text-1, var(--text-primary));
+  background: color-mix(in srgb, var(--color-text-1, #111827) 7%, transparent);
+}
+
+.tool-group-summary__header:focus-visible,
+.tool-item-detail__label:focus-visible,
+.tool-item-detail__toggle:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-text-1, #111827) 22%, transparent);
+  outline-offset: 2px;
+}
+
+.tool-item-detail__label {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: 0;
+}
+
+.tool-item-detail__label--static {
+  cursor: default;
+}
+
+.tool-item-detail__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.tool-group-summary__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  color: currentColor;
+}
+
+.tool-group-summary__label {
+  white-space: nowrap;
+}
+
+.tool-group-summary__arrow {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--color-text-4, #c9cdd4);
+}
+
+.tool-group-summary__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 9px 12px;
+  margin-top: 6px;
+  margin-left: 20px;
+  background: color-mix(in srgb, var(--color-bg-1, #fff) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border-2, #e5e6eb) 82%, transparent);
+  border-radius: 8px;
+}
+
+[data-theme='dark'] .tool-group-summary__body {
+  background: color-mix(in srgb, var(--color-bg-2, #262626) 62%, transparent);
+}
+
+.tool-detail-panel {
+  border-left: 2px solid var(--color-border-2, #e5e6eb);
+  padding-left: 10px;
+  margin-bottom: 4px;
+}
+
+.tool-detail-section {
+  margin-bottom: 4px;
+}
+
+.tool-detail-label {
+  font-size: 11px;
+  color: var(--color-text-3, #86909c);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.tool-detail-content {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-2, #4e5969);
+  background: var(--color-fill-1, #f7f8fa);
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 200px;
+  overflow-y: auto;
+}

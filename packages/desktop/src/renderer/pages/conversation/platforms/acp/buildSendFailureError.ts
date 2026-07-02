@@ -1,0 +1,89 @@
+/**
+ * @license
+ * Copyright 2025 DeepOrganiser (deepscientist.cc)
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { isBackendHttpError } from '@/common/adapter/httpBridge';
+import { getWorkspacePathFromErrorDetails, normalizeWorkspacePathErrorCode } from '../../utils/conversationCreateError';
+import { buildRawErrorSummary } from './errorDiagnostics';
+import type { AgentStreamErrorInfo } from '@/common/chat/chatLib';
+
+const isConversationBusyError = (error: unknown): boolean => {
+  if (!isBackendHttpError(error)) return false;
+  if (error.status !== 409 || error.code !== 'CONFLICT') return false;
+  return error.backendMessage.toLowerCase().includes('already processing');
+};
+
+const isAgentDisconnectedError = (error: unknown): boolean => {
+  if (!isBackendHttpError(error)) return false;
+  const backendMessage = error.backendMessage.toLowerCase();
+  return (
+    backendMessage.includes('acp protocol is not connected') || backendMessage.includes('acp protocol not connected')
+  );
+};
+
+export const buildSendFailureError = (error: unknown, message: string): AgentStreamErrorInfo => {
+  const workspacePathErrorCode = normalizeWorkspacePathErrorCode(error);
+  if (workspacePathErrorCode) {
+    const workspacePath = getWorkspacePathFromErrorDetails(error);
+    return {
+      message,
+      code: workspacePathErrorCode,
+      ownership: 'app',
+      detail: message,
+      ...(workspacePath ? { workspacePath } : {}),
+      retryable: false,
+      feedback_recommended: false,
+    };
+  }
+
+  if (isAgentDisconnectedError(error)) {
+    return {
+      message,
+      code: 'USER_AGENT_DISCONNECTED',
+      ownership: 'user_agent',
+      detail: message,
+      retryable: true,
+      feedback_recommended: false,
+      resolution: { kind: 'reconnect_agent', target: 'agent_settings' },
+    };
+  }
+
+  if (isBackendHttpError(error) && error.code === 'BAD_GATEWAY') {
+    return {
+      message,
+      code: 'UNKNOWN_UPSTREAM_ERROR',
+      ownership: 'unknown_upstream',
+      detail: message,
+      retryable: true,
+      feedback_recommended: true,
+    };
+  }
+
+  if (isConversationBusyError(error)) {
+    return {
+      message,
+      code: 'APP_CONVERSATION_BUSY',
+      ownership: 'app',
+      detail: message,
+      retryable: false,
+      feedback_recommended: false,
+      resolution: { kind: 'wait_for_current_response' },
+    };
+  }
+
+  // Fallback: this is the "catch-all" bucket where the original error was
+  // previously discarded, leaving telemetry unable to locate the failure.
+  // Preserve a redacted summary of the original error so it reaches Sentry.
+  const rawError = buildRawErrorSummary(error);
+  return {
+    message,
+    code: 'APP_INTERNAL_ERROR',
+    ownership: 'app',
+    detail: message,
+    retryable: true,
+    feedback_recommended: true,
+    ...(rawError ? { rawError } : {}),
+  };
+};
