@@ -52,6 +52,7 @@ It combines **Science Mode** for general research with a stricter **Medical Evid
 | Evidence first | Claims can point back to papers, trials, regulatory documents, datasets, code, or generated results |
 | Run the analysis | Python, R, shell, notebooks, and existing project pipelines stay inside the same workflow |
 | Results you can reopen | Figures, tables, reports, manuscripts, and notebooks keep code, inputs, logs, and review notes attached |
+| Knowledge becomes reusable | A useful conversation, SOP, figure style, review routine, or lab protocol can become a local custom skill |
 | Local-first by default | Files stay close to the laptop, lab machine, workstation, or approved infrastructure |
 
 ---
@@ -80,7 +81,7 @@ A quick look at the OpenScience experience: start from **Research Projects**, mo
 | Step | What you do | What OpenScience keeps |
 |---:|---|---|
 | 1 | Create or reopen a research project | project folder, settings, sources, outputs |
-| 2 | Choose Science, Medical Evidence, Goal, or Knowledge Distillation Mode | the right working rules for the task |
+| 2 | Choose Science, Medical Evidence, Goal, or Knowledge Distillation Mode | the right working rules for the task and the context |
 | 3 | Ask a natural-language research question | task, assumptions, files, clarifying answers |
 | 4 | Search evidence or run code | source labels, scripts, commands, notebooks, logs |
 | 5 | Open the result panel | figure, table, report, manuscript, source trail, review state |
@@ -158,7 +159,50 @@ OpenScience modes are not just different prompt templates. They change the worki
 | **Science Mode** | You need literature review, data analysis, computational experiments, figures, notebooks, or a manuscript draft | A research result with sources, code, inputs, logs, versions, and export options |
 | **Medical Evidence Mode** | You need a disciplined clinical, biomedical, guideline, trial, label, or regulatory evidence answer | A structured evidence report with source labels, strength, conflicts, limits, and conclusion |
 | **Goal Mode** | The task will take multiple rounds, such as paper revision, long experiments, project planning, or continuing analysis | A persistent goal with progress, next steps, blockers, and recoverable context |
-| **Knowledge Distillation Mode** | A good workflow, lab protocol, figure style, review routine, or analysis method should be reused later | A reviewable SOP or skill draft with sources, privacy notes, conflicts, and enable/modify choices |
+| **Knowledge Distillation Mode** | Your messages and conversation history already describe a reusable way of working | A custom skill draft with SOP, references, examples, privacy notes, conflicts, and enable/modify choices |
+
+<table>
+<tr>
+<td width="50%" valign="top">
+<img src="./resources/readme/modes/science-mode-slide.png" alt="OpenScience Science Mode presentation diagram" /><br/>
+<sub><b>Science Mode</b> — search sources, run code, and keep figures, notebooks, reports, logs, and versions together.</sub>
+</td>
+<td width="50%" valign="top">
+<img src="./resources/readme/modes/medical-evidence-mode-slide.png" alt="OpenScience Medical Evidence Mode presentation diagram" /><br/>
+<sub><b>Medical Evidence Mode</b> — compare guidelines, trials, labels, and safety boundaries before writing a clinical evidence answer.</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="./resources/readme/modes/goal-mode-slide.png" alt="OpenScience Goal Mode presentation diagram" /><br/>
+<sub><b>Goal Mode</b> — preserve the objective, progress, blockers, decisions, and next actions across long-running work.</sub>
+</td>
+<td width="50%" valign="top">
+<img src="./resources/readme/modes/knowledge-distillation-mode-slide.png" alt="OpenScience Knowledge Distillation Mode presentation diagram" /><br/>
+<sub><b>Knowledge Distillation Mode</b> — turn a useful conversation, protocol, or team preference into a reviewable local skill.</sub>
+</td>
+</tr>
+</table>
+
+Science Mode is the default research workspace. It is for tasks such as "analyze this dataset", "recreate this figure", "compare these methods", or "turn these results into a manuscript draft". The important point is that the answer should become a reopenable artifact with code, inputs, logs, source labels, versions, and export targets.
+
+Medical Evidence Mode is stricter about source discipline. It should separate guidelines, randomized trials, systematic reviews, drug labels, regulatory documents, and population limits, then show where the evidence agrees, where it conflicts, and where human clinical judgment is still required.
+
+Goal Mode is for work that should survive more than one chat turn. It keeps the objective, progress, blockers, decisions, and next actions visible so a paper revision, experiment campaign, or project follow-up can pause and resume without being reconstructed from scattered messages.
+
+Knowledge Distillation Mode is designed for the moment when a good conversation should become a durable capability. The agent can read the user's instruction, the current conversation history, selected project files, generated artifacts, and follow-up notes, then produce a reviewable skill instead of only a summary. The draft should explain when to use the skill, what steps to follow, what evidence or protocol it came from, what examples matter, what must stay private, and what still needs human confirmation.
+
+Typical uses include:
+
+| What happened in the conversation | What OpenScience can distill |
+|---|---|
+| You explained how your lab cleans a dataset | a reusable data-cleaning SOP with checks and failure cases |
+| You iterated a figure until it matched the lab style | a figure-polish skill with style rules, templates, and export requirements |
+| You handled a reviewer comment well | a reviewer-response skill with evidence rules and tone constraints |
+| You described a wet-lab or computational protocol | a protocol skill with inputs, steps, quality gates, and safety notes |
+| You built a useful literature-review route | a search-and-screening skill with source priorities and exclusion rules |
+
+The generated skill is not enabled silently. OpenScience should show it as a report first, then let the user choose **Enable** or **Needs changes**. That keeps skill creation customized, inspectable, and under the user's control.
 
 ---
 
@@ -269,7 +313,7 @@ The fastest path is the packaged app from [GitHub Releases](https://github.com/R
 | macOS Apple Silicon | `OpenScience-*-arm64.dmg` |
 | macOS Intel | `OpenScience-*-x64.dmg` |
 | Windows | `OpenScience-*-x64.exe` |
-| Linux | `OpenScience-*.AppImage` or `OpenScience-*.deb` |
+| Linux | `OpenScience-*-linux-*.deb` |
 
 After installation, open OpenScience. No app-level login is required: the app opens directly to the home page. Create or reopen a research project, then start with **Science Mode**, **Medical Evidence Mode**, **Goal Mode**, or **Knowledge Distillation Mode**.
 
@@ -295,6 +339,39 @@ DEEPORGANISER_DATA_DIR=/tmp/openscience-webui-clean bun run webui -- --port 2580
 The WebUI startup path automatically syncs the bundled OpenScience skills and built-in MCP catalog. You should not run `bun run skills:science:materialize` during a normal install; that script is for maintainers regenerating the vendored science skill pack.
 
 Before the first real Science or Medical Evidence task, install and sign in to at least one local coding agent, such as Codex CLI (`codex`), Claude Code (`claude`), or OpenCode (`opencode`). OpenScience can start without them, but research execution depends on one of these agent backends or a configured model/provider.
+
+### Build installers from source
+
+OpenScience uses `electron-vite` for the desktop bundles and `electron-builder` for installable packages. Use Node.js 22+, Bun, Git, and the platform build tools for the operating system you are packaging on.
+
+```bash
+git clone https://github.com/ResearAI/OpenScience.git
+cd OpenScience
+bun install --frozen-lockfile
+```
+
+Common build commands:
+
+| Target | Command | Output |
+|---|---|---|
+| macOS Apple Silicon | `bun run build-mac:arm64` | `out/OpenScience-*-mac-arm64.dmg` and `.zip` |
+| macOS Intel | `bun run build-mac:x64` | `out/OpenScience-*-mac-x64.dmg` and `.zip` |
+| macOS both archs | `bun run build-mac` | arm64 + x64 macOS packages |
+| Windows x64 | `bun run build-win:x64` | `out/OpenScience-*-win-x64.exe` and `.zip` |
+| Windows ARM64 | `bun run build-win:arm64` | `out/OpenScience-*-win-arm64.exe` and `.zip` |
+| Linux current arch | `bun run build-deb` | `out/OpenScience-*-linux-*.deb` |
+
+The packaged desktop app must include the matching OpenScience Core runtime. The build script downloads the pinned runtime version from the `deepOrganiserCoreVersion` field in `package.json` and places it under `resources/bundled-deeporganiser-core/<platform>-<arch>/`. For private or rate-limited GitHub downloads, set `GH_TOKEN` or `GITHUB_TOKEN`.
+
+For release-quality packages, build on the native platform or use the GitHub Actions manual build workflow:
+
+| Platform | Recommended build host |
+|---|---|
+| macOS `.dmg` | macOS runner or Mac hardware |
+| Windows `.exe` | Windows runner with Visual Studio 2022 Build Tools |
+| Linux `.deb` | Ubuntu runner or compatible Linux host |
+
+macOS signing/notarization is optional for local testing, but release builds should provide Apple signing credentials. Windows builds require the MSVC toolchain for native dependencies. Linux builds require standard Debian packaging and GTK/Electron dependencies.
 
 ### Ask Claude Code or Codex to install it for you
 
