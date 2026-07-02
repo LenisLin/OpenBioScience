@@ -179,10 +179,6 @@ OpenScience is an app around models, coding agents, local files, evidence workfl
 | Scientific preview | Figures, tables, PDFs, manuscripts today; molecules, proteins, genome tracks, alignments, and structures as Science Mode grows |
 | Compute | Local laptop today; SSH, Slurm, cloud VM, GPU job tracking, and persistent Python/R kernels as the compute layer matures |
 
-<p align="center">
-  <img src="./resources/multi-agent支持openclaw.gif" alt="OpenScience multi-agent desktop workflow" width="100%" />
-</p>
-
 ---
 
 ## Why OpenScience
@@ -309,5 +305,3 @@ For research collaboration, long-term internship, PhD, or research assistant opp
 This project is a modified work based on [AionUi](https://github.com/iOfficeAI/AionUi), originally licensed under Apache-2.0.
 
 Starting from this OpenScience fork/distribution, OpenScience is licensed under [AGPL-3.0-only](./LICENSE), except for third-party components and files that carry their own license notices. Original Apache-2.0 copyright, license, and attribution notices are preserved in [LICENSES/Apache-2.0.txt](./LICENSES/Apache-2.0.txt), [NOTICE](./NOTICE), and [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
-
-Commercial licenses are available for organizations that want to use OpenScience without AGPL obligations. AionUi, iOfficeAI, Anthropic, and upstream contributors do not endorse this fork unless expressly stated.
