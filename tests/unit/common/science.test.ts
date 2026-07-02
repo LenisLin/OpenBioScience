@@ -9,13 +9,16 @@ import {
 import { describe, expect, it } from 'vitest';
 
 describe('Science Mode payload parsing', () => {
-  it('tells agents to publish a structured report instead of only writing markdown', () => {
+  it('keeps the Science Mode prompt aligned with the compact router contract', () => {
     const prompt = buildScienceModePrompt('/tmp/project', 'zh-CN');
 
-    expect(prompt).toContain('science_artifact(action="publish", displayIntent="open")');
-    expect(prompt).toContain('A file can be both an artifact and an evidence node');
-    expect(prompt).toContain('report.sections is the canonical report object');
-    expect(prompt).toContain('supportingEvidenceIds');
+    expect(prompt).toContain('user_input');
+    expect(prompt).toContain('artifact Files view');
+    expect(prompt).toContain('openscience-onboarding');
+    expect(prompt).toContain('openscience-writing');
+    expect(prompt).toContain('openscience-databases');
+    expect(prompt).not.toContain('openscience-user-input');
+    expect(prompt).not.toContain('Project shelf');
   });
 
   it('extracts the latest published Science panel from tool output', () => {

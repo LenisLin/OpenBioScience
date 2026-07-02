@@ -21,6 +21,20 @@ export const SCIENCE_ARTIFACT_SKILL_NAME = 'openscience-science-artifact';
 export const SCIENCE_ARTIFACT_SKILL_PATH = 'resources/skills/science-artifact/SKILL.md';
 export const SCIENCE_WORKFLOW_SKILL_NAME = 'openscience-workflow';
 export const SCIENCE_WORKFLOW_SKILL_PATH = 'resources/skills/workflow/SKILL.md';
+export const SCIENCE_ONBOARDING_SKILL_NAME = 'openscience-onboarding';
+export const SCIENCE_ONBOARDING_SKILL_PATH = 'resources/skills/onboarding/SKILL.md';
+export const SCIENCE_WRITING_SKILL_NAME = 'openscience-writing';
+export const SCIENCE_WRITING_SKILL_PATH = 'resources/skills/writing/SKILL.md';
+export const SCIENCE_DATABASES_SKILL_NAME = 'openscience-databases';
+export const SCIENCE_DATABASES_SKILL_PATH = 'resources/skills/databases/SKILL.md';
+export const SCIENCE_BIOMODELS_SKILL_NAME = 'openscience-biomodels';
+export const SCIENCE_BIOMODELS_SKILL_PATH = 'resources/skills/biomodels/SKILL.md';
+export const SCIENCE_SINGLECELL_SKILL_NAME = 'openscience-singlecell';
+export const SCIENCE_SINGLECELL_SKILL_PATH = 'resources/skills/singlecell/SKILL.md';
+export const SCIENCE_COMPUTE_SKILL_NAME = 'openscience-compute';
+export const SCIENCE_COMPUTE_SKILL_PATH = 'resources/skills/compute/SKILL.md';
+export const SCIENCE_EMPIRICAL_SKILL_NAME = 'openscience-empirical';
+export const SCIENCE_EMPIRICAL_SKILL_PATH = 'resources/skills/empirical/SKILL.md';
 export const SCIENCE_VENDOR_CATALOG_SKILL_NAME = 'openscience-science-vendor-catalog';
 export const SCIENCE_VENDOR_CATALOG_SKILL_PATH = 'resources/skills/science-vendor-catalog/SKILL.md';
 
@@ -33,8 +47,14 @@ export const LEGACY_SCIENCE_DEFAULT_SKILL_IDS = [
 export const DEFAULT_SCIENCE_SKILL_IDS = [
   SCIENCE_CORE_SKILL_NAME,
   SCIENCE_ARTIFACT_SKILL_NAME,
+  SCIENCE_ONBOARDING_SKILL_NAME,
   SCIENCE_WORKFLOW_SKILL_NAME,
-  ...SCIENCE_MATERIALIZED_SKILL_IDS,
+  SCIENCE_WRITING_SKILL_NAME,
+  SCIENCE_DATABASES_SKILL_NAME,
+  SCIENCE_BIOMODELS_SKILL_NAME,
+  SCIENCE_SINGLECELL_SKILL_NAME,
+  SCIENCE_COMPUTE_SKILL_NAME,
+  SCIENCE_EMPIRICAL_SKILL_NAME,
 ] as const;
 
 export function normalizeScienceDefaultSkillIds(skillIds?: readonly string[]): string[] {
@@ -48,6 +68,17 @@ export function normalizeScienceDefaultSkillIds(skillIds?: readonly string[]): s
       LEGACY_SCIENCE_DEFAULT_SKILL_IDS.includes(id as (typeof LEGACY_SCIENCE_DEFAULT_SKILL_IDS)[number])
     );
   if (isLegacyDefault || isLegacyCatalogOnly) {
+    return [...DEFAULT_SCIENCE_SKILL_IDS];
+  }
+  const materializedDefaultSet = new Set<string>([
+    SCIENCE_CORE_SKILL_NAME,
+    SCIENCE_ARTIFACT_SKILL_NAME,
+    SCIENCE_WORKFLOW_SKILL_NAME,
+    ...SCIENCE_MATERIALIZED_SKILL_IDS,
+  ]);
+  const isPreviousMaterializedDefault =
+    skillIds.length === materializedDefaultSet.size && skillIds.every((id) => materializedDefaultSet.has(id));
+  if (isPreviousMaterializedDefault) {
     return [...DEFAULT_SCIENCE_SKILL_IDS];
   }
   return [...skillIds];
@@ -771,72 +802,39 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     'You are running inside OpenScience Science Mode. This is the default research-project mode for natural science, engineering, data analysis, computational experiments, and manuscript-producing work.',
     getPromptLanguageInstruction(preferredLocale),
     '',
-    '## Runtime Boundary',
-    '- Use the normal agent runtime, shell, Python, R, LaTeX, notebook, or existing remote tools to do real work.',
-    '- The MCP tools do not run analyses for you. They record, read, patch, version, publish, and display the artifact graph.',
-    '- If decisive task variables are missing, call openscience-user-input and ask at most 3 concise questions.',
+    '## Runtime Contract',
+    '- Do real work in the normal agent runtime: shell, Python, R, LaTeX, notebooks, project pipelines, or explicitly authorized remote tools.',
+    '- MCP tools are control-plane tools. They record/search/read/patch/version/publish evidence and artifacts; they do not replace real analysis.',
+    '- If decisive task variables are missing, use the OpenScience user-input MCP tool (`user_input`) and ask at most 3 concise questions.',
     projectRoot
       ? `- Authorized research project root: ${projectRoot}`
       : '- No explicit project root was provided; keep paths relative and ask before accessing new roots.',
     '',
-    '## Required Tools',
-    '- Use research_evidence(action="search"|"read") for literature or database retrieval. Do not rely only on model memory when external evidence is needed.',
-    '- Use science_artifact as the single artifact graph control surface. Do not invent separate science_start_run, science_search, science_register_* or science_submit_panel tools.',
-    '- Use science_artifact(action="snapshot") when a run produces or modifies files that must be reproducible, especially before publish/export or after figure/manuscript/notebook iteration.',
-    '- Any file that the user can open from the Science report, Project shelf, or chat output must be declared on an artifact or included in science_artifact(action="snapshot") so the Preview menu can show where it came from.',
-    '- Use science_artifact(action="publish", displayIntent="open") before the final visible answer so the UI opens the structured Science Report and Artifact Ledger.',
-    '- Use the default materialized Science skill pack as first-class skills. Prefer ds-*, kdense-*, and aer-* skill ids over browsing vendor directories. The vendored catalog is only a migration/source index.',
-    '- Use openscience-workflow when the next research-process stage is unclear or when routing among DeepScientist workflow skills. It manages ds-* stage selection separately from the core Science evidence/artifact contract.',
-    '- Auto-Empirical Research Skills are included for social-science and empirical workflows. Start with the aer-auto-empirical-research-skills router when the exact method skill is unclear, then record the selected child skill as skill_use before relying on it.',
-    '- Use artifact.viewer metadata for native scientific viewers only when it improves inspection, editing, annotation, or reproducibility: 3dmol/molstar for structures, igv for indexed genome tracks, ketcher for molecules/reactions, vitessce for prepared single-cell/spatial configs, msa for alignments, and regression_table/causal_dag/map/codebook/qualitative_coding for empirical social-science artifacts.',
-    '- Do not store transient local asset URLs in prompts, reports, or evidence. Record durable project-relative paths, hashes, indexes, config files, conversion commands, logs, and evidence ids; the renderer may create short-lived URLs later.',
+    '## Required Control Surfaces',
+    '- Use `research_evidence(action="search"|"read")` for literature, PaperClip files, and currently supported database retrieval. Do not rely only on model memory when external evidence is needed.',
+    '- Use `science_artifact` as the single artifact graph control surface. Do not invent separate science_start_run, science_search, science_register_* or science_submit_panel tools.',
+    '- Before modifying an existing artifact, page, evidence item, claim, or report, call `science_artifact(action="get")` and update with `baseRevision`.',
+    '- Use `science_artifact(action="version")` for regenerated visible outputs, and `science_artifact(action="snapshot")` after meaningful file-producing steps.',
+    '- Any file the user can open from the Science report, artifact Files view, Preview frame, or chat output must be declared on an artifact or included in `science_artifact(action="snapshot")` with a clear role so the file menu can show where it came from.',
+    '- Use `science_artifact(action="publish")` before the final visible answer so the existing Preview frame can render the Science report, artifact files, provenance, and warnings.',
     '',
     '## Science SOP',
-    '1. Intake: restate the research objective, authorized project root, expected deliverables, relevant skills, and missing assumptions. Ask concise user questions only when the next action would otherwise be unsafe or scientifically ambiguous.',
-    '2. Evidence first: search/read external sources or local inputs with research_evidence, then register evidence nodes before using them to support claims. Treat papers, database records, datasets, code, command logs, figures, tables, report files, environments, and user decisions as first-class evidence. A file can be both an artifact and an evidence node; in that case link the evidence to the artifact with artifactId and cite any upstream supportingEvidenceIds.',
-    '3. Execute real work: run Python, R, shell, LaTeX, notebooks, or existing project pipelines through the normal runtime. Record commands, cwd, logs, inputs, output paths, package/runtime details, and any failures.',
-    '4. Publish artifacts: create or update each user-facing report file, figure, table, dataset, notebook, manuscript, PDF, HTML page, regression table, diagnostic plot, causal DAG, codebook, map, qualitative coding ledger, replication package, or run bundle with science_artifact. Every artifact needs a stable id, version, paths, inputs, code/log/environment links, and evidence ids when known.',
-    '5. Snapshot reproducibility: after a meaningful file-producing step, call science_artifact(action="snapshot") with includePaths for extra files/folders the artifact needs but did not already declare. Include scripts, notebooks, logs, result folders, LaTeX sources, small tables, and configuration needed to defend the result. Do not include secrets; large files may be stored as pointers.',
-    '6. File provenance: before finalizing, verify that each visible output file has a primary/preview/input/source/code/log role, a durable path, and a snapshot record. If a file is used as evidence, create a corresponding evidence node with sourceType="file" or the specific file kind, artifactId when the file is also an artifact, path/hash, and supportingEvidenceIds when another source justifies it. If a file cannot be snapshotted, record a pointer with hash/size/reason instead of leaving it invisible to provenance.',
-    '7. Write claims carefully: every result statement in the report must be backed by evidenceIds and claimType. Use hypothesis for unverified ideas, partial for incomplete support, and blocked when required provenance is missing.',
-    '8. Render the report: use science_artifact(action="publish", displayIntent="open") to expose a structured Science report in the existing Preview frame. Do not make the report only a markdown file: report.sections is the canonical report object, and any Markdown/HTML/PDF/LaTeX report is a linked report/manuscript artifact. The report should use evidence-report styling: narrative sections, inline [E#] citations, Reference Evidence, artifact rows, methods, and provenance warnings.',
-    '9. Iterate safely: before modifying an existing artifact, evidence node, claim, or page, call science_artifact(action="get") and patch/version with baseRevision. Preserve older versions unless the user explicitly asks to close or remove them.',
-    '10. Final response: keep prose short and point the user to the published report/artifacts. Mention important graphWarnings plainly and never hide unresolved provenance gaps.',
+    '1. Intake: restate the objective, authorized project root, expected deliverables, selected router skills, and unsafe or ambiguous assumptions.',
+    '2. Evidence first: register papers, database records, datasets, code, command logs, figures, tables, environments, and user decisions as evidence before using them for claims.',
+    '3. Execute: run real Python/R/shell/LaTeX/notebook/project code, then record commands, cwd, logs, inputs, outputs, packages, failures, and environment.',
+    '4. Artifact: every user-facing figure, table, dataset, notebook, manuscript, PDF, HTML page, scientific viewer object, or run bundle needs stable id, version, file paths, inputs, code/log/environment links, and evidence ids when known.',
+    '5. Snapshot: include scripts, notebooks, logs, result folders, LaTeX sources, small tables, configs, and viewer files needed to inspect or reproduce the result. Secrets are never included; large data may be recorded as pointers with hash/size/reason.',
+    '6. Claims: every report statement that answers the task needs evidenceIds and claimType: computed, parsed, digitized, or hypothesis. Unverified ideas stay `hypothesis`.',
+    '7. Display: extend the normal Preview frame. Do not create a parallel dashboard/report rail. Use evidence-report styling for report sections, inline [E#] citations, Reference Evidence, artifact rows, methods, and provenance warnings.',
+    '8. Final: keep prose short, point to the published report/artifacts, and plainly mention important graphWarnings or missing provenance.',
     '',
-    '## Artifact Discipline',
-    '- Every user-facing output file should become a Science artifact with a stable id, type, version, status, path, inputs, code, execution log, messages, environment, and evidence ids when known. The final report file is not special-cased outside the graph; it is usually a report/manuscript/pdf/html/latex artifact that explains and links the rest of the graph.',
-    '- Reserve ids with science_artifact(action="reserve_id") when you need to reference an artifact before the file exists.',
-    '- Before modifying an existing artifact/page/evidence/claim, call science_artifact(action="get") and pass baseRevision to patch/replace/version. Do not blindly overwrite.',
-    '- Regenerated figures, tables, PDFs, notebooks, and manuscripts should use science_artifact(action="version") rather than overwriting v1.',
-    '- If you create supporting files that are not listed on the artifact, call science_artifact(action="snapshot", payload={includePaths:[...]}) to add them to the project-level artifact git ledger. For folders, set recursive=true unless you intentionally only want a pointer.',
-    '- When snapshotting includePaths, assign roles deliberately: primary, preview, input, source, code, log, output, environment, or reference. The UI uses these roles to explain where each opened file came from.',
-    '- The same research project reuses one OpenScience artifact git ledger under .openscience/artifact-repo; do not create parallel ledgers for the same project.',
-    '- LaTeX, notebooks, and PDFs are artifacts too: record source paths, compiled preview paths, compile commands, logs, and environment.',
-    '- Native scientific objects are artifacts too: structures, genome tracks, molecules, single-cell/spatial workspaces, and alignments need source evidence, durable paths, validation evidence, and optional viewer metadata.',
-    '- For structure viewer metadata, use artifact.viewer={kind:"3dmol"|"molstar"|"rcsb_molstar"|"auto", format:"pdb"|"cif"|"sdf"|..., representation:"cartoon"|"stick"|"surface"|"auto", colorBy:"chain"|"element"|"plddt"|"auto", focus:{chain,residueStart,residueEnd,ligand}, annotations:[{label,evidenceIds,...}]} when it helps the user inspect the result.',
-    '- For genome viewer metadata, use type="genome_track" and artifact.viewer={kind:"igv", genome, reference, locus, tracks:[{name,type,format,path,indexPath,evidenceId,...}]}. BAM/CRAM/VCF.GZ tracks require indexes and reference/QC evidence before claims.',
-    '- For chemical editor metadata, use type="molecule" and artifact.viewer={kind:"ketcher", format, editable, service:"standalone", savePolicy:"new_version_required", exportFormats:[...]}. User edits must create a new artifact version.',
-    '- For Vitessce metadata, use type="dataset" or "run_bundle" and artifact.viewer={kind:"vitessce", configPath, datasets, requiredConversions:[...]}. Prepare compatible data/config and record conversion/validation evidence before rendering.',
-    '- For alignment metadata, use type="alignment" and artifact.viewer={kind:"msa", format, path, focus, colorScheme}. Register parser/format validation and sequence statistics as evidence.',
-    '',
-    '## Evidence and Claim Discipline',
-    '- Each answer-bearing claim must have evidenceIds and a claimType: computed, parsed, digitized, or hypothesis.',
-    '- computed means real execution happened in this project and is linked to input, code, command/log, output, and environment when possible.',
-    '- parsed means read from supplied data, database records, papers, or metadata.',
-    '- digitized means extracted from an image/PDF/figure region and must include region/method details.',
-    '- hypothesis means plausible but not verified; never present it as a completed result.',
-    '',
-    '## Page and Display Discipline',
-    '- You may create or update artifact pages with science_artifact. Pages describe what the existing Preview frame should show: report, preview, inspector, native science viewer, LaTeX editor/PDF split, notebook, log, evidence ledger, or provenance chain.',
-    '- For native viewer outputs, create a preview/science_viewer pane targeting the artifact plus an inspector pane for inputs, code, logs, environment, evidence, and provenance. Focus the page only when the user should inspect the result now.',
-    '- For PDB/mmCIF/PQR/SDF/MOL/MOL2/XYZ outputs, use a preview or structure_viewer pane and focus the corresponding artifact page rather than pasting coordinates into chat.',
-    '- For BAM/CRAM/VCF/BED/BigWig/GFF/GTF outputs, use an igv viewer only after declaring genome/reference, tracks, indexes, and QC evidence.',
-    '- For Ketcher/Vitessce pages, prefer read-only inspection until edits or conversions are registered as new artifact versions or evidence records.',
-    '- For empirical social-science outputs, use regression_table, model_diagnostic, causal_dag, survey_codebook, geospatial_map, qualitative_coding, or replication_package artifact types when they better describe the object than a generic table/figure/dataset. Register estimation code, formula/specification, sample definition, diagnostics, assumptions, and robustness outputs as linked evidence.',
-    '- For regression tables, use artifact.viewer={kind:"regression_table", tablePath, modelPath, codebookPath, diagnostics:[...], evidenceIds:[...]}; for causal DAGs use {kind:"causal_dag", dagPath, assumptions:[...]}; for maps use {kind:"map", mapPath, layers:[...]}; for survey/codebook objects use {kind:"codebook", codebookPath, variableDictionaryPath}; for qualitative coding use {kind:"qualitative_coding", schemaPath, dataPath}.',
-    '- Do not create a separate dashboard or report rail. Science UI should extend the normal file preview surface and reuse the evidence-report visual style for reports, reference evidence, artifact rows, methods, and warnings.',
-    '- Prefer displayIntent="background" for routine updates. Use displayIntent="open" or "focus" for the final report, newly requested artifacts, annotation targets, or any result the user should inspect now.',
-    '- Do not close user-opened pages unless the user explicitly asked; userAuthorizedClose must be true for close-like behavior.',
+    '## Skill Routing',
+    `- Core discipline: ${SCIENCE_CORE_SKILL_NAME}. Artifact protocol: ${SCIENCE_ARTIFACT_SKILL_NAME}.`,
+    `- First project setup: ${SCIENCE_ONBOARDING_SKILL_NAME}; use only when no onboarding profile exists or the user explicitly asks to update it.`,
+    `- Research stage routing: ${SCIENCE_WORKFLOW_SKILL_NAME}; use it to choose ds-* workflow stages without replacing artifact/evidence rules.`,
+    `- Domain routers loaded by default: ${SCIENCE_WRITING_SKILL_NAME}, ${SCIENCE_DATABASES_SKILL_NAME}, ${SCIENCE_BIOMODELS_SKILL_NAME}, ${SCIENCE_SINGLECELL_SKILL_NAME}, ${SCIENCE_COMPUTE_SKILL_NAME}, ${SCIENCE_EMPIRICAL_SKILL_NAME}.`,
+    '- Router skills choose narrow leaf skills such as ds-*, kdense-*, aer-*, and later sciagent-* only when the task needs them. Record selected leaf skills as `skill_use` if they affect a visible result.',
+    '- Vendored catalogs are migration/source indexes, not runtime evidence. Concrete outputs still need evidence, artifact, claim, provenance, and snapshot records.',
     '',
     '## Final Answer',
     '- Keep final prose short. The structured Science panel is the main result.',
@@ -845,9 +843,16 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '## Default Skills',
     `- Use ${SCIENCE_CORE_SKILL_NAME}: ${SCIENCE_CORE_SKILL_PATH}.`,
     `- Use ${SCIENCE_ARTIFACT_SKILL_NAME}: ${SCIENCE_ARTIFACT_SKILL_PATH}.`,
+    `- Use ${SCIENCE_ONBOARDING_SKILL_NAME}: ${SCIENCE_ONBOARDING_SKILL_PATH}.`,
     `- Use ${SCIENCE_WORKFLOW_SKILL_NAME}: ${SCIENCE_WORKFLOW_SKILL_PATH}.`,
+    `- Use ${SCIENCE_WRITING_SKILL_NAME}: ${SCIENCE_WRITING_SKILL_PATH}.`,
+    `- Use ${SCIENCE_DATABASES_SKILL_NAME}: ${SCIENCE_DATABASES_SKILL_PATH}.`,
+    `- Use ${SCIENCE_BIOMODELS_SKILL_NAME}: ${SCIENCE_BIOMODELS_SKILL_PATH}.`,
+    `- Use ${SCIENCE_SINGLECELL_SKILL_NAME}: ${SCIENCE_SINGLECELL_SKILL_PATH}.`,
+    `- Use ${SCIENCE_COMPUTE_SKILL_NAME}: ${SCIENCE_COMPUTE_SKILL_PATH}.`,
+    `- Use ${SCIENCE_EMPIRICAL_SKILL_NAME}: ${SCIENCE_EMPIRICAL_SKILL_PATH}.`,
     `- Default Science skill pack manifest: ${SCIENCE_SKILL_PACK_MANIFEST_PATH}.`,
-    `- Materialized external skills: ${SCIENCE_SKILL_PACK_COUNTS.total} total; ${SCIENCE_SKILL_PACK_COUNTS.deepscientist} DeepScientist, ${SCIENCE_SKILL_PACK_COUNTS.kdense} K-Dense, and ${SCIENCE_SKILL_PACK_COUNTS.autoEmpirical} Auto-Empirical Research Skills.`,
+    `- Materialized external leaf skills remain discoverable through routers: ${SCIENCE_SKILL_PACK_COUNTS.total} total; ${SCIENCE_SKILL_PACK_COUNTS.deepscientist} DeepScientist, ${SCIENCE_SKILL_PACK_COUNTS.kdense} K-Dense, and ${SCIENCE_SKILL_PACK_COUNTS.autoEmpirical} Auto-Empirical Research Skills.`,
     `- Safety policy summary: ${SCIENCE_SKILL_PACK_COUNTS.quarantinedScripts} script-bearing skills are quarantined by default; ${SCIENCE_SKILL_PACK_COUNTS.restrictedDefault} skills require explicit authorization for restricted contexts.`,
     `- Migration-only catalog, when provenance debugging is needed: ${SCIENCE_VENDOR_CATALOG_SKILL_NAME}: ${SCIENCE_VENDOR_CATALOG_SKILL_PATH}.`,
   ].join('\n');

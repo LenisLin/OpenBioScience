@@ -1,13 +1,15 @@
 ---
 name: openscience-science-vendor-catalog
-description: OpenScience local catalog router for vendored DeepScientist v1.6.0 and K-Dense Scientific Agent Skills. Use it to locate domain skills, database lookup guides, package workflows, and writing/visualization skills while keeping OpenScience artifact provenance as the source of truth.
+description: Migration-only source index for vendored science skill packs. Use only when debugging provenance, checking upstream text, or materializing new router/leaf skills; normal Science Mode should use OpenScience router skills instead.
 ---
 
 # OpenScience Science Vendor Catalog
 
-This skill is enabled by default in Science Mode. It does not replace the
-OpenScience artifact protocol. It tells the agent where the vendored science
-skills live and how to use them safely.
+This skill is not part of the normal default Science Mode route. It is a
+migration/source index. Normal work should use the OpenScience router skills
+(`openscience-writing`, `openscience-databases`, `openscience-biomodels`,
+`openscience-singlecell`, `openscience-compute`, and `openscience-empirical`)
+plus `science_artifact`.
 
 ## Sources
 
@@ -20,34 +22,41 @@ Vendored repositories:
   `resources/skills/vendor/deepscientist-1.6.0`
 - K-Dense Scientific Agent Skills:
   `resources/skills/vendor/scientific-agent-skills`
+- Auto-Empirical Research Skills:
+  `resources/skills/vendor/auto-empirical-research-skills`
+
+JimLiu/science-skills is planned as an additional upstream source for
+onboarding, writing, biomodel, single-cell, compute, and bio-tools/database
+routes. Until it is vendored/materialized in this repository, treat its names
+as design references rather than callable local skills.
 
 ## Routing Rule
 
 Use progressive disclosure:
 
 1. Identify the scientific domain or tool need.
-2. Read only the relevant vendored `SKILL.md` and directly referenced
+2. Prefer the OpenScience router skill first.
+3. Read only the relevant vendored `SKILL.md` and directly referenced
    `references/` files.
-3. Treat vendored skills as workflow knowledge, not as evidence.
-4. Run real work through the normal runtime: shell, Python, R, LaTeX, notebook,
+4. Treat vendored skills as workflow knowledge, not as evidence.
+5. Run real work through the normal runtime: shell, Python, R, LaTeX, notebook,
    SSH, or user-approved connectors.
-5. Record selected external skills with
+6. Record selected external skills with
    `science_artifact(action="create", target={kind:"skill_use"})`.
-6. Record files, code, logs, database records, figures, tables, claims, and
+7. Record files, code, logs, database records, figures, tables, claims, and
    provenance through `science_artifact`.
-7. Publish the final Science panel with `science_artifact(action="publish")`.
+8. Publish the final Science panel with `science_artifact(action="publish")`.
 
 ## Priority
 
 - OpenScience `openscience-science` and `openscience-science-artifact` are the
   controlling contract.
-- DeepScientist Science discipline is the preferred route for computed claims,
-  package checks, HPC-through-shell discipline, experiment planning, paper
-  writing, and review-stage research workflows.
-- K-Dense Scientific Agent Skills are the preferred route for domain-specific
-  database lookup, scientific Python package usage, bio/chem/protein/genomics
-  workflows, scientific visualization, writing, citations, slides/posters, and
-  lab/tool integrations.
+- DeepScientist-derived `ds-*` skills are routed through `openscience-workflow`
+  and `openscience-writing`.
+- K-Dense `kdense-*` skills are routed through the database, biomodel,
+  single-cell, compute, and writing routers.
+- Auto-Empirical `aer-*` skills are routed through `openscience-empirical` and,
+  for papers/slides/reviews, `openscience-writing`.
 
 ## Protein / Molecule Routing
 
