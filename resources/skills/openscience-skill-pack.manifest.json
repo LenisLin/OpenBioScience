@@ -1,6 +1,6 @@
 {
   "schema": "openscience.skill-pack.v1",
-  "generatedAt": "2026-07-02T03:06:05.354Z",
+  "generatedAt": "2026-07-02T16:25:29.027Z",
   "generatedBy": "scripts/materialize-science-skills.mjs",
   "defaultLoadSemantics": "All listed skills are first-class built-in Science skills by default; SKILL.md bodies still load through normal skill triggering/progressive disclosure.",
   "sources": [
@@ -36,24 +36,38 @@
       "sourceRoot": "resources/skills/vendor/auto-empirical-research-skills",
       "catalogPath": "catalog/skills.json",
       "selection": "Curated default selection: root router, first-party/full empirical pipelines, causal/econometrics, replication, citation, open-science, social-science, and productivity skills. Large duplicate/general collections remain vendored and discoverable through the router.",
-      "availableSkillFiles": 1153,
+      "availableSkillFiles": 1150,
       "includedSkillFiles": 182
+    },
+    {
+      "packId": "natureSkills",
+      "label": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "repositoryLicense": "Apache-2.0",
+      "sourceRoot": "resources/skills/vendor/nature-skills/skills",
+      "selection": "All top-level nature-* skills are included, including nature-paper-to-patent. Shared fragments from skills/_shared are preserved under resources/skills/_shared for relative references.",
+      "availableSkillFiles": 15,
+      "includedSkillFiles": 15
     }
   ],
   "counts": {
-    "total": 352,
+    "total": 367,
     "byPack": {
       "deepscientist": 21,
       "autoEmpirical": 182,
+      "natureSkills": 15,
       "kdense": 149
     },
     "byPackAvailable": {
       "deepscientist": 21,
       "kdense": 149,
-      "autoEmpirical": 1153
+      "autoEmpirical": 1150,
+      "natureSkills": 15
     },
     "quarantinedScripts": 98,
-    "restrictedDefault": 91,
+    "restrictedDefault": 95,
     "clinicalBoundary": 6
   },
   "skills": [
@@ -151,6 +165,7 @@
       "domainTags": [
         "geospatial-social",
         "literature-writing",
+        "journal-delivery",
         "database",
         "remote-compute"
       ],
@@ -202,7 +217,8 @@
       "license": "Apache-2.0",
       "domainTags": [
         "causal-inference",
-        "literature-writing"
+        "literature-writing",
+        "paper-reading"
       ],
       "risk": "write",
       "executionPolicy": "active_default",
@@ -226,7 +242,8 @@
       "license": "Apache-2.0",
       "domainTags": [
         "geospatial-social",
-        "literature-writing"
+        "literature-writing",
+        "experiment-log"
       ],
       "risk": "write",
       "executionPolicy": "active_default",
@@ -275,7 +292,8 @@
       "license": "Apache-2.0",
       "domainTags": [
         "geospatial-social",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "low",
       "executionPolicy": "active_default",
@@ -301,7 +319,9 @@
         "genomics",
         "survey-qualitative",
         "geospatial-social",
-        "literature-writing"
+        "literature-writing",
+        "paper-reading",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "active_default",
@@ -325,7 +345,8 @@
       "license": "Apache-2.0",
       "domainTags": [
         "geospatial-social",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "active_default",
@@ -350,6 +371,8 @@
       "domainTags": [
         "visualization",
         "literature-writing",
+        "paper-reading",
+        "journal-delivery",
         "remote-compute"
       ],
       "risk": "external_compute",
@@ -357,7 +380,14 @@
       "clinicalBoundary": "none",
       "priority": 80,
       "hasScripts": false,
-      "conflicts": []
+      "conflicts": [
+        {
+          "type": "duplicate_or_overlap",
+          "skillId": "nature-data",
+          "packId": "natureSkills",
+          "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-data"
+        }
+      ]
     },
     {
       "id": "ds-nature-figure",
@@ -377,6 +407,7 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "write",
@@ -384,7 +415,14 @@
       "clinicalBoundary": "none",
       "priority": 80,
       "hasScripts": false,
-      "conflicts": []
+      "conflicts": [
+        {
+          "type": "duplicate_or_overlap",
+          "skillId": "nature-figure",
+          "packId": "natureSkills",
+          "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-figure"
+        }
+      ]
     },
     {
       "id": "ds-nature-paper2ppt",
@@ -407,6 +445,7 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "lab-integration",
         "remote-compute"
       ],
@@ -415,7 +454,14 @@
       "clinicalBoundary": "none",
       "priority": 80,
       "hasScripts": false,
-      "conflicts": []
+      "conflicts": [
+        {
+          "type": "duplicate_or_overlap",
+          "skillId": "nature-paper2ppt",
+          "packId": "natureSkills",
+          "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-paper2ppt"
+        }
+      ]
     },
     {
       "id": "ds-nature-polishing",
@@ -435,7 +481,9 @@
         "structural-biology",
         "causal-inference",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "paper-reading",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "active_default",
@@ -443,7 +491,14 @@
       "priority": 80,
       "hasScripts": false,
       "upstreamSkillVersion": "5.0.0",
-      "conflicts": []
+      "conflicts": [
+        {
+          "type": "duplicate_or_overlap",
+          "skillId": "nature-polishing",
+          "packId": "natureSkills",
+          "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-polishing"
+        }
+      ]
     },
     {
       "id": "ds-optimize",
@@ -460,7 +515,8 @@
       "license": "Apache-2.0",
       "domainTags": [
         "geospatial-social",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "network",
       "executionPolicy": "active_default",
@@ -484,7 +540,8 @@
       "license": "Apache-2.0",
       "domainTags": [
         "causal-inference",
-        "literature-writing"
+        "literature-writing",
+        "paper-reading"
       ],
       "risk": "write",
       "executionPolicy": "active_default",
@@ -510,7 +567,8 @@
         "survey-qualitative",
         "geospatial-social",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "active_default",
@@ -536,6 +594,8 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "paper-reading",
+        "journal-delivery",
         "database"
       ],
       "risk": "write",
@@ -585,6 +645,8 @@
       "domainTags": [
         "visualization",
         "literature-writing",
+        "paper-reading",
+        "journal-delivery",
         "database"
       ],
       "risk": "write",
@@ -613,6 +675,7 @@
         "causal-inference",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "credential",
@@ -642,6 +705,7 @@
         "causal-inference",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "database",
         "remote-compute"
       ],
@@ -674,6 +738,7 @@
         "causal-inference",
         "visualization",
         "literature-writing",
+        "paper-reading",
         "remote-compute"
       ],
       "risk": "external_compute",
@@ -704,6 +769,7 @@
         "causal-inference",
         "visualization",
         "literature-writing",
+        "paper-reading",
         "remote-compute"
       ],
       "risk": "external_compute",
@@ -733,6 +799,7 @@
         "causal-inference",
         "visualization",
         "literature-writing",
+        "paper-reading",
         "remote-compute"
       ],
       "risk": "external_compute",
@@ -740,6 +807,345 @@
       "clinicalBoundary": "none",
       "priority": 76,
       "hasScripts": false,
+      "conflicts": []
+    },
+    {
+      "id": "nature-citation",
+      "name": "nature-citation",
+      "originalName": "nature-citation",
+      "originalDescription": ">-",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-citation",
+      "materializedPath": "resources/skills/nature-citation",
+      "license": "Apache-2.0",
+      "domainTags": [
+        "structural-biology",
+        "visualization",
+        "literature-writing",
+        "paper-reading",
+        "journal-delivery"
+      ],
+      "risk": "write",
+      "executionPolicy": "available_default",
+      "clinicalBoundary": "none",
+      "priority": 74,
+      "hasScripts": true,
+      "upstreamSkillVersion": "2.0.0",
+      "conflicts": []
+    },
+    {
+      "id": "nature-data",
+      "name": "nature-data",
+      "originalName": "nature-data",
+      "originalDescription": ">-",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-data",
+      "materializedPath": "resources/skills/nature-data",
+      "license": "Apache-2.0",
+      "domainTags": [
+        "structural-biology",
+        "visualization",
+        "literature-writing",
+        "paper-reading",
+        "journal-delivery"
+      ],
+      "risk": "low",
+      "executionPolicy": "available_default",
+      "clinicalBoundary": "none",
+      "priority": 74,
+      "hasScripts": false,
+      "upstreamSkillVersion": "2.0.0",
+      "conflicts": [
+        {
+          "type": "duplicate_or_overlap",
+          "skillId": "ds-nature-data",
+          "packId": "deepscientist",
+          "sourcePath": "resources/skills/vendor/deepscientist-1.6.0/src/skills/nature-data"
+        }
+      ]
+    },
+    {
+      "id": "nature-experiment-log",
+      "name": "nature-experiment-log",
+      "originalName": "nature-experiment-log",
+      "originalDescription": "标准化实验日志记录——接收原始材料（图/语音/文字），产出带 YAML frontmatter 的标准日志到 Obsidian vault。需配合飞书 CLI 或手动输入使用。",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-experiment-log",
+      "materializedPath": "resources/skills/nature-experiment-log",
+      "license": "MIT",
+      "domainTags": [
+        "journal-delivery",
+        "experiment-log"
+      ],
+      "risk": "network",
+      "executionPolicy": "available_default",
+      "clinicalBoundary": "none",
+      "priority": 74,
+      "hasScripts": false,
+      "upstreamSkillVersion": "1.0.0",
+      "conflicts": []
+    },
+    {
+      "id": "nature-figure",
+      "name": "nature-figure",
+      "originalName": "nature-figure",
+      "originalDescription": ">-",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-figure",
+      "materializedPath": "resources/skills/nature-figure",
+      "license": "Apache-2.0",
+      "domainTags": [
+        "structural-biology",
+        "causal-inference",
+        "geospatial-social",
+        "visualization",
+        "literature-writing",
+        "paper-reading",
+        "journal-delivery",
+        "database"
+      ],
+      "risk": "write",
+      "executionPolicy": "available_default",
+      "clinicalBoundary": "none",
+      "priority": 74,
+      "hasScripts": true,
+      "upstreamSkillVersion": "2.0.0",
+      "conflicts": [
+        {
+          "type": "duplicate_or_overlap",
+          "skillId": "ds-nature-figure",
+          "packId": "deepscientist",
+          "sourcePath": "resources/skills/vendor/deepscientist-1.6.0/src/skills/nature-figure"
+        }
+      ]
+    },
+    {
+      "id": "nature-paper2ppt",
+      "name": "nature-paper2ppt",
+      "originalName": "nature-paper2ppt",
+      "originalDescription": "Build a complete but efficient Nature-style Chinese PPTX presentation from a scientific paper, preprint, PDF, article text, abstract, figure legends, or reading notes. Use this skill whenever the user asks to make slides/PPT/PPTX for journal club, group meeting, paper sharing, thesis seminar, lab meeting, department report, or academic presentation from a research paper, not only medical papers. It identifies the paper type and argument, selects only the figures needed for the story, writes Chinese slide content and speaker notes, creates the actual .pptx deck, and runs an explicit self-review/corrective revision loop focused on figure quality, text overflow prevention, and non-template visual design before delivery. Also trigger on general academic-presentation requests even without the word \"Nature\", such as turning a paper into slides, building...",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-paper2ppt",
+      "materializedPath": "resources/skills/nature-paper2ppt",
+      "license": "Apache-2.0",
+      "domainTags": [
+        "genomics",
+        "structural-biology",
+        "causal-inference",
+        "geospatial-social",
+        "visualization",
+        "literature-writing",
+        "paper-reading",
+        "journal-delivery",
+        "lab-integration"
+      ],
+      "risk": "low",
+      "executionPolicy": "available_default",
+      "clinicalBoundary": "none",
+      "priority": 74,
+      "hasScripts": false,
+      "upstreamSkillVersion": "2.0.0",
+      "conflicts": [
+        {
+          "type": "duplicate_or_overlap",
+          "skillId": "ds-nature-paper2ppt",
+          "packId": "deepscientist",
+          "sourcePath": "resources/skills/vendor/deepscientist-1.6.0/src/skills/nature-paper2ppt"
+        }
+      ]
+    },
+    {
+      "id": "nature-polishing",
+      "name": "nature-polishing",
+      "originalName": "nature-polishing",
+      "originalDescription": "Polish, restructure, or translate academic prose into Nature-leaning English using writing-strategy principles, curated Nature/Nature Communications article patterns, and phrase-level support from Academic Phrasebank. Use whenever the user asks to polish a manuscript paragraph, abstract, introduction, results, discussion, conclusion, title, methods section, or Chinese academic draft for publication-quality English. Also covers LaTeX layout/typesetting (排版) fixes — loose or sparse pages, stranded section headings, figures that don't fill the page or split across pages, \"Float too large\", multi-panel figure arrangement, and Supplementary Information that looks empty — via references/latex-layout.md. Also trigger on general academic/scientific writing requests even without the word \"Nature\", including academic writing, scientific writing, SCI/paper...",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-polishing",
+      "materializedPath": "resources/skills/nature-polishing",
+      "license": "Apache-2.0",
+      "domainTags": [
+        "causal-inference",
+        "visualization",
+        "literature-writing",
+        "paper-reading",
+        "journal-delivery"
+      ],
+      "risk": "low",
+      "executionPolicy": "available_default",
+      "clinicalBoundary": "none",
+      "priority": 74,
+      "hasScripts": false,
+      "upstreamSkillVersion": "6.1.0",
+      "conflicts": [
+        {
+          "type": "duplicate_or_overlap",
+          "skillId": "ds-nature-polishing",
+          "packId": "deepscientist",
+          "sourcePath": "resources/skills/vendor/deepscientist-1.6.0/src/skills/nature-polishing"
+        }
+      ]
+    },
+    {
+      "id": "nature-proposal-writer",
+      "name": "nature-proposal-writer",
+      "originalName": "nature-proposal-writer",
+      "originalDescription": "|",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-proposal-writer",
+      "materializedPath": "resources/skills/nature-proposal-writer",
+      "license": "MIT",
+      "domainTags": [
+        "literature-writing",
+        "journal-delivery",
+        "proposal"
+      ],
+      "risk": "write",
+      "executionPolicy": "available_default",
+      "clinicalBoundary": "none",
+      "priority": 74,
+      "hasScripts": true,
+      "upstreamSkillVersion": "1.0.0",
+      "conflicts": []
+    },
+    {
+      "id": "nature-reader",
+      "name": "nature-reader",
+      "originalName": "nature-reader",
+      "originalDescription": "Build full-paper Chinese-English side-by-side, figure/table-aware, source-grounded Markdown readers for journal or conference papers from PDF, DOI, arXiv, publisher HTML, or pasted text. Use whenever the user asks to translate or read a paper, make 中英文对照/原文对照/全文翻译解读, extract figures or tables into the right positions, preserve figure/table placement near relevant prose, or keep exact source anchors for every block. This skill must not degrade into a summary-only output unless the user explicitly asks for a summary. Also trigger on general paper-reading and translation requests even without the word \"Nature\", such as reading/translating an academic paper, literature reading, understanding a paper, and Chinese phrasings like 读论文、精读论文、论文翻译、文献翻译、文献阅读、学术阅读、帮我读这篇文章、翻译这篇paper.",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-reader",
+      "materializedPath": "resources/skills/nature-reader",
+      "license": "Apache-2.0",
+      "domainTags": [
+        "structural-biology",
+        "causal-inference",
+        "geospatial-social",
+        "visualization",
+        "literature-writing",
+        "paper-reading",
+        "journal-delivery"
+      ],
+      "risk": "low",
+      "executionPolicy": "available_default",
+      "clinicalBoundary": "none",
+      "priority": 74,
+      "hasScripts": false,
+      "upstreamSkillVersion": "2.0.0",
+      "conflicts": []
+    },
+    {
+      "id": "nature-response",
+      "name": "nature-response",
+      "originalName": "nature-response",
+      "originalDescription": ">-",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-response",
+      "materializedPath": "resources/skills/nature-response",
+      "license": "Apache-2.0",
+      "domainTags": [
+        "structural-biology",
+        "geospatial-social",
+        "visualization",
+        "literature-writing",
+        "paper-reading",
+        "journal-delivery"
+      ],
+      "risk": "low",
+      "executionPolicy": "available_default",
+      "clinicalBoundary": "none",
+      "priority": 74,
+      "hasScripts": false,
+      "upstreamSkillVersion": "1.0.0",
+      "conflicts": []
+    },
+    {
+      "id": "nature-reviewer",
+      "name": "nature-reviewer",
+      "originalName": "nature-reviewer",
+      "originalDescription": ">-",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-reviewer",
+      "materializedPath": "resources/skills/nature-reviewer",
+      "license": "Apache-2.0",
+      "domainTags": [
+        "structural-biology",
+        "visualization",
+        "literature-writing",
+        "journal-delivery"
+      ],
+      "risk": "low",
+      "executionPolicy": "available_default",
+      "clinicalBoundary": "none",
+      "priority": 74,
+      "hasScripts": false,
+      "upstreamSkillVersion": "0.1.0",
+      "conflicts": []
+    },
+    {
+      "id": "nature-writing",
+      "name": "nature-writing",
+      "originalName": "nature-writing",
+      "originalDescription": "Draft, restructure, or plan Nature-style manuscript sections from author-provided claims, results, figures, notes, or Chinese drafts. Use when the user wants to write or rebuild an abstract, introduction, related-work, method, experiments, discussion, conclusion, title, or full manuscript argument rather than only polish finished prose. Also trigger on general academic-writing requests even without the word \"Nature\", such as writing a paper from scratch, drafting a manuscript/section, structuring a paper, and Chinese phrasings like 学术写作、科研写作、论文写作、写论文、写paper、SCI写作、帮我写论文、搭论文框架、起草论文、写引言/摘要/讨论.",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-writing",
+      "materializedPath": "resources/skills/nature-writing",
+      "license": "Apache-2.0",
+      "domainTags": [
+        "structural-biology",
+        "causal-inference",
+        "literature-writing",
+        "journal-delivery"
+      ],
+      "risk": "write",
+      "executionPolicy": "available_default",
+      "clinicalBoundary": "none",
+      "priority": 74,
+      "hasScripts": false,
+      "upstreamSkillVersion": "1.0.0",
       "conflicts": []
     },
     {
@@ -781,6 +1187,7 @@
       "license": "CC-BY-SA-4.0",
       "domainTags": [
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "credential",
@@ -813,6 +1220,7 @@
       "license": "CC-BY-SA-4.0",
       "domainTags": [
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "credential",
@@ -1082,6 +1490,8 @@
         "social-science",
         "survey-qualitative",
         "literature-writing",
+        "journal-delivery",
+        "patent",
         "database"
       ],
       "risk": "network",
@@ -1135,6 +1545,8 @@
         "survey-qualitative",
         "visualization",
         "literature-writing",
+        "journal-delivery",
+        "proposal",
         "database",
         "lab-integration"
       ],
@@ -1249,6 +1661,7 @@
         "genomics",
         "structural-biology",
         "literature-writing",
+        "journal-delivery",
         "database",
         "lab-integration",
         "remote-compute"
@@ -1365,6 +1778,7 @@
       "domainTags": [
         "visualization",
         "literature-writing",
+        "proposal",
         "database",
         "remote-compute"
       ],
@@ -1393,6 +1807,7 @@
         "genomics",
         "causal-inference",
         "literature-writing",
+        "experiment-log",
         "database",
         "lab-integration",
         "remote-compute"
@@ -1449,6 +1864,7 @@
         "scientific-computing",
         "visualization",
         "literature-writing",
+        "paper-reading",
         "database",
         "lab-integration",
         "remote-compute"
@@ -1600,6 +2016,7 @@
         "survey-qualitative",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "database",
         "lab-integration"
       ],
@@ -1686,6 +2103,7 @@
         "structural-biology",
         "cheminformatics",
         "social-science",
+        "patent",
         "database",
         "lab-integration"
       ],
@@ -1718,6 +2136,7 @@
         "causal-inference",
         "visualization",
         "literature-writing",
+        "paper-reading",
         "database",
         "remote-compute"
       ],
@@ -1748,6 +2167,7 @@
         "scientific-computing",
         "geospatial-social",
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "write",
@@ -1862,6 +2282,7 @@
         "scientific-computing",
         "visualization",
         "literature-writing",
+        "paper-reading",
         "database",
         "remote-compute"
       ],
@@ -1887,6 +2308,7 @@
       "license": "MIT",
       "domainTags": [
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "credential",
@@ -1942,6 +2364,7 @@
       "domainTags": [
         "scientific-computing",
         "visualization",
+        "journal-delivery",
         "database",
         "remote-compute"
       ],
@@ -2051,6 +2474,7 @@
         "genomics",
         "structural-biology",
         "visualization",
+        "paper-reading",
         "database"
       ],
       "risk": "write",
@@ -2079,6 +2503,7 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "write",
@@ -2250,6 +2675,7 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "write",
@@ -2276,6 +2702,7 @@
       "domainTags": [
         "structural-biology",
         "literature-writing",
+        "experiment-log",
         "database",
         "lab-integration"
       ],
@@ -2396,6 +2823,7 @@
         "survey-qualitative",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "write",
@@ -2454,6 +2882,7 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "patent",
         "database",
         "remote-compute"
       ],
@@ -2551,6 +2980,7 @@
         "cheminformatics",
         "causal-inference",
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "write",
@@ -2658,6 +3088,7 @@
       "license": "MIT license",
       "domainTags": [
         "literature-writing",
+        "paper-reading",
         "database",
         "remote-compute"
       ],
@@ -2762,6 +3193,7 @@
         "structural-biology",
         "scientific-computing",
         "literature-writing",
+        "paper-reading",
         "database",
         "lab-integration"
       ],
@@ -2793,6 +3225,7 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "paper-reading",
         "database",
         "remote-compute"
       ],
@@ -2822,6 +3255,7 @@
         "social-science",
         "visualization",
         "literature-writing",
+        "paper-reading",
         "database"
       ],
       "risk": "network",
@@ -2846,6 +3280,7 @@
       "license": "MIT",
       "domainTags": [
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "write",
@@ -3124,6 +3559,8 @@
         "social-science",
         "visualization",
         "literature-writing",
+        "paper-reading",
+        "journal-delivery",
         "database",
         "lab-integration"
       ],
@@ -3294,6 +3731,8 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "paper-reading",
+        "journal-delivery",
         "database",
         "remote-compute"
       ],
@@ -3376,6 +3815,9 @@
         "social-science",
         "visualization",
         "literature-writing",
+        "paper-reading",
+        "journal-delivery",
+        "proposal",
         "database"
       ],
       "risk": "write",
@@ -3404,6 +3846,7 @@
         "structural-biology",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "write",
@@ -3432,6 +3875,7 @@
         "cheminformatics",
         "scientific-computing",
         "causal-inference",
+        "journal-delivery",
         "database",
         "remote-compute"
       ],
@@ -3520,6 +3964,7 @@
         "survey-qualitative",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "database",
         "remote-compute"
       ],
@@ -3577,6 +4022,7 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "write",
@@ -3605,6 +4051,8 @@
         "survey-qualitative",
         "visualization",
         "literature-writing",
+        "paper-reading",
+        "journal-delivery",
         "database",
         "lab-integration"
       ],
@@ -3662,6 +4110,7 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "paper-reading",
         "database"
       ],
       "risk": "write",
@@ -3773,6 +4222,8 @@
         "causal-inference",
         "visualization",
         "literature-writing",
+        "paper-reading",
+        "journal-delivery",
         "database",
         "remote-compute"
       ],
@@ -3941,6 +4392,7 @@
       "license": "Apache-2.0 license",
       "domainTags": [
         "causal-inference",
+        "paper-reading",
         "database"
       ],
       "risk": "credential",
@@ -4134,6 +4586,7 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "remote-compute"
       ],
       "risk": "external_compute",
@@ -4162,6 +4615,7 @@
         "causal-inference",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "remote-compute"
       ],
       "risk": "external_compute",
@@ -4189,7 +4643,8 @@
         "econometrics",
         "causal-inference",
         "geospatial-social",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -4216,7 +4671,8 @@
         "social-science",
         "causal-inference",
         "geospatial-social",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "network",
       "executionPolicy": "available_default",
@@ -4244,6 +4700,7 @@
         "causal-inference",
         "geospatial-social",
         "literature-writing",
+        "journal-delivery",
         "remote-compute"
       ],
       "risk": "external_compute",
@@ -4270,7 +4727,8 @@
         "structural-biology",
         "causal-inference",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -4299,7 +4757,8 @@
         "causal-inference",
         "survey-qualitative",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -4327,6 +4786,8 @@
         "causal-inference",
         "geospatial-social",
         "literature-writing",
+        "paper-reading",
+        "journal-delivery",
         "remote-compute"
       ],
       "risk": "external_compute",
@@ -4356,6 +4817,8 @@
         "causal-inference",
         "visualization",
         "literature-writing",
+        "paper-reading",
+        "journal-delivery",
         "remote-compute"
       ],
       "risk": "external_compute",
@@ -4383,7 +4846,8 @@
         "econometrics",
         "causal-inference",
         "geospatial-social",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -4413,6 +4877,7 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "database",
         "remote-compute"
       ],
@@ -4442,7 +4907,8 @@
         "survey-qualitative",
         "geospatial-social",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "paper-reading"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -4525,6 +4991,7 @@
         "causal-inference",
         "survey-qualitative",
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "write",
@@ -4554,7 +5021,8 @@
         "econometrics",
         "causal-inference",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "proposal"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -4580,7 +5048,8 @@
         "structural-biology",
         "econometrics",
         "causal-inference",
-        "literature-writing"
+        "literature-writing",
+        "paper-reading"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -4744,6 +5213,7 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "database"
       ],
       "risk": "write",
@@ -4797,7 +5267,8 @@
       "license": "CC-BY-SA-4.0",
       "domainTags": [
         "causal-inference",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -4908,7 +5379,8 @@
         "econometrics",
         "causal-inference",
         "geospatial-social",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -4962,7 +5434,10 @@
         "econometrics",
         "causal-inference",
         "survey-qualitative",
-        "literature-writing"
+        "literature-writing",
+        "paper-reading",
+        "journal-delivery",
+        "proposal"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -5128,6 +5603,8 @@
         "causal-inference",
         "visualization",
         "literature-writing",
+        "patent",
+        "proposal",
         "database"
       ],
       "risk": "low",
@@ -5238,7 +5715,8 @@
         "structural-biology",
         "causal-inference",
         "survey-qualitative",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -5550,7 +6028,8 @@
       "domainTags": [
         "structural-biology",
         "causal-inference",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -5577,7 +6056,8 @@
         "structural-biology",
         "causal-inference",
         "geospatial-social",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -5662,7 +6142,8 @@
         "econometrics",
         "causal-inference",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "proposal"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -5691,7 +6172,9 @@
         "causal-inference",
         "geospatial-social",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery",
+        "proposal"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -5719,7 +6202,8 @@
         "social-science",
         "causal-inference",
         "survey-qualitative",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "quarantined_script",
@@ -5748,7 +6232,8 @@
         "survey-qualitative",
         "geospatial-social",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "paper-reading"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -5913,7 +6398,8 @@
         "econometrics",
         "causal-inference",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -5966,7 +6452,8 @@
       "materializedPath": "resources/skills/aer-research-ideation",
       "license": "CC-BY-SA-4.0",
       "domainTags": [
-        "causal-inference"
+        "causal-inference",
+        "journal-delivery"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -5999,7 +6486,8 @@
       "domainTags": [
         "social-science",
         "causal-inference",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "network",
       "executionPolicy": "available_default",
@@ -6141,7 +6629,8 @@
         "social-science",
         "econometrics",
         "causal-inference",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -6571,7 +7060,8 @@
         "social-science",
         "causal-inference",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -6741,7 +7231,9 @@
         "causal-inference",
         "survey-qualitative",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "paper-reading",
+        "journal-delivery"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -6837,6 +7329,7 @@
       "domainTags": [
         "social-science",
         "econometrics",
+        "paper-reading",
         "database"
       ],
       "risk": "credential",
@@ -6945,7 +7438,8 @@
         "econometrics",
         "geospatial-social",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "patent"
       ],
       "risk": "write",
       "executionPolicy": "quarantined_script",
@@ -7336,7 +7830,8 @@
       "materializedPath": "resources/skills/aer-stata-referee-response",
       "license": "CC-BY-SA-4.0",
       "domainTags": [
-        "econometrics"
+        "econometrics",
+        "paper-reading"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -7490,6 +7985,66 @@
       "priority": 62,
       "hasScripts": false,
       "sourceAllowedTools": "[\"Read\", \"Grep\", \"Glob\", \"Write\", \"Edit\", \"Task\"]",
+      "conflicts": []
+    },
+    {
+      "id": "nature-academic-search",
+      "name": "nature-academic-search",
+      "originalName": "nature-academic-search",
+      "originalDescription": ">-",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-academic-search",
+      "materializedPath": "resources/skills/nature-academic-search",
+      "license": "Apache-2.0",
+      "domainTags": [
+        "structural-biology",
+        "causal-inference",
+        "geospatial-social",
+        "visualization",
+        "literature-writing",
+        "paper-reading",
+        "journal-delivery",
+        "database"
+      ],
+      "risk": "write",
+      "executionPolicy": "restricted_default",
+      "clinicalBoundary": "none",
+      "priority": 58,
+      "hasScripts": true,
+      "upstreamSkillVersion": "2.0.0",
+      "conflicts": []
+    },
+    {
+      "id": "nature-literature-pipeline",
+      "name": "nature-literature-pipeline",
+      "originalName": "nature-literature-pipeline",
+      "originalDescription": "|",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-literature-pipeline",
+      "materializedPath": "resources/skills/nature-literature-pipeline",
+      "license": "MIT",
+      "domainTags": [
+        "survey-qualitative",
+        "literature-writing",
+        "journal-delivery",
+        "database",
+        "lab-integration",
+        "remote-compute"
+      ],
+      "risk": "external_compute",
+      "executionPolicy": "restricted_default",
+      "clinicalBoundary": "none",
+      "priority": 58,
+      "hasScripts": false,
+      "upstreamSkillVersion": "1.0.0",
       "conflicts": []
     },
     {
@@ -7688,7 +8243,8 @@
         "genomics",
         "social-science",
         "geospatial-social",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "network",
       "executionPolicy": "available_default",
@@ -7715,7 +8271,8 @@
         "genomics",
         "structural-biology",
         "scientific-computing",
-        "visualization"
+        "visualization",
+        "paper-reading"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -7792,7 +8349,8 @@
       "domainTags": [
         "social-science",
         "geospatial-social",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -7818,7 +8376,8 @@
         "scientific-computing",
         "geospatial-social",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -7842,7 +8401,8 @@
       "license": "CC-BY-SA-4.0",
       "domainTags": [
         "structural-biology",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -7867,7 +8427,8 @@
       "domainTags": [
         "structural-biology",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -8095,7 +8656,8 @@
       "materializedPath": "resources/skills/aer-fix-chinese",
       "license": "CC-BY-SA-4.0",
       "domainTags": [
-        "literature-writing"
+        "literature-writing",
+        "paper-reading"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -8125,7 +8687,8 @@
       "materializedPath": "resources/skills/aer-fix-chinese-2",
       "license": "CC-BY-SA-4.0",
       "domainTags": [
-        "literature-writing"
+        "literature-writing",
+        "paper-reading"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -8319,7 +8882,9 @@
         "structural-biology",
         "social-science",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "paper-reading",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "available_default",
@@ -8370,7 +8935,8 @@
       "license": "CC-BY-SA-4.0",
       "domainTags": [
         "structural-biology",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "low",
       "executionPolicy": "available_default",
@@ -8460,7 +9026,8 @@
       "license": "CC-BY-SA-4.0",
       "domainTags": [
         "social-science",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "network",
       "executionPolicy": "available_default",
@@ -8623,6 +9190,7 @@
       "license": "CC-BY-SA-4.0",
       "domainTags": [
         "geospatial-social",
+        "journal-delivery",
         "lab-integration"
       ],
       "risk": "credential",
@@ -8655,6 +9223,7 @@
       "license": "CC-BY-SA-4.0",
       "domainTags": [
         "geospatial-social",
+        "journal-delivery",
         "lab-integration"
       ],
       "risk": "credential",
@@ -8928,7 +9497,8 @@
       "license": "MIT license",
       "domainTags": [
         "social-science",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "quarantined_script",
@@ -8982,7 +9552,8 @@
       "license": "https://creativecommons.org/licenses/by/4.0/",
       "domainTags": [
         "structural-biology",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "quarantined_script",
@@ -9040,6 +9611,7 @@
         "cheminformatics",
         "visualization",
         "literature-writing",
+        "journal-delivery",
         "lab-integration",
         "clinical"
       ],
@@ -9253,6 +9825,7 @@
       "license": "MIT",
       "domainTags": [
         "causal-inference",
+        "journal-delivery",
         "remote-compute"
       ],
       "risk": "external_compute",
@@ -9276,7 +9849,7 @@
       "materializedPath": "resources/skills/kdense-pdf",
       "license": "Proprietary. LICENSE.txt has complete terms",
       "domainTags": [
-        "general-science"
+        "paper-reading"
       ],
       "risk": "write",
       "executionPolicy": "quarantined_script",
@@ -9303,7 +9876,8 @@
         "causal-inference",
         "survey-qualitative",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "quarantined_script",
@@ -9513,7 +10087,9 @@
         "social-science",
         "survey-qualitative",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery",
+        "proposal"
       ],
       "risk": "write",
       "executionPolicy": "quarantined_script",
@@ -9567,7 +10143,8 @@
         "genomics",
         "scientific-computing",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery"
       ],
       "risk": "write",
       "executionPolicy": "quarantined_script",
@@ -9645,7 +10222,9 @@
         "structural-biology",
         "social-science",
         "visualization",
-        "literature-writing"
+        "literature-writing",
+        "journal-delivery",
+        "proposal"
       ],
       "risk": "write",
       "executionPolicy": "quarantined_script",
@@ -9653,6 +10232,60 @@
       "priority": 45,
       "hasScripts": true,
       "sourceAllowedTools": "Read Write Edit Bash",
+      "conflicts": []
+    },
+    {
+      "id": "nature-paper-to-patent",
+      "name": "nature-paper-to-patent",
+      "originalName": "nature-paper-to-patent",
+      "originalDescription": "Convert scientific papers, theses, technical reports, source code, figures, or research manuscripts into evidence-grounded Chinese invention patent drafts. Use when an AI agent must extract patentable technical contributions, map every claimed feature to source evidence, preserve core formulas as editable Office Math, generate claim-aligned flowcharts and methodology figures, compare a paper with an existing patent, audit support and consistency, or deliver separate Chinese DOCX files for claims, specification, abstract, and abstract figure.",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-paper-to-patent",
+      "materializedPath": "resources/skills/nature-paper-to-patent",
+      "license": "Apache-2.0",
+      "domainTags": [
+        "causal-inference",
+        "geospatial-social",
+        "visualization",
+        "literature-writing",
+        "journal-delivery",
+        "patent"
+      ],
+      "risk": "write",
+      "executionPolicy": "restricted_default",
+      "clinicalBoundary": "none",
+      "priority": 34,
+      "hasScripts": true,
+      "conflicts": []
+    },
+    {
+      "id": "nature-downloader",
+      "name": "nature-downloader",
+      "originalName": "nature-downloader",
+      "originalDescription": "Use this skill whenever the user wants to configure school/library access, reuse a logged-in Chrome institutional session, search library databases, download legitimate open-access or institution-authorized academic full text/PDFs, handle missing library permission, organize papers, or read PDFs and supporting information.",
+      "packId": "natureSkills",
+      "sourceLabel": "Yuan1z Nature Skills",
+      "sourceUrl": "https://github.com/Yuan1z0825/nature-skills",
+      "sourceVersion": "repository snapshot",
+      "sourceRef": "c91df241a7a963ea151687ac669c5534404f53e5",
+      "sourcePath": "resources/skills/vendor/nature-skills/skills/nature-downloader",
+      "materializedPath": "resources/skills/nature-downloader",
+      "license": "Apache-2.0",
+      "domainTags": [
+        "literature-writing",
+        "journal-delivery",
+        "database",
+        "lab-integration"
+      ],
+      "risk": "credential",
+      "executionPolicy": "restricted_default",
+      "clinicalBoundary": "none",
+      "priority": 30,
+      "hasScripts": true,
       "conflicts": []
     },
     {
@@ -9735,6 +10368,7 @@
       "domainTags": [
         "social-science",
         "literature-writing",
+        "proposal",
         "remote-compute"
       ],
       "risk": "external_compute",
@@ -9765,6 +10399,7 @@
         "geospatial-social",
         "visualization",
         "literature-writing",
+        "proposal",
         "remote-compute"
       ],
       "risk": "external_compute",

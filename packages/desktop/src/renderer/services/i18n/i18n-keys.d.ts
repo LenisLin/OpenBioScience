@@ -2559,6 +2559,7 @@ export type I18nKey =
   | 'settings.science.vendorAutoEmpiricalDesc'
   | 'settings.science.vendorDeepScientistDesc'
   | 'settings.science.vendorKDenseDesc'
+  | 'settings.science.vendorNatureSkillsDesc'
   | 'settings.science.vendorSkillsTitle'
   | 'settings.science.workflowArtifact'
   | 'settings.science.workflowArtifactDetail'

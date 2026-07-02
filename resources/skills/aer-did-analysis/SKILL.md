@@ -10,7 +10,7 @@ description: "| OpenScience: record concrete outputs through science_artifact pr
 This is a first-class OpenScience materialization of the upstream Auto-Empirical Research Skills skill `did-analysis`. Use it as domain workflow knowledge inside Science Mode.
 
 - Treat `openscience-science` and `openscience-science-artifact` as the controlling contract for evidence, artifacts, claims, pages, and final reports.
-- Record use of this skill with `science_artifact` as a `skill_use` object before relying on its workflow in a user-facing result.
+- Record use of this skill with `science_artifact` as a `skill_use` object before relying on its workflow in a user-facing result. Use `source: "auto-empirical"`.
 - Register concrete outputs as `evidence`, `artifact`, `claim`, and `provenance` records. A skill instruction is never itself evidence.
 - Use `research_evidence` for literature/database retrieval when it can provide traceable records.
 - Verify packages, services, credentials, files, and user authorization before running commands suggested by the upstream skill.

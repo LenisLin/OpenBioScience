@@ -493,7 +493,7 @@ export interface ScienceSkillUse {
   runId: string;
   skillId: string;
   skillName: string;
-  source: 'deepscientist' | 'k-dense' | 'auto-empirical' | 'sciagent' | 'local' | 'custom';
+  source: 'deepscientist' | 'k-dense' | 'auto-empirical' | 'nature-skills' | 'sciagent' | 'local' | 'custom';
   sourceUrl?: string;
   version?: string;
   purpose:
@@ -508,6 +508,12 @@ export interface ScienceSkillUse {
     | 'causal_inference'
     | 'replication'
     | 'citation_audit'
+    | 'paper_reading'
+    | 'data_availability'
+    | 'proposal'
+    | 'patent_drafting'
+    | 'presentation'
+    | 'experiment_log'
     | 'codebook'
     | 'qualitative_analysis';
   status: 'selected' | 'used' | 'blocked' | 'unavailable';
@@ -820,7 +826,7 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '- Before modifying an existing artifact, page, evidence item, claim, or report, call `science_artifact(action="get")` and update with `baseRevision`.',
     '- Use `science_artifact(action="version")` for regenerated visible outputs, and `science_artifact(action="snapshot")` after meaningful file-producing steps.',
     '- Any file the user can open from the Science report, artifact Files view, Preview frame, or chat output must be declared on an artifact or included in `science_artifact(action="snapshot")` with a clear role so the file menu can show where it came from.',
-    '- Use `science_artifact(action="publish")` before the final visible answer so the existing Preview frame can render the Science report, artifact files, provenance, and warnings.',
+    '- Use `science_artifact(action="publish")` before the final visible answer. This is the handoff that lets OpenScience persist the Science report locally, reopen it from the conversation, and render the report, artifact files, provenance, and warnings in the existing Preview frame.',
     '',
     '## Science SOP',
     '1. Intake: restate the objective, authorized project root, expected deliverables, selected router skills, and unsafe or ambiguous assumptions.',
@@ -829,8 +835,9 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '4. Artifact: every user-facing figure, table, dataset, notebook, manuscript, PDF, HTML page, scientific viewer object, or run bundle needs stable id, version, file paths, inputs, code/log/environment links, and evidence ids when known.',
     '5. Snapshot: include scripts, notebooks, logs, result folders, LaTeX sources, small tables, configs, and viewer files needed to inspect or reproduce the result. Secrets are never included; large data may be recorded as pointers with hash/size/reason.',
     '6. Claims: every report statement that answers the task needs evidenceIds and claimType: computed, parsed, digitized, or hypothesis. Unverified ideas stay `hypothesis`.',
-    '7. Display: extend the normal Preview frame. Do not create a parallel dashboard/report rail. Use evidence-report styling for report sections, inline [E#] citations, Reference Evidence, artifact rows, methods, and provenance warnings.',
-    '8. Final: keep prose short, point to the published report/artifacts, and plainly mention important graphWarnings or missing provenance.',
+    '7. Report writing: put concise decisive conclusion phrases in Markdown bold, for example `**the candidate set is not yet defensible** [E1]`. Bold only the conclusion phrase, not whole paragraphs, and keep the evidence ids on the same sentence.',
+    '8. Display: extend the normal Preview frame. Do not create a parallel dashboard/report rail. Use evidence-report styling for report sections, inline [E#] citations, Reference Evidence, artifact rows, methods, and provenance warnings.',
+    '9. Final: keep prose short, point to the published report/artifacts, and plainly mention important graphWarnings or missing provenance. Do not treat final prose as a substitute for a published Science artifact report.',
     '',
     '## Skill Routing',
     `- Core discipline: ${SCIENCE_CORE_SKILL_NAME}. Artifact protocol: ${SCIENCE_ARTIFACT_SKILL_NAME}.`,
@@ -856,7 +863,7 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     `- Use ${SCIENCE_COMPUTE_SKILL_NAME}: ${SCIENCE_COMPUTE_SKILL_PATH}.`,
     `- Use ${SCIENCE_EMPIRICAL_SKILL_NAME}: ${SCIENCE_EMPIRICAL_SKILL_PATH}.`,
     `- Default Science skill pack manifest: ${SCIENCE_SKILL_PACK_MANIFEST_PATH}.`,
-    `- Materialized external leaf skills remain discoverable through routers: ${SCIENCE_SKILL_PACK_COUNTS.total} total; ${SCIENCE_SKILL_PACK_COUNTS.deepscientist} DeepScientist, ${SCIENCE_SKILL_PACK_COUNTS.kdense} K-Dense, and ${SCIENCE_SKILL_PACK_COUNTS.autoEmpirical} Auto-Empirical Research Skills.`,
+    `- Materialized external leaf skills remain discoverable through routers: ${SCIENCE_SKILL_PACK_COUNTS.total} total; ${SCIENCE_SKILL_PACK_COUNTS.deepscientist} DeepScientist, ${SCIENCE_SKILL_PACK_COUNTS.kdense} K-Dense, ${SCIENCE_SKILL_PACK_COUNTS.autoEmpirical} Auto-Empirical Research Skills, and ${SCIENCE_SKILL_PACK_COUNTS.natureSkills} Nature Skills.`,
     `- Safety policy summary: ${SCIENCE_SKILL_PACK_COUNTS.quarantinedScripts} script-bearing skills are quarantined by default; ${SCIENCE_SKILL_PACK_COUNTS.restrictedDefault} skills require explicit authorization for restricted contexts.`,
     `- Migration-only catalog, when provenance debugging is needed: ${SCIENCE_VENDOR_CATALOG_SKILL_NAME}: ${SCIENCE_VENDOR_CATALOG_SKILL_PATH}.`,
   ].join('\n');

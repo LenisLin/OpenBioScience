@@ -150,7 +150,8 @@
     "vendorSkillsTitle": "Bundled Reference Skill Directories",
     "vendorDeepScientistDesc": "Used as the Science Mode operating discipline: real execution, result boundaries, package checks, and evidence graph rules.",
     "vendorKDenseDesc": "Used as a domain skill pool: databases, scientific software, lab workflows, and task templates are triggered on demand.",
-    "vendorAutoEmpiricalDesc": "Used as the social-science and empirical-research pool: econometrics, causal inference, replication packages, citation checks, survey codebooks, qualitative analysis, and AER-style paper workflows."
+    "vendorAutoEmpiricalDesc": "Used as the social-science and empirical-research pool: econometrics, causal inference, replication packages, citation checks, survey codebooks, qualitative analysis, and AER-style paper workflows.",
+    "vendorNatureSkillsDesc": "Used as the Nature-style delivery pool: paper reading, manuscript writing, figures, citations, data availability, reviewer response, PPT, and patent-oriented drafting with restricted execution where needed."
   },
   "skillsHub": {
     "title": "Skills Hub",

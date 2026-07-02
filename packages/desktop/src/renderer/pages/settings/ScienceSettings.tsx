@@ -222,6 +222,11 @@ const ScienceSettings: React.FC = () => {
         value: SCIENCE_SKILL_PACK_COUNTS.autoEmpirical,
         detail: t('settings.science.vendorAutoEmpiricalDesc'),
       },
+      {
+        label: 'Nature Skills',
+        value: SCIENCE_SKILL_PACK_COUNTS.natureSkills,
+        detail: t('settings.science.vendorNatureSkillsDesc'),
+      },
     ],
     [t]
   );
@@ -600,7 +605,7 @@ const ScienceSettings: React.FC = () => {
 
         <section className='rounded-8px border border-solid border-2 bg-base p-18px'>
           <div className='mb-10px text-15px font-650 text-t-primary'>{t('settings.science.vendorSkillsTitle')}</div>
-          <div className='grid grid-cols-1 gap-10px md:grid-cols-3'>
+          <div className='grid grid-cols-1 gap-10px md:grid-cols-2 xl:grid-cols-4'>
             <div className='rounded-8px bg-1 px-12px py-10px'>
               <div className='text-13px font-650 text-t-primary'>ResearAI/DeepScientist v1.6.0</div>
               <div className='mt-4px text-12px leading-18px text-t-secondary'>
@@ -631,6 +636,18 @@ const ScienceSettings: React.FC = () => {
                 </Tag>
                 <Tag size='small' color='orange'>
                   CC BY-SA 4.0
+                </Tag>
+              </div>
+            </div>
+            <div className='rounded-8px bg-1 px-12px py-10px'>
+              <div className='text-13px font-650 text-t-primary'>Yuan1z0825/nature-skills</div>
+              <div className='mt-4px text-12px leading-18px text-t-secondary'>
+                {t('settings.science.vendorNatureSkillsDesc')}
+              </div>
+              <div className='mt-8px flex flex-wrap gap-6px'>
+                <Tag size='small'>{SCIENCE_SKILL_PACK_COUNTS.natureSkills} skills</Tag>
+                <Tag size='small' color='blue'>
+                  Apache 2.0
                 </Tag>
               </div>
             </div>

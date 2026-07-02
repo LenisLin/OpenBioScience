@@ -16,10 +16,11 @@ import type {
 import { ipcBridge } from '@/common';
 import { useConversationContextSafe } from '@/renderer/hooks/context/ConversationContext';
 import OpenScienceIcon, { type OpenScienceIconName } from '@/renderer/components/icons/OpenScienceIcon';
+import { collectSciencePanelFiles } from '@/renderer/utils/science/scienceProjectIndex';
 import { useLocalFilePreview } from '../../Preview/hooks/useLocalFilePreview';
 import { usePreviewContext } from '../../Preview/context/PreviewContext';
 import classNames from 'classnames';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import './MedicalEvidencePanel.css';
 import './ScienceReportPanel.css';
 
@@ -48,6 +49,55 @@ const unique = (values: Array<string | undefined>): string[] => {
     result.push(value);
   });
   return result;
+};
+
+const hasSciencePanelFiles = (panel: SciencePanelData, workspace?: string): boolean =>
+  Boolean(workspace && collectSciencePanelFiles(workspace, panel).length);
+
+const HIDDEN_WORKSPACE_PARTS = new Set([
+  '.git',
+  '.openscience',
+  'node_modules',
+  '.venv',
+  'venv',
+  '__pycache__',
+  '.pytest_cache',
+  '.mypy_cache',
+  '.ruff_cache',
+]);
+
+const hasVisibleWorkspaceFile = (file: { fullPath: string; relativePath?: string }): boolean => {
+  const normalized = (file.relativePath || file.fullPath).replace(/\\/g, '/').replace(/\/+/g, '/');
+  if (!normalized) return false;
+  const parts = normalized.split('/');
+  if (parts.some((part) => HIDDEN_WORKSPACE_PARTS.has(part))) return false;
+  return !/(^|\/)\.env(?:\.|$)/u.test(normalized);
+};
+
+const useScienceFilesAvailable = (panel: SciencePanelData, workspace?: string): boolean => {
+  const declaredFiles = useMemo(() => hasSciencePanelFiles(panel, workspace), [panel, workspace]);
+  const [workspaceHasFiles, setWorkspaceHasFiles] = useState(false);
+
+  useEffect(() => {
+    if (!workspace || declaredFiles) {
+      setWorkspaceHasFiles(false);
+      return undefined;
+    }
+    let cancelled = false;
+    ipcBridge.fs.listWorkspaceFiles
+      .invoke({ root: workspace })
+      .then((files) => {
+        if (!cancelled) setWorkspaceHasFiles(files.some(hasVisibleWorkspaceFile));
+      })
+      .catch(() => {
+        if (!cancelled) setWorkspaceHasFiles(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [declaredFiles, workspace]);
+
+  return declaredFiles || workspaceHasFiles;
 };
 
 const citationTone = (evidence?: ScienceEvidenceItem): 'strong' | 'medium' | 'soft' => {
@@ -149,6 +199,13 @@ const evidenceDatabaseCountLabel = (evidence: ScienceEvidenceItem): string | und
   return `returned: ${returned}`;
 };
 
+const evidenceSourceLabel = (evidence: ScienceEvidenceItem): string => evidence.sourceType.replace(/_/g, ' ');
+
+const evidenceConfidenceLabel = (confidence: ScienceEvidenceItem['confidence']): string => {
+  if (confidence === 'blocked') return 'blocked';
+  return confidence;
+};
+
 const endpointId = (endpoint: ScienceProvenanceEdge['from'] | ScienceProvenanceEdge['to']): string =>
   endpoint.kind === 'artifact' && endpoint.version ? `${endpoint.id}@v${endpoint.version}` : endpoint.id;
 
@@ -168,6 +225,7 @@ const skillSourceLabel = (source: ScienceSkillUse['source']): string => {
   if (source === 'k-dense') return 'K-Dense';
   if (source === 'deepscientist') return 'DeepScientist';
   if (source === 'auto-empirical') return 'Auto-Empirical';
+  if (source === 'nature-skills') return 'Nature Skills';
   if (source === 'sciagent') return 'SciAgent';
   return source;
 };
@@ -369,89 +427,104 @@ const ScienceEvidenceReference: React.FC<{
   evidenceById: Map<string, ScienceEvidenceItem>;
   index: number;
   onOpenEvidence: (evidence: ScienceEvidenceItem) => void;
-}> = ({ evidence, evidenceById, index, onOpenEvidence }) => (
-  <article
-    id={`science-evidence-${evidence.id}`}
-    className='medical-evidence-reference science-evidence-reference'
-    style={{ animationDelay: `${Math.min(index * 30, 150)}ms` }}
-  >
-    <div className='medical-evidence-reference__index'>{evidence.id}</div>
-    <div className='medical-evidence-reference__body'>
-      <div className='medical-evidence-reference__heading'>
-        <span className='medical-evidence-reference__type'>
-          <OpenScienceIcon name={evidenceIconName(evidence)} size={13} visualScale={1.05} />
-          {evidence.sourceType.replace(/_/g, ' ')}
-        </span>
-        <h4>{evidence.title}</h4>
-      </div>
-      <div className='medical-evidence-qualityBadges medical-evidence-qualityBadges--compact'>
-        <span className={`medical-evidence-qualityBadge science-qualityBadge--${evidence.confidence}`}>
-          {evidence.confidence}
-        </span>
-        {evidence.status ? (
-          <span className='medical-evidence-qualityBadge'>{evidence.status.replace(/_/g, ' ')}</span>
+}> = ({ evidence, evidenceById, index, onOpenEvidence }) => {
+  const previewPath = getEvidencePreviewPath(evidence);
+  const sourceLocation = pathLabel(previewPath) || evidence.virtualPath || evidence.url;
+  const metaItems = unique([
+    evidence.database?.name,
+    evidence.database?.accessDate ? `accessed ${evidence.database.accessDate}` : undefined,
+    evidenceDatabaseCountLabel(evidence),
+    evidenceRegionLabel(evidence),
+    evidence.hash ? `hash ${evidence.hash.slice(0, 12)}` : undefined,
+  ]);
+  const technicalDetails = unique([
+    evidence.database?.provider ? `provider: ${evidence.database.provider}` : undefined,
+    evidence.database?.domain ? `domain: ${evidence.database.domain}` : undefined,
+    evidence.database?.tool ? `tool: ${evidence.database.tool}` : undefined,
+    evidence.database?.endpoint ? `endpoint: ${evidence.database.endpoint}` : undefined,
+    evidence.database?.pagination ? `pagination: ${evidence.database.pagination}` : undefined,
+    evidence.command ? `command: ${evidence.command}` : undefined,
+    evidence.database?.identifierConversions?.length
+      ? `identifier conversions: ${evidence.database.identifierConversions.join(' -> ')}`
+      : undefined,
+    evidence.database?.warnings?.length ? `warnings: ${evidence.database.warnings.join(' | ')}` : undefined,
+    evidence.database?.params ? `params: ${JSON.stringify(evidence.database.params)}` : undefined,
+  ]);
+
+  return (
+    <article
+      id={`science-evidence-${evidence.id}`}
+      className='medical-evidence-reference science-evidence-reference'
+      style={{ animationDelay: `${Math.min(index * 30, 150)}ms` }}
+    >
+      <div className='medical-evidence-reference__index'>{evidence.id}</div>
+      <div className='medical-evidence-reference__body'>
+        <div className='medical-evidence-reference__heading'>
+          <h4>{evidence.title}</h4>
+        </div>
+        <div className='medical-evidence-qualityBadges medical-evidence-qualityBadges--compact'>
+          <span className='medical-evidence-qualityBadge science-evidence-reference__typeBadge'>
+            <OpenScienceIcon name={evidenceIconName(evidence)} size={12} visualScale={1.06} />
+            {evidenceSourceLabel(evidence)}
+          </span>
+          {evidence.status ? (
+            <span className='medical-evidence-qualityBadge'>{evidence.status.replace(/_/g, ' ')}</span>
+          ) : null}
+          {evidence.version ? <span className='medical-evidence-qualityBadge'>v{evidence.version}</span> : null}
+          {evidence.region ? <span className='medical-evidence-qualityBadge'>region</span> : null}
+        </div>
+        {metaItems.length ? (
+          <div className='medical-evidence-reference__meta'>
+            {metaItems.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
         ) : null}
-        {evidence.version ? <span className='medical-evidence-qualityBadge'>v{evidence.version}</span> : null}
-        {evidence.region ? <span className='medical-evidence-qualityBadge'>screenshot region</span> : null}
-      </div>
-      <div className='medical-evidence-reference__meta'>
-        {[
-          evidence.database?.name,
-          evidence.database?.provider ? `provider: ${evidence.database.provider}` : undefined,
-          evidence.database?.domain ? `domain: ${evidence.database.domain}` : undefined,
-          evidence.database?.tool ? `tool: ${evidence.database.tool}` : undefined,
-          evidence.database?.endpoint,
-          evidence.database?.accessDate ? `accessed: ${evidence.database.accessDate}` : undefined,
-          evidenceDatabaseCountLabel(evidence),
-          evidence.database?.pagination ? `pagination: ${evidence.database.pagination}` : undefined,
-          evidence.command,
-          evidenceRegionLabel(evidence),
-          evidence.hash ? `hash: ${evidence.hash.slice(0, 12)}` : undefined,
-        ]
-          .filter(Boolean)
-          .map((item) => (
-            <span key={item}>{item}</span>
-          ))}
-      </div>
-      {evidence.database?.params ? (
-        <details className='science-evidence-databaseDetails'>
-          <summary>Query parameters</summary>
-          <code>{JSON.stringify(evidence.database.params)}</code>
-        </details>
-      ) : null}
-      {evidence.database?.identifierConversions?.length ? (
-        <div className='science-evidence-databaseDetails science-evidence-databaseDetails--inline'>
-          <span>Identifier conversions</span>
-          <code>{evidence.database.identifierConversions.join(' → ')}</code>
+        <div className='medical-evidence-reference__strength'>
+          <span className={`science-evidence-strength science-evidence-strength--${evidence.confidence}`}>
+            <OpenScienceIcon name='scienceValidation' size={13} visualScale={1.08} />
+            Evidence strength: {evidenceConfidenceLabel(evidence.confidence)}
+          </span>
+          {evidence.artifactId ? (
+            <span>
+              artifact {evidence.artifactId}
+              {evidence.artifactVersion ? ` v${evidence.artifactVersion}` : ''}
+            </span>
+          ) : null}
         </div>
-      ) : null}
-      {evidence.database?.warnings?.length ? (
-        <div className='science-report-warningList science-evidence-databaseWarnings'>
-          {evidence.database.warnings.map((warning) => (
-            <div key={warning} className='science-report-warning science-report-warning--warning'>
-              <b>Database warning</b>
-              <span>{warning}</span>
+        {evidence.summary ? <p>{evidence.summary}</p> : null}
+        {sourceLocation ? (
+          <button
+            type='button'
+            className='medical-evidence-reference__paperclip science-evidence-reference__sourceButton'
+            onClick={() => onOpenEvidence(evidence)}
+          >
+            <OpenScienceIcon name='artifactProvenance' size={12} visualScale={1.06} />
+            <span>{sourceLocation}</span>
+          </button>
+        ) : null}
+        {evidence.supportingEvidenceIds?.length ? (
+          <div className='science-evidence-supporting'>
+            <span>Supported by</span>
+            {evidence.supportingEvidenceIds.map((id) => (
+              <ScienceCitation key={id} id={id} evidenceById={evidenceById} />
+            ))}
+          </div>
+        ) : null}
+        {technicalDetails.length ? (
+          <details className='science-evidence-reference__details'>
+            <summary>Technical details</summary>
+            <div>
+              {technicalDetails.map((item) => (
+                <code key={item}>{item}</code>
+              ))}
             </div>
-          ))}
-        </div>
-      ) : null}
-      {evidence.summary ? <p>{evidence.summary}</p> : null}
-      {evidence.supportingEvidenceIds?.length ? (
-        <div className='science-evidence-supporting'>
-          <span>Supported by</span>
-          {evidence.supportingEvidenceIds.map((id) => (
-            <ScienceCitation key={id} id={id} evidenceById={evidenceById} />
-          ))}
-        </div>
-      ) : null}
-      {getEvidencePreviewPath(evidence) || evidence.url || evidence.virtualPath ? (
-        <button type='button' className='science-evidence-open' onClick={() => onOpenEvidence(evidence)}>
-          {pathLabel(getEvidencePreviewPath(evidence)) || evidence.virtualPath || evidence.url}
-        </button>
-      ) : null}
-    </div>
-  </article>
-);
+          </details>
+        ) : null}
+      </div>
+    </article>
+  );
+};
 
 const ScienceEvidenceChain: React.FC<{
   panel: SciencePanelData;
@@ -466,53 +539,55 @@ const ScienceEvidenceChain: React.FC<{
   if (!edges.length && !visibleNodes.length && !warnings.length) return null;
 
   return (
-    <section className='medical-evidence-section science-evidence-chainSection'>
-      <div className='medical-evidence-section__title'>Evidence Chain</div>
-      {edges.length ? (
-        <div className='science-evidence-chain' data-testid='science-evidence-chain'>
-          {edges.map((edge) => (
-            <div key={edge.id} className='science-evidence-chain__edge'>
-              <div className='science-evidence-chain__endpoint'>
-                <span>{edge.from.kind.replace(/_/g, ' ')}</span>
-                <b>{endpointTitle(edge.from, evidenceById, artifactsById, nodesById)}</b>
-                <code>{endpointId(edge.from)}</code>
+    <details className='medical-evidence-methods science-evidence-chainSection'>
+      <summary>Evidence Chain</summary>
+      <div className='medical-evidence-methods__body science-evidence-chainSection__body'>
+        {edges.length ? (
+          <div className='science-evidence-chain' data-testid='science-evidence-chain'>
+            {edges.map((edge) => (
+              <div key={edge.id} className='science-evidence-chain__edge'>
+                <div className='science-evidence-chain__endpoint'>
+                  <span>{edge.from.kind.replace(/_/g, ' ')}</span>
+                  <b>{endpointTitle(edge.from, evidenceById, artifactsById, nodesById)}</b>
+                  <code>{endpointId(edge.from)}</code>
+                </div>
+                <div
+                  className={`science-evidence-chain__verb science-evidence-chain__verb--${edge.confidence || 'declared'}`}
+                >
+                  {edge.label || edge.type.replace(/_/g, ' ')}
+                </div>
+                <div className='science-evidence-chain__endpoint'>
+                  <span>{edge.to.kind.replace(/_/g, ' ')}</span>
+                  <b>{endpointTitle(edge.to, evidenceById, artifactsById, nodesById)}</b>
+                  <code>{endpointId(edge.to)}</code>
+                </div>
               </div>
-              <div
-                className={`science-evidence-chain__verb science-evidence-chain__verb--${edge.confidence || 'declared'}`}
-              >
-                {edge.label || edge.type.replace(/_/g, ' ')}
+            ))}
+          </div>
+        ) : null}
+        {!edges.length && visibleNodes.length ? (
+          <div className='science-evidence-nodeGrid'>
+            {visibleNodes.map((node) => (
+              <div key={node.id} className='science-evidence-node'>
+                <span>{node.type.replace(/_/g, ' ')}</span>
+                <b>{node.label}</b>
+                {node.path ? <code>{pathLabel(node.path)}</code> : null}
               </div>
-              <div className='science-evidence-chain__endpoint'>
-                <span>{edge.to.kind.replace(/_/g, ' ')}</span>
-                <b>{endpointTitle(edge.to, evidenceById, artifactsById, nodesById)}</b>
-                <code>{endpointId(edge.to)}</code>
+            ))}
+          </div>
+        ) : null}
+        {warnings.length ? (
+          <div className='science-report-warningList science-evidence-chain__warnings'>
+            {warnings.map((warning) => (
+              <div key={warning.id} className={`science-report-warning science-report-warning--${warning.severity}`}>
+                <b>{warning.code.replace(/_/g, ' ')}</b>
+                <span>{warning.message}</span>
               </div>
-            </div>
-          ))}
-        </div>
-      ) : null}
-      {!edges.length && visibleNodes.length ? (
-        <div className='science-evidence-nodeGrid'>
-          {visibleNodes.map((node) => (
-            <div key={node.id} className='science-evidence-node'>
-              <span>{node.type.replace(/_/g, ' ')}</span>
-              <b>{node.label}</b>
-              {node.path ? <code>{pathLabel(node.path)}</code> : null}
-            </div>
-          ))}
-        </div>
-      ) : null}
-      {warnings.length ? (
-        <div className='science-report-warningList science-evidence-chain__warnings'>
-          {warnings.map((warning) => (
-            <div key={warning.id} className={`science-report-warning science-report-warning--${warning.severity}`}>
-              <b>{warning.code.replace(/_/g, ' ')}</b>
-              <span>{warning.message}</span>
-            </div>
-          ))}
-        </div>
-      ) : null}
-    </section>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </details>
   );
 };
 
@@ -626,6 +701,7 @@ export const ScienceReportPreviewPanel: React.FC<{ panel: SciencePanelData }> = 
   const artifactsById = useMemo(() => new Map(panel.artifacts.map((item) => [item.id, item])), [panel.artifacts]);
   const evidenceById = useMemo(() => new Map(panel.evidence.map((item) => [item.id, item])), [panel.evidence]);
   const references = panel.evidence;
+  const hasFiles = useScienceFilesAvailable(panel, workspace);
 
   const openArtifact = useCallback(
     (artifact: ScienceArtifact) => {
@@ -664,6 +740,7 @@ export const ScienceReportPreviewPanel: React.FC<{ panel: SciencePanelData }> = 
   );
 
   const openFiles = useCallback(() => {
+    if (!hasFiles) return;
     openPreview(
       '',
       'science_files',
@@ -677,17 +754,19 @@ export const ScienceReportPreviewPanel: React.FC<{ panel: SciencePanelData }> = 
       },
       { replace: false }
     );
-  }, [openPreview, panel, workspace]);
+  }, [hasFiles, openPreview, panel, workspace]);
 
   return (
     <div className='science-report-previewScroll'>
       <section className='medical-evidence-panel science-evidence-report' data-testid='science-report-preview-panel'>
-        <div className='science-report-previewActions'>
-          <button type='button' onClick={openFiles}>
-            <OpenScienceIcon name='artifactDataset' size={14} visualScale={1.05} />
-            Files
-          </button>
-        </div>
+        {hasFiles ? (
+          <div className='science-report-previewActions'>
+            <button type='button' onClick={openFiles}>
+              <OpenScienceIcon name='artifactDataset' size={14} visualScale={1.05} />
+              Files
+            </button>
+          </div>
+        ) : null}
         <div className='medical-evidence-report'>
           <h3>{panel.report.title}</h3>
           {panel.summary || panel.question ? (
@@ -830,6 +909,8 @@ export const ScienceReportPanel: React.FC<{ panel: SciencePanelData }> = ({ pane
   const { openPreview } = usePreviewContext();
   const featuredArtifacts = panel.artifacts.slice(0, 4);
   const [exportState, setExportState] = useState<'idle' | 'running' | 'success' | 'failed'>('idle');
+  const [exportNotice, setExportNotice] = useState<{ tone: 'success' | 'error'; text: string }>();
+  const hasFiles = useScienceFilesAvailable(panel, workspace);
 
   const openReport = useCallback(() => {
     openPreview(
@@ -872,6 +953,7 @@ export const ScienceReportPanel: React.FC<{ panel: SciencePanelData }> = ({ pane
   );
 
   const openFiles = useCallback(() => {
+    if (!hasFiles) return;
     openPreview(
       '',
       'science_files',
@@ -885,11 +967,17 @@ export const ScienceReportPanel: React.FC<{ panel: SciencePanelData }> = ({ pane
       },
       { replace: false }
     );
-  }, [openPreview, panel, workspace]);
+  }, [hasFiles, openPreview, panel, workspace]);
 
   const handleExport = useCallback(async () => {
-    if (!workspace || exportState === 'running') return;
+    if (exportState === 'running') return;
+    if (!workspace) {
+      setExportState('failed');
+      setExportNotice({ tone: 'error', text: 'Export needs a Science project workspace.' });
+      return;
+    }
     setExportState('running');
+    setExportNotice(undefined);
     try {
       const result = await ipcBridge.scienceArtifactArchive.export.invoke({
         projectRoot: workspace,
@@ -899,12 +987,15 @@ export const ScienceReportPanel: React.FC<{ panel: SciencePanelData }> = ({ pane
       });
       if (!result.ok || !result.exportDir) {
         setExportState('failed');
+        setExportNotice({ tone: 'error', text: result.error || 'Export failed. No export directory was returned.' });
         return;
       }
       setExportState('success');
+      setExportNotice({ tone: 'success', text: `Export saved to ${result.exportDir}` });
       void ipcBridge.shell.showItemInFolder.invoke(result.exportDir);
-    } catch {
+    } catch (error) {
       setExportState('failed');
+      setExportNotice({ tone: 'error', text: error instanceof Error ? error.message : String(error) });
     }
   }, [exportState, panel.git?.commit, panel.runId, workspace]);
 
@@ -923,16 +1014,34 @@ export const ScienceReportPanel: React.FC<{ panel: SciencePanelData }> = ({ pane
             <OpenScienceIcon name='scienceReport' size={14} visualScale={1.05} />
             Open report
           </button>
-          <button type='button' onClick={openFiles}>
-            <OpenScienceIcon name='artifactDataset' size={14} visualScale={1.05} />
-            Files
-          </button>
-          <button type='button' disabled={!workspace || exportState === 'running'} onClick={handleExport}>
+          {hasFiles ? (
+            <button type='button' onClick={openFiles}>
+              <OpenScienceIcon name='artifactDataset' size={14} visualScale={1.05} />
+              Files
+            </button>
+          ) : null}
+          <button
+            type='button'
+            disabled={exportState === 'running'}
+            title={workspace ? 'Export Science report and artifact bundle' : 'Export needs a Science project workspace'}
+            onClick={handleExport}
+          >
             <OpenScienceIcon name='artifactExport' size={14} visualScale={1.05} />
-            {exportState === 'running' ? 'Exporting' : exportState === 'success' ? 'Exported' : 'Export'}
+            {exportState === 'running'
+              ? 'Exporting'
+              : exportState === 'success'
+                ? 'Exported'
+                : exportState === 'failed'
+                  ? 'Export failed'
+                  : 'Export'}
           </button>
         </div>
       </header>
+      {exportNotice ? (
+        <div className={`science-report-exportNotice science-report-exportNotice--${exportNotice.tone}`}>
+          {exportNotice.text}
+        </div>
+      ) : null}
       {panel.git?.shortCommit ? (
         <div className='science-report-gitBadge'>
           <OpenScienceIcon name='artifactVersion' size={13} visualScale={1.05} />

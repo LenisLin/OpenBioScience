@@ -150,7 +150,8 @@
     "vendorSkillsTitle": "内置参考 skill 目录",
     "vendorDeepScientistDesc": "作为 Science 模式总控纪律：真实运行、结果边界、package check 和 evidence graph 规范。",
     "vendorKDenseDesc": "作为领域技能池：数据库、科学软件、实验流程和任务模板按需触发。",
-    "vendorAutoEmpiricalDesc": "作为社科/实证研究技能池：计量、因果推断、复现包、引用核查、调查 codebook、质性分析和 AER 风格论文流水线。"
+    "vendorAutoEmpiricalDesc": "作为社科/实证研究技能池：计量、因果推断、复现包、引用核查、调查 codebook、质性分析和 AER 风格论文流水线。",
+    "vendorNatureSkillsDesc": "作为 Nature 风格科研交付技能池：论文精读、写作、图件、引用、数据可用性、审稿回复、PPT，以及需要受限执行的专利导向草拟。"
   },
   "skillsHub": {
     "title": "技能中心",

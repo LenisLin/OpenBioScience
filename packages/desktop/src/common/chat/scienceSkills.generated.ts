@@ -35,6 +35,17 @@ export const SCIENCE_MATERIALIZED_SKILL_IDS = [
   'aer-full-empirical-analysis-skill',
   'aer-full-empirical-analysis-skill-r',
   'aer-full-empirical-analysis-skill-stata',
+  'nature-citation',
+  'nature-data',
+  'nature-experiment-log',
+  'nature-figure',
+  'nature-paper2ppt',
+  'nature-polishing',
+  'nature-proposal-writer',
+  'nature-reader',
+  'nature-response',
+  'nature-reviewer',
+  'nature-writing',
   'ds-paper-plot',
   'aer-arxiv',
   'aer-arxiv-2',
@@ -270,6 +281,8 @@ export const SCIENCE_MATERIALIZED_SKILL_IDS = [
   'aer-stata-setup',
   'aer-stata-table-builder',
   'aer-write-paper',
+  'nature-academic-search',
+  'nature-literature-pipeline',
   'kdense-consciousness-council',
   'kdense-dhdna-profiler',
   'kdense-flowio',
@@ -348,6 +361,8 @@ export const SCIENCE_MATERIALIZED_SKILL_IDS = [
   'kdense-simpy',
   'kdense-timesfm-forecasting',
   'kdense-venue-templates',
+  'nature-paper-to-patent',
+  'nature-downloader',
   'aer-do-agent',
   'aer-do-agent-2',
   'aer-econfin-idea-finder',
@@ -363,15 +378,16 @@ export const SCIENCE_MATERIALIZED_SKILL_IDS = [
   'kdense-vaex',
 ] as const;
 
-export const SCIENCE_SKILL_PACK_GENERATED_AT = '2026-07-02T03:06:05.354Z';
+export const SCIENCE_SKILL_PACK_GENERATED_AT = '2026-07-02T16:25:29.027Z';
 
 export const SCIENCE_SKILL_PACK_COUNTS = {
-  total: 352,
+  total: 367,
   deepscientist: 21,
   kdense: 149,
   autoEmpirical: 182,
-  autoEmpiricalAvailable: 1153,
+  natureSkills: 15,
+  autoEmpiricalAvailable: 1150,
   quarantinedScripts: 98,
-  restrictedDefault: 91,
+  restrictedDefault: 95,
   clinicalBoundary: 6,
 } as const;
