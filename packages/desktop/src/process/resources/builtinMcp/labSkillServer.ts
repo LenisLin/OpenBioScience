@@ -157,6 +157,9 @@ const backendBaseUrl = (): string | undefined => {
   return port ? `http://127.0.0.1:${port}` : undefined;
 };
 
+const currentOpenScienceConversationId = (): string =>
+  asString(process.env.OPENSCIENCE_CONVERSATION_ID || process.env.DEEPORGANISER_CONVERSATION_ID);
+
 const backendRequest = async <T>(route: string): Promise<T | undefined> => {
   const baseUrl = backendBaseUrl();
   if (!baseUrl) return undefined;
@@ -170,6 +173,24 @@ const backendRequest = async <T>(route: string): Promise<T | undefined> => {
   if (isRecord(parsed) && 'data' in parsed) return parsed.data as T;
   return parsed as T;
 };
+
+const sourceGuideFor = (state: LabSkillSessionState) => ({
+  sourceLocationsPath: state.sourceLocationsPath,
+  scope: 'current_openscience_conversation_and_project_sources',
+  categories: [
+    { prefix: 'U', sourceType: 'user_instruction', meaning: 'the current deposition request' },
+    { prefix: 'H', sourceType: 'conversation', meaning: 'the current OpenScience conversation transcript only' },
+    { prefix: 'A', sourceType: 'artifact', meaning: 'Science artifacts under this project root' },
+    { prefix: 'F', sourceType: 'file', meaning: 'project files or lab notes explicitly opened by the agent' },
+    { prefix: 'C', sourceType: 'code', meaning: 'scripts, configs, notebooks, or commands actually inspected' },
+  ],
+  instructions: [
+    'Read source-locations.md first.',
+    'Open the referenced conversation.md/json yourself before extracting rules.',
+    'Register only sources you actually opened via select_sources or ingest.',
+    'Do not use global memory, unrelated chat history, browser history, or other projects unless the user explicitly selects them.',
+  ],
+});
 
 const extractMessageText = (message: BackendMessage): string => {
   const content = message.content;
@@ -240,15 +261,17 @@ const exportConversationFiles = async (
 };
 
 const writeSourceLocations = async (state: LabSkillSessionState, payload: JsonRecord): Promise<void> => {
-  const conversationId = asString(
-    payload.conversationId ||
-      payload.conversation_id ||
-      process.env.OPENSCIENCE_CONVERSATION_ID ||
-      process.env.DEEPORGANISER_CONVERSATION_ID
-  );
+  const notes: string[] = [];
+  const injectedConversationId = currentOpenScienceConversationId();
+  const requestedConversationId = asString(payload.conversationId || payload.conversation_id);
+  if (injectedConversationId && requestedConversationId && injectedConversationId !== requestedConversationId) {
+    notes.push(
+      `Ignored requested conversation id ${requestedConversationId}; using current OpenScience conversation ${injectedConversationId} to avoid cross-session memory mixing.`
+    );
+  }
+  const conversationId = injectedConversationId || requestedConversationId;
   if (conversationId) state.conversationId = conversationId;
 
-  const notes: string[] = [];
   let currentConversation:
     | { markdownPath: string; jsonPath: string; messageCount: number; total?: number }
     | undefined;
@@ -275,6 +298,18 @@ const writeSourceLocations = async (state: LabSkillSessionState, payload: JsonRe
     `- Deposition session: ${sessionDir(state)}`,
     state.conversationId ? `- Current conversation id: ${state.conversationId}` : '- Current conversation id: unavailable',
     '',
+    '## Scope Boundary',
+    '- Scope is the current OpenScience deposition conversation plus explicit files/artifacts under the authorized project root.',
+    '- Do not read or infer from global memory, unrelated chat history, browser history, or another project unless the user explicitly selects that source.',
+    '- If older conversations are needed, ask the user to open/select them first; do not guess conversation ids.',
+    '',
+    '## Source Categories',
+    '- U*: current user deposition instruction.',
+    '- H*: current OpenScience conversation transcript exported by the backend.',
+    '- A*: Science artifact or artifact index under this project.',
+    '- F*: project file, lab note, report, or manually selected document.',
+    '- C*: code, script, config, notebook, command log, or execution trace actually inspected.',
+    '',
     '## Current Conversation',
     currentConversation
       ? `- Markdown transcript: ${currentConversation.markdownPath}`
@@ -293,9 +328,11 @@ const writeSourceLocations = async (state: LabSkillSessionState, payload: JsonRe
       : `- Skill deposition root will be created at: ${depositionIndexRoot}`,
     '',
     '## Extraction Guidance',
+    '- First read this source-locations.md file, then open the referenced transcript/artifact/file paths directly.',
     '- Look for reusable patterns in user request -> assistant action/decision -> user correction/approval.',
     '- Register only sources you actually opened via lab_skill(action="select_sources"|"ingest").',
     '- Keep conversation excerpts short and cite message ids when available.',
+    '- Return a short guide to the user: what sources were used, where they are saved, and what still needs to be selected if the report is incomplete.',
     '',
     '## Notes',
     ...(notes.length ? notes.map((note) => `- ${note}`) : ['- Source locations prepared successfully.']),
@@ -307,7 +344,7 @@ const writeSourceLocations = async (state: LabSkillSessionState, payload: JsonRe
     state.sources = mergeById(state.sources, [
       {
         id: 'H1',
-        title: '当前会话导出',
+        title: '当前 OpenScience 会话导出',
         sourceType: 'conversation',
         status: 'selected',
         summary: `Local transcript export for conversation ${conversationId}. Agent must read the file before extracting claims.`,
@@ -350,7 +387,13 @@ const openSession = async (payload: JsonRecord, projectRoot?: string, sessionId?
     claims: [],
     protocols: [],
     findings: [],
-    nextActions: ['选择来源', '抽取 SOP 规则', '编译 Skill 草稿', '提交沉淀报告'],
+    nextActions: [
+      '打开 source-locations.md',
+      '阅读 current-conversation/conversation.md',
+      '按 conversation/artifact/file/code 分类登记来源',
+      '抽取 SOP 规则',
+      '提交沉淀报告',
+    ],
   };
   sessions.set(id, created);
   await writeSourceLocations(created, payload);
@@ -649,6 +692,20 @@ const buildPanel = (state: LabSkillSessionState, patch?: JsonRecord): LabSkillDe
           evidenceIds: state.sources.slice(0, 6).map((source) => source.id),
         },
         {
+          id: 'source-boundary',
+          heading: '来源边界',
+          markdown: [
+            state.sourceLocationsPath ? `来源指引：\`${state.sourceLocationsPath}\`` : '尚未生成来源指引。',
+            '',
+            '- 默认只使用当前 OpenScience 会话、当前项目内 artifact、明确打开的项目文件和代码。',
+            '- 不使用全局记忆、其他会话、浏览器历史或其他项目内容，除非用户明确选择。',
+            '- 来源登记建议：U=用户指示，H=当前会话，A=artifact，F=项目文件，C=代码/日志。',
+          ].join('\n'),
+          evidenceIds: state.sources
+            .filter((source) => ['U1', 'H1'].includes(source.id))
+            .map((source) => source.id),
+        },
+        {
           id: 'skill',
           heading: 'Skill 草稿',
           markdown: state.draftDir
@@ -788,6 +845,7 @@ async function main() {
       if (action === 'open_session') {
         return jsonText({
           ...eventFor(state, action, { target: { kind: 'session', id: state.sessionId } }),
+          guide: sourceGuideFor(state),
           object: state,
         });
       }
@@ -795,6 +853,7 @@ async function main() {
       if (action === 'status') {
         return jsonText({
           ...eventFor(state, action, { target: { kind: 'session', id: state.sessionId } }),
+          guide: sourceGuideFor(state),
           object: state,
           panel: buildPanel(state),
         });
