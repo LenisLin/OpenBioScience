@@ -56,9 +56,13 @@ type GuidActionRowProps = {
   allSkills: Array<{ name: string; description: string; isAuto: boolean }>;
   disabledBuiltinSkills: string[];
   enabledSkills: string[];
+  lockedSkillIds?: string[];
+  skillSummary?: string;
   onToggleSkill: (name: string, isAuto: boolean) => void;
   mcpServers: IMcpServer[];
   selectedMcpServerIds: string[];
+  lockedMcpServerIds?: string[];
+  mcpSummary?: string;
   onToggleMcpServer: (serverId: string) => void;
   isLoopGoalMode?: boolean;
   onToggleLoopGoalMode?: () => void;
@@ -96,9 +100,13 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
   allSkills,
   disabledBuiltinSkills,
   enabledSkills,
+  lockedSkillIds = [],
+  skillSummary,
   onToggleSkill,
   mcpServers,
   selectedMcpServerIds,
+  lockedMcpServerIds = [],
+  mcpSummary,
   onToggleMcpServer,
   isLoopGoalMode,
   onToggleLoopGoalMode,
@@ -152,12 +160,19 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
     t(`agentMode.${mode.value}`, { defaultValue: mode.label });
 
   const isWebUI = !isElectronDesktop();
+  const lockedSkillIdSet = React.useMemo(() => new Set(lockedSkillIds), [lockedSkillIds]);
+  const lockedMcpServerIdSet = React.useMemo(() => new Set(lockedMcpServerIds), [lockedMcpServerIds]);
 
   const isSkillChecked = (skill: { name: string; isAuto: boolean }) =>
-    skill.isAuto ? !disabledBuiltinSkills.includes(skill.name) : enabledSkills.includes(skill.name);
+    lockedSkillIdSet.has(skill.name) ||
+    (skill.isAuto ? !disabledBuiltinSkills.includes(skill.name) : enabledSkills.includes(skill.name));
+  const isSkillLocked = (skill: { name: string }) => lockedSkillIdSet.has(skill.name);
+  const isMcpChecked = (server: IMcpServer) =>
+    lockedMcpServerIdSet.has(server.id) || selectedMcpServerIds.includes(server.id);
+  const isMcpLocked = (server: IMcpServer) => lockedMcpServerIdSet.has(server.id);
 
   const activeSkillCount = allSkills.filter(isSkillChecked).length;
-  const activeMcpCount = selectedMcpServerIds.length;
+  const activeMcpCount = mcpServers.filter(isMcpChecked).length;
 
   const menuContent = (
     <Menu
@@ -271,6 +286,7 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
             </div>
           }
           triggerProps={{
+            trigger: 'click',
             popupStyle: {
               maxHeight: 360,
               overflowY: 'auto',
@@ -278,20 +294,33 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
             },
           }}
         >
+          {skillSummary ? (
+            <Menu.Item key='skills-summary' disabled className={styles.modeCapabilitySummary}>
+              {skillSummary}
+            </Menu.Item>
+          ) : null}
           {allSkills.map((skill) => (
             <Menu.Item
               key={`skill-${skill.name}`}
+              disabled={isSkillLocked(skill)}
               onClick={(e) => {
                 e.stopPropagation();
+                if (isSkillLocked(skill)) return;
                 onToggleSkill(skill.name, skill.isAuto);
               }}
             >
               <Checkbox
                 checked={isSkillChecked(skill)}
+                disabled={isSkillLocked(skill)}
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                onChange={() => onToggleSkill(skill.name, skill.isAuto)}
+                onChange={() => {
+                  if (!isSkillLocked(skill)) onToggleSkill(skill.name, skill.isAuto);
+                }}
               >
-                <span className='text-13px'>{skill.name}</span>
+                <span className='text-13px'>
+                  {skill.name}
+                  {isSkillLocked(skill) ? <span className={styles.modeCapabilityBadge}>Auto</span> : null}
+                </span>
               </Checkbox>
             </Menu.Item>
           ))}
@@ -309,6 +338,7 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
             </div>
           }
           triggerProps={{
+            trigger: 'click',
             popupStyle: {
               maxHeight: 360,
               overflowY: 'auto',
@@ -316,21 +346,32 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
             },
           }}
         >
+          {mcpSummary ? (
+            <Menu.Item key='mcp-summary' disabled className={styles.modeCapabilitySummary}>
+              {mcpSummary}
+            </Menu.Item>
+          ) : null}
           {mcpServers.map((server) => (
             <Menu.Item
               key={`mcp-${server.id}`}
+              disabled={isMcpLocked(server)}
               onClick={(e) => {
                 e.stopPropagation();
+                if (isMcpLocked(server)) return;
                 onToggleMcpServer(server.id);
               }}
             >
               <Checkbox
-                checked={selectedMcpServerIds.includes(server.id)}
+                checked={isMcpChecked(server)}
+                disabled={isMcpLocked(server)}
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                onChange={() => onToggleMcpServer(server.id)}
+                onChange={() => {
+                  if (!isMcpLocked(server)) onToggleMcpServer(server.id);
+                }}
               >
                 <span className='text-13px'>
                   {server.name}
+                  {isMcpLocked(server) ? <span className={styles.modeCapabilityBadge}>Auto</span> : null}
                   {server.tools?.length ? ` (${server.tools.length} ${t('mcp.tools')})` : ''}
                 </span>
               </Checkbox>
@@ -346,7 +387,16 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
       <div className={styles.actionTools}>
         <div className={styles.actionEntry}>
           <Dropdown
-            trigger='hover'
+            trigger='click'
+            position='tl'
+            triggerProps={{
+              popupAlign: { bottom: 8 },
+              popupStyle: {
+                maxHeight: 360,
+                overflowY: 'auto',
+                overflowX: 'visible',
+              },
+            }}
             popupVisible={isPlusDropdownOpen}
             onVisibleChange={setIsPlusDropdownOpen}
             droplist={menuContent}

@@ -6,15 +6,8 @@
 
 import { ipcBridge } from '@/common';
 import { buildDefaultLabSkillDepositionUserMessage } from '@/common/chat/labSkillDeposition';
-import {
-  BUILTIN_MEDICAL_EVIDENCE_NAME,
-  BUILTIN_LAB_SKILL_NAME,
-  BUILTIN_RESEARCH_EVIDENCE_NAME,
-  BUILTIN_SCIENCE_ARTIFACT_NAME,
-  BUILTIN_USER_INPUT_NAME,
-  type IMcpServer,
-  type TProviderWithModel,
-} from '@/common/config/storage';
+import { SCIENCE_SKILL_PACK_COUNTS } from '@/common/chat/scienceSkills.generated';
+import { type IMcpServer, type TProviderWithModel } from '@/common/config/storage';
 import { resolveLocaleKey } from '@/common/utils';
 import type { Assistant, AssistantDetail } from '@/common/types/agent/assistantTypes';
 
@@ -37,6 +30,12 @@ import { useTypewriterPlaceholder } from './hooks/useTypewriterPlaceholder';
 import { ensureBackendMcpCatalog } from '@/renderer/hooks/mcp/catalog';
 import { resolveAgentLogo } from '@/renderer/utils/model/agentLogo';
 import { resolveGuidAssistantDefaults } from './utils/assistantDefaults';
+import {
+  getGuidModeDefaultSkillIds,
+  getGuidModeRequiredMcpNames,
+  normalizeGuidAgentBackend,
+  resolveGuidCapabilityMode,
+} from './utils/modeCapabilities';
 import SpeechInputButton from '@/renderer/components/chat/SpeechInputButton';
 import { appendSpeechTranscript } from '@/renderer/hooks/system/useSpeechInput';
 import { useLiveTranscriptInsertion } from '@/renderer/hooks/system/useLiveTranscriptInsertion';
@@ -80,18 +79,6 @@ const GuidPage: React.FC = () => {
   const [selectedComputeHostIds, setSelectedComputeHostIds] = useState<string[]>([]);
   const { isOpen: isGuidPreviewOpen, closePreview } = usePreviewContext();
   const [guidPreviewLayoutMode, setGuidPreviewLayoutMode] = useState<PreviewPanelLayoutMode>('split');
-  const visibleMcpServers = useMemo(
-    () =>
-      availableMcpServers.filter(
-        (server) =>
-          server.name !== BUILTIN_MEDICAL_EVIDENCE_NAME &&
-          server.name !== BUILTIN_RESEARCH_EVIDENCE_NAME &&
-          server.name !== BUILTIN_SCIENCE_ARTIFACT_NAME &&
-          server.name !== BUILTIN_LAB_SKILL_NAME &&
-          server.name !== BUILTIN_USER_INPUT_NAME
-      ),
-    [availableMcpServers]
-  );
   useEffect(() => {
     Promise.all([ipcBridge.fs.listBuiltinAutoSkills.invoke(), ipcBridge.fs.listAvailableSkills.invoke()])
       .then(([autoSkills, availableSkills]) => {
@@ -180,6 +167,63 @@ const GuidPage: React.FC = () => {
     () => resolveGuidAssistantDefaults(selectedAssistantDetail),
     [selectedAssistantDetail]
   );
+  const activeCapabilityMode = useMemo(
+    () => resolveGuidCapabilityMode({ isScienceMode, isMedicalEvidenceMode, isSkillDepositionMode }),
+    [isMedicalEvidenceMode, isScienceMode, isSkillDepositionMode]
+  );
+  const activeModeLabel = useMemo(() => {
+    if (activeCapabilityMode === 'medical-evidence') return t('guid.medicalEvidence.menuLabel');
+    if (activeCapabilityMode === 'skill-deposition') return t('guid.skillDeposition.menuLabel');
+    if (activeCapabilityMode === 'science') return t('guid.scienceProject.menuLabel');
+    return '';
+  }, [activeCapabilityMode, t]);
+  const medicalEvidenceAgentBackend = useMemo(
+    () =>
+      normalizeGuidAgentBackend(
+        agentSelection.is_presetAgent
+          ? agentSelection.currentEffectiveAgentInfo.agent_type
+          : agentSelection.selectedAgent
+      ) || normalizeGuidAgentBackend(agentSelection.selectedAgent),
+    [
+      agentSelection.currentEffectiveAgentInfo.agent_type,
+      agentSelection.is_presetAgent,
+      agentSelection.selectedAgent,
+    ]
+  );
+  const lockedModeSkillIds = useMemo(() => getGuidModeDefaultSkillIds(activeCapabilityMode), [activeCapabilityMode]);
+  const lockedModeMcpNames = useMemo(
+    () => getGuidModeRequiredMcpNames(activeCapabilityMode, { medicalEvidenceAgentBackend }),
+    [activeCapabilityMode, medicalEvidenceAgentBackend]
+  );
+  const lockedModeMcpNameSet = useMemo(() => new Set(lockedModeMcpNames), [lockedModeMcpNames]);
+  const visibleMcpServers = useMemo(
+    () =>
+      availableMcpServers.filter((server) => server.builtin !== true || lockedModeMcpNameSet.has(server.name)),
+    [availableMcpServers, lockedModeMcpNameSet]
+  );
+  const lockedModeMcpServerIds = useMemo(
+    () => visibleMcpServers.filter((server) => lockedModeMcpNameSet.has(server.name)).map((server) => server.id),
+    [lockedModeMcpNameSet, visibleMcpServers]
+  );
+  const enabledSkillsForMenu = useMemo(
+    () => Array.from(new Set([...(guidEnabledSkills ?? []), ...lockedModeSkillIds])),
+    [guidEnabledSkills, lockedModeSkillIds]
+  );
+  const selectedMcpServerIdsForMenu = useMemo(
+    () => Array.from(new Set([...(guidSelectedMcpServerIds ?? []), ...lockedModeMcpServerIds])),
+    [guidSelectedMcpServerIds, lockedModeMcpServerIds]
+  );
+  const modeSkillSummary = useMemo(() => {
+    if (!activeModeLabel || lockedModeSkillIds.length === 0) return undefined;
+    if (activeCapabilityMode === 'science') {
+      return `${activeModeLabel} · ${lockedModeSkillIds.length} default routers · ${SCIENCE_SKILL_PACK_COUNTS.total} discoverable`;
+    }
+    return `${activeModeLabel} · ${lockedModeSkillIds.length} default skills`;
+  }, [activeCapabilityMode, activeModeLabel, lockedModeSkillIds.length]);
+  const modeMcpSummary = useMemo(() => {
+    if (!activeModeLabel || lockedModeMcpNames.length === 0) return undefined;
+    return `${activeModeLabel} · ${lockedModeMcpNames.length} session MCP`;
+  }, [activeModeLabel, lockedModeMcpNames.length]);
 
   const send = useGuidSend({
     // Input state
@@ -734,10 +778,14 @@ const GuidPage: React.FC = () => {
       }}
       allSkills={allSkills}
       disabledBuiltinSkills={guidDisabledBuiltinSkills ?? []}
-      enabledSkills={guidEnabledSkills ?? []}
+      enabledSkills={enabledSkillsForMenu}
+      lockedSkillIds={lockedModeSkillIds}
+      skillSummary={modeSkillSummary}
       onToggleSkill={handleToggleSkill}
       mcpServers={visibleMcpServers}
-      selectedMcpServerIds={guidSelectedMcpServerIds ?? []}
+      selectedMcpServerIds={selectedMcpServerIdsForMenu}
+      lockedMcpServerIds={lockedModeMcpServerIds}
+      mcpSummary={modeMcpSummary}
       onToggleMcpServer={handleToggleMcpServer}
       isLoopGoalMode={isLoopGoalMode}
       onToggleLoopGoalMode={() => {

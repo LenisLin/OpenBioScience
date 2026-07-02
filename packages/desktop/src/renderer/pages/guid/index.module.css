@@ -656,6 +656,34 @@
   margin-right: 0;
 }
 
+.modeCapabilitySummary {
+  pointer-events: none;
+  cursor: default !important;
+  color: var(--color-text-3) !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+  opacity: 1 !important;
+}
+
+:global(.arco-menu-disabled).modeCapabilitySummary {
+  opacity: 1 !important;
+}
+
+.modeCapabilityBadge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 0 5px;
+  height: 16px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-fill-2) 82%, transparent);
+  color: var(--color-text-3);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0;
+  vertical-align: 1px;
+}
+
 .loopGoalModeIndicator {
   display: inline-flex;
   align-items: center;

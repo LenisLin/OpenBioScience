@@ -8,7 +8,6 @@ import { ipcBridge } from '@/common';
 import {
   buildMedicalEvidenceConversationExtra,
   buildMedicalEvidenceModePrompt,
-  DEFAULT_MEDICAL_EVIDENCE_SKILL_IDS,
 } from '@/common/chat/medicalEvidence';
 import { normalizeMedicalEvidenceSources } from '@/common/chat/medicalEvidenceDefaults';
 import {
@@ -23,7 +22,6 @@ import {
 } from '@/common/chat/science';
 import { buildComputeConversationExtra } from '@/common/chat/compute';
 import { configService } from '@/common/config/configService';
-import { LEGACY_LOCAL_RUNTIME_ID } from '@/common/config/legacyIdentifiers';
 import { applyPaperclipCredentialFallback } from '@/common/config/paperclipConfig';
 import { RESEARCH_EVIDENCE_ENV_KEYS } from '@/common/config/researchEvidenceMcpEnv';
 import {
@@ -57,9 +55,12 @@ import {
   summarizeLoopGoal,
   type LoopGoalState,
 } from '@/common/chat/loopGoal';
-
-const normalizeLegacyBackend = (backend: string | undefined): string | undefined =>
-  backend === LEGACY_LOCAL_RUNTIME_ID ? 'codex' : backend;
+import {
+  getGuidModeDefaultSkillIds,
+  getGuidModeRequiredMcpNames,
+  normalizeGuidAgentBackend,
+  resolveGuidCapabilityMode,
+} from '../utils/modeCapabilities';
 
 const appendPrompt = (...parts: Array<string | undefined>): string | undefined => {
   const value = parts
@@ -335,9 +336,14 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
 
   const handleSend = useCallback(async () => {
     const trimmedInput = input.trim();
-    const hasMedicalEvidenceMode = Boolean(isMedicalEvidenceMode);
-    const hasSkillDepositionMode = Boolean(isSkillDepositionMode);
-    const hasScienceMode = Boolean(isScienceMode) && !hasMedicalEvidenceMode && !hasSkillDepositionMode;
+    const activeCapabilityMode = resolveGuidCapabilityMode({
+      isScienceMode,
+      isMedicalEvidenceMode,
+      isSkillDepositionMode,
+    });
+    const hasMedicalEvidenceMode = activeCapabilityMode === 'medical-evidence';
+    const hasSkillDepositionMode = activeCapabilityMode === 'skill-deposition';
+    const hasScienceMode = activeCapabilityMode === 'science';
     const hasLoopGoal =
       !hasMedicalEvidenceMode &&
       !hasSkillDepositionMode &&
@@ -365,14 +371,11 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
 
     const { agent_type: effectiveAgentType } = getEffectiveAgentType(agentInfo);
     const medicalEvidenceAgentBackend =
-      normalizeLegacyBackend(is_preset ? effectiveAgentType : selectedAgent) || normalizeLegacyBackend(selectedAgent);
-    const requiredBuiltinMcpNames = [
-      ...(hasMedicalEvidenceMode ? [BUILTIN_MEDICAL_EVIDENCE_NAME] : []),
-      ...(hasMedicalEvidenceMode && medicalEvidenceAgentBackend === 'codex' ? [BUILTIN_IMAGE_GEN_NAME] : []),
-      ...(hasScienceMode ? [BUILTIN_RESEARCH_EVIDENCE_NAME, BUILTIN_SCIENCE_ARTIFACT_NAME] : []),
-      ...(hasSkillDepositionMode ? [BUILTIN_LAB_SKILL_NAME] : []),
-      ...(hasMedicalEvidenceMode || hasScienceMode || hasSkillDepositionMode ? [BUILTIN_USER_INPUT_NAME] : []),
-    ];
+      normalizeGuidAgentBackend(is_preset ? effectiveAgentType : selectedAgent) ||
+      normalizeGuidAgentBackend(selectedAgent);
+    const requiredBuiltinMcpNames = getGuidModeRequiredMcpNames(activeCapabilityMode, {
+      medicalEvidenceAgentBackend,
+    });
     const availableMcpServersForSend = await resolveModeMcpCatalog(availableMcpServers, requiredBuiltinMcpNames);
 
     // Guid page's per-conversation skill overrides take precedence over the
@@ -389,11 +392,8 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
         ? guidEnabledSkills
         : undefined;
     const loopGoalSkillIds = loopGoalForCreate ? [SCIENCE_WORKFLOW_SKILL_NAME] : undefined;
-    const enabled_skills_to_send = hasMedicalEvidenceMode
-      ? mergeSkillIds(base_enabled_skills_to_send, DEFAULT_MEDICAL_EVIDENCE_SKILL_IDS, loopGoalSkillIds)
-      : hasScienceMode
-        ? mergeSkillIds(base_enabled_skills_to_send, DEFAULT_SCIENCE_SKILL_IDS, loopGoalSkillIds)
-        : mergeSkillIds(base_enabled_skills_to_send, loopGoalSkillIds);
+    const modeDefaultSkillIds = getGuidModeDefaultSkillIds(activeCapabilityMode);
+    const enabled_skills_to_send = mergeSkillIds(base_enabled_skills_to_send, modeDefaultSkillIds, loopGoalSkillIds);
     const excludeBuiltinSkills =
       guidDisabledBuiltinSkills ??
       (is_presetAgent ? assistantDefaultDisabledBuiltinSkillIds : resolveDisabledBuiltinSkills(agentInfo));
