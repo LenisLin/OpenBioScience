@@ -82,6 +82,10 @@ type WebuiMcpServerPayload = {
   original_json: string;
 };
 
+type StoredWebuiMcpServer = WebuiMcpServerPayload & {
+  id: string;
+};
+
 const __filename = fileURLToPath(import.meta.url);
 const repoRoot = path.resolve(path.dirname(__filename), '..');
 
@@ -310,7 +314,7 @@ function buildStdioMcpServer(params: {
   };
 }
 
-function buildStandaloneBuiltinMcpServers(): WebuiMcpServerPayload[] {
+function buildStandaloneBuiltinMcpServers(backendPort: number): WebuiMcpServerPayload[] {
   const servers = [
     buildStdioMcpServer({
       name: 'openscience-medical-evidence',
@@ -353,6 +357,10 @@ function buildStandaloneBuiltinMcpServers(): WebuiMcpServerPayload[] {
       name: 'openscience-lab-skill',
       description: 'Built-in Lab Skill deposition bridge for SOP, protocol, evidence-ledger, and skill draft reports.',
       scriptName: 'builtin-mcp-lab-skill',
+      env: {
+        DEEPORGANISER_BACKEND_PORT: String(backendPort),
+        DEEPORGANISER_DATA_DIR: resolveBackendDataDir(),
+      },
     }),
     buildStdioMcpServer({
       name: 'openscience-user-input',
@@ -399,18 +407,51 @@ async function fetchBackendJson<T>(backendPort: number, pathName: string, init?:
 
 async function bootstrapStandaloneMcpCatalog(backendPort: number): Promise<void> {
   try {
-    const existing = await fetchBackendJson<Array<{ name: string }>>(backendPort, '/api/mcp/servers');
-    const existingNames = new Set((existing ?? []).map((server) => server.name));
-    const missing = buildStandaloneBuiltinMcpServers().filter((server) => !existingNames.has(server.name));
-    if (missing.length === 0) {
+    const existing = await fetchBackendJson<StoredWebuiMcpServer[]>(backendPort, '/api/mcp/servers');
+    const existingByName = new Map((existing ?? []).map((server) => [server.name, server]));
+    const desired = buildStandaloneBuiltinMcpServers(backendPort);
+    const missing = desired.filter((server) => !existingByName.has(server.name));
+    const changed = desired.filter((server) => {
+      const current = existingByName.get(server.name);
+      if (!current?.id) return false;
+      return (
+        current.builtin !== server.builtin ||
+        current.description !== server.description ||
+        current.original_json !== server.original_json ||
+        JSON.stringify(current.transport) !== JSON.stringify(server.transport)
+      );
+    });
+
+    if (missing.length === 0 && changed.length === 0) {
       console.log('[webui] OpenScience MCP catalog already present');
       return;
     }
-    await fetchBackendJson(backendPort, '/api/mcp/servers/import', {
-      method: 'POST',
-      body: JSON.stringify({ servers: missing }),
-    });
-    console.log(`[webui] OpenScience MCP catalog imported: ${missing.map((server) => server.name).join(', ')}`);
+
+    if (missing.length > 0) {
+      await fetchBackendJson(backendPort, '/api/mcp/servers/import', {
+        method: 'POST',
+        body: JSON.stringify({ servers: missing }),
+      });
+      console.log(`[webui] OpenScience MCP catalog imported: ${missing.map((server) => server.name).join(', ')}`);
+    }
+
+    for (const server of changed) {
+      const current = existingByName.get(server.name);
+      if (!current?.id) continue;
+      await fetchBackendJson(backendPort, `/api/mcp/servers/${encodeURIComponent(current.id)}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          name: server.name,
+          description: server.description,
+          builtin: server.builtin,
+          transport: server.transport,
+          original_json: server.original_json,
+        }),
+      });
+    }
+    if (changed.length > 0) {
+      console.log(`[webui] OpenScience MCP catalog updated: ${changed.map((server) => server.name).join(', ')}`);
+    }
   } catch (error) {
     console.warn('[webui] could not bootstrap OpenScience MCP catalog:', error);
   }

@@ -10,6 +10,7 @@ import path from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import { legacyEnvName } from '@/common/config/legacyIdentifiers';
 import {
   LAB_SKILL_DEPOSITION_EVENT_SCHEMA,
   LAB_SKILL_DEPOSITION_PANEL_SCHEMA,
@@ -29,6 +30,8 @@ type JsonRecord = Record<string, unknown>;
 type LabSkillSessionState = {
   sessionId: string;
   projectRoot: string;
+  conversationId?: string;
+  sourceLocationsPath?: string;
   userInstruction?: string;
   targetSkillName: string;
   displayName?: string;
@@ -113,6 +116,27 @@ const sessionDir = (state: Pick<LabSkillSessionState, 'projectRoot' | 'sessionId
 const sessionFile = (state: Pick<LabSkillSessionState, 'projectRoot' | 'sessionId'>): string =>
   path.join(sessionDir(state), 'session.json');
 
+type BackendConversation = {
+  id: string;
+  name?: string;
+  type?: string;
+};
+
+type BackendMessage = {
+  id?: string;
+  msg_id?: string;
+  type?: string;
+  position?: 'left' | 'right' | 'center' | 'pop';
+  content?: unknown;
+  created_at?: number;
+};
+
+type BackendMessagePage = {
+  data?: BackendMessage[];
+  items?: BackendMessage[];
+  total?: number;
+};
+
 const persistSession = (state: LabSkillSessionState): void => {
   state.updatedAt = now();
   writeJson(sessionFile(state), state);
@@ -127,7 +151,175 @@ const loadSession = (sessionId: string, projectRoot?: string): LabSkillSessionSt
   return loaded;
 };
 
-const openSession = (payload: JsonRecord, projectRoot?: string, sessionId?: string): LabSkillSessionState => {
+const backendBaseUrl = (): string | undefined => {
+  const port =
+    process.env.DEEPORGANISER_BACKEND_PORT || process.env[legacyEnvName('BACKEND_PORT')] || process.env.BACKEND_PORT;
+  return port ? `http://127.0.0.1:${port}` : undefined;
+};
+
+const backendRequest = async <T>(route: string): Promise<T | undefined> => {
+  const baseUrl = backendBaseUrl();
+  if (!baseUrl) return undefined;
+  const response = await fetch(`${baseUrl}${route}`);
+  if (!response.ok) {
+    throw new Error(`Backend GET ${route} failed (${response.status}): ${await response.text()}`);
+  }
+  const text = await response.text();
+  if (!text) return undefined;
+  const parsed = JSON.parse(text) as unknown;
+  if (isRecord(parsed) && 'data' in parsed) return parsed.data as T;
+  return parsed as T;
+};
+
+const extractMessageText = (message: BackendMessage): string => {
+  const content = message.content;
+  if (typeof content === 'string') return content;
+  if (!isRecord(content)) {
+    return content == null ? '' : JSON.stringify(content);
+  }
+  const candidates = [content.content, content.text, content.message, content.output];
+  for (const value of candidates) {
+    if (typeof value === 'string' && value.trim()) return value;
+  }
+  return JSON.stringify(content, null, 2);
+};
+
+const messageRoleLabel = (message: BackendMessage): string => {
+  if (message.position === 'right') return 'User';
+  if (message.position === 'left') return 'Assistant';
+  return 'System';
+};
+
+const buildConversationMarkdown = (conversation: BackendConversation, messages: BackendMessage[]): string => {
+  const lines: string[] = [];
+  lines.push(`# ${conversation.name || 'OpenScience Conversation'}`);
+  lines.push('');
+  lines.push(`- Conversation ID: ${conversation.id}`);
+  lines.push(`- Exported At: ${new Date().toISOString()}`);
+  if (conversation.type) lines.push(`- Type: ${conversation.type}`);
+  lines.push('');
+  lines.push('## Messages');
+  lines.push('');
+  messages.forEach((message, index) => {
+    lines.push(`### ${index + 1}. ${messageRoleLabel(message)} (${message.type || 'message'})`);
+    if (message.id || message.msg_id) lines.push(`- Message ID: ${message.id || message.msg_id}`);
+    if (message.created_at) lines.push(`- Created At: ${new Date(message.created_at).toISOString()}`);
+    lines.push('');
+    lines.push('```text');
+    lines.push(extractMessageText(message));
+    lines.push('```');
+    lines.push('');
+  });
+  return lines.join('\n');
+};
+
+const exportConversationFiles = async (
+  state: LabSkillSessionState,
+  conversationId: string
+): Promise<{ markdownPath: string; jsonPath: string; messageCount: number; total?: number } | undefined> => {
+  const [conversation, page] = await Promise.all([
+    backendRequest<BackendConversation>(`/api/conversations/${encodeURIComponent(conversationId)}`),
+    backendRequest<BackendMessagePage>(
+      `/api/conversations/${encodeURIComponent(conversationId)}/messages?page=1&page_size=500&order=ASC&content_mode=full`
+    ),
+  ]);
+  if (!conversation) return undefined;
+  const messages = page?.items || page?.data || [];
+  const dir = path.join(sessionDir(state), 'source-locations', 'current-conversation');
+  ensureDir(dir);
+  const markdownPath = path.join(dir, 'conversation.md');
+  const jsonPath = path.join(dir, 'conversation.json');
+  writeText(markdownPath, buildConversationMarkdown(conversation, messages));
+  writeJson(jsonPath, {
+    schema: 'openscience.lab_skill_deposition.conversation_export.v1',
+    exportedAt: new Date().toISOString(),
+    conversation,
+    messages,
+  });
+  return { markdownPath, jsonPath, messageCount: messages.length, total: page?.total };
+};
+
+const writeSourceLocations = async (state: LabSkillSessionState, payload: JsonRecord): Promise<void> => {
+  const conversationId = asString(
+    payload.conversationId ||
+      payload.conversation_id ||
+      process.env.OPENSCIENCE_CONVERSATION_ID ||
+      process.env.DEEPORGANISER_CONVERSATION_ID
+  );
+  if (conversationId) state.conversationId = conversationId;
+
+  const notes: string[] = [];
+  let currentConversation:
+    | { markdownPath: string; jsonPath: string; messageCount: number; total?: number }
+    | undefined;
+  if (conversationId) {
+    try {
+      currentConversation = await exportConversationFiles(state, conversationId);
+      if (!currentConversation) notes.push(`No backend conversation was returned for ${conversationId}.`);
+    } catch (error) {
+      notes.push(`Current conversation export unavailable: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  } else {
+    notes.push('No current conversation id was provided to lab_skill.');
+  }
+
+  const scienceArtifactIndex = path.join(state.projectRoot, '.openscience', 'science-artifacts', 'project-index.json');
+  const depositionIndexRoot = depositionRoot(state.projectRoot);
+  const sourceLocationsPath = path.join(sessionDir(state), 'source-locations.md');
+  const lines = [
+    '# Lab Skill Source Locations',
+    '',
+    'This file is a MeOS-style source pointer. Read the referenced files directly; do not ask `lab_skill` to summarize or search source content.',
+    '',
+    `- Project root: ${state.projectRoot}`,
+    `- Deposition session: ${sessionDir(state)}`,
+    state.conversationId ? `- Current conversation id: ${state.conversationId}` : '- Current conversation id: unavailable',
+    '',
+    '## Current Conversation',
+    currentConversation
+      ? `- Markdown transcript: ${currentConversation.markdownPath}`
+      : '- Markdown transcript: unavailable',
+    currentConversation ? `- JSON transcript: ${currentConversation.jsonPath}` : '- JSON transcript: unavailable',
+    currentConversation
+      ? `- Exported messages: ${currentConversation.messageCount}${currentConversation.total ? ` / ${currentConversation.total}` : ''}`
+      : '- Exported messages: 0',
+    '',
+    '## Project Evidence Locations',
+    fs.existsSync(scienceArtifactIndex)
+      ? `- Science artifact project index: ${scienceArtifactIndex}`
+      : `- Science artifact project index not found yet: ${scienceArtifactIndex}`,
+    fs.existsSync(depositionIndexRoot)
+      ? `- Skill deposition root: ${depositionIndexRoot}`
+      : `- Skill deposition root will be created at: ${depositionIndexRoot}`,
+    '',
+    '## Extraction Guidance',
+    '- Look for reusable patterns in user request -> assistant action/decision -> user correction/approval.',
+    '- Register only sources you actually opened via lab_skill(action="select_sources"|"ingest").',
+    '- Keep conversation excerpts short and cite message ids when available.',
+    '',
+    '## Notes',
+    ...(notes.length ? notes.map((note) => `- ${note}`) : ['- Source locations prepared successfully.']),
+  ];
+  writeText(sourceLocationsPath, lines.join('\n'));
+  state.sourceLocationsPath = sourceLocationsPath;
+
+  if (currentConversation) {
+    state.sources = mergeById(state.sources, [
+      {
+        id: 'H1',
+        title: '当前会话导出',
+        sourceType: 'conversation',
+        status: 'selected',
+        summary: `Local transcript export for conversation ${conversationId}. Agent must read the file before extracting claims.`,
+        path: currentConversation.markdownPath,
+        messageId: conversationId,
+        createdAt: now(),
+      },
+    ]);
+  }
+};
+
+const openSession = async (payload: JsonRecord, projectRoot?: string, sessionId?: string): Promise<LabSkillSessionState> => {
   const root = resolveProjectRoot(projectRoot || asString(payload.projectRoot));
   const id = sessionId || asString(payload.sessionId, randomId('lab_skill_session'));
   const existing = loadSession(id, root);
@@ -161,13 +353,18 @@ const openSession = (payload: JsonRecord, projectRoot?: string, sessionId?: stri
     nextActions: ['选择来源', '抽取 SOP 规则', '编译 Skill 草稿', '提交沉淀报告'],
   };
   sessions.set(id, created);
+  await writeSourceLocations(created, payload);
   persistSession(created);
   appendJsonl(path.join(sessionDir(created), 'events.jsonl'), eventFor(created, 'open_session'));
   return created;
 };
 
-const ensureSession = (sessionId?: string, projectRoot?: string, payload: JsonRecord = {}): LabSkillSessionState =>
-  (sessionId ? loadSession(sessionId, projectRoot) : undefined) || openSession(payload, projectRoot, sessionId);
+const ensureSession = async (
+  sessionId?: string,
+  projectRoot?: string,
+  payload: JsonRecord = {}
+): Promise<LabSkillSessionState> =>
+  (sessionId ? loadSession(sessionId, projectRoot) : undefined) || (await openSession(payload, projectRoot, sessionId));
 
 const eventFor = (
   state: LabSkillSessionState,
@@ -350,6 +547,8 @@ const compileDraft = (state: LabSkillSessionState, payload: JsonRecord): void =>
   );
   writeJson(path.join(draftDir, 'source-map.json'), {
     sessionId: state.sessionId,
+    conversationId: state.conversationId,
+    sourceLocationsPath: state.sourceLocationsPath,
     userInstruction: state.userInstruction,
     sources: state.sources,
     claims: state.claims,
@@ -393,6 +592,9 @@ const buildPanel = (state: LabSkillSessionState, patch?: JsonRecord): LabSkillDe
   const blockingFindings = state.findings.filter((finding) => finding.severity === 'blocking');
   const canEnable = blockingFindings.length === 0 && Boolean(state.draftDir);
   const files: LabSkillDepositionPanelData['files'] = [
+    ...(state.sourceLocationsPath
+      ? [{ path: state.sourceLocationsPath, role: 'reference' as const, label: '来源位置' }]
+      : []),
     ...(state.draftDir
       ? [
           { path: path.join(state.draftDir, 'SKILL.md'), role: 'skill' as const, label: 'SKILL.md' },
@@ -409,6 +611,8 @@ const buildPanel = (state: LabSkillSessionState, patch?: JsonRecord): LabSkillDe
     schema: LAB_SKILL_DEPOSITION_PANEL_SCHEMA,
     sessionId: state.sessionId,
     projectRoot: state.projectRoot,
+    conversationId: state.conversationId,
+    sourceLocationsPath: state.sourceLocationsPath,
     title: state.displayName || state.targetSkillName,
     generatedAt: now(),
     status: state.status,
@@ -543,6 +747,7 @@ async function main() {
       ]),
       sessionId: z.string().optional(),
       projectRoot: z.string().optional(),
+      conversationId: z.string().optional(),
       userInstruction: z.string().optional(),
       targetSkillName: z.string().optional(),
       targetScope: z.string().optional(),
@@ -558,6 +763,7 @@ async function main() {
       action,
       sessionId,
       projectRoot,
+      conversationId,
       userInstruction,
       targetSkillName,
       itemKind,
@@ -571,10 +777,11 @@ async function main() {
       const body: JsonRecord = {
         ...(payload || {}),
         ...(content || {}),
+        ...(conversationId ? { conversationId } : {}),
         ...(userInstruction ? { userInstruction } : {}),
         ...(targetSkillName ? { targetSkillName } : {}),
       };
-      const state = ensureSession(sessionId, projectRoot, body);
+      const state = await ensureSession(sessionId, projectRoot, body);
       const eventTarget =
         itemKind || itemId ? { kind: itemKind as LabSkillDepositionEvent['target']['kind'], id: itemId } : undefined;
 

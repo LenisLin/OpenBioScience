@@ -38,6 +38,7 @@ import {
   type TProviderWithModel,
 } from '@/common/config/storage';
 import { buildAgentConversationParams } from '@/common/utils/buildAgentConversationParams';
+import { uuid } from '@/common/utils';
 import { ensureBackendMcpCatalog, toSessionMcpServer } from '@/renderer/hooks/mcp/catalog';
 import { emitter } from '@/renderer/utils/emitter';
 import { updateWorkspaceTime } from '@/renderer/utils/workspace/workspaceHistory';
@@ -76,6 +77,24 @@ const mergeSessionMcpServers = (servers: ISessionMcpServer[]): ISessionMcpServer
     byId.set(server.id || server.name, server);
   }
   return [...byId.values()];
+};
+
+const withLabSkillConversationEnv = (
+  server: ISessionMcpServer | undefined,
+  conversationId: string | undefined
+): ISessionMcpServer | undefined => {
+  if (!server || !conversationId) return server;
+  return {
+    ...server,
+    transport: {
+      ...server.transport,
+      env: {
+        ...server.transport.env,
+        OPENSCIENCE_CONVERSATION_ID: conversationId,
+        DEEPORGANISER_CONVERSATION_ID: conversationId,
+      },
+    },
+  };
 };
 
 const buildConversationMcpStatuses = (servers: ISessionMcpServer[]): IConversationMcpStatus[] =>
@@ -364,6 +383,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       : trimmedInput || input;
     const isCustomWorkspace = !!dir;
     const finalWorkspace = dir || '';
+    const plannedConversationId = hasSkillDepositionMode ? `lab_skill_${uuid(16)}` : undefined;
 
     const agentInfo = selectedAgentInfo;
     const is_preset = is_presetAgent;
@@ -440,7 +460,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       : undefined;
     const sciencePrompt = hasScienceMode ? buildScienceModePrompt(finalWorkspace, localeKey) : undefined;
     const labSkillDepositionPrompt = hasSkillDepositionMode
-      ? buildLabSkillDepositionModePrompt(finalWorkspace, localeKey)
+      ? buildLabSkillDepositionModePrompt(finalWorkspace, localeKey, plannedConversationId)
       : undefined;
     const computeContext =
       selectedComputeHostIds && selectedComputeHostIds.length > 0
@@ -464,7 +484,10 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       ? resolveScienceArtifactSessionMcpServer(availableMcpServersForSend, scienceArtifactConfig)
       : undefined;
     const labSkillSessionMcpServer = hasSkillDepositionMode
-      ? resolveBuiltinSessionMcpServer(availableMcpServersForSend, BUILTIN_LAB_SKILL_NAME)
+      ? withLabSkillConversationEnv(
+          resolveBuiltinSessionMcpServer(availableMcpServersForSend, BUILTIN_LAB_SKILL_NAME),
+          plannedConversationId
+        )
       : undefined;
     const userInputSessionMcpServer =
       hasMedicalEvidenceMode || hasScienceMode || hasSkillDepositionMode
@@ -517,7 +540,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       : {};
     const scienceExtra = hasScienceMode ? { science: buildScienceConversationExtra(finalWorkspace) } : {};
     const labSkillDepositionExtra = hasSkillDepositionMode
-      ? { lab_skill_deposition: buildLabSkillDepositionConversationExtra(finalWorkspace) }
+      ? { lab_skill_deposition: buildLabSkillDepositionConversationExtra(finalWorkspace, plannedConversationId) }
       : {};
     const computeExtra = computeContext?.hosts?.length
       ? { compute: buildComputeConversationExtra(computeContext.hosts) }
@@ -546,6 +569,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       const agentBackend = acpBackend || selectedAgent;
       const preferredThoughtLevel = getPreferredThoughtLevel(agentBackend);
       const agentConversationParams = buildAgentConversationParams({
+        id: plannedConversationId,
         backend: agentBackend,
         name: conversationName,
         // For row-scoped rows (custom ACP / remote) the backend factory

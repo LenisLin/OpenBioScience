@@ -440,10 +440,19 @@ function buildBuiltinScienceArtifactServer(resolution: ScienceArtifactMcpEnvReso
 
 function buildBuiltinLabSkillServer(): McpImportServer {
   const scriptPath = getBuiltinMcpScriptPath('builtin-mcp-lab-skill');
+  const backendPort = (globalThis as typeof globalThis & { __backendPort?: number }).__backendPort;
+  const env: Record<string, string> = {
+    DEEPORGANISER_DATA_DIR: getPlatformServices().paths.getDataDir(),
+    [legacyEnvName('DATA_DIR')]: getPlatformServices().paths.getDataDir(),
+  };
+  if (backendPort) {
+    env.DEEPORGANISER_BACKEND_PORT = String(backendPort);
+    env[legacyEnvName('BACKEND_PORT')] = String(backendPort);
+  }
   const serverConfig = {
     command: 'node',
     args: [scriptPath],
-    env: {},
+    env,
   };
 
   return {
@@ -455,7 +464,7 @@ function buildBuiltinLabSkillServer(): McpImportServer {
       type: 'stdio',
       command: 'node',
       args: [scriptPath],
-      env: {},
+      env,
     },
     original_json: JSON.stringify({ mcpServers: { [BUILTIN_LAB_SKILL_NAME]: serverConfig } }, null, 2),
   };

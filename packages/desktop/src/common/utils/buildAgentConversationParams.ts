@@ -17,6 +17,7 @@ export type BuildAgentConversationAssistantOverrides = {
 };
 
 export type BuildAgentConversationInput = {
+  id?: string;
   backend: string;
   name: string;
   agent_id?: string;
@@ -44,6 +45,7 @@ export function getConversationTypeForBackend(_backend: string): ICreateConversa
 export function buildAgentConversationParams(input: BuildAgentConversationInput): ICreateConversationParams {
   const {
     backend,
+    id,
     name,
     agent_id,
     agent_name,
@@ -96,6 +98,7 @@ export function buildAgentConversationParams(input: BuildAgentConversationInput)
 
   return {
     type,
+    id,
     model,
     name,
     assistant: effectivePresetAssistantId

@@ -101,6 +101,8 @@ export interface LabSkillDepositionPanelData {
   schema: typeof LAB_SKILL_DEPOSITION_PANEL_SCHEMA;
   sessionId: string;
   projectRoot?: string;
+  conversationId?: string;
+  sourceLocationsPath?: string;
   title: string;
   generatedAt: number;
   status: LabSkillDepositionStatus;
@@ -176,6 +178,7 @@ export interface LabSkillDepositionConversationExtra {
   enabled: true;
   mode: typeof LAB_SKILL_DEPOSITION_MODE_ID;
   projectRoot?: string;
+  conversationId?: string;
   sopVersion: 1;
   tool: {
     name: 'lab_skill';
@@ -194,11 +197,13 @@ export interface LabSkillDepositionConversationExtra {
 }
 
 export const buildLabSkillDepositionConversationExtra = (
-  projectRoot?: string
+  projectRoot?: string,
+  conversationId?: string
 ): LabSkillDepositionConversationExtra => ({
   enabled: true,
   mode: LAB_SKILL_DEPOSITION_MODE_ID,
   projectRoot,
+  conversationId,
   sopVersion: 1,
   tool: {
     name: 'lab_skill',
@@ -319,7 +324,11 @@ export const buildDefaultLabSkillDepositionUserMessage = (options?: {
     .join('\n');
 };
 
-export const buildLabSkillDepositionModePrompt = (projectRoot?: string, preferredLocale?: string): string =>
+export const buildLabSkillDepositionModePrompt = (
+  projectRoot?: string,
+  preferredLocale?: string,
+  conversationId?: string
+): string =>
   [
     '# OpenScience Lab Skill Deposition Mode',
     '',
@@ -332,12 +341,16 @@ export const buildLabSkillDepositionModePrompt = (projectRoot?: string, preferre
     projectRoot
       ? `- Authorized project root: ${projectRoot}`
       : '- No explicit project root was provided; ask before reading unrelated folders.',
+    conversationId
+      ? `- Current OpenScience conversation id: ${conversationId}`
+      : '- Current OpenScience conversation id is unavailable; rely only on sources you can actually open.',
     '- Never publish or install the Skill until the user explicitly confirms enablement.',
     '',
     '## Required Tool Surface',
     '- Use lab_skill as the single control surface. Do not invent separate start, panel, protocol, review, or install tools.',
-    '- Start with lab_skill(action="open_session", userInstruction=<the user request>, projectRoot=<root if known>).',
-    '- Before extracting rules or compiling a draft, perform source intake: register available current-conversation excerpts as sourceType="conversation", generated/opened artifacts as sourceType="artifact", consulted project files as sourceType="file", and consulted scripts/configs as sourceType="code" via lab_skill(action="select_sources"|"ingest").',
+    '- Start with lab_skill(action="open_session", userInstruction=<the user request>, projectRoot=<root if known>, conversationId=<current conversation id if known>).',
+    '- MeOS-style source workflow: open_session returns a sourceLocationsPath when available. Read that local file directly before source extraction. Do not ask lab_skill to summarize or search history content.',
+    '- Before extracting rules or compiling a draft, perform source intake from files you actually read: register current-conversation transcript excerpts as sourceType="conversation", generated/opened artifacts as sourceType="artifact", consulted project files as sourceType="file", and consulted scripts/configs as sourceType="code" via lab_skill(action="select_sources"|"ingest").',
     '- If the user asks to use the current conversation, generated artifacts, or project documents but those sources are not actually available in context, say so in the report and ask the user to attach, open, or select them; do not pretend they were read.',
     '- Use lab_skill(action="select_sources"|"ingest"|"extract_claims"|"draft_protocol"|"compile_draft") to build the evidence chain and draft files.',
     '- Use lab_skill(action="submit_report") whenever the user should inspect the report panel.',
@@ -347,6 +360,7 @@ export const buildLabSkillDepositionModePrompt = (projectRoot?: string, preferre
     '- Every SOP rule, protocol step, prompt instruction, and validation claim should point to source ids when possible.',
     '- A complete deposition report should normally include at least one non-user_instruction source. If only U1 exists, mark the report incomplete and explain which conversation, artifact, file, or code source is missing.',
     '- For conversation sources, include messageId when available and keep excerpt/summary short.',
+    '- Extract reusable knowledge from the pattern: user request -> assistant action/decision -> user correction/approval. Keep this triad explicit when it matters.',
     '- Keep conversation excerpts short and privacy-aware. If a source is sensitive, summarize it and mark the source accordingly.',
     '- If sources conflict, keep both, mark the conflict, and block enablement until the conflict is resolved.',
     '- If the user asks for “还需要修改：...”, read the existing draft state first, patch only the relevant section, then submit a new report.',
