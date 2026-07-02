@@ -16,6 +16,7 @@
   <a href="https://deepscientist.cc/openscience/">Website</a> ·
   <a href="https://github.com/ResearAI/OpenScience/releases">Download</a> ·
   <a href="./docs/specs/science-mode-architecture.zh-CN.md">Science Mode Plan</a> ·
+  <a href="./docs/developers.md">Developers</a> ·
   <a href="https://github.com/ResearAI/OpenScience/discussions">Discussions</a>
 </p>
 
@@ -292,6 +293,14 @@ Use [Discussions](https://github.com/ResearAI/OpenScience/discussions) for ideas
 | [README visual source](./resources/readme/source/open-design-style-readme.html) | Deterministic, readable product images rendered for this README |
 | [Download page source](./server/DeepOrganiserServer/public/index.html) | Landing-page screenshots and OpenScience website assets used in README visuals |
 | Open scientific software | Results should be inspectable, rerunnable, and reusable |
+
+---
+
+## Developers and Maintainers
+
+OpenScience is developed by the ResearAI and WestlakeNLP research community. See the [developer list](./docs/developers.md) for the current development team and contact information.
+
+For research collaboration, long-term internship, PhD, or research assistant opportunities, contact Professor Yue Zhang at `zhangyue@westlake.edu.cn`.
 
 ---
 
