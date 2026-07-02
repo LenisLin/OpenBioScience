@@ -59,8 +59,8 @@ interface AutoUpdateCheckParams {
   includePrerelease?: boolean;
 }
 
-const DEFAULT_REPO = 'ResearAI/DeepOrganiser';
-const DEFAULT_USER_AGENT = 'DeepOrganiser';
+const DEFAULT_REPO = 'ResearAI/OpenScience';
+const DEFAULT_USER_AGENT = 'OpenScience';
 const ALLOWED_ASSET_EXTS = new Set(['.exe', '.msi', '.dmg', '.zip', '.deb', '.rpm']);
 const CDN_BASE_URL = getUpdateBaseUrl();
 const CDN_URL = new URL(CDN_BASE_URL);
@@ -328,7 +328,7 @@ const sanitizeFileName = (name: string): string => {
   // Keep only base name and trim weird whitespace.
   const base = path.basename(name).trim();
   // Avoid empty names.
-  return base || `DeepOrganiser-update-${Date.now()}`;
+  return base || `OpenScience-update-${Date.now()}`;
 };
 
 const ensureUniquePath = (target: string): string => {

@@ -20,7 +20,7 @@ type MessageState = {
 const REMEMBER_ME_KEY = 'rememberMe';
 const REMEMBERED_USERNAME_KEY = 'rememberedUsername';
 const REMEMBERED_PASSWORD_KEY = 'rememberedPassword';
-const REGISTERED_ACCOUNT_KEY = 'deepscientist.localRegisteredAccount';
+const REGISTERED_ACCOUNT_KEY = 'openscience.localRegisteredAccount';
 const AUTO_FOCUS_QUERY = '(min-width: 721px)';
 
 const obfuscate = (text: string): string => {
@@ -82,7 +82,7 @@ const RegisterPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    document.title = 'DeepOrganiser - 注册';
+    document.title = 'OpenScience - 注册';
   }, []);
 
   useEffect(() => {
@@ -206,15 +206,15 @@ const RegisterPage: React.FC = () => {
 
       <header className='login-page__topbar'>
         <div className='login-page__identity'>
+          <DeepScientistWordmark
+            aria-label='OpenScience'
+            className='login-page__wordmark-image'
+            wrapperClassName='login-page__wordmark'
+          />
           <DeepScientistLogo
             aria-hidden='true'
             className='login-page__identity-logo-image'
             wrapperClassName='login-page__identity-logo'
-          />
-          <DeepScientistWordmark
-            aria-label='DeepOrganiser'
-            className='login-page__wordmark-image'
-            wrapperClassName='login-page__wordmark'
           />
         </div>
         <span className='login-page__topbar-meta'>{t('login.sessionCode')}</span>
@@ -223,11 +223,11 @@ const RegisterPage: React.FC = () => {
       <main className='login-page__main' id='landing-main'>
         <section className='login-page__story' aria-labelledby='register-page-heading'>
           <div className='login-page__copy'>
-            <span className='login-page__eyebrow'>RESEARCH ACCOUNT · Collaboration-ready</span>
+            <span className='login-page__eyebrow'>OPEN WORKSPACE · Collaboration-ready</span>
             <h1 id='register-page-heading' className='login-page__title'>
-              创建账号，把协作入口一次接好。
+              创建账号，让研究脉络从一开始就清楚。
             </h1>
-            <p className='login-page__subtitle'>只保留用户名和密码。需要多人协作时，注册后直接连接飞书。</p>
+            <p className='login-page__subtitle'>先建立 OpenScience 工作区，再把团队、证据和下一步稳稳接起来。</p>
           </div>
 
           <div className='login-page__globe-shell'>
@@ -235,12 +235,12 @@ const RegisterPage: React.FC = () => {
           </div>
         </section>
 
-        <section className='login-page__terminal' aria-label='注册 DeepOrganiser'>
+        <section className='login-page__terminal' aria-label='注册 OpenScience'>
           <div className='login-page__terminal-inner login-page__terminal-inner--register'>
             <div className='login-page__terminal-header'>
               <div>
-                <span className='login-page__terminal-kicker'>CREATE ACCOUNT</span>
-                <h2 className='login-page__card-title'>注册工作台</h2>
+                <span className='login-page__terminal-kicker'>OPEN ACCOUNT</span>
+                <h2 className='login-page__card-title'>注册 OpenScience</h2>
               </div>
               <div className='register-page__stepper' aria-label='注册进度'>
                 <span className={step === 'account' ? 'is-active' : 'is-done'}>1</span>

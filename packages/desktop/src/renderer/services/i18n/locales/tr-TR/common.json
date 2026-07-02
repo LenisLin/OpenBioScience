@@ -61,10 +61,10 @@
   "more": "Daha Fazla",
   "refresh": "Yenile",
   "readOnly": "Salt okunur",
-  "tray.showWindow": "DeepOrganiser'yi Göster",
+  "tray.showWindow": "OpenScience'yi Göster",
   "tray.newChat": "Yeni Sohbet",
   "tray.closeToTray": "Tepsiye Gizle",
-  "tray.about": "DeepOrganiser Hakkında",
+  "tray.about": "OpenScience Hakkında",
   "tray.restart": "Uygulamayı Yeniden Başlat",
   "tray.quit": "Çıkış",
   "tray.runningTasks": "Çalışan Görevler",
@@ -75,22 +75,22 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "Bu sistem paketlenmiş backend tarafından desteklenmiyor",
-      "description": "DeepOrganiser açıldı, ancak yerel DeepOrganiser Core backend bu Linux sürümünde çalışamaz. Desteklenen bir Linux dağıtımına yükseltip DeepOrganiser'yi yeniden başlatın.",
+      "description": "OpenScience açıldı, ancak yerel OpenScience Core backend bu Linux sürümünde çalışamaz. Desteklenen bir Linux dağıtımına yükseltip OpenScience'yi yeniden başlatın.",
       "requiredVersions": "Gerekli çalışma zamanı sembolleri: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "DeepOrganiser kurulumu eksik",
-      "description": "Bu kurulumda gerekli yerel kaynaklar eksik, bu yüzden DeepOrganiser Core başlatılamıyor. Lütfen en son DeepOrganiser sürümünü indirip yeniden kurun. Yeniden kurulumdan sonra sorun tekrarlarsa güvenlik veya antivirüs yazılımının DeepOrganiser Core'u karantinaya alıp almadığını kontrol edin.",
+      "title": "OpenScience kurulumu eksik",
+      "description": "Bu kurulumda gerekli yerel kaynaklar eksik, bu yüzden OpenScience Core başlatılamıyor. Lütfen en son OpenScience sürümünü indirip yeniden kurun. Yeniden kurulumdan sonra sorun tekrarlarsa güvenlik veya antivirüs yazılımının OpenScience Core'u karantinaya alıp almadığını kontrol edin.",
       "downloadLatest": "Son sürümü indir",
       "sendDiagnostics": "Tanı raporu gönder",
       "diagnosticsSent": "Tanı raporu gönderildi",
       "diagnosticsReportSuccess": "Tanı raporu gönderildi",
       "diagnosticsReportFailed": "Tanı raporu gönderilemedi",
-      "runtimeComponentDescription": "Bu kurulumda gerekli yerleşik çalışma zamanı bileşenleri eksik olduğu için {{resource}} başlatılamıyor. En son DeepOrganiser paketini yeniden yükleyin. Yeniden yükledikten sonra da devam ederse güvenlik veya antivirüs yazılımının DeepOrganiser bileşenlerini karantinaya alıp almadığını kontrol edin."
+      "runtimeComponentDescription": "Bu kurulumda gerekli yerleşik çalışma zamanı bileşenleri eksik olduğu için {{resource}} başlatılamıyor. En son OpenScience paketini yeniden yükleyin. Yeniden yükledikten sonra da devam ederse güvenlik veya antivirüs yazılımının OpenScience bileşenlerini karantinaya alıp almadığını kontrol edin."
     },
     "packageArchitectureMismatch": {
-      "title": "DeepOrganiser package architecture mismatch",
-      "description": "This DeepOrganiser package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
+      "title": "OpenScience package architecture mismatch",
+      "description": "This OpenScience package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
     }
   },
   "fileAttach.addFiles": "Dosya ekle",
@@ -115,11 +115,15 @@
   },
   "collaboration": {
     "projects": {
-      "hideTasklistAction": "Remove from this sidebar",
-      "hideTasklistTitle": "Remove this tasklist locally?",
-      "hideTasklistConfirm": "“{{name}}” will disappear from this device’s collaboration sidebar and project picker. The remote Lark tasklist will not be deleted, and other members will not be affected.",
-      "hideTasklistOk": "Remove locally",
-      "hideTasklistSuccess": "Removed from this sidebar"
+      "hideTasklistAction": "Delete from sidebar",
+      "hideTasklistTitle": "Delete this collaboration project?",
+      "hideTasklistConfirm": "“{{name}}” will be hidden from this device’s sidebar and project picker. By default, the remote tasklist will not be deleted.",
+      "hideTasklistRemoteDelete": "Also delete this tasklist remotely",
+      "hideTasklistRemoteDeleteHint": "When checked, Confirm will also delete the remote tasklist. This choice will be remembered for the next time.",
+      "hideTasklistOk": "Sidebar only",
+      "hideTasklistRemoteOk": "Delete both",
+      "hideTasklistSuccess": "Deleted from the sidebar",
+      "hideTasklistRemoteSuccess": "Deleted from the sidebar and remote tasklist"
     }
   }
 }

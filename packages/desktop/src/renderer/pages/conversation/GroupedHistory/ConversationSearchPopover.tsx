@@ -5,8 +5,12 @@
  */
 
 import { ipcBridge } from '@/common';
+import { isLabSkillDepositionConversationExtra } from '@/common/chat/labSkillDeposition';
+import { isMedicalEvidenceConversationExtra } from '@/common/chat/medicalEvidence';
+import { isScienceConversationExtra } from '@/common/chat/science';
 import type { IMessageSearchItem } from '@/common/types/team/database';
 import AionModal from '@/renderer/components/base/AionModal';
+import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
 import { usePresetAssistantInfo } from '@/renderer/hooks/agent/usePresetAssistantInfo';
 import { getAgentLogo } from '@/renderer/utils/model/agentLogo';
 import { blockMobileInputFocus, blurActiveElement } from '@/renderer/utils/ui/focus';
@@ -99,7 +103,44 @@ interface ConversationSearchPopoverProps {
 }
 
 const ConversationAgentMark: React.FC<{ conversation: IMessageSearchItem['conversation'] }> = ({ conversation }) => {
+  const { t } = useTranslation();
   const { info: assistantInfo } = usePresetAssistantInfo(conversation);
+
+  if (isMedicalEvidenceConversationExtra(conversation.extra)) {
+    return (
+      <OpenScienceIcon
+        name='modeMedicalEvidence'
+        size={18}
+        visualScale={1.1}
+        title={t('guid.medicalEvidence.menuLabel')}
+        className='flex-shrink-0'
+      />
+    );
+  }
+
+  if (isLabSkillDepositionConversationExtra(conversation.extra)) {
+    return (
+      <OpenScienceIcon
+        name='modeDeposition'
+        size={18}
+        visualScale={1.08}
+        title={t('guid.skillDeposition.menuLabel')}
+        className='flex-shrink-0'
+      />
+    );
+  }
+
+  if (isScienceConversationExtra(conversation.extra)) {
+    return (
+      <OpenScienceIcon
+        name='modeScience'
+        size={18}
+        visualScale={1.08}
+        title={t('guid.scienceProject.menuLabel')}
+        className='flex-shrink-0'
+      />
+    );
+  }
 
   if (assistantInfo) {
     if (assistantInfo.isEmoji) {

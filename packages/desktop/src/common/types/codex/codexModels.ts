@@ -11,9 +11,12 @@
  *
  * The first entry is used as the default when the user hasn't made a selection.
  */
+export const DEFAULT_CODEX_MODEL_ID = 'gpt-5.5';
+
 export const DEFAULT_CODEX_MODELS: Array<{ id: string; label: string; description: string }> = [
-  { id: 'gpt-5.3-codex', label: 'gpt-5.3-codex', description: 'Latest frontier agentic coding model' },
+  { id: DEFAULT_CODEX_MODEL_ID, label: DEFAULT_CODEX_MODEL_ID, description: 'Latest frontier agentic coding model' },
   { id: 'gpt-5.4', label: 'gpt-5.4', description: 'Latest frontier agentic coding model' },
+  { id: 'gpt-5.3-codex', label: 'gpt-5.3-codex', description: 'Frontier agentic coding model' },
   { id: 'gpt-5.2-codex', label: 'gpt-5.2-codex', description: 'Frontier agentic coding model' },
   {
     id: 'gpt-5.1-codex-max',

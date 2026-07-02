@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 DeepOrganiser (deepscientist.cc)
+ * Copyright 2026 OpenScience
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -19,7 +19,6 @@ import {
   subscribeUpdateReadyState,
   type UpdateReadyState,
 } from '@/renderer/components/settings/updateReadyState';
-import DeepScientistLogo from '@/renderer/components/icons/DeepScientistLogo';
 import DeepScientistWordmark from '@/renderer/components/icons/DeepScientistWordmark';
 
 // __APP_VERSION__ is injected by electron.vite.config.ts `define:` from the
@@ -38,12 +37,13 @@ type HighlightItem = {
   icon: React.ReactNode;
 };
 
-const DEEPSCIENTIST_REPO_URL = 'https://github.com/ResearAI/DeepOrganiser';
-const DEEPSCIENTIST_DOCS_URL = 'https://github.com/ResearAI/DeepOrganiser/tree/main/docs/en';
-const DEEPSCIENTIST_QUICK_START_URL = 'https://github.com/ResearAI/DeepOrganiser/blob/main/docs/en/00_QUICK_START.md';
+const DEEPSCIENTIST_REPO_URL = 'https://github.com/ResearAI/OpenScience';
+const DEEPSCIENTIST_DOCS_URL = 'https://github.com/ResearAI/OpenScience/tree/main/docs/en';
+const DEEPSCIENTIST_QUICK_START_URL = 'https://github.com/ResearAI/OpenScience/blob/main/docs/en/00_QUICK_START.md';
 const DEEPSCIENTIST_PAPER_URL = 'https://openreview.net/forum?id=cZFgsLq8Gs';
-const DEEPSCIENTIST_WEBSITE_URL = 'https://deepscientist.cc';
-const DEEPORGANISER_DOWNLOAD_URL = 'https://deepscientist.cc/DeepOrganiser';
+const DEEPSCIENTIST_WEBSITE_URL = 'https://deepscientist.cc/openscience/';
+const DEEPSCIENTIST_DOWNLOAD_URL = 'https://deepscientist.cc/openscience/';
+const OPENSCIENCE_COMMERCIAL_EMAIL = 'resear.ai@gmail.com';
 
 const AboutModalContent: React.FC = () => {
   const { t } = useTranslation();
@@ -164,7 +164,7 @@ const AboutModalContent: React.FC = () => {
     {
       title: t('settings.aboutLinkDownloadPortal'),
       description: t('settings.aboutLinkDownloadPortalDesc'),
-      url: DEEPORGANISER_DOWNLOAD_URL,
+      url: DEEPSCIENTIST_DOWNLOAD_URL,
       icon: <Download theme='outline' size='18' />,
     },
   ];
@@ -178,21 +178,20 @@ const AboutModalContent: React.FC = () => {
         )}
       >
         <div className={classNames('flex flex-col mx-auto', isPageMode ? 'max-w-720px' : 'max-w-560px')}>
-          <section className='flex flex-col items-center text-center pb-22px'>
-            <DeepScientistLogo alt='DeepOrganiser' className='h-84px w-100px object-contain mb-14px' />
+          <section className='flex flex-col items-center text-center pb-22px pt-4px'>
             <Typography.Title
-              aria-label='DeepOrganiser'
+              aria-label='OpenScience'
               heading={3}
-              className='flex justify-center mb-6px leading-none'
+              className='flex justify-center mb-10px leading-none w-full'
             >
               <DeepScientistWordmark
                 aria-hidden='true'
                 variant='hero'
-                className='h-52px w-300px max-w-full object-contain'
+                className='h-92px w-430px max-w-full object-contain'
               />
             </Typography.Title>
             <Typography.Text className='max-w-560px text-14px text-t-secondary leading-22px mb-14px'>
-              {t('settings.aboutDeepScientistDescription')}
+              {t('settings.aboutOpenScienceDescription')}
             </Typography.Text>
             <div className='flex flex-wrap items-center justify-center gap-8px mb-18px'>
               <span className='px-10px py-4px rd-8px text-12px bg-fill-2 text-t-primary font-600'>
@@ -289,6 +288,23 @@ const AboutModalContent: React.FC = () => {
                 <Right theme='outline' size='15' className='shrink-0 text-t-tertiary group-hover:text-t-primary' />
               </div>
             ))}
+          </section>
+
+          <section className='mt-18px rounded-12px border border-border-2 bg-fill-1 px-16px py-14px text-left'>
+            <Typography.Text className='block text-13px font-semibold text-t-primary leading-18px'>
+              {t('settings.aboutCommercialTitle')}
+            </Typography.Text>
+            <Typography.Text className='block text-12px text-t-secondary leading-18px mt-5px'>
+              {t('settings.aboutCommercialDesc')}
+            </Typography.Text>
+            <Button
+              type='outline'
+              size='small'
+              className='!mt-12px !rounded-8px'
+              onClick={() => void openLink(`mailto:${OPENSCIENCE_COMMERCIAL_EMAIL}`)}
+            >
+              {OPENSCIENCE_COMMERCIAL_EMAIL}
+            </Button>
           </section>
         </div>
       </div>

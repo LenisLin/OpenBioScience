@@ -5,7 +5,7 @@
  */
 
 import { ipcBridge } from '@/common';
-import type { AgentStreamErrorInfo, IMessageText, IMessageTips, TMessage } from '@/common/chat/chatLib';
+import type { AgentStreamErrorInfo, IMessageAcpToolCall, IMessageText, IMessageTips, TMessage } from '@/common/chat/chatLib';
 import {
   composeMessage,
   mergeAcpToolCallContent,
@@ -613,6 +613,50 @@ export function normalizeDbMessage(msg: TMessage): TMessage {
   };
 }
 
+const MEDICAL_EVIDENCE_SCHEMA_MARKER = 'deeporganiser.medical_evidence.';
+const MEDICAL_EVIDENCE_SUBMIT_TOOL = 'evidence_submit_panel';
+
+const getAcpUpdateRecord = (message: IMessageAcpToolCall): Record<string, unknown> | undefined =>
+  isRecord(message.content?.update) ? (message.content.update as Record<string, unknown>) : undefined;
+
+const getAcpRawInputRecord = (update: Record<string, unknown> | undefined): Record<string, unknown> | undefined => {
+  const rawInput = update?.rawInput ?? update?.raw_input;
+  return isRecord(rawInput) ? rawInput : undefined;
+};
+
+const getAcpTextContent = (update: Record<string, unknown> | undefined): string => {
+  const content = update?.content;
+  if (!Array.isArray(content)) return '';
+
+  return content
+    .map((item) => {
+      if (!isRecord(item)) return '';
+      const itemContent = item.content;
+      if (item.type !== 'content' || !isRecord(itemContent)) return '';
+      return typeof itemContent.text === 'string' ? itemContent.text : '';
+    })
+    .filter(Boolean)
+    .join('\n');
+};
+
+const hasTruncatedMedicalEvidencePanelSubmit = (message: TMessage): boolean => {
+  if (message.type !== 'acp_tool_call') return false;
+  const content = isRecord(message.content) ? (message.content as Record<string, unknown>) : undefined;
+  const compact = isRecord(content?._compact) ? content._compact : undefined;
+  if (compact?.truncated !== true) return false;
+
+  const update = getAcpUpdateRecord(message);
+  const rawInput = getAcpRawInputRecord(update);
+  const toolName = typeof rawInput?.tool === 'string' ? rawInput.tool : undefined;
+  if (toolName === MEDICAL_EVIDENCE_SUBMIT_TOOL) return true;
+
+  const text = getAcpTextContent(update);
+  return text.includes(MEDICAL_EVIDENCE_SCHEMA_MARKER) && text.includes('panel_submitted');
+};
+
+const needsFullMessagesForMedicalEvidencePanel = (messages: TMessage[]): boolean =>
+  messages.some(hasTruncatedMedicalEvidencePanelSubmit);
+
 export const useMessageLstCache = (key: string) => {
   const update = useUpdateMessageList();
   const setLoading = useUpdateMessageListLoading();
@@ -623,7 +667,23 @@ export const useMessageLstCache = (key: string) => {
       page_size: 10000,
       content_mode: 'compact',
     });
-    const messages = result?.items?.map(normalizeDbMessage);
+    let messages = result?.items?.map(normalizeDbMessage);
+    if (messages && needsFullMessagesForMedicalEvidencePanel(messages)) {
+      try {
+        const fullResult = await ipcBridge.database.getConversationMessages.invoke({
+          conversation_id: key,
+          page: 0,
+          page_size: 10000,
+          content_mode: 'full',
+        });
+        const fullMessages = fullResult?.items?.map(normalizeDbMessage);
+        if (fullMessages && Array.isArray(fullMessages)) {
+          messages = fullMessages;
+        }
+      } catch (error) {
+        console.warn('[useMessageLstCache] Failed to reload full medical evidence panel messages:', error);
+      }
+    }
     if (messages && Array.isArray(messages)) {
       update((currentList) => {
         if (!currentList.length) return messages;

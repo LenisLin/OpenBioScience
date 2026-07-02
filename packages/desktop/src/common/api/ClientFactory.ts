@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 DeepOrganiser (deepscientist.cc)
+ * Copyright 2025 OpenScience
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -77,7 +77,7 @@ export class ClientFactory {
           timeout: options.timeout,
           defaultHeaders: {
             'HTTP-Referer': 'https://deepscientist.cc',
-            'X-Title': 'DeepOrganiser',
+            'X-Title': 'OpenScience',
           },
           ...(options.baseConfig as OpenAIClientConfig),
         };
@@ -128,7 +128,7 @@ export class ClientFactory {
           timeout: options.timeout,
           defaultHeaders: {
             'HTTP-Referer': 'https://deepscientist.cc',
-            'X-Title': 'DeepOrganiser',
+            'X-Title': 'OpenScience',
           },
           ...(options.baseConfig as OpenAIClientConfig),
         };

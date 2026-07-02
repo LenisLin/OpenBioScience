@@ -23,7 +23,10 @@ import React from 'react';
 import AcpE2EStreamInjector from './AcpE2EStreamInjector';
 import AcpSendBox from './AcpSendBox';
 import { useAcpMessage } from './useAcpMessage';
-import LoopGoalBar from '../../components/LoopGoalBar';
+import UserInputCard from '../../user-input/UserInputCard';
+import { useUserInputRequests } from '../../user-input/userInputStore';
+
+const AGENT_MESSAGE_BACKGROUND_COLOR = 'rgb(254, 254, 254)';
 
 const AcpChat: React.FC<{
   conversation_id: string;
@@ -42,6 +45,9 @@ const AcpChat: React.FC<{
   assistantId?: string;
   loopGoal?: LoopGoalState;
   onLoopGoalChange?: (next: LoopGoalState) => void | Promise<void>;
+  isMedicalEvidenceMode?: boolean;
+  isScienceMode?: boolean;
+  isLabSkillDepositionMode?: boolean;
 }> = ({
   conversation_id,
   workspace,
@@ -59,11 +65,16 @@ const AcpChat: React.FC<{
   assistantId,
   loopGoal,
   onLoopGoalChange,
+  isMedicalEvidenceMode = false,
+  isScienceMode = false,
+  isLabSkillDepositionMode = false,
 }) => {
   useMessageLstCache(conversation_id);
   usePendingConfirmationsRecovery(conversation_id);
   const teamPermission = useTeamPermission();
   const messageState = useAcpMessage(conversation_id, { skipWarmup: Boolean(teamPermission) });
+  const userInputRequests = useUserInputRequests(conversation_id);
+  const activeUserInputRequest = userInputRequests.at(-1);
 
   return (
     <ConversationProvider
@@ -81,15 +92,18 @@ const AcpChat: React.FC<{
       }}
     >
       <ConversationArtifactProvider conversation_id={conversation_id}>
-        <div className='flex-1 flex flex-col px-20px min-h-0'>
+        <div
+          className='flex-1 flex flex-col px-20px min-h-0 agent-message-surface'
+          style={{ backgroundColor: AGENT_MESSAGE_BACKGROUND_COLOR }}
+        >
           <FlexFullContainer>
             <MessageList className='flex-1' emptySlot={emptySlot} />
           </FlexFullContainer>
           <AcpE2EStreamInjector conversationId={conversation_id} />
           {!hideSendBox && (
             <>
-              {loopGoal && loopGoal.status !== 'deleted' && onLoopGoalChange ? (
-                <LoopGoalBar loopGoal={loopGoal} onChange={onLoopGoalChange} />
+              {activeUserInputRequest ? (
+                <UserInputCard request={activeUserInputRequest} conversationId={conversation_id} />
               ) : null}
               <AcpSendBox
                 conversation_id={conversation_id}
@@ -100,6 +114,11 @@ const AcpChat: React.FC<{
                 messageState={messageState}
                 teamSendMessage={teamSendMessage}
                 teamRuntime={teamRuntime}
+                isMedicalEvidenceMode={isMedicalEvidenceMode}
+                isScienceMode={isScienceMode}
+                isLabSkillDepositionMode={isLabSkillDepositionMode}
+                loopGoal={loopGoal}
+                onLoopGoalChange={onLoopGoalChange}
               ></AcpSendBox>
             </>
           )}

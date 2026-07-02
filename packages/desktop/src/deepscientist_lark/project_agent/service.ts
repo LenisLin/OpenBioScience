@@ -18,6 +18,7 @@ import {
   createSection,
   createTask,
   createTasklist,
+  deleteTasklist as deleteLarkTasklist,
   fetchMarkdownFile,
   getTask,
   getTaskDetail,
@@ -56,6 +57,7 @@ import {
   saveDelegation,
   savePlan,
   saveTaskRecord,
+  setDeleteRemoteTasklistPreference,
   updateDelegation,
   updateTasklistLocalState as updateStoredTasklistLocalState,
   updateLocalTaskRecordState,
@@ -602,8 +604,13 @@ export async function getProjectSnapshot(): Promise<LarkProjectSnapshot> {
   return listSnapshot();
 }
 
-export async function hideProjectTasklist(request: { tasklistGuid: string }): Promise<LarkProjectSnapshot> {
-  return hideStoredTasklist(assertNonEmpty(request.tasklistGuid, 'LARK_TASKLIST_GUID_REQUIRED'));
+export async function hideProjectTasklist(request: { tasklistGuid: string; deleteRemote?: boolean }): Promise<LarkProjectSnapshot> {
+  const tasklistGuid = assertNonEmpty(request.tasklistGuid, 'LARK_TASKLIST_GUID_REQUIRED');
+  await setDeleteRemoteTasklistPreference(Boolean(request.deleteRemote));
+  if (request.deleteRemote) {
+    await deleteLarkTasklist(tasklistGuid);
+  }
+  return hideStoredTasklist(tasklistGuid);
 }
 
 export async function updateProjectTasklistLocalState(request: {

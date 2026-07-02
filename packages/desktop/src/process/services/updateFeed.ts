@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 DeepOrganiser (deepscientist.cc)
+ * Copyright 2026 OpenScience (deepscientist.cc)
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import { CdnGenericProvider } from './cdnGenericProvider';
 import type { CdnGenericProviderConfiguration } from './cdnGenericProvider';
 import { legacyEnvName } from '@/common/config/legacyIdentifiers';
 
-export const DEFAULT_UPDATE_BASE_URL = 'https://deepscientist.cc/DeepOrganiser';
+export const DEFAULT_UPDATE_BASE_URL = 'https://deepscientist.cc';
 
 const trimTrailingSlash = (url: string): string => url.replace(/\/+$/, '');
 

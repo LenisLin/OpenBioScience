@@ -12,7 +12,8 @@ let _services: IPlatformServices | null = null;
 export function getDevAppName(): string {
   const isMultiInstance =
     process.env.DEEPORGANISER_MULTI_INSTANCE === '1' || process.env[legacyEnvName('MULTI_INSTANCE')] === '1';
-  const baseName = process.env.DEEPORGANISER_DEV_APP_NAME || process.env[legacyEnvName('DEV_APP_NAME')] || 'DeepOrganiser-Dev';
+  const baseName =
+    process.env.DEEPORGANISER_DEV_APP_NAME || process.env[legacyEnvName('DEV_APP_NAME')] || 'OpenScience-Dev';
   return isMultiInstance ? `${baseName}-2` : baseName;
 }
 

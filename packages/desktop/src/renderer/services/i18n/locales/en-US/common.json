@@ -61,10 +61,10 @@
   "more": "More",
   "refresh": "Refresh",
   "readOnly": "Read only",
-  "tray.showWindow": "Show DeepOrganiser",
+  "tray.showWindow": "Show OpenScience",
   "tray.newChat": "New Chat",
   "tray.closeToTray": "Hide to Tray",
-  "tray.about": "About DeepOrganiser",
+  "tray.about": "About OpenScience",
   "tray.restart": "Restart App",
   "tray.quit": "Quit",
   "tray.runningTasks": "Running Tasks",
@@ -75,22 +75,22 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "This system is not supported by the bundled backend",
-      "description": "DeepOrganiser opened, but the bundled local runtime cannot run on this Linux version. Please upgrade to a supported Linux distribution and restart DeepOrganiser.",
+      "description": "OpenScience opened, but the bundled local runtime cannot run on this Linux version. Please upgrade to a supported Linux distribution and restart OpenScience.",
       "requiredVersions": "Required runtime symbols: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "DeepOrganiser installation is incomplete",
-      "description": "This installation is missing required local resources, so the DeepOrganiser local runtime cannot start. Please download and reinstall the latest DeepOrganiser. If the issue returns after reinstalling, check whether security or antivirus software quarantined DeepOrganiser components.",
+      "title": "OpenScience installation is incomplete",
+      "description": "This installation is missing required local resources, so the OpenScience local runtime cannot start. Please download and reinstall the latest OpenScience. If the issue returns after reinstalling, check whether security or antivirus software quarantined OpenScience components.",
       "downloadLatest": "Download latest",
       "sendDiagnostics": "Send diagnostics",
       "diagnosticsSent": "Diagnostics sent",
       "diagnosticsReportSuccess": "Diagnostics report sent",
       "diagnosticsReportFailed": "Failed to send diagnostics report",
-      "runtimeComponentDescription": "This installation is missing required bundled runtime components, so {{resource}} cannot start. Reinstall the latest DeepOrganiser package. If it still happens after reinstalling, check whether security or antivirus software quarantined DeepOrganiser components."
+      "runtimeComponentDescription": "This installation is missing required bundled runtime components, so {{resource}} cannot start. Reinstall the latest OpenScience package. If it still happens after reinstalling, check whether security or antivirus software quarantined OpenScience components."
     },
     "packageArchitectureMismatch": {
-      "title": "DeepOrganiser package architecture mismatch",
-      "description": "This DeepOrganiser package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
+      "title": "OpenScience package architecture mismatch",
+      "description": "This OpenScience package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
     }
   },
   "fileAttach.addFiles": "Add files",
@@ -114,7 +114,7 @@
     "minute_short": "m",
     "second_short": "s"
   },
-  "loadingDeepScientist": "Loading DeepOrganiser...",
+  "loadingOpenScience": "Loading OpenScience...",
   "collaboration": {
     "title": "Collaboration",
     "projectTitle": "Collaboration Projects",
@@ -137,7 +137,7 @@
       "openLink": "Open link",
       "waiting": "Waiting for confirmation",
       "connected": "Connected",
-      "footerHint": "After web login, app setup, and authorization, DeepOrganiser will return to the current collaboration page automatically.",
+      "footerHint": "After web login, app setup, and authorization, OpenScience will return to the current collaboration page automatically.",
       "floatingHintTitle": "Sign in to use collaboration mode",
       "stages": [
         "Web sign-in",
@@ -155,8 +155,8 @@
         "loading": "Opening sign-in page..."
       },
       "auth": {
-        "title": "Authorize DeepOrganiser",
-        "subtitle": "The authorization page opens on the right. Approve access with your current account, then DeepOrganiser verifies it automatically.",
+        "title": "Authorize OpenScience",
+        "subtitle": "The authorization page opens on the right. Approve access with your current account, then OpenScience verifies it automatically.",
         "steps": [
           "Open the authorization page",
           "Approve permissions with your account",
@@ -164,7 +164,7 @@
         ],
         "start": "Regenerate link",
         "needsApp": "Create or bind an app first",
-        "needsAppDesc": "Authorization must use the DeepOrganiser app created or bound in step 2. Finish step 2 first; once an App ID is detected, DeepOrganiser can continue.",
+        "needsAppDesc": "Authorization must use the OpenScience app created or bound in step 2. Finish step 2 first; once an App ID is detected, OpenScience can continue.",
         "needsWeb": "Web sign-in is required first",
         "needsWebDesc": "Finish web sign-in in step 1 so the app setup and authorization flow can use the same web session.",
         "goWeb": "Go to web sign-in",
@@ -175,7 +175,7 @@
         "targetApp": "Authorization target",
         "profile": "Profile",
         "chooseProfileTitle": "Choose a configuration",
-        "chooseProfileDesc": "Choose an existing profile. DeepOrganiser will save it as the collaboration automation target and generate a fresh authorization page.",
+        "chooseProfileDesc": "Choose an existing profile. OpenScience will save it as the collaboration automation target and generate a fresh authorization page.",
         "noProfiles": "No profiles found. Create an app first.",
         "refreshProfiles": "Refresh profiles",
         "authorizeSelected": "Use this profile",
@@ -184,24 +184,24 @@
         "profileRequired": "Choose a profile first.",
         "user": "User",
         "tokenStatus": "Authorization status",
-        "opening": "Creating the DeepOrganiser authorization page...",
+        "opening": "Creating the OpenScience authorization page...",
         "verifying": "Authorization is open. Waiting for approval and automatic verification.",
         "retry": "Restart authorization"
       },
       "app": {
         "title": "Create bound app",
-        "subtitle": "Create or bind the DeepOrganiser app first. Authorization will be issued through this app.",
+        "subtitle": "Create or bind the OpenScience app first. Authorization will be issued through this app.",
         "steps": [
-          "Create DeepOrganiser",
+          "Create OpenScience",
           "Detect App ID",
           "Save to Channels"
         ],
         "appName": "App name",
         "appNameHint": "Keep this name so the app is easy to recognize in the developer console.",
-        "setupHint": "DeepOrganiser opens the setup flow directly. Use DeepOrganiser as the app name; the App ID is detected automatically after setup.",
-        "create": "Create DeepOrganiser app",
+        "setupHint": "OpenScience opens the setup flow directly. Use OpenScience as the app name; the App ID is detected automatically after setup.",
+        "create": "Create OpenScience app",
         "currentApp": "Current app detected",
-        "createPanelTitle": "Create DeepOrganiser app",
+        "createPanelTitle": "Create OpenScience app",
         "createPanelDesc": "Click the button below to enter the app creation flow directly; you do not need to search for the entry in the developer console.",
         "sync": "Save to Channels",
         "refresh": "Check status",
@@ -340,11 +340,15 @@
         "sendComment": "Send comment",
         "view": "View"
       },
-      "hideTasklistAction": "Remove from this sidebar",
-      "hideTasklistTitle": "Remove this tasklist locally?",
-      "hideTasklistConfirm": "“{{name}}” will disappear from this device’s collaboration sidebar and project picker. The remote Lark tasklist will not be deleted, and other members will not be affected.",
-      "hideTasklistOk": "Remove locally",
-      "hideTasklistSuccess": "Removed from this sidebar",
+      "hideTasklistAction": "Delete from sidebar",
+      "hideTasklistTitle": "Delete this collaboration project?",
+      "hideTasklistConfirm": "“{{name}}” will be hidden from this device’s sidebar and project picker. By default, the remote tasklist will not be deleted.",
+      "hideTasklistRemoteDelete": "Also delete this tasklist remotely",
+      "hideTasklistRemoteDeleteHint": "When checked, Confirm will also delete the remote tasklist. This choice will be remembered for the next time.",
+      "hideTasklistOk": "Sidebar only",
+      "hideTasklistRemoteOk": "Delete both",
+      "hideTasklistSuccess": "Deleted from the sidebar",
+      "hideTasklistRemoteSuccess": "Deleted from the sidebar and remote tasklist",
       "renameTasklistTitle": "Rename tasklist",
       "renameTasklistPlaceholder": "Enter a new tasklist name",
       "renameTasklistHint": "Saving will update the collaboration tasklist name.",

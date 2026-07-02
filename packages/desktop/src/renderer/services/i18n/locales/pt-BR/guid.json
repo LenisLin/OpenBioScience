@@ -25,5 +25,42 @@
     "statusTesting": "Testando latência...",
     "statusUnreachable": "Inacessível",
     "statusAvailable": "Disponível"
+  },
+  "scienceProject": {
+    "badge": "Science",
+    "defaultBadge": "Padrão",
+    "menuLabel": "Modo de pesquisa científica",
+    "modeActive": "Modo de pesquisa científica ativado",
+    "workInProject": "Escolher projeto de pesquisa",
+    "clearWorkspace": "Remover projeto de pesquisa",
+    "specifyWorkspace": "Criar ou escolher projeto de pesquisa",
+    "searchPlaceholder": "Buscar projetos de pesquisa…",
+    "noProject": "Sem projeto de pesquisa"
+  },
+  "loopGoal": {
+    "menuLabel": "Modo de objetivo",
+    "modeActive": "Modo de objetivo ativado",
+    "createTitle": "Solicitar progresso contínuo",
+    "create": "Iniciar loop",
+    "placeholder": "Descreva um objetivo que valha continuar. Após cada execução, o Agent voltará a esse objetivo, revisará o resultado e avançará o próximo passo útil.",
+    "goalRequired": "Escreva primeiro um objetivo",
+    "statusActive": "Objetivo em andamento",
+    "statusPaused": "Objetivo pausado",
+    "statusDeleted": "Objetivo excluído",
+    "edit": "Editar objetivo",
+    "editTitle": "Editar objetivo",
+    "pause": "Pausar",
+    "resume": "Retomar",
+    "delete": "Excluir"
+  },
+  "medicalEvidence": {
+    "menuLabel": "Modo de evidência médica",
+    "modeActive": "Modo de evidência médica ativado"
+  },
+  "skillDeposition": {
+    "menuLabel": "Modo de sedimentação de conhecimento",
+    "modeActive": "Modo de sedimentação de conhecimento ativado",
+    "contextHint": "Gere primeiro um relatório; ative após aprovação",
+    "closeLabel": "Fechar modo de sedimentação de conhecimento"
   }
 }

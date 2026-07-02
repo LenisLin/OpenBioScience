@@ -202,14 +202,14 @@
   "autoPreviewOfficeFiles": "Автоперегляд нових файлів Office",
   "autoPreviewOfficeFilesDesc": "Автоматично відкривати новостворені файли Word, Excel та PowerPoint.",
   "startOnBoot": "Запуск при завантаженні",
-  "startOnBootDesc": "Автоматично запускати DeepOrganiser при вході в систему.",
+  "startOnBootDesc": "Автоматично запускати OpenScience при вході в систему.",
   "startOnBootUnsupported": "Доступно лише в упакованих програмах для macOS та Windows.",
   "startOnBootUpdateFailed": "Не вдалося оновити налаштування запуску при завантаженні",
   "closeToTray": "Згортати в трей",
   "hardwareAcceleration": "Апаратне прискорення",
   "hardwareAccelerationDesc": "Використовувати GPU для відображення інтерфейсу. Вимкніть, якщо застосунок вилітає під час запуску або зображення спотворюється.",
   "hardwareAccelerationAutoDisabled": "Автоматично вимкнено через повторні збої GPU.",
-  "hardwareAccelerationRestartConfirm": "Перезапустити DeepOrganiser, щоб застосувати нові налаштування апаратного прискорення?",
+  "hardwareAccelerationRestartConfirm": "Перезапустити OpenScience, щоб застосувати нові налаштування апаратного прискорення?",
   "hardwareAccelerationUpdateFailed": "Не вдалося оновити налаштування апаратного прискорення",
   "notification": "Сповіщення",
   "cronNotificationEnabled": "Завершення запланованих завдань",
@@ -311,7 +311,7 @@
   "installed": "Встановлено",
   "builtin": "Вбудовано",
   "channels": "Канали",
-  "webui.description": "Використовуйте DeepOrganiser як свого «цілодобового віддаленого помічника» — ставте завдання з будь-якого пристрою.",
+  "webui.description": "Використовуйте OpenScience як свого «цілодобового віддаленого помічника» — ставте завдання з будь-якого пристрою.",
   "webui.steps": "1. Увімкніть WebUI; 2. Скопіюйте URL доступу; 3. Відкрийте у віддаленому браузері",
   "webui.configuration": "Конфігурація WebUI",
   "webui.enable": "Увімкнути WebUI",
@@ -389,13 +389,13 @@
   "webui.passwordHint": "Пароль відображається в консолі при першому запуску. Використовуйте «Змінити пароль» для скидання",
   "webui.checkConsoleForPassword": "Перевірте консоль програми, щоб отримати початковий пароль",
   "webui.browserNotSupported": "Налаштування WebUI недоступні в браузері",
-  "webui.browserNotSupportedDesc": "З міркувань безпеки налаштуваннями WebUI можна керувати лише в десктопній програмі. Відкрийте панель налаштувань у програмі DeepOrganiser для конфігурації.",
+  "webui.browserNotSupportedDesc": "З міркувань безпеки налаштуваннями WebUI можна керувати лише в десктопній програмі. Відкрийте панель налаштувань у програмі OpenScience для конфігурації.",
   "webui.passwordHidden": "******",
   "webui.passwordOnlyFirstTime": "Пароль відображається лише при першому запуску, потім приховується",
   "webui.resetPasswordWarning": "Збережіть скинутий пароль!",
-  "webui.featureRemoteDesc": "Увімкніть WebUI для доступу до DeepOrganiser з телефону або віддаленого браузера.",
+  "webui.featureRemoteDesc": "Увімкніть WebUI для доступу до OpenScience з телефону або віддаленого браузера.",
   "webui.featureChannelsTitle": "Керування повідомленнями",
-  "webui.featureChannelsDesc": "Підключіть Telegram, Lark, DingTalk та WeChat для взаємодії з DeepOrganiser з месенджерів.",
+  "webui.featureChannelsDesc": "Підключіть Telegram, Lark, DingTalk та WeChat для взаємодії з OpenScience з месенджерів.",
   "webui.goToChannels": "Перейти до каналів",
   "assistant.telegramConfig": "Налаштування бота Telegram",
   "assistant.botToken": "Токен бота",
@@ -446,17 +446,17 @@
   "assistant.step4": "Після авторизації ви зможете спілкуватися з Gemini через Telegram!",
   "channels.title": "Канали",
   "channels.telegramTitle": "Telegram",
-  "channels.telegramDesc": "Спілкуйтеся з асистентом DeepOrganiser через Telegram",
+  "channels.telegramDesc": "Спілкуйтеся з асистентом OpenScience через Telegram",
   "channels.slackTitle": "Slack",
-  "channels.slackDesc": "Спілкуйтеся з асистентом DeepOrganiser через Slack",
+  "channels.slackDesc": "Спілкуйтеся з асистентом OpenScience через Slack",
   "channels.discordTitle": "Discord",
-  "channels.discordDesc": "Спілкуйтеся з асистентом DeepOrganiser через Discord",
+  "channels.discordDesc": "Спілкуйтеся з асистентом OpenScience через Discord",
   "channels.larkTitle": "Lark",
-  "channels.larkDesc": "Спілкуйтеся з асистентом DeepOrganiser через Lark",
+  "channels.larkDesc": "Спілкуйтеся з асистентом OpenScience через Lark",
   "channels.dingtalkTitle": "DingTalk",
-  "channels.dingtalkDesc": "Спілкуйтеся з асистентом DeepOrganiser через DingTalk",
+  "channels.dingtalkDesc": "Спілкуйтеся з асистентом OpenScience через DingTalk",
   "channels.weixinTitle": "WeChat",
-  "channels.weixinDesc": "Спілкуйтеся з асистентом DeepOrganiser через WeChat",
+  "channels.weixinDesc": "Спілкуйтеся з асистентом OpenScience через WeChat",
   "channels.comingSoon": "Незабаром",
   "channels.comingSoonDesc": "Підтримка {{channel}} незабаром з'явиться",
   "channels.notConfigured": "Не налаштовано",
@@ -537,19 +537,19 @@
   "mcpAuthenticated": "Автентифіковано",
   "mcpDisconnected": "Не тестувалося",
   "mcpError": "Останній тест завершився помилкою",
-  "mcpErrorNodeCommandNotFound": "Не вдалося підготувати команду {{command}}. Зазвичай DeepOrganiser Core автоматично готує кероване середовище Node. Повторіть тест підключення; якщо помилка не зникне, перевірте логи бекенда або вкажіть для цього MCP-сервера абсолютний шлях до команди.",
-  "mcpErrorBunCommandNotFound": "Command {{command}} was not found. Install Bun (which includes bun/bunx), restart DeepOrganiser, or configure this MCP server to use an absolute command path.",
-  "mcpErrorUvCommandNotFound": "Command {{command}} was not found. Install uv, restart DeepOrganiser, or configure this MCP server to use an absolute command path.",
-  "mcpErrorPythonCommandNotFound": "Command {{command}} was not found. Install Python, restart DeepOrganiser, or configure this MCP server to use an absolute command path.",
-  "mcpErrorDenoCommandNotFound": "Command {{command}} was not found. Install Deno, restart DeepOrganiser, or configure this MCP server to use an absolute command path.",
+  "mcpErrorNodeCommandNotFound": "Не вдалося підготувати команду {{command}}. Зазвичай OpenScience Core автоматично готує кероване середовище Node. Повторіть тест підключення; якщо помилка не зникне, перевірте логи бекенда або вкажіть для цього MCP-сервера абсолютний шлях до команди.",
+  "mcpErrorBunCommandNotFound": "Command {{command}} was not found. Install Bun (which includes bun/bunx), restart OpenScience, or configure this MCP server to use an absolute command path.",
+  "mcpErrorUvCommandNotFound": "Command {{command}} was not found. Install uv, restart OpenScience, or configure this MCP server to use an absolute command path.",
+  "mcpErrorPythonCommandNotFound": "Command {{command}} was not found. Install Python, restart OpenScience, or configure this MCP server to use an absolute command path.",
+  "mcpErrorDenoCommandNotFound": "Command {{command}} was not found. Install Deno, restart OpenScience, or configure this MCP server to use an absolute command path.",
   "mcpErrorCommandNotFound": "Command {{command}} was not found. Install it or configure this MCP server to use an absolute command path.",
-  "mcpErrorCommandPermissionDenied": "DeepOrganiser cannot execute {{command}} because permission was denied.",
-  "mcpErrorCommandStartFailed": "DeepOrganiser failed to start {{command}}.",
+  "mcpErrorCommandPermissionDenied": "OpenScience cannot execute {{command}} because permission was denied.",
+  "mcpErrorCommandStartFailed": "OpenScience failed to start {{command}}.",
   "mcpErrorTimeout": "Connection test timed out after {{seconds}}s.",
-  "mcpErrorConnectionFailed": "DeepOrganiser could not reach the MCP server.",
+  "mcpErrorConnectionFailed": "OpenScience could not reach the MCP server.",
   "mcpErrorHttp": "The MCP server returned HTTP {{status}}.",
   "mcpErrorRpc": "The MCP server returned an RPC error while handling {{method}}.",
-  "mcpErrorProtocol": "DeepOrganiser could not complete the MCP handshake.",
+  "mcpErrorProtocol": "OpenScience could not complete the MCP handshake.",
   "mcpLastCheckedAvailable": "Останній результат перевірки в налаштуваннях інструментів: доступно",
   "mcpLastCheckedFailed": "Останній результат перевірки в налаштуваннях інструментів: помилка",
   "mcpCheckedAt": "Час перевірки: {{time}}",
@@ -565,7 +565,7 @@
   "mcpImportSuccess": "Імпорт успішний",
   "mcpImportFailed": "Помилка імпорту",
   "mcpJsonInvalid": "Невірний формат JSON",
-  "mcpImportDescription": "Імпортуйте в DeepOrganiser конфігурації MCP, виявлені у ваших CLI agents.",
+  "mcpImportDescription": "Імпортуйте в OpenScience конфігурації MCP, виявлені у ваших CLI agents.",
   "mcpStepSelectAgent": "Вибрати Agent",
   "mcpStepFetchTools": "Отримати MCP",
   "mcpStepImportSuccess": "Імпорт успішний",
@@ -578,8 +578,8 @@
   "mcpStatusReady": "Буде імпортовано",
   "mcpStatusImported": "Імпортовано",
   "mcpStatusSkipped": "Пропущено",
-  "mcpWillImport": "Буде додано до DeepOrganiser",
-  "mcpImported": "Додано до DeepOrganiser",
+  "mcpWillImport": "Буде додано до OpenScience",
+  "mcpImported": "Додано до OpenScience",
   "mcpImportSkipped": "Не підтримується",
   "mcpImportSkippedAlreadyExists": "Уже імпортовано",
   "mcpImportSkippedPluginManaged": "Цим MCP керує плагін CLI, тому його не можна імпортувати тут",
@@ -977,5 +977,106 @@
     "codexAcp": "the Codex ACP runtime component",
     "claudeAgentAcp": "the Claude ACP runtime component"
   },
-  "updateReadyInstall": "{{version}} готова, установити зараз"
+  "updateReadyInstall": "{{version}} готова, установити зараз",
+  "medicalEvidence": {
+    "title": "Медичні докази",
+    "description": "Увімкніть у меню + нової розмови, щоб додати prompt медичних доказів і вбудований MCP лише для цієї сесії.",
+    "connectionTitle": "Підключити PaperClip API",
+    "connectionDesc": "Режим медичних доказів спочатку використовує цей API-ключ для PaperClip MCP. Якщо він порожній, використовується PaperClip із наукового режиму.",
+    "enabled": "Увімкнено",
+    "testConnection": "Перевірити й зберегти підключення",
+    "connectionReady": "PaperClip MCP підключено",
+    "connectionFailed": "Помилка підключення PaperClip",
+    "timeoutMs": "Тайм-аут",
+    "strictAnchors": "Вимагати якорі абзаців для кожного медичного висновку",
+    "defaultSources": "Джерела доказів за замовчуванням",
+    "defaultSourcesDesc": "Обсяг пошуку PaperClip після запуску режиму медичних доказів",
+    "keepPmc": "Залишити PMC",
+    "selectAll": "Вибрати все",
+    "pipelineTitle": "Доказовий процес після ввімкнення",
+    "pipelineDesc": "Збирається під час сесії та перетворюється на доказовий звіт",
+    "activationNote": "Звичайні чати не використовують цей сервіс автоматично. Він спрацьовує лише коли в полі нової розмови є позначка медичних доказів і повідомлення надіслано.",
+    "evidencePresetTitle": "Налаштування джерел та ієрархії доказів",
+    "sourceTierTitle": "Рівні джерел",
+    "evidenceHierarchyTitle": "Ієрархія доказів за замовчуванням",
+    "sourceTierRuleA": "Tier A: guidelines, regulatory/drug labels, and systematic reviews/RCTs from leading or authoritative journals. They can be primary evidence, but still require population matching and anchors.",
+    "pipeline": {
+      "searchTitle": "Search augmented",
+      "searchDetail": "PaperClip medical evidence sources",
+      "gradeTitle": "Evidence grading",
+      "gradeDetail": "Guideline/RCT/label weighting",
+      "citationTitle": "Traceable output",
+      "citationDetail": "Paragraph anchors and citation panel"
+    },
+    "sources": {
+      "pmc": "PMC full text",
+      "abstracts": "Paper abstracts",
+      "abstractsOnly": "Abstracts only",
+      "biorxiv": "bioRxiv",
+      "medrxiv": "medRxiv",
+      "arxiv": "arXiv",
+      "fda": "FDA / drug labels",
+      "ema": "EMA / EU medicines",
+      "pmda": "PMDA / Japan medicines",
+      "trials": "Clinical trial registry",
+      "trialsUs": "US clinical trials",
+      "clinicaltrials": "ClinicalTrials",
+      "trialsCn": "China clinical trials",
+      "trialsEu": "EU clinical trials",
+      "trialsJp": "Japan clinical trials"
+    },
+    "sourceGroups": {
+      "full_text_and_abstracts": {
+        "label": "Full text and abstracts",
+        "intent": "Prioritize efficacy, diagnosis, prognosis, and mechanism evidence; full-text anchors outrank abstracts."
+      },
+      "preprints": {
+        "label": "Preprints",
+        "intent": "Use for frontier signals and emerging evidence; they should not outweigh guidelines, labels, systematic reviews, or mature RCTs by default."
+      },
+      "regulatory_labels": {
+        "label": "Regulatory and drug labels",
+        "intent": "Drug safety, indications, dose, contraindications, and special populations must be checked first."
+      },
+      "trial_registries": {
+        "label": "Trial registries",
+        "intent": "Use for ongoing evidence, study status, sample size, and unpublished-result context; not equivalent to published conclusions."
+      }
+    },
+    "evidenceHierarchy": {
+      "e1": {
+        "label": "Current guidelines / consensus / regulatory labels",
+        "rule": "Highest priority for drug safety, indication, dose, contraindication, pregnancy, children, or complex comorbidities."
+      },
+      "e2": {
+        "label": "Systematic reviews / meta-analyses",
+        "rule": "Prefer recent, transparent reviews with explainable heterogeneity and matched populations; downgrade if indirect or outdated."
+      },
+      "e3": {
+        "label": "Randomized controlled trials (RCTs)",
+        "rule": "High-quality when sample size, endpoints, population, and intervention match; downgrade open-label, small, or surrogate-endpoint studies."
+      },
+      "e4": {
+        "label": "Prospective cohorts / high-quality real-world studies",
+        "rule": "Useful for safety, prognosis, rare outcomes, and long follow-up; downgrade for confounding or selection bias."
+      },
+      "e5": {
+        "label": "Case-control / case series / registry abstracts",
+        "rule": "Mostly signals or rare-context background; should not alone support strong treatment recommendations."
+      },
+      "e6": {
+        "label": "Preprints / conference abstracts / mechanistic inference",
+        "rule": "Frontier supplement only; clearly mark limits when not peer-reviewed, not fully published, or only mechanistic."
+      }
+    }
+  },
+  "paperclipGuide": {
+    "title": "Отримати API-ключ PaperClip",
+    "stepConsole": "Відкрийте консоль PaperClip.",
+    "stepCreateKey": "Створіть або скопіюйте MCP API-ключ.",
+    "stepPaste": "Вставте його в поле PaperClip API Key у Science або Medical Evidence і натисніть Перевірити й зберегти.",
+    "stepBaseUrl": "Якщо використовується власний PaperClip, перевірте Base URL.",
+    "sharedRule": "Спільне правило: API Key, Base URL і тайм-аут можуть використовуватися режимами Science і Medical Evidence спільно. Джерела за замовчуванням лишаються окремими для кожного режиму.",
+    "openConsole": "Відкрити консоль PaperClip"
+  }
 }

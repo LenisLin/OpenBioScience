@@ -31,10 +31,17 @@ const persistLoopGoal = async (conversationId: string, loopGoal: LoopGoalState):
   emitter.emit('chat.history.refresh');
 };
 
+const getAssistantLocale = (extra: TChatConversation['extra'] | undefined): string | undefined => {
+  if (!extra || typeof extra !== 'object' || Array.isArray(extra)) return undefined;
+  const locale = (extra as { assistant_locale?: unknown }).assistant_locale;
+  return typeof locale === 'string' ? locale : undefined;
+};
+
 const sendLoopContinuation = async (
   conversationId: string,
   loopGoal: LoopGoalState,
-  sourceTurnId?: string
+  sourceTurnId?: string,
+  preferredLocale?: string
 ): Promise<LoopGoalState> => {
   const now = Date.now();
   const nextGoal: LoopGoalState = {
@@ -49,7 +56,7 @@ const sendLoopContinuation = async (
   await persistLoopGoal(conversationId, nextGoal);
   await ipcBridge.conversation.sendMessage.invoke({
     conversation_id: conversationId,
-    input: buildLoopGoalContinuationPrompt(nextGoal),
+    input: buildLoopGoalContinuationPrompt(nextGoal, preferredLocale),
     files: [],
   });
   return nextGoal;
@@ -82,7 +89,12 @@ export const useConversationLoopGoal = (conversation: TChatConversation | undefi
           if (runtime?.can_send_message && !runtime.is_processing && runtime.pending_confirmations === 0) {
             const latestGoal = getLoopGoalFromExtra(latestConversation?.extra) ?? next;
             if (canAutoContinue(latestGoal)) {
-              const continuedGoal = await sendLoopContinuation(activeConversationId, latestGoal);
+              const continuedGoal = await sendLoopContinuation(
+                activeConversationId,
+                latestGoal,
+                undefined,
+                getAssistantLocale(latestConversation?.extra)
+              );
               setLoopGoal(continuedGoal);
             }
           }
@@ -122,7 +134,12 @@ export const useConversationLoopGoal = (conversation: TChatConversation | undefi
           return;
         }
 
-        const nextGoal = await sendLoopContinuation(activeConversationId, latestGoal, event.turn_id);
+        const nextGoal = await sendLoopContinuation(
+          activeConversationId,
+          latestGoal,
+          event.turn_id,
+          getAssistantLocale(latestConversation?.extra)
+        );
         setLoopGoal(nextGoal);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);

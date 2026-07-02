@@ -48,6 +48,8 @@ const getTypeLabel = (contentType: PreviewContentType, extension: string): strin
       return 'HTML';
     case 'diff':
       return extension ? extLabel : 'DIFF';
+    case 'molecular_structure':
+      return extension ? extLabel : 'STRUCT';
     case 'code':
     default:
       return extLabel;

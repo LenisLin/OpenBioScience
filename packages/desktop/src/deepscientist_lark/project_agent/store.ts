@@ -62,6 +62,24 @@ export function getLocalConfigPath(): string {
   return path.join(getProjectAgentDataDir(), CONFIG_FILE_NAME);
 }
 
+function getLocalConfigMirrorPaths(): string[] {
+  const currentPath = getLocalConfigPath();
+  if (getPlatformServices().paths.isPackaged()) {
+    return [currentPath];
+  }
+
+  const currentDataDir = getPlatformServices().paths.getDataDir();
+  const appSupportDir = path.dirname(currentDataDir);
+  const appName = path.basename(currentDataDir);
+  const companionAppName = appName.endsWith('-2') ? appName.slice(0, -2) : `${appName}-2`;
+  if (!companionAppName || companionAppName === appName) {
+    return [currentPath];
+  }
+
+  const companionPath = path.join(appSupportDir, companionAppName, ...MODULE_DIR_PARTS, CONFIG_FILE_NAME);
+  return Array.from(new Set([currentPath, companionPath]));
+}
+
 async function ensureDir(dir: string): Promise<void> {
   await fs.mkdir(dir, { recursive: true });
 }
@@ -84,9 +102,11 @@ function emptyLocalConfig(): LarkProjectLocalConfig {
     sidebar: {
       autoSyncLark: true,
       showLarkIm: true,
+      deleteRemoteTasklistByDefault: false,
     },
     tasklists: [],
     imChats: [],
+    hiddenTaskGuids: [],
   };
 }
 
@@ -112,6 +132,12 @@ function asNumber(value: unknown): number | undefined {
 
 function asBoolean(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined;
+}
+
+function asStringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0).map((item) => item.trim())
+    : [];
 }
 
 function compactRecord(record: Record<string, unknown>): Record<string, unknown> {
@@ -195,9 +221,12 @@ function normalizeLocalConfig(raw: unknown): LarkProjectLocalConfig {
     sidebar: {
       autoSyncLark: asBoolean(sidebar.auto_sync_lark ?? sidebar.autoSyncLark) ?? true,
       showLarkIm: asBoolean(sidebar.show_lark_im ?? sidebar.showLarkIm) ?? true,
+      deleteRemoteTasklistByDefault:
+        asBoolean(sidebar.delete_remote_tasklist_by_default ?? sidebar.deleteRemoteTasklistByDefault) ?? false,
     },
     tasklists: dedupeTasklists(tasklists),
     imChats: dedupeImChats(imChats),
+    hiddenTaskGuids: Array.from(new Set(asStringArray(raw.hidden_task_guids ?? raw.hiddenTaskGuids))),
   };
 }
 
@@ -227,6 +256,48 @@ function dedupeImChats(imChats: LarkProjectLocalConfig['imChats']): LarkProjectL
   return Array.from(map.values());
 }
 
+function mergeLocalConfigs(configs: LarkProjectLocalConfig[]): LarkProjectLocalConfig {
+  if (configs.length === 0) return emptyLocalConfig();
+  const [primary, ...mirrors] = configs;
+  let merged: LarkProjectLocalConfig = {
+    ...primary,
+    tasklists: dedupeTasklists(primary.tasklists),
+    imChats: dedupeImChats(primary.imChats),
+    hiddenTaskGuids: Array.from(new Set(primary.hiddenTaskGuids)),
+  };
+
+  for (const config of mirrors) {
+    for (const tasklist of config.tasklists) {
+      const existing = merged.tasklists.find((item) => item.guid === tasklist.guid);
+      const nextTasklist: LarkProjectLocalTasklistConfig = {
+        ...tasklist,
+        ...existing,
+        visible: existing?.visible === false || tasklist.visible === false ? false : (existing?.visible ?? tasklist.visible),
+        order: existing?.order ?? tasklist.order,
+        pinned: existing?.pinned ?? tasklist.pinned,
+        pinnedAt: existing?.pinnedAt ?? tasklist.pinnedAt,
+        conversations: mergeConversationLinks(existing?.conversations ?? [], tasklist.conversations),
+      };
+      merged = {
+        ...merged,
+        tasklists: [nextTasklist, ...merged.tasklists.filter((item) => item.guid !== tasklist.guid)],
+      };
+    }
+    merged = {
+      ...merged,
+      updatedAt: Math.max(merged.updatedAt, config.updatedAt),
+      imChats: dedupeImChats([...merged.imChats, ...config.imChats]),
+      hiddenTaskGuids: Array.from(new Set([...merged.hiddenTaskGuids, ...config.hiddenTaskGuids])),
+    };
+  }
+
+  return {
+    ...merged,
+    tasklists: dedupeTasklists(merged.tasklists),
+    imChats: dedupeImChats(merged.imChats),
+  };
+}
+
 function mergeConversationLinks(
   previous: LarkProjectLocalConversationLink[],
   incoming: LarkProjectLocalConversationLink[]
@@ -248,9 +319,11 @@ function localConfigToToml(config: LarkProjectLocalConfig): Record<string, unkno
   return compactRecord({
     version: 1,
     updated_at: config.updatedAt,
+    hidden_task_guids: config.hiddenTaskGuids,
     sidebar: {
       auto_sync_lark: config.sidebar.autoSyncLark,
       show_lark_im: config.sidebar.showLarkIm,
+      delete_remote_tasklist_by_default: config.sidebar.deleteRemoteTasklistByDefault,
     },
     tasklists: config.tasklists.map((tasklist) =>
       compactRecord({
@@ -330,23 +403,36 @@ async function writeLocalConfig(config: LarkProjectLocalConfig): Promise<void> {
     updatedAt: now(),
     tasklists: dedupeTasklists(config.tasklists),
     imChats: dedupeImChats(config.imChats),
+    hiddenTaskGuids: Array.from(new Set(config.hiddenTaskGuids)),
   };
-  await ensureDir(getProjectAgentDataDir());
-  await fs.writeFile(getLocalConfigPath(), `${stringifyToml(localConfigToToml(updated))}\n`, 'utf8');
+  await Promise.all(
+    getLocalConfigMirrorPaths().map(async (configPath) => {
+      await ensureDir(path.dirname(configPath));
+      await fs.writeFile(configPath, `${stringifyToml(localConfigToToml(updated))}\n`, 'utf8');
+    })
+  );
 }
 
 async function readLocalConfig(): Promise<LarkProjectLocalConfig> {
-  try {
-    const raw = await fs.readFile(getLocalConfigPath(), 'utf8');
-    return normalizeLocalConfig(parseToml(raw));
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      const config = emptyLocalConfig();
-      await writeLocalConfig(config);
-      return config;
+  const configs: LarkProjectLocalConfig[] = [];
+  for (const configPath of getLocalConfigMirrorPaths()) {
+    try {
+      const raw = await fs.readFile(configPath, 'utf8');
+      configs.push(normalizeLocalConfig(parseToml(raw)));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw error;
+      }
     }
-    throw error;
   }
+
+  if (configs.length > 0) {
+    return mergeLocalConfigs(configs);
+  }
+
+  const config = emptyLocalConfig();
+  await writeLocalConfig(config);
+  return config;
 }
 
 function mergeBindingIntoConfig(
@@ -629,6 +715,18 @@ export async function hideTasklist(tasklistGuid: string): Promise<LarkProjectSna
   return listSnapshot();
 }
 
+export async function setDeleteRemoteTasklistPreference(value: boolean): Promise<LarkProjectSnapshot> {
+  const config = await readLocalConfig();
+  await writeLocalConfig({
+    ...config,
+    sidebar: {
+      ...config.sidebar,
+      deleteRemoteTasklistByDefault: value,
+    },
+  });
+  return listSnapshot();
+}
+
 export async function updateTasklistLocalState(input: {
   tasklistGuid: string;
   visible?: boolean;
@@ -737,8 +835,10 @@ export async function removeLocalTaskRecord(recordId: string): Promise<LarkProje
   await writeState(state);
 
   const config = await ensureConfigFromState(state);
+  const hiddenTaskGuid = record?.taskGuid ?? trimmed;
   await writeLocalConfig({
     ...config,
+    hiddenTaskGuids: Array.from(new Set([...config.hiddenTaskGuids, hiddenTaskGuid])),
     tasklists: config.tasklists.map((tasklist) => ({
       ...tasklist,
       conversations: tasklist.conversations.filter((conversation) => {
@@ -985,13 +1085,19 @@ export async function getBindingByTasklistGuid(tasklistGuid: string): Promise<La
 
 export async function saveTaskRecord(record: LarkProjectTaskRecord): Promise<LarkProjectTaskRecord> {
   const state = await readState();
+  const config = await ensureConfigFromState(state);
+  if (config.hiddenTaskGuids.includes(record.taskGuid)) {
+    return {
+      ...record,
+      updatedAt: now(),
+    };
+  }
   const updated = { ...record, updatedAt: now() };
   state.taskRecords = [
     updated,
     ...state.taskRecords.filter((item) => item.id !== record.id && item.taskGuid !== record.taskGuid),
   ];
   await writeState(state);
-  const config = await ensureConfigFromState(state);
   await writeLocalConfig(mergeTaskRecordIntoConfig(config, updated));
   return updated;
 }

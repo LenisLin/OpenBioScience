@@ -61,10 +61,10 @@
   "more": "더보기",
   "refresh": "새로고침",
   "readOnly": "읽기 전용",
-  "tray.showWindow": "DeepOrganiser 표시",
+  "tray.showWindow": "OpenScience 표시",
   "tray.newChat": "새 채팅",
   "tray.closeToTray": "트레이에 숨기기",
-  "tray.about": "DeepOrganiser 소개",
+  "tray.about": "OpenScience 소개",
   "tray.restart": "앱 재시작",
   "tray.quit": "종료",
   "tray.runningTasks": "실행 중인 작업",
@@ -75,22 +75,22 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "이 시스템은 번들 백엔드를 지원하지 않습니다",
-      "description": "DeepOrganiser는 열렸지만 로컬 DeepOrganiser Core 백엔드를 이 Linux 버전에서 실행할 수 없습니다. 지원되는 Linux 배포판으로 업그레이드한 뒤 DeepOrganiser를 다시 시작하세요.",
+      "description": "OpenScience는 열렸지만 로컬 OpenScience Core 백엔드를 이 Linux 버전에서 실행할 수 없습니다. 지원되는 Linux 배포판으로 업그레이드한 뒤 OpenScience를 다시 시작하세요.",
       "requiredVersions": "필요한 런타임 심볼: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "DeepOrganiser 설치가 불완전합니다",
-      "description": "현재 설치에 필요한 로컬 리소스가 없어 DeepOrganiser Core를 시작할 수 없습니다. 최신 DeepOrganiser를 다운로드하여 다시 설치하세요. 다시 설치한 후에도 문제가 반복되면 보안 또는 바이러스 백신 소프트웨어가 DeepOrganiser Core를 격리했는지 확인하세요.",
+      "title": "OpenScience 설치가 불완전합니다",
+      "description": "현재 설치에 필요한 로컬 리소스가 없어 OpenScience Core를 시작할 수 없습니다. 최신 OpenScience를 다운로드하여 다시 설치하세요. 다시 설치한 후에도 문제가 반복되면 보안 또는 바이러스 백신 소프트웨어가 OpenScience Core를 격리했는지 확인하세요.",
       "downloadLatest": "최신 버전 다운로드",
       "sendDiagnostics": "진단 보고서 보내기",
       "diagnosticsSent": "진단 보고서를 보냈습니다",
       "diagnosticsReportSuccess": "진단 보고서를 보냈습니다",
       "diagnosticsReportFailed": "진단 보고서를 보내지 못했습니다",
-      "runtimeComponentDescription": "현재 설치에 필요한 내장 런타임 구성 요소가 없어 {{resource}}을(를) 시작할 수 없습니다. 최신 DeepOrganiser 패키지를 다시 설치하세요. 다시 설치한 후에도 문제가 계속되면 보안 또는 백신 소프트웨어가 DeepOrganiser 구성 요소를 격리했는지 확인하세요."
+      "runtimeComponentDescription": "현재 설치에 필요한 내장 런타임 구성 요소가 없어 {{resource}}을(를) 시작할 수 없습니다. 최신 OpenScience 패키지를 다시 설치하세요. 다시 설치한 후에도 문제가 계속되면 보안 또는 백신 소프트웨어가 OpenScience 구성 요소를 격리했는지 확인하세요."
     },
     "packageArchitectureMismatch": {
-      "title": "DeepOrganiser package architecture mismatch",
-      "description": "This DeepOrganiser package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
+      "title": "OpenScience package architecture mismatch",
+      "description": "This OpenScience package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
     }
   },
   "fileAttach.addFiles": "파일 추가",
@@ -115,11 +115,15 @@
   },
   "collaboration": {
     "projects": {
-      "hideTasklistAction": "Remove from this sidebar",
-      "hideTasklistTitle": "Remove this tasklist locally?",
-      "hideTasklistConfirm": "“{{name}}” will disappear from this device’s collaboration sidebar and project picker. The remote Lark tasklist will not be deleted, and other members will not be affected.",
-      "hideTasklistOk": "Remove locally",
-      "hideTasklistSuccess": "Removed from this sidebar"
+      "hideTasklistAction": "Delete from sidebar",
+      "hideTasklistTitle": "Delete this collaboration project?",
+      "hideTasklistConfirm": "“{{name}}” will be hidden from this device’s sidebar and project picker. By default, the remote tasklist will not be deleted.",
+      "hideTasklistRemoteDelete": "Also delete this tasklist remotely",
+      "hideTasklistRemoteDeleteHint": "When checked, Confirm will also delete the remote tasklist. This choice will be remembered for the next time.",
+      "hideTasklistOk": "Sidebar only",
+      "hideTasklistRemoteOk": "Delete both",
+      "hideTasklistSuccess": "Deleted from the sidebar",
+      "hideTasklistRemoteSuccess": "Deleted from the sidebar and remote tasklist"
     }
   }
 }

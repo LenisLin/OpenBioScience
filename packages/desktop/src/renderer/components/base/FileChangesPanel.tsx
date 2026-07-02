@@ -271,7 +271,7 @@ const FileChangesPanel: React.FC<FileChangesPanelProps> = ({
                 handleReview();
               }}
             >
-              {t('messages.review', { defaultValue: 'Review' })}
+              {t('preview.preview', { defaultValue: 'Preview' })}
             </Button>
           )}
         </div>

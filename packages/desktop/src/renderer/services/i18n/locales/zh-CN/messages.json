@@ -203,5 +203,17 @@
       "listedTarget": "已列出 {{target}}"
     },
     "progressLog": "过程记录"
+  },
+  "codexMemory": {
+    "title": "Codex 记忆",
+    "fallbackTitle": "记忆快照",
+    "marker": "记忆点",
+    "markerWithNumber": "记忆点 {{number}}",
+    "window": "窗口 {{number}}",
+    "line": "第 {{number}} 行",
+    "loading": "正在加载记忆快照...",
+    "empty": "这份记忆快照还没有准备好。",
+    "refresh": "刷新",
+    "copy": "复制"
   }
 }

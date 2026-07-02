@@ -11,8 +11,8 @@
  * "Tools" (MCP servers + speech-to-text) pages into a single "Capabilities"
  * entry, accessible via /settings/capabilities.
  *
- * Old routes (/settings/skills-hub and /settings/tools) are redirected here
- * with a ?tab= query parameter to select the appropriate tab.
+ * The old Tools route is redirected here with a ?tab= query parameter.
+ * Skills now also has a richer standalone page at /settings/skills.
  */
 
 import { Tabs } from '@arco-design/web-react';

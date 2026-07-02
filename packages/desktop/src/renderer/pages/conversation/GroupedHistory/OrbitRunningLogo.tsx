@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 DeepOrganiser (deepscientist.cc)
+ * Copyright 2025 OpenScience
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -61,7 +61,7 @@ type OrbitRunningLogoProps = {
   ariaLabel?: string;
 };
 
-const OrbitRunningLogo: React.FC<OrbitRunningLogoProps> = ({ className, size = 16, ariaLabel = 'DeepOrganiser running' }) => {
+const OrbitRunningLogo: React.FC<OrbitRunningLogoProps> = ({ className, size = 16, ariaLabel = 'OpenScience running' }) => {
   const theme = useDocumentTheme();
   const prefersReducedMotion = usePrefersReducedMotion();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);

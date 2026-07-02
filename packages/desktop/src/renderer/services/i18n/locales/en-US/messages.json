@@ -203,5 +203,17 @@
       "listedTarget": "Listed {{target}}"
     },
     "progressLog": "Progress log"
+  },
+  "codexMemory": {
+    "title": "Codex Memory",
+    "fallbackTitle": "Memory snapshot",
+    "marker": "Memory point",
+    "markerWithNumber": "Memory {{number}}",
+    "window": "Window {{number}}",
+    "line": "Line {{number}}",
+    "loading": "Loading memory snapshot...",
+    "empty": "This memory snapshot is not ready yet.",
+    "refresh": "Refresh",
+    "copy": "Copy"
   }
 }

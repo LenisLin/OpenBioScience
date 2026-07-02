@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { DEFAULT_CODEX_MODELS } from '@/common/types/codex/codexModels';
+import { DEFAULT_CODEX_MODEL_ID, DEFAULT_CODEX_MODELS } from '@/common/types/codex/codexModels';
 import { LEGACY_LOCAL_RUNTIME_ID } from '@/common/config/legacyIdentifiers';
-import { CODEX_MODE_NATIVE_FULL_ACCESS, normalizeCodexMode } from '@/common/types/codex/codexModes';
+import { normalizeCodexMode } from '@/common/types/codex/codexModes';
+import { getFullAutoMode } from '@/common/types/agent/agentModes';
 import type { IProvider } from '@/common/config/storage';
 import { configService } from '@/common/config/configService';
 import type { Assistant } from '@/common/types/agent/assistantTypes';
@@ -80,10 +81,11 @@ export type GuidAgentSelectionResult = {
  * Resolve the default session_mode for a given backend.
  *
  * Priority:
- *   1. Handshake `available_modes.current_mode_id` from `/api/agents`
- *   2. First entry of handshake `available_modes`
- *   3. First entry of the static `AGENT_MODES` table
- *   4. Literal `'default'` as a final legacy fallback.
+ *   1. Backend-specific full-access/full-auto mode when available
+ *   2. Handshake `available_modes.current_mode_id` from `/api/agents`
+ *   3. First entry of handshake `available_modes`
+ *   4. First entry of the static `AGENT_MODES` table
+ *   5. Literal `'default'` as a final legacy fallback.
  *
  * This mirrors the runtime fallback inside `AgentModeSelector` so the
  * parent-held `selectedMode` stays in sync with what the UI shows.
@@ -91,15 +93,20 @@ export type GuidAgentSelectionResult = {
 function resolveDefaultMode(backend: string | undefined, agents: AgentMetadata[] | undefined): string {
   if (!backend) return 'default';
 
+  const fullAutoMode = getFullAutoMode(backend);
+  const staticModes = getAgentModes(backend);
+  if (staticModes.some((mode) => mode.value === fullAutoMode)) return fullAutoMode;
+
   const matched = agents?.find((a) => (a.backend ?? a.agent_type) === backend);
   const handshakeModes = matched?.handshake?.available_modes as AcpSessionModes | undefined;
   if (handshakeModes) {
+    const supportsFullAutoMode = handshakeModes.available_modes?.some((mode) => mode.id === fullAutoMode);
+    if (supportsFullAutoMode) return fullAutoMode;
     if (handshakeModes.current_mode_id) return handshakeModes.current_mode_id;
     const first = handshakeModes.available_modes?.[0]?.id;
     if (first) return first;
   }
 
-  const staticModes = getAgentModes(backend);
   if (staticModes.length > 0) return staticModes[0].value;
 
   return 'default';
@@ -369,7 +376,10 @@ export const useGuidAgentSelection = ({
             return;
           }
           // Plain row key — verify it still exists in detected engines
-          if (savedKey !== LEGACY_LOCAL_RUNTIME_ID && availableAgents.some((agent) => getAgentKey(agent) === savedKey)) {
+          if (
+            savedKey !== LEGACY_LOCAL_RUNTIME_ID &&
+            availableAgents.some((agent) => getAgentKey(agent) === savedKey)
+          ) {
             _setSelectedAgentKey(savedKey);
             return;
           }
@@ -417,6 +427,11 @@ export const useGuidAgentSelection = ({
       return;
     }
 
+    if (backend === 'codex') {
+      _setSelectedAcpModel(DEFAULT_CODEX_MODEL_ID);
+      return;
+    }
+
     const metadataAgents = availableAgentsData as unknown as AgentMetadata[] | undefined;
     const matched = metadataAgents?.find((a) => (a.backend ?? a.agent_type) === backend);
     const handshakeModels = matched?.handshake?.available_models as AcpModelInfo | undefined;
@@ -461,13 +476,7 @@ export const useGuidAgentSelection = ({
 
         // 2. Fallback: legacy yoloMode
         if (yoloMode) {
-          const yoloValues: Record<string, string> = {
-            claude: 'bypassPermissions',
-            gemini: 'yolo',
-            codex: CODEX_MODE_NATIVE_FULL_ACCESS,
-            qwen: 'yolo',
-          };
-          _setSelectedMode(yoloValues[configKey] || 'yolo');
+          _setSelectedMode(getFullAutoMode(configKey));
         }
       } catch {
         /* silent */
@@ -497,6 +506,25 @@ export const useGuidAgentSelection = ({
       Array.isArray(handshakeModels.available_models) &&
       handshakeModels.available_models.length > 0
     ) {
+      if (backend === 'codex') {
+        const seen = new Set<string>();
+        const available_models = [
+          ...DEFAULT_CODEX_MODELS.map((m) => ({ id: m.id, label: m.label })),
+          ...handshakeModels.available_models,
+        ].filter((model) => {
+          if (!model?.id || seen.has(model.id)) return false;
+          seen.add(model.id);
+          return true;
+        });
+
+        return {
+          ...handshakeModels,
+          current_model_id: DEFAULT_CODEX_MODEL_ID,
+          current_model_label: DEFAULT_CODEX_MODEL_ID,
+          available_models,
+        } satisfies AcpModelInfo;
+      }
+
       return handshakeModels;
     }
 
@@ -505,8 +533,8 @@ export const useGuidAgentSelection = ({
     // so the Guid page shows a model selector immediately.
     if (backend === 'codex' && DEFAULT_CODEX_MODELS.length > 0) {
       return {
-        current_model_id: DEFAULT_CODEX_MODELS[0].id,
-        current_model_label: DEFAULT_CODEX_MODELS[0].label,
+        current_model_id: DEFAULT_CODEX_MODEL_ID,
+        current_model_label: DEFAULT_CODEX_MODEL_ID,
         available_models: DEFAULT_CODEX_MODELS.map((m) => ({ id: m.id, label: m.label })),
       } satisfies AcpModelInfo;
     }

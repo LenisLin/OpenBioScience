@@ -6,7 +6,7 @@ const AppLoader: React.FC = () => {
   const { t } = useTranslation();
   return (
     <div className='relative min-h-screen w-full bg-bg-1'>
-      <PageLoadingState label={t('common.loadingDeepScientist')} />
+      <PageLoadingState brand label={t('common.loadingOpenScience')} />
     </div>
   );
 };

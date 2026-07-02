@@ -9,7 +9,6 @@ import UploadProgressBar from '@/renderer/components/media/UploadProgressBar';
 import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
 import { useCompositionInput } from '@/renderer/hooks/chat/useCompositionInput';
 import { Input } from '@arco-design/web-react';
-import { Checklist } from '@icon-park/react';
 import React from 'react';
 import styles from '../index.module.css';
 import GuidWorkspaceFootnote from './GuidWorkspaceFootnote';
@@ -27,6 +26,7 @@ type GuidInputCardProps = {
   // Styling
   isInputActive: boolean;
   isFileDragging: boolean;
+  isRunning?: boolean;
   activeBorderColor: string;
   inactiveBorderColor: string;
   activeShadow: string;
@@ -51,11 +51,9 @@ type GuidInputCardProps = {
   isWorkspaceContextActive?: boolean;
   onActivateWorkspaceContext?: () => void;
   onDeactivateWorkspaceContext?: () => void;
-
-  // Lark collaboration context
-  collaborationLabel?: string;
-  isCollaborationContextActive?: boolean;
-  onToggleCollaborationContext?: () => void;
+  workspaceLabels?: React.ComponentProps<typeof GuidWorkspaceFootnote>['labels'];
+  contextBadge?: React.ReactNode;
+  contextLeading?: React.ReactNode;
 };
 
 const GuidInputCard: React.FC<GuidInputCardProps> = ({
@@ -68,6 +66,7 @@ const GuidInputCard: React.FC<GuidInputCardProps> = ({
   placeholder,
   isInputActive,
   isFileDragging,
+  isRunning = false,
   activeBorderColor,
   inactiveBorderColor,
   activeShadow,
@@ -84,9 +83,9 @@ const GuidInputCard: React.FC<GuidInputCardProps> = ({
   isWorkspaceContextActive = false,
   onActivateWorkspaceContext,
   onDeactivateWorkspaceContext,
-  collaborationLabel,
-  isCollaborationContextActive = false,
-  onToggleCollaborationContext,
+  workspaceLabels,
+  contextBadge,
+  contextLeading,
 }) => {
   const layout = useLayoutContext();
   const isMobile = layout?.isMobile ?? false;
@@ -103,6 +102,7 @@ const GuidInputCard: React.FC<GuidInputCardProps> = ({
     : isInputActive
       ? activeBorderColor
       : inactiveBorderColor;
+  const showRunningGlow = isRunning && !isFileDragging;
 
   const workspaceNode = (
     <GuidWorkspaceFootnote
@@ -112,12 +112,13 @@ const GuidInputCard: React.FC<GuidInputCardProps> = ({
       active={isWorkspaceContextActive}
       onActivate={onActivateWorkspaceContext}
       onDeactivate={onDeactivateWorkspaceContext}
+      labels={workspaceLabels}
     />
   );
 
   return (
     <div
-      className={`${styles.guidInputCardWrap} guid-input-card-shell relative rd-24px flex flex-col transition-all duration-200 ${isFileDragging ? 'b b-solid border-dashed guid-input-card-shell--dragging' : ''}`}
+      className={`${styles.guidInputCardWrap} ${showRunningGlow ? styles.guidInputCardWrapRunning : ''} guid-input-card-shell relative rd-24px flex flex-col transition-all duration-200 ${isFileDragging ? 'b b-solid border-dashed guid-input-card-shell--dragging' : ''}`}
       style={{
         zIndex: 1,
         transition: 'box-shadow 0.25s ease',
@@ -131,18 +132,19 @@ const GuidInputCard: React.FC<GuidInputCardProps> = ({
               borderWidth: '1px',
             }
           : {
-              boxShadow: isInputActive ? activeShadow : 'none',
+              boxShadow: isInputActive || showRunningGlow ? activeShadow : 'none',
             }),
       }}
       {...dragHandlers}
     >
+      {showRunningGlow ? <span className={styles.guidInputOrbitGlow} aria-hidden='true' /> : null}
       {/* inner white card — narrower than outer wrap */}
       <div
         className={`${styles.guidInputInner} p-12px flex flex-col bg-dialog-fill-0`}
         style={{
           transition: 'box-shadow 0.25s ease, border-color 0.25s ease',
           borderColor: isFileDragging ? 'rgb(var(--primary-3))' : borderColor,
-          boxShadow: isInputActive && !isFileDragging ? activeShadow : 'none',
+          boxShadow: (isInputActive || showRunningGlow) && !isFileDragging ? activeShadow : 'none',
         }}
       >
         {mentionSelectorBadge}
@@ -176,16 +178,9 @@ const GuidInputCard: React.FC<GuidInputCardProps> = ({
         <UploadProgressBar source='sendbox' />
         {actionRow}
       </div>
-      <div className={styles.guidContextRow}>
-        <button
-          type='button'
-          className={`${styles.collaborationEmptyBtn} ${isCollaborationContextActive ? styles.collaborationEmptyBtnActive : ''}`}
-          onClick={onToggleCollaborationContext}
-        >
-          <Checklist theme='outline' size={14} />
-          <span>多人协作项目</span>
-          {collaborationLabel ? <span className={styles.collaborationContextName}>{collaborationLabel}</span> : null}
-        </button>
+      <div className={`${styles.guidContextRow} ${contextBadge || contextLeading ? styles.guidContextRowWithBadge : ''}`}>
+        {contextBadge ? <div className={styles.guidContextBadgeSlot}>{contextBadge}</div> : null}
+        {contextLeading ? <div className={styles.guidContextLeadingSlot}>{contextLeading}</div> : null}
         {workspaceNode}
       </div>
     </div>

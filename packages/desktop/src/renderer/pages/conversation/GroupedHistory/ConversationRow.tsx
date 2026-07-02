@@ -5,7 +5,11 @@
  */
 
 import { getAgentLogo } from '@/renderer/utils/model/agentLogo';
+import { isLabSkillDepositionConversationExtra } from '@/common/chat/labSkillDeposition';
+import { isMedicalEvidenceConversationExtra } from '@/common/chat/medicalEvidence';
+import { isScienceConversationExtra } from '@/common/chat/science';
 import FlexFullContainer from '@/renderer/components/layout/FlexFullContainer';
+import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
 import { usePresetAssistantInfo } from '@/renderer/hooks/agent/usePresetAssistantInfo';
 import { CronJobIndicator } from '@/renderer/pages/cron';
 import { cleanupSiderTooltips, getSiderTooltipProps } from '@/renderer/utils/ui/siderTooltip';
@@ -20,6 +24,8 @@ import type { ConversationRowProps } from './types';
 import { getBackendKeyFromConversation } from './utils/exportHelpers';
 import { isConversationPinned } from './utils/groupingHelpers';
 import OrbitRunningLogo from './OrbitRunningLogo';
+import { getUserInputLabels } from '../user-input/userInputI18n';
+import { useHasPendingUserInput } from '../user-input/userInputStore';
 
 const ConversationRow: React.FC<ConversationRowProps> = (props) => {
   const {
@@ -47,10 +53,12 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
     onTogglePin,
     getJobStatus,
   } = props;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const userInputLabels = getUserInputLabels(i18n.language);
   const { info: assistantInfo } = usePresetAssistantInfo(conversation);
   const isPinned = isConversationPinned(conversation);
   const cronStatus = getJobStatus(conversation.id);
+  const hasPendingUserInput = useHasPendingUserInput(conversation.id);
   const siderTooltipProps = getSiderTooltipProps(tooltipEnabled);
   const inlineNameTooltipEnabled = !collapsed && !isMobile && !!conversation.name;
 
@@ -63,6 +71,42 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
     // the leading icon. We dim the resting icon on hover so the pin reads cleanly.
     const pinnedHoverFade = isPinned ? 'group-hover:opacity-0 transition-opacity' : '';
     const composedClass = classNames(pinnedHoverFade);
+
+    if (isMedicalEvidenceConversationExtra(conversation.extra)) {
+      return (
+        <OpenScienceIcon
+          name='modeMedicalEvidence'
+          size={16}
+          visualScale={1.1}
+          title={t('guid.medicalEvidence.menuLabel')}
+          className={classNames('flex-shrink-0', composedClass)}
+        />
+      );
+    }
+
+    if (isLabSkillDepositionConversationExtra(conversation.extra)) {
+      return (
+        <OpenScienceIcon
+          name='modeDeposition'
+          size={16}
+          visualScale={1.08}
+          title={t('guid.skillDeposition.menuLabel')}
+          className={classNames('flex-shrink-0', composedClass)}
+        />
+      );
+    }
+
+    if (isScienceConversationExtra(conversation.extra)) {
+      return (
+        <OpenScienceIcon
+          name='modeScience'
+          size={16}
+          visualScale={1.08}
+          title={t('guid.scienceProject.menuLabel')}
+          className={classNames('flex-shrink-0', composedClass)}
+        />
+      );
+    }
 
     if (assistantInfo) {
       if (assistantInfo.isEmoji) {
@@ -122,7 +166,7 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
   };
 
   const renderCompletionUnreadDot = () => {
-    if (batchMode || !hasCompletionUnread || isGenerating) {
+    if (batchMode || !hasCompletionUnread || isGenerating || hasPendingUserInput) {
       return null;
     }
 
@@ -144,7 +188,9 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
         id={'c-' + conversation.id}
         className={classNames(
           'chat-history__item h-34px rd-8px flex items-center group cursor-pointer relative overflow-hidden shrink-0 conversation-item [&.conversation-item+&.conversation-item]:mt-2px min-w-0 transition-colors',
-          collapsed ? 'justify-center px-0' : 'justify-start gap-8px pr-16px',
+          collapsed
+            ? 'justify-center px-0'
+            : classNames('justify-start gap-8px', hasPendingUserInput ? 'pr-88px' : 'pr-16px'),
           // dimIcon means this row sits inside a project/cron parent — visually indent the row content while keeping the bg full-width
           !collapsed && (dimIcon ? 'pl-34px' : 'pl-10px'),
           {
@@ -195,6 +241,16 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
           </Tooltip>
         </FlexFullContainer>
 
+        {!batchMode && hasPendingUserInput && (
+          <span
+            className={classNames(
+              'user-input-row-badge absolute top-1/2 -translate-y-1/2 right-8px group-hover:hidden',
+              collapsed && 'user-input-row-badge--dot'
+            )}
+          >
+            {collapsed ? '' : userInputLabels.pendingBadge}
+          </span>
+        )}
         {renderCompletionUnreadDot()}
         {!batchMode && (
           <div

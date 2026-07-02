@@ -5,9 +5,14 @@
  */
 
 import type { TChatConversation } from '@/common/config/storage';
+import { isLabSkillDepositionConversationExtra } from '@/common/chat/labSkillDeposition';
+import { isMedicalEvidenceConversationExtra } from '@/common/chat/medicalEvidence';
+import { isScienceConversationExtra } from '@/common/chat/science';
+import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
 import { getAgentLogo } from '@/renderer/utils/model/agentLogo';
 import { MessageOne } from '@icon-park/react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { getBackendKeyFromConversation } from './utils/exportHelpers';
 
@@ -16,10 +21,14 @@ type DragOverlayContentProps = {
 };
 
 const DragOverlayContent: React.FC<DragOverlayContentProps> = ({ conversation }) => {
+  const { t } = useTranslation();
   if (!conversation) return null;
 
   const backendKey = getBackendKeyFromConversation(conversation);
   const logo = getAgentLogo(backendKey);
+  const isMedicalEvidence = isMedicalEvidenceConversationExtra(conversation.extra);
+  const isLabSkillDeposition = isLabSkillDepositionConversationExtra(conversation.extra);
+  const isScience = isScienceConversationExtra(conversation.extra);
 
   return (
     <div
@@ -31,7 +40,31 @@ const DragOverlayContent: React.FC<DragOverlayContentProps> = ({ conversation })
         transform: 'scale(1.02)',
       }}
     >
-      {logo ? (
+      {isMedicalEvidence ? (
+        <OpenScienceIcon
+          name='modeMedicalEvidence'
+          size={18}
+          visualScale={1.1}
+          title={t('guid.medicalEvidence.menuLabel')}
+          className='flex-shrink-0'
+        />
+      ) : isLabSkillDeposition ? (
+        <OpenScienceIcon
+          name='modeDeposition'
+          size={18}
+          visualScale={1.08}
+          title={t('guid.skillDeposition.menuLabel')}
+          className='flex-shrink-0'
+        />
+      ) : isScience ? (
+        <OpenScienceIcon
+          name='modeScience'
+          size={18}
+          visualScale={1.08}
+          title={t('guid.scienceProject.menuLabel')}
+          className='flex-shrink-0'
+        />
+      ) : logo ? (
         <img src={logo} alt={`${backendKey || 'agent'} logo`} className='w-18px h-18px rounded-50% flex-shrink-0' />
       ) : (
         <MessageOne theme='outline' size='20' className='line-height-0 flex-shrink-0' />

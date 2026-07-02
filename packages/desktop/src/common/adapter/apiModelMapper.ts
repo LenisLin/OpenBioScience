@@ -82,15 +82,9 @@ export function fromApiConversation<T>(raw: T): T {
 
   const extra = r.extra;
   if (extra && typeof extra === 'object') {
-    const workspace = typeof extra.workspace === 'string' ? extra.workspace : '';
-    const isTemporary = extra.is_temporary_workspace === true;
-    const inferredCustomWorkspace = workspace.length > 0 && !isTemporary;
-    const customWorkspace =
-      'custom_workspace' in extra ? (extra.custom_workspace as boolean | undefined) : inferredCustomWorkspace;
     next.extra = {
       ...extra,
       ...(isLegacyLocalRuntimeConversation ? { backend: 'codex' } : {}),
-      custom_workspace: customWorkspace,
     };
   } else if (isLegacyLocalRuntimeConversation) {
     next.extra = {

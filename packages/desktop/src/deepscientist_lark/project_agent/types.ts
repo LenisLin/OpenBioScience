@@ -85,9 +85,11 @@ export type LarkProjectLocalConfig = {
   sidebar: {
     autoSyncLark: boolean;
     showLarkIm: boolean;
+    deleteRemoteTasklistByDefault: boolean;
   };
   tasklists: LarkProjectLocalTasklistConfig[];
   imChats: LarkProjectLocalImChatConfig[];
+  hiddenTaskGuids: string[];
 };
 
 export type LarkTasklistSummary = {

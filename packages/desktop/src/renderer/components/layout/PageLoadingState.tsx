@@ -1,20 +1,22 @@
 /**
  * @license
- * Copyright 2025 DeepOrganiser (deepscientist.cc)
+ * Copyright 2025 OpenScience
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import React from 'react';
+import DeepScientistLogo from '@/renderer/components/icons/DeepScientistLogo';
 import OrbitRunningLogo from '@/renderer/pages/conversation/GroupedHistory/OrbitRunningLogo';
 import { useTranslation } from 'react-i18next';
 
 interface PageLoadingStateProps {
+  brand?: boolean;
   label?: string;
   size?: number;
   className?: string;
 }
 
-const PageLoadingState: React.FC<PageLoadingStateProps> = ({ label, size = 132, className }) => {
+const PageLoadingState: React.FC<PageLoadingStateProps> = ({ brand = false, label, size = 132, className }) => {
   const { t } = useTranslation();
   const resolvedLabel = label ?? t('common.loading');
 
@@ -28,7 +30,11 @@ const PageLoadingState: React.FC<PageLoadingStateProps> = ({ label, size = 132, 
         .join(' ')}
     >
       <div className='flex flex-col items-center justify-center gap-18px'>
-        <OrbitRunningLogo size={size} ariaLabel={resolvedLabel} />
+        {brand ? (
+          <DeepScientistLogo aria-hidden='true' className='h-128px w-148px max-w-[min(148px,42vw)] object-contain' />
+        ) : (
+          <OrbitRunningLogo size={size} ariaLabel={resolvedLabel} />
+        )}
         <div className='text-15px font-500 tracking-normal text-t-secondary animate-pulse'>{resolvedLabel}</div>
       </div>
     </div>

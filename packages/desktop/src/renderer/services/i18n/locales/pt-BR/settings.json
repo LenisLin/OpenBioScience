@@ -202,14 +202,14 @@
   "autoPreviewOfficeFiles": "Auto Visualizar Novos Arquivos Office",
   "autoPreviewOfficeFilesDesc": "Abre automaticamente os novos arquivos Word, Excel e PowerPoint no projeto atual. Arquivos temporários de trava do Office são ignorados.",
   "startOnBoot": "Iniciar com o Sistema",
-  "startOnBootDesc": "Inicia o DeepOrganiser automaticamente ao entrar no macOS ou Windows.",
+  "startOnBootDesc": "Inicia o OpenScience automaticamente ao entrar no macOS ou Windows.",
   "startOnBootUnsupported": "Disponível apenas em aplicativos empacotados para macOS e Windows.",
   "startOnBootUpdateFailed": "Falha ao atualizar a configuração de inicialização com o sistema",
   "closeToTray": "Minimizar para a Bandeja",
   "hardwareAcceleration": "Aceleração de Hardware",
   "hardwareAccelerationDesc": "Usa a GPU para renderizar a UI. Desative se o app travar ao iniciar ou se a tela piscar.",
   "hardwareAccelerationAutoDisabled": "Desativado automaticamente após repetidas falhas na GPU.",
-  "hardwareAccelerationRestartConfirm": "Reiniciar o DeepOrganiser para aplicar a nova configuração de aceleração de hardware?",
+  "hardwareAccelerationRestartConfirm": "Reiniciar o OpenScience para aplicar a nova configuração de aceleração de hardware?",
   "hardwareAccelerationUpdateFailed": "Falha ao atualizar a configuração de aceleração de hardware",
   "notification": "Notificações",
   "cronNotificationEnabled": "Conclusão de Tarefa Agendada",
@@ -311,7 +311,7 @@
   "installed": "Instalado",
   "builtin": "Integrado",
   "channels": "Canais",
-  "webui.description": "Use o DeepOrganiser como seu \"Assistente Remoto 24/7\" - agende tarefas de qualquer dispositivo remoto, a qualquer hora e em qualquer lugar.",
+  "webui.description": "Use o OpenScience como seu \"Assistente Remoto 24/7\" - agende tarefas de qualquer dispositivo remoto, a qualquer hora e em qualquer lugar.",
   "webui.steps": "Passo 1. Ligue a WebUI; Passo 2. Copie a URL de acesso; Passo 3. Abra em um navegador remoto",
   "webui.configuration": "Configuração da WebUI",
   "webui.enable": "Ativar WebUI",
@@ -389,13 +389,13 @@
   "webui.passwordHint": "A senha é exibida no console na primeira inicialização. Use \"Mudar Senha\" para redefinir",
   "webui.checkConsoleForPassword": "Verifique o console do aplicativo para a senha inicial",
   "webui.browserNotSupported": "As configurações da WebUI não estão disponíveis no navegador",
-  "webui.browserNotSupportedDesc": "Por motivos de segurança, as configurações da WebUI só podem ser gerenciadas no aplicativo desktop. Abra o painel de configurações no aplicativo desktop DeepOrganiser para configurar.",
+  "webui.browserNotSupportedDesc": "Por motivos de segurança, as configurações da WebUI só podem ser gerenciadas no aplicativo desktop. Abra o painel de configurações no aplicativo desktop OpenScience para configurar.",
   "webui.passwordHidden": "******",
   "webui.passwordOnlyFirstTime": "A senha só é exibida na primeira inicialização e ficará oculta depois",
   "webui.resetPasswordWarning": "Por favor, guarde bem a senha redefinida!",
-  "webui.featureRemoteDesc": "Ative a WebUI para que seu telefone ou navegador remoto possa acessar o DeepOrganiser.",
+  "webui.featureRemoteDesc": "Ative a WebUI para que seu telefone ou navegador remoto possa acessar o OpenScience.",
   "webui.featureChannelsTitle": "Controle de Mensagens",
-  "webui.featureChannelsDesc": "Conecte o Telegram, Lark, DingTalk e WeChat para interagir com o DeepOrganiser em apps de mensagens.",
+  "webui.featureChannelsDesc": "Conecte o Telegram, Lark, DingTalk e WeChat para interagir com o OpenScience em apps de mensagens.",
   "webui.goToChannels": "Ir para Canais",
   "assistant.telegramConfig": "Configuração do Bot do Telegram",
   "assistant.botToken": "Token do Bot",
@@ -446,19 +446,19 @@
   "assistant.step4": "Uma vez aprovado, você pode começar a conversar com o Gemini pelo Telegram!",
   "channels.title": "Canais",
   "channels.telegramTitle": "Telegram",
-  "channels.telegramDesc": "Converse com o assistente do DeepOrganiser pelo Telegram",
+  "channels.telegramDesc": "Converse com o assistente do OpenScience pelo Telegram",
   "channels.slackTitle": "Slack",
-  "channels.slackDesc": "Converse com o assistente do DeepOrganiser pelo Slack",
+  "channels.slackDesc": "Converse com o assistente do OpenScience pelo Slack",
   "channels.discordTitle": "Discord",
-  "channels.discordDesc": "Converse com o assistente do DeepOrganiser pelo Discord",
+  "channels.discordDesc": "Converse com o assistente do OpenScience pelo Discord",
   "channels.larkTitle": "Lark (Feishu)",
-  "channels.larkDesc": "Converse com o assistente do DeepOrganiser pelo Lark",
+  "channels.larkDesc": "Converse com o assistente do OpenScience pelo Lark",
   "channels.dingtalkTitle": "DingTalk",
-  "channels.dingtalkDesc": "Converse com o assistente do DeepOrganiser pelo DingTalk",
+  "channels.dingtalkDesc": "Converse com o assistente do OpenScience pelo DingTalk",
   "channels.weixinTitle": "WeChat",
-  "channels.weixinDesc": "Converse com o assistente do DeepOrganiser pelo WeChat",
+  "channels.weixinDesc": "Converse com o assistente do OpenScience pelo WeChat",
   "channels.wecomTitle": "WeCom",
-  "channels.wecomDesc": "Converse com o assistente do DeepOrganiser pelo WeCom (Enterprise WeChat AI Bot)",
+  "channels.wecomDesc": "Converse com o assistente do OpenScience pelo WeCom (Enterprise WeChat AI Bot)",
   "channels.comingSoon": "Em Breve",
   "channels.comingSoonDesc": "O suporte para {{channel}} chegará em breve",
   "channels.notConfigured": "Não configurado",
@@ -540,19 +540,19 @@
   "mcpAuthenticated": "Autenticado",
   "mcpDisconnected": "Desconectado",
   "mcpError": "Erro",
-  "mcpErrorNodeCommandNotFound": "Não foi possível preparar o comando {{command}}. O DeepOrganiser Core normalmente provisiona automaticamente o runtime Node gerenciado. Tente novamente o teste de conexão, verifique os logs do backend se ainda falhar ou configure este servidor MCP para usar um caminho de comando absoluto.",
-  "mcpErrorBunCommandNotFound": "O comando {{command}} não foi encontrado. Instale o Bun (que inclui bun/bunx), reinicie o DeepOrganiser ou configure este servidor MCP para usar um caminho de comando absoluto.",
-  "mcpErrorUvCommandNotFound": "O comando {{command}} não foi encontrado. Instale o uv, reinicie o DeepOrganiser ou configure este servidor MCP para usar um caminho de comando absoluto.",
-  "mcpErrorPythonCommandNotFound": "O comando {{command}} não foi encontrado. Instale o Python, reinicie o DeepOrganiser ou configure este servidor MCP para usar um caminho de comando absoluto.",
-  "mcpErrorDenoCommandNotFound": "O comando {{command}} não foi encontrado. Instale o Deno, reinicie o DeepOrganiser ou configure este servidor MCP para usar um caminho de comando absoluto.",
+  "mcpErrorNodeCommandNotFound": "Não foi possível preparar o comando {{command}}. O OpenScience Core normalmente provisiona automaticamente o runtime Node gerenciado. Tente novamente o teste de conexão, verifique os logs do backend se ainda falhar ou configure este servidor MCP para usar um caminho de comando absoluto.",
+  "mcpErrorBunCommandNotFound": "O comando {{command}} não foi encontrado. Instale o Bun (que inclui bun/bunx), reinicie o OpenScience ou configure este servidor MCP para usar um caminho de comando absoluto.",
+  "mcpErrorUvCommandNotFound": "O comando {{command}} não foi encontrado. Instale o uv, reinicie o OpenScience ou configure este servidor MCP para usar um caminho de comando absoluto.",
+  "mcpErrorPythonCommandNotFound": "O comando {{command}} não foi encontrado. Instale o Python, reinicie o OpenScience ou configure este servidor MCP para usar um caminho de comando absoluto.",
+  "mcpErrorDenoCommandNotFound": "O comando {{command}} não foi encontrado. Instale o Deno, reinicie o OpenScience ou configure este servidor MCP para usar um caminho de comando absoluto.",
   "mcpErrorCommandNotFound": "O comando {{command}} não foi encontrado. Instale-o ou configure este servidor MCP para usar um caminho de comando absoluto.",
-  "mcpErrorCommandPermissionDenied": "O DeepOrganiser não pode executar {{command}} porque a permissão foi negada.",
-  "mcpErrorCommandStartFailed": "O DeepOrganiser falhou ao iniciar {{command}}.",
+  "mcpErrorCommandPermissionDenied": "O OpenScience não pode executar {{command}} porque a permissão foi negada.",
+  "mcpErrorCommandStartFailed": "O OpenScience falhou ao iniciar {{command}}.",
   "mcpErrorTimeout": "O teste de conexão expirou após {{seconds}}s.",
-  "mcpErrorConnectionFailed": "O DeepOrganiser não conseguiu alcançar o servidor MCP.",
+  "mcpErrorConnectionFailed": "O OpenScience não conseguiu alcançar o servidor MCP.",
   "mcpErrorHttp": "O servidor MCP retornou HTTP {{status}}.",
   "mcpErrorRpc": "O servidor MCP retornou um erro RPC ao processar {{method}}.",
-  "mcpErrorProtocol": "O DeepOrganiser não conseguiu concluir o handshake do MCP.",
+  "mcpErrorProtocol": "O OpenScience não conseguiu concluir o handshake do MCP.",
   "mcpLastCheckedAvailable": "Última verificação em Ferramentas: Disponível",
   "mcpLastCheckedFailed": "Última verificação em Ferramentas: Falhou",
   "mcpCheckedAt": "Verificado em: {{time}}",
@@ -579,7 +579,7 @@
   "mcpImportSuccess": "Importação bem-sucedida",
   "mcpImportFailed": "Falha na importação",
   "mcpJsonInvalid": "Formato JSON inválido",
-  "mcpImportDescription": "O DeepOrganiser recuperará automaticamente o MCP instalado no seu CLI Agent e o importará com um clique",
+  "mcpImportDescription": "O OpenScience recuperará automaticamente o MCP instalado no seu CLI Agent e o importará com um clique",
   "mcpStepSelectAgent": "Selecionar Agente",
   "mcpStepFetchTools": "Buscar mcp",
   "mcpStepImportSuccess": "Sucesso na Importação",
@@ -592,8 +592,8 @@
   "mcpStatusReady": "Será importado",
   "mcpStatusImported": "Importado",
   "mcpStatusSkipped": "Ignorado",
-  "mcpWillImport": "Será importado para o DeepOrganiser",
-  "mcpImported": "Importado para o DeepOrganiser",
+  "mcpWillImport": "Será importado para o OpenScience",
+  "mcpImported": "Importado para o OpenScience",
   "mcpImportSkipped": "Não compatível",
   "mcpImportSkippedAlreadyExists": "Já importado",
   "mcpImportSkippedPluginManaged": "Gerenciado por um plugin CLI e não pode ser importado aqui",
@@ -1058,5 +1058,106 @@
   "cdP": {
     "title": "CDP (Chrome DevTools Protocol)"
   },
-  "updateReadyInstall": "{{version}} está pronto, instalar agora"
+  "updateReadyInstall": "{{version}} está pronto, instalar agora",
+  "medicalEvidence": {
+    "title": "Evidência médica",
+    "description": "Ative no menu + de uma nova conversa para injetar o prompt de Evidência médica e o MCP integrado nesta sessão sem alterar conversas normais.",
+    "connectionTitle": "Conectar API PaperClip",
+    "connectionDesc": "O modo de evidência médica usa esta API key primeiro para o PaperClip MCP. Se estiver vazia, usa a conexão PaperClip da página de pesquisa científica.",
+    "enabled": "Ativado",
+    "testConnection": "Testar e salvar conexão",
+    "connectionReady": "PaperClip MCP conectado",
+    "connectionFailed": "Falha na conexão com PaperClip",
+    "timeoutMs": "Tempo limite",
+    "strictAnchors": "Exigir âncoras de parágrafo para cada conclusão médica",
+    "defaultSources": "Fontes de evidência padrão",
+    "defaultSourcesDesc": "Escopo de busca do PaperClip após iniciar o modo de evidência médica",
+    "keepPmc": "Manter PMC",
+    "selectAll": "Selecionar tudo",
+    "pipelineTitle": "Fluxo de evidência após ativar",
+    "pipelineDesc": "Coletado durante a sessão e consolidado em um relatório de evidências",
+    "activationNote": "Conversas normais não usam este serviço automaticamente. Ele só entra em vigor quando o selo de evidência médica aparece na entrada da nova conversa e a mensagem é enviada.",
+    "evidencePresetTitle": "Predefinições de fontes e hierarquia de evidência",
+    "sourceTierTitle": "Níveis de fonte",
+    "evidenceHierarchyTitle": "Hierarquia de evidência padrão",
+    "sourceTierRuleA": "Tier A: guidelines, regulatory/drug labels, and systematic reviews/RCTs from leading or authoritative journals. They can be primary evidence, but still require population matching and anchors.",
+    "pipeline": {
+      "searchTitle": "Search augmented",
+      "searchDetail": "PaperClip medical evidence sources",
+      "gradeTitle": "Evidence grading",
+      "gradeDetail": "Guideline/RCT/label weighting",
+      "citationTitle": "Traceable output",
+      "citationDetail": "Paragraph anchors and citation panel"
+    },
+    "sources": {
+      "pmc": "PMC full text",
+      "abstracts": "Paper abstracts",
+      "abstractsOnly": "Abstracts only",
+      "biorxiv": "bioRxiv",
+      "medrxiv": "medRxiv",
+      "arxiv": "arXiv",
+      "fda": "FDA / drug labels",
+      "ema": "EMA / EU medicines",
+      "pmda": "PMDA / Japan medicines",
+      "trials": "Clinical trial registry",
+      "trialsUs": "US clinical trials",
+      "clinicaltrials": "ClinicalTrials",
+      "trialsCn": "China clinical trials",
+      "trialsEu": "EU clinical trials",
+      "trialsJp": "Japan clinical trials"
+    },
+    "sourceGroups": {
+      "full_text_and_abstracts": {
+        "label": "Full text and abstracts",
+        "intent": "Prioritize efficacy, diagnosis, prognosis, and mechanism evidence; full-text anchors outrank abstracts."
+      },
+      "preprints": {
+        "label": "Preprints",
+        "intent": "Use for frontier signals and emerging evidence; they should not outweigh guidelines, labels, systematic reviews, or mature RCTs by default."
+      },
+      "regulatory_labels": {
+        "label": "Regulatory and drug labels",
+        "intent": "Drug safety, indications, dose, contraindications, and special populations must be checked first."
+      },
+      "trial_registries": {
+        "label": "Trial registries",
+        "intent": "Use for ongoing evidence, study status, sample size, and unpublished-result context; not equivalent to published conclusions."
+      }
+    },
+    "evidenceHierarchy": {
+      "e1": {
+        "label": "Current guidelines / consensus / regulatory labels",
+        "rule": "Highest priority for drug safety, indication, dose, contraindication, pregnancy, children, or complex comorbidities."
+      },
+      "e2": {
+        "label": "Systematic reviews / meta-analyses",
+        "rule": "Prefer recent, transparent reviews with explainable heterogeneity and matched populations; downgrade if indirect or outdated."
+      },
+      "e3": {
+        "label": "Randomized controlled trials (RCTs)",
+        "rule": "High-quality when sample size, endpoints, population, and intervention match; downgrade open-label, small, or surrogate-endpoint studies."
+      },
+      "e4": {
+        "label": "Prospective cohorts / high-quality real-world studies",
+        "rule": "Useful for safety, prognosis, rare outcomes, and long follow-up; downgrade for confounding or selection bias."
+      },
+      "e5": {
+        "label": "Case-control / case series / registry abstracts",
+        "rule": "Mostly signals or rare-context background; should not alone support strong treatment recommendations."
+      },
+      "e6": {
+        "label": "Preprints / conference abstracts / mechanistic inference",
+        "rule": "Frontier supplement only; clearly mark limits when not peer-reviewed, not fully published, or only mechanistic."
+      }
+    }
+  },
+  "paperclipGuide": {
+    "title": "Obter uma API key do PaperClip",
+    "stepConsole": "Abra o console do PaperClip.",
+    "stepCreateKey": "Crie ou copie uma API key MCP.",
+    "stepPaste": "Cole no campo PaperClip API Key de Ciência ou Evidência médica e clique em Testar e salvar.",
+    "stepBaseUrl": "Se usar uma implantação própria do PaperClip, confirme a Base URL.",
+    "sharedRule": "Regra compartilhada: API Key, Base URL e timeout podem ser reutilizados entre Ciência e Evidência médica. As fontes padrão continuam específicas por modo.",
+    "openConsole": "Abrir console do PaperClip"
+  }
 }

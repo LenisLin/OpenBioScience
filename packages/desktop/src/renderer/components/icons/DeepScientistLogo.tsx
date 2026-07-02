@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 DeepOrganiser (deepscientist.cc)
+ * Copyright 2026 OpenScience
  * SPDX-License-Identifier: Apache-2.0
  */
 

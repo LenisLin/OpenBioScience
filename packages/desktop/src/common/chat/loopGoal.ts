@@ -5,6 +5,7 @@
  */
 
 import { uuid } from '@/common/utils';
+import { getPromptLanguageInstruction } from './language';
 
 export type LoopGoalStatus = 'active' | 'paused' | 'deleted';
 
@@ -107,7 +108,11 @@ export const updateLoopGoalText = (loopGoal: LoopGoalState, goal: string, now = 
   updated_at: now,
 });
 
-export const buildLoopGoalKickoffPrompt = (loopGoal: LoopGoalState, userMessage?: string): string => {
+export const buildLoopGoalKickoffPrompt = (
+  loopGoal: LoopGoalState,
+  userMessage?: string,
+  preferredLocale?: string
+): string => {
   const trimmedUserMessage = userMessage?.trim();
   return [
     '# Loop Goal Mode',
@@ -115,6 +120,7 @@ export const buildLoopGoalKickoffPrompt = (loopGoal: LoopGoalState, userMessage?
     'You are starting a persistent Loop Goal. Work toward the user goal below, then finish this turn with a concise progress summary and the next concrete action you will take.',
     '',
     'Important rules:',
+    getPromptLanguageInstruction(preferredLocale),
     '- Keep iterating toward the goal until the user pauses or deletes this Loop Goal.',
     '- Each turn should produce useful progress, not just restate the plan.',
     '- If you need user approval, missing credentials, or an external blocker prevents progress, say exactly what is blocked and stop asking for another loop until the blocker is resolved.',
@@ -130,13 +136,14 @@ export const buildLoopGoalKickoffPrompt = (loopGoal: LoopGoalState, userMessage?
     .join('\n');
 };
 
-export const buildLoopGoalContinuationPrompt = (loopGoal: LoopGoalState): string =>
+export const buildLoopGoalContinuationPrompt = (loopGoal: LoopGoalState, preferredLocale?: string): string =>
   [
     '# Continue Loop Goal Mode',
     '',
     `Loop iteration: ${loopGoal.iteration_count + 1}`,
     '',
     'Continue working toward the same user goal. Use the previous result as context, choose the next useful step, execute it, and end with a concise progress summary plus the next action.',
+    getPromptLanguageInstruction(preferredLocale),
     '',
     'Stop only if the loop was paused/deleted, the user changes direction, or you hit a real blocker that needs user input.',
     '',

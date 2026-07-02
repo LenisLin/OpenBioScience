@@ -5,7 +5,16 @@
  */
 
 import { ipcBridge } from '@/common';
-import { BUILTIN_MEDICAL_EVIDENCE_NAME, type IMcpServer, type TProviderWithModel } from '@/common/config/storage';
+import { buildDefaultLabSkillDepositionUserMessage } from '@/common/chat/labSkillDeposition';
+import {
+  BUILTIN_MEDICAL_EVIDENCE_NAME,
+  BUILTIN_LAB_SKILL_NAME,
+  BUILTIN_RESEARCH_EVIDENCE_NAME,
+  BUILTIN_SCIENCE_ARTIFACT_NAME,
+  BUILTIN_USER_INPUT_NAME,
+  type IMcpServer,
+  type TProviderWithModel,
+} from '@/common/config/storage';
 import { resolveLocaleKey } from '@/common/utils';
 import type { Assistant, AssistantDetail } from '@/common/types/agent/assistantTypes';
 
@@ -15,10 +24,11 @@ import { CUSTOM_AVATAR_IMAGE_MAP } from './constants';
 import AgentPillBar from './components/AgentPillBar';
 import GuidActionRow from './components/GuidActionRow';
 import GuidInputCard from './components/GuidInputCard';
-import GuidLarkProjectPanel, { type GuidLarkProjectContext } from './components/GuidLarkProjectPanel';
 import GuidModelSelector from './components/GuidModelSelector';
 import MentionDropdown from './components/MentionDropdown';
+import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
 import QuickActionButtons from './components/QuickActionButtons';
+import { PreviewPanel, usePreviewContext, type PreviewPanelLayoutMode } from '@/renderer/pages/conversation/Preview';
 import { useGuidAgentSelection } from './hooks/useGuidAgentSelection';
 import { useGuidInput } from './hooks/useGuidInput';
 import { useGuidMention } from './hooks/useGuidMention';
@@ -32,6 +42,7 @@ import { appendSpeechTranscript } from '@/renderer/hooks/system/useSpeechInput';
 import { useLiveTranscriptInsertion } from '@/renderer/hooks/system/useLiveTranscriptInsertion';
 import LoopGoalBar from '@/renderer/pages/conversation/components/LoopGoalBar';
 import type { LoopGoalState } from '@/common/chat/loopGoal';
+import SshHostSelector from '@/renderer/components/compute/SshHostSelector';
 import { Button, ConfigProvider, Message } from '@arco-design/web-react';
 import { Down, Left, Robot } from '@icon-park/react';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -60,20 +71,27 @@ const GuidPage: React.FC = () => {
   const [guidEnabledSkills, setGuidEnabledSkills] = useState<string[] | undefined>(undefined);
   const [availableMcpServers, setAvailableMcpServers] = useState<IMcpServer[]>([]);
   const [guidSelectedMcpServerIds, setGuidSelectedMcpServerIds] = useState<string[] | undefined>(undefined);
-  const [guidContextMode, setGuidContextMode] = useState<'workspace' | 'collaboration' | undefined>(undefined);
-  const [larkProjectContext, setLarkProjectContext] = useState<GuidLarkProjectContext | undefined>(undefined);
+  const [guidContextMode, setGuidContextMode] = useState<'workspace' | undefined>(undefined);
   const [loopGoal, setLoopGoal] = useState<LoopGoalState | undefined>(undefined);
   const [isLoopGoalMode, setIsLoopGoalMode] = useState(false);
+  const [isScienceMode, setIsScienceMode] = useState(true);
   const [isMedicalEvidenceMode, setIsMedicalEvidenceMode] = useState(false);
+  const [isSkillDepositionMode, setIsSkillDepositionMode] = useState(false);
+  const [selectedComputeHostIds, setSelectedComputeHostIds] = useState<string[]>([]);
+  const { isOpen: isGuidPreviewOpen } = usePreviewContext();
+  const [guidPreviewLayoutMode, setGuidPreviewLayoutMode] = useState<PreviewPanelLayoutMode>('split');
   const visibleMcpServers = useMemo(
-    () => availableMcpServers.filter((server) => server.name !== BUILTIN_MEDICAL_EVIDENCE_NAME),
+    () =>
+      availableMcpServers.filter(
+        (server) =>
+          server.name !== BUILTIN_MEDICAL_EVIDENCE_NAME &&
+          server.name !== BUILTIN_RESEARCH_EVIDENCE_NAME &&
+          server.name !== BUILTIN_SCIENCE_ARTIFACT_NAME &&
+          server.name !== BUILTIN_LAB_SKILL_NAME &&
+          server.name !== BUILTIN_USER_INPUT_NAME
+      ),
     [availableMcpServers]
   );
-  const isLarkProjectContextLocked = Boolean(larkProjectContext?.locked);
-  const isCollaborationPanelOpen = guidContextMode === 'collaboration' && !isLarkProjectContextLocked;
-  const activeLarkProjectContext =
-    guidContextMode === 'collaboration' || isLarkProjectContextLocked ? larkProjectContext : undefined;
-
   useEffect(() => {
     Promise.all([ipcBridge.fs.listBuiltinAutoSkills.invoke(), ipcBridge.fs.listAvailableSkills.invoke()])
       .then(([autoSkills, availableSkills]) => {
@@ -125,7 +143,6 @@ const GuidPage: React.FC = () => {
   const navState = location.state as {
     resetAssistant?: boolean;
     selectedAgentKey?: string;
-    larkProjectContext?: GuidLarkProjectContext;
   } | null;
   const resetAssistantRequested = navState?.resetAssistant === true;
   const preselectAgentKey = navState?.selectedAgentKey;
@@ -141,17 +158,6 @@ const GuidPage: React.FC = () => {
   const guidInput = useGuidInput({
     locationState: location.state as { workspace?: string; initialInput?: string } | null,
   });
-
-  useEffect(() => {
-    const nextProjectContext = navState?.larkProjectContext;
-    if (nextProjectContext) {
-      setLarkProjectContext(nextProjectContext);
-      setGuidContextMode(nextProjectContext.locked ? undefined : 'collaboration');
-      return;
-    }
-    setLarkProjectContext(undefined);
-    setGuidContextMode((current) => (current === 'collaboration' ? undefined : current));
-  }, [location.key, navState?.larkProjectContext]);
 
   const mention = useGuidMention({
     availableAgents: agentSelection.availableAgents,
@@ -210,16 +216,21 @@ const GuidPage: React.FC = () => {
     assistantDefaultMcpIds: resolvedAssistantDefaults.mcpIds,
     currentEffectiveAgentInfo: agentSelection.currentEffectiveAgentInfo,
     isGoogleAuth: false,
-    larkProjectContext: activeLarkProjectContext,
     loopGoal,
     isLoopGoalMode,
+    isScienceMode,
     isMedicalEvidenceMode,
+    isSkillDepositionMode,
+    selectedComputeHostIds,
     onLoopGoalSent: () => {
       setLoopGoal(undefined);
       setIsLoopGoalMode(false);
     },
     onMedicalEvidenceModeSent: () => {
       setIsMedicalEvidenceMode(false);
+    },
+    onSkillDepositionModeSent: () => {
+      setIsSkillDepositionMode(false);
     },
 
     // Mention state reset
@@ -319,11 +330,11 @@ const GuidPage: React.FC = () => {
       }
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
-        if (!guidInput.input.trim() && !activeLarkProjectContext?.tasklistGuid && !loopGoal?.goal.trim()) return;
+        if (!guidInput.input.trim() && !loopGoal?.goal.trim()) return;
         send.sendMessageHandler();
       }
     },
-    [mention, guidInput.input, activeLarkProjectContext?.tasklistGuid, loopGoal?.goal, send.sendMessageHandler]
+    [mention, guidInput.input, loopGoal?.goal, send.sendMessageHandler]
   );
 
   const handleSelectAgentFromPillBar = useCallback(
@@ -470,13 +481,10 @@ const GuidPage: React.FC = () => {
     },
     [agentSelection]
   );
-  const setGuidCurrentModel = useCallback(
-    (model: TProviderWithModel) => {
-      void model;
-      return Promise.resolve();
-    },
-    []
-  );
+  const setGuidCurrentModel = useCallback((model: TProviderWithModel) => {
+    void model;
+    return Promise.resolve();
+  }, []);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [canExpandDescription, setCanExpandDescription] = useState(false);
 
@@ -490,7 +498,10 @@ const GuidPage: React.FC = () => {
       guidInput.setDir('');
     }
     setIsLoopGoalMode(false);
+    setIsScienceMode(true);
     setIsMedicalEvidenceMode(false);
+    setIsSkillDepositionMode(false);
+    setSelectedComputeHostIds([]);
     setIsDescriptionExpanded(false);
   }, [
     guidInput.setDir,
@@ -500,7 +511,9 @@ const GuidPage: React.FC = () => {
     location.key,
     location.state,
     setIsLoopGoalMode,
+    setIsScienceMode,
     setIsMedicalEvidenceMode,
+    setIsSkillDepositionMode,
   ]);
 
   // Clear resetAssistant from location.state after the hook has consumed it,
@@ -674,6 +687,24 @@ const GuidPage: React.FC = () => {
   );
   const { handleLiveTranscript } = useLiveTranscriptInsertion(guidInput.setInput);
 
+  const handleStartSkillDepositionMode = useCallback(() => {
+    if (isSkillDepositionMode) {
+      setIsSkillDepositionMode(false);
+      setIsScienceMode(true);
+      return;
+    }
+    setIsSkillDepositionMode(true);
+    setIsScienceMode(false);
+    setIsMedicalEvidenceMode(false);
+    setIsLoopGoalMode(false);
+    setLoopGoal(undefined);
+    guidInput.setInput((current) =>
+      current.trim()
+        ? current
+        : buildDefaultLabSkillDepositionUserMessage({ workspaceDir: guidInput.dir, preferredLocale: localeKey })
+    );
+  }, [guidInput.dir, guidInput.setInput, isSkillDepositionMode, localeKey]);
+
   // Build the action row
   const actionRowNode = (
     <GuidActionRow
@@ -702,9 +733,44 @@ const GuidPage: React.FC = () => {
       selectedMcpServerIds={guidSelectedMcpServerIds ?? []}
       onToggleMcpServer={handleToggleMcpServer}
       isLoopGoalMode={isLoopGoalMode}
-      onToggleLoopGoalMode={() => setIsLoopGoalMode((current) => !current)}
+      onToggleLoopGoalMode={() => {
+        setIsLoopGoalMode((current) => {
+          const next = !current;
+          if (next) {
+            setIsMedicalEvidenceMode(false);
+            setIsSkillDepositionMode(false);
+          }
+          return next;
+        });
+      }}
+      isScienceMode={isScienceMode}
+      onToggleScienceMode={() => {
+        setIsScienceMode((current) => {
+          const next = !current;
+          if (next) {
+            setIsMedicalEvidenceMode(false);
+            setIsSkillDepositionMode(false);
+          }
+          return next;
+        });
+      }}
       isMedicalEvidenceMode={isMedicalEvidenceMode}
-      onToggleMedicalEvidenceMode={() => setIsMedicalEvidenceMode((current) => !current)}
+      onToggleMedicalEvidenceMode={() => {
+        setIsMedicalEvidenceMode((current) => {
+          const next = !current;
+          if (next) {
+            setIsScienceMode(false);
+            setIsLoopGoalMode(false);
+            setLoopGoal(undefined);
+            setIsSkillDepositionMode(false);
+          } else {
+            setIsScienceMode(true);
+          }
+          return next;
+        });
+      }}
+      isSkillDepositionMode={isSkillDepositionMode}
+      onStartSkillDepositionMode={handleStartSkillDepositionMode}
       hidePresetTag
       speechInputNode={
         <SpeechInputButton
@@ -719,14 +785,47 @@ const GuidPage: React.FC = () => {
     />
   );
 
+  const computeSelectorNode = (
+    <SshHostSelector selectedIds={selectedComputeHostIds} onChange={setSelectedComputeHostIds} variant='contextPill' />
+  );
+
+  const scienceWorkspaceLabels = useMemo(
+    () => ({
+      workInProject: t('guid.scienceProject.workInProject'),
+      clearWorkspace: t('guid.scienceProject.clearWorkspace'),
+      specifyWorkspace: t('guid.scienceProject.specifyWorkspace'),
+      searchPlaceholder: t('guid.scienceProject.searchPlaceholder'),
+      noProject: t('guid.scienceProject.noProject'),
+    }),
+    [t]
+  );
+
+  const skillDepositionContextBadge = isSkillDepositionMode ? (
+    <span className={styles.skillDepositionContextBadge}>
+      <OpenScienceIcon name='modeDeposition' size={15} visualScale={1.12} />
+      <span>{t('guid.skillDeposition.menuLabel')}</span>
+      <span className={styles.skillDepositionContextBadgeHint}>{t('guid.skillDeposition.contextHint')}</span>
+      <button
+        type='button'
+        className={styles.skillDepositionContextBadgeClose}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setIsSkillDepositionMode(false);
+          setIsScienceMode(true);
+        }}
+        aria-label={t('guid.skillDeposition.closeLabel')}
+      >
+        ×
+      </button>
+    </span>
+  ) : null;
+
   return (
     <ConfigProvider getPopupContainer={() => guidContainerRef.current || document.body}>
-      <div
-        ref={guidContainerRef}
-        className={`${styles.guidContainer} ${isCollaborationPanelOpen ? styles.guidContainerCollaboration : ''}`}
-      >
+      <div ref={guidContainerRef} className={styles.guidContainer}>
         <div
-          className={`${styles.guidLayout} ${loopGoal && loopGoal.status !== 'deleted' ? styles.guidLayoutLoopGoal : ''} ${isCollaborationPanelOpen ? styles.guidLayoutCollaboration : ''}`}
+          className={`${styles.guidLayout} ${loopGoal && loopGoal.status !== 'deleted' ? styles.guidLayoutLoopGoal : ''} ${isGuidPreviewOpen ? styles.guidLayoutPreviewOpen : ''}`}
         >
           <div className={styles.guidHeroStack}>
             <div className={styles.heroHeader}>
@@ -817,17 +916,9 @@ const GuidPage: React.FC = () => {
             ) : null}
           </div>
 
-          <div className={`${styles.guidSpectacleStage} ${isCollaborationPanelOpen ? styles.guidSpectacleStageOpen : ''}`}>
-            <div className={styles.guidSpectacleLeft} aria-hidden={!isCollaborationPanelOpen}>
-              {isLarkProjectContextLocked ? null : (
-                <GuidLarkProjectPanel
-                  expanded={isCollaborationPanelOpen}
-                  activeContext={larkProjectContext}
-                  onContextChange={setLarkProjectContext}
-                />
-              )}
-            </div>
-            <div className={styles.guidSpectacleBridge} aria-hidden='true' />
+          <div
+            className={`${styles.guidSpectacleStage} ${isGuidPreviewOpen ? styles.guidSpectacleStagePreviewOpen : ''} ${isGuidPreviewOpen && guidPreviewLayoutMode === 'fullscreen' ? styles.guidSpectacleStagePreviewFull : ''}`}
+          >
             <div className={styles.guidSpectacleRight}>
               {loopGoal && loopGoal.status !== 'deleted' ? (
                 <LoopGoalBar loopGoal={loopGoal} variant='guid' onChange={setLoopGoal} />
@@ -842,6 +933,7 @@ const GuidPage: React.FC = () => {
                 placeholder={typewriterPlaceholder || t('conversation.welcome.placeholder')}
                 isInputActive={guidInput.isInputFocused}
                 isFileDragging={guidInput.isFileDragging}
+                isRunning={guidInput.loading}
                 activeBorderColor={activeBorderColor}
                 inactiveBorderColor={inactiveBorderColor}
                 activeShadow={activeShadow}
@@ -866,14 +958,20 @@ const GuidPage: React.FC = () => {
                 onDeactivateWorkspaceContext={() => {
                   setGuidContextMode((current) => (current === 'workspace' ? undefined : current));
                 }}
-                collaborationLabel={activeLarkProjectContext?.tasklistName}
-                isCollaborationContextActive={Boolean(activeLarkProjectContext)}
-                onToggleCollaborationContext={() => {
-                  if (isLarkProjectContextLocked) return;
-                  setGuidContextMode((current) => (current === 'collaboration' ? undefined : 'collaboration'));
-                }}
+                workspaceLabels={scienceWorkspaceLabels}
+                contextBadge={skillDepositionContextBadge}
+                contextLeading={computeSelectorNode}
               />
             </div>
+            {isGuidPreviewOpen ? (
+              <div className={styles.guidPreviewPanel}>
+                <PreviewPanel
+                  previewLayoutMode={guidPreviewLayoutMode}
+                  onPreviewLayoutModeChange={setGuidPreviewLayoutMode}
+                  onRequestHalfPanel={() => setGuidPreviewLayoutMode('split')}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
         <QuickActionButtons inactiveBorderColor={inactiveBorderColor} activeShadow={activeShadow} />

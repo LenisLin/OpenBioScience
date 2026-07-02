@@ -60,10 +60,10 @@
   "more": "Ещё",
   "refresh": "Обновить",
   "readOnly": "Только чтение",
-  "tray.showWindow": "Показать DeepOrganiser",
+  "tray.showWindow": "Показать OpenScience",
   "tray.newChat": "Новый чат",
   "tray.closeToTray": "Свернуть в трей",
-  "tray.about": "О программе DeepOrganiser",
+  "tray.about": "О программе OpenScience",
   "tray.restart": "Перезапустить",
   "tray.quit": "Выход",
   "tray.runningTasks": "Запущенные задачи",
@@ -74,22 +74,22 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "Эта система не поддерживается встроенным backend",
-      "description": "DeepOrganiser открылся, но локальный backend DeepOrganiser Core не может работать в этой версии Linux. Обновитесь до поддерживаемого дистрибутива Linux и перезапустите DeepOrganiser.",
+      "description": "OpenScience открылся, но локальный backend OpenScience Core не может работать в этой версии Linux. Обновитесь до поддерживаемого дистрибутива Linux и перезапустите OpenScience.",
       "requiredVersions": "Требуемые символы среды выполнения: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "Установка DeepOrganiser неполная",
-      "description": "В этой установке отсутствуют обязательные локальные ресурсы, поэтому DeepOrganiser Core не может запуститься. Загрузите и переустановите последнюю версию DeepOrganiser. Если проблема повторится после переустановки, проверьте, не поместило ли защитное или антивирусное ПО DeepOrganiser Core в карантин.",
+      "title": "Установка OpenScience неполная",
+      "description": "В этой установке отсутствуют обязательные локальные ресурсы, поэтому OpenScience Core не может запуститься. Загрузите и переустановите последнюю версию OpenScience. Если проблема повторится после переустановки, проверьте, не поместило ли защитное или антивирусное ПО OpenScience Core в карантин.",
       "downloadLatest": "Скачать последнюю версию",
       "sendDiagnostics": "Отправить диагностику",
       "diagnosticsSent": "Диагностика отправлена",
       "diagnosticsReportSuccess": "Диагностический отчет отправлен",
       "diagnosticsReportFailed": "Не удалось отправить диагностический отчет",
-      "runtimeComponentDescription": "В этой установке отсутствуют необходимые встроенные компоненты среды выполнения, поэтому {{resource}} не может запуститься. Переустановите последнюю версию DeepOrganiser. Если проблема повторится после переустановки, проверьте, не поместило ли защитное или антивирусное ПО компоненты DeepOrganiser в карантин."
+      "runtimeComponentDescription": "В этой установке отсутствуют необходимые встроенные компоненты среды выполнения, поэтому {{resource}} не может запуститься. Переустановите последнюю версию OpenScience. Если проблема повторится после переустановки, проверьте, не поместило ли защитное или антивирусное ПО компоненты OpenScience в карантин."
     },
     "packageArchitectureMismatch": {
-      "title": "DeepOrganiser package architecture mismatch",
-      "description": "This DeepOrganiser package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
+      "title": "OpenScience package architecture mismatch",
+      "description": "This OpenScience package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
     }
   },
   "fileAttach.addFiles": "Добавить файлы",
@@ -115,11 +115,15 @@
   },
   "collaboration": {
     "projects": {
-      "hideTasklistAction": "Remove from this sidebar",
-      "hideTasklistTitle": "Remove this tasklist locally?",
-      "hideTasklistConfirm": "“{{name}}” will disappear from this device’s collaboration sidebar and project picker. The remote Lark tasklist will not be deleted, and other members will not be affected.",
-      "hideTasklistOk": "Remove locally",
-      "hideTasklistSuccess": "Removed from this sidebar"
+      "hideTasklistAction": "Delete from sidebar",
+      "hideTasklistTitle": "Delete this collaboration project?",
+      "hideTasklistConfirm": "“{{name}}” will be hidden from this device’s sidebar and project picker. By default, the remote tasklist will not be deleted.",
+      "hideTasklistRemoteDelete": "Also delete this tasklist remotely",
+      "hideTasklistRemoteDeleteHint": "When checked, Confirm will also delete the remote tasklist. This choice will be remembered for the next time.",
+      "hideTasklistOk": "Sidebar only",
+      "hideTasklistRemoteOk": "Delete both",
+      "hideTasklistSuccess": "Deleted from the sidebar",
+      "hideTasklistRemoteSuccess": "Deleted from the sidebar and remote tasklist"
     }
   }
 }

@@ -29,7 +29,7 @@
     "statusAvailable": "Available"
   },
   "loopGoal": {
-    "menuLabel": "Objetivo",
+    "menuLabel": "Modo objetivo",
     "modeActive": "Modo objetivo activado",
     "createTitle": "Solicitar avance continuo",
     "create": "Iniciar bucle",
@@ -91,5 +91,26 @@
     "taskStatusTodo": "Por hacer",
     "duePrefix": "Vence {{date}}",
     "noDue": "Sin fecha límite"
+  },
+  "scienceProject": {
+    "badge": "Science",
+    "defaultBadge": "Predeterminado",
+    "menuLabel": "Modo de investigación científica",
+    "modeActive": "Modo de investigación científica activado",
+    "workInProject": "Elegir proyecto de investigación",
+    "clearWorkspace": "Quitar proyecto de investigación",
+    "specifyWorkspace": "Crear o elegir proyecto de investigación",
+    "searchPlaceholder": "Buscar proyectos de investigación…",
+    "noProject": "Sin proyecto de investigación"
+  },
+  "medicalEvidence": {
+    "menuLabel": "Modo de evidencia médica",
+    "modeActive": "Modo de evidencia médica activado"
+  },
+  "skillDeposition": {
+    "menuLabel": "Modo de depósito de conocimiento",
+    "modeActive": "Modo de depósito de conocimiento activado",
+    "contextHint": "Primero genera un informe; actívalo tras aprobarlo",
+    "closeLabel": "Cerrar modo de depósito de conocimiento"
   }
 }

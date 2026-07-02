@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 DeepOrganiser (deepscientist.cc)
+ * Copyright 2025 OpenScience
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -29,7 +29,7 @@ export class StartupArchitectureMismatchError extends Error {
   readonly details: StartupArchitectureMismatchDetails;
 
   constructor(details: StartupArchitectureMismatchDetails) {
-    super('DeepOrganiser package architecture does not match this Mac. Please download the matching package.');
+    super('OpenScience package architecture does not match this Mac. Please download the matching package.');
     this.name = 'StartupArchitectureMismatchError';
     this.details = details;
   }

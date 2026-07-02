@@ -5,7 +5,8 @@ import { SettingsViewModeProvider } from '@/renderer/components/settings/Setting
 import { isElectronDesktop, resolveExtensionAssetUrl } from '@/renderer/utils/platform';
 import { type IExtensionSettingsTab } from '@/common/adapter/ipcBridge';
 import { useExtensionSettingsTabs } from '@/renderer/hooks/system/useExtensionSettingsTabs';
-import { Api, Cat, Communication, Computer, Earth, Info, Lightning, LinkCloud, Puzzle, Shield, System } from '@icon-park/react';
+import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
+import { Api, Cat, Communication, Earth, Info, Puzzle } from '@icon-park/react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useExtI18n } from '@/renderer/hooks/system/useExtI18n';
@@ -24,23 +25,46 @@ type TranslateFn = (key: string, options?: { defaultValue?: string }) => string;
 
 export function getBuiltinSettingsNavItems(isDesktop: boolean, t: TranslateFn): NavItem[] {
   const builtinMap: Record<string, NavItem> = {
-    model: { id: 'model', label: t('settings.model'), icon: <LinkCloud theme='outline' size='16' />, path: 'model' },
+    model: {
+      id: 'model',
+      label: t('settings.model'),
+      icon: <OpenScienceIcon name='settingsMcp' size={16} />,
+      path: 'model',
+    },
+    skills: {
+      id: 'skills',
+      label: t('settings.skills.title', { defaultValue: '技能' }),
+      icon: <OpenScienceIcon name='settingsSkills' size={16} />,
+      path: 'skills',
+    },
     capabilities: {
       id: 'capabilities',
       label: t('settings.capabilities', { defaultValue: 'Capabilities' }),
-      icon: <Lightning theme='outline' size='16' />,
+      icon: <OpenScienceIcon name='settingsSkills' size={16} />,
       path: 'capabilities',
+    },
+    science: {
+      id: 'science',
+      label: t('settings.science.title', { defaultValue: 'Science' }),
+      icon: <OpenScienceIcon name='settingsScience' size={16} />,
+      path: 'science',
     },
     'medical-evidence': {
       id: 'medical-evidence',
       label: t('settings.medicalEvidence.title', { defaultValue: 'Medical Evidence' }),
-      icon: <Shield theme='outline' size='16' />,
+      icon: <OpenScienceIcon name='settingsMedical' size={16} />,
       path: 'medical-evidence',
+    },
+    compute: {
+      id: 'compute',
+      label: t('settings.compute.title', { defaultValue: '服务器管理' }),
+      icon: <OpenScienceIcon name='remoteJob' size={16} />,
+      path: 'compute',
     },
     appearance: {
       id: 'appearance',
       label: t('settings.appearancePanel'),
-      icon: <Computer theme='outline' size='16' />,
+      icon: <OpenScienceIcon name='settingsAppearance' size={16} />,
       path: 'appearance',
     },
     webui: {
@@ -56,7 +80,18 @@ export function getBuiltinSettingsNavItems(isDesktop: boolean, t: TranslateFn): 
       path: 'lark-automation',
     },
     pet: { id: 'pet', label: t('pet.desktopPet'), icon: <Cat theme='outline' size='16' />, path: 'pet' },
-    system: { id: 'system', label: t('settings.system'), icon: <System theme='outline' size='16' />, path: 'system' },
+    diagnostics: {
+      id: 'diagnostics',
+      label: t('settings.diagnostics.title', { defaultValue: '诊断' }),
+      icon: <OpenScienceIcon name='settingsPermission' size={16} />,
+      path: 'diagnostics',
+    },
+    system: {
+      id: 'system',
+      label: t('settings.system'),
+      icon: <OpenScienceIcon name='settingsPermission' size={16} />,
+      path: 'system',
+    },
     about: { id: 'about', label: t('settings.about'), icon: <Info theme='outline' size='16' />, path: 'about' },
   };
 

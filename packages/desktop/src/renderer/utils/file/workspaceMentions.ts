@@ -22,7 +22,9 @@ function computeMentionScore(item: FileOrFolderItem, query: string): number {
 
   const normalizedName = getItemNameSearchValue(item);
   const normalizedPath = getItemPathSearchValue(item);
-  if (!normalizedName && !normalizedPath) {
+  const normalizedDescription = normalizeSearchValue(item.description);
+  const normalizedBadge = normalizeSearchValue(item.badge);
+  if (!normalizedName && !normalizedPath && !normalizedDescription && !normalizedBadge) {
     return -1;
   }
 
@@ -46,6 +48,12 @@ function computeMentionScore(item: FileOrFolderItem, query: string): number {
   if (normalizedPath.includes(normalizedQuery)) {
     return 50;
   }
+  if (normalizedDescription.includes(normalizedQuery)) {
+    return 30;
+  }
+  if (normalizedBadge.includes(normalizedQuery)) {
+    return 20;
+  }
 
   return -1;
 }
@@ -57,14 +65,14 @@ export function filterWorkspaceMentionItems(
 ): FileOrFolderItem[] {
   const normalizedQuery = normalizeSearchValue(query);
   if (!normalizedQuery) {
-    return [];
+    return items.slice(0, limit);
   }
   const scored = items
     .map((item) => ({
       item,
       score: computeMentionScore(item, normalizedQuery),
     }))
-    .filter((entry) => (normalizedQuery ? entry.score >= 0 : true))
+    .filter((entry) => entry.score >= 0)
     .toSorted((left, right) => {
       if (left.score !== right.score) {
         return right.score - left.score;

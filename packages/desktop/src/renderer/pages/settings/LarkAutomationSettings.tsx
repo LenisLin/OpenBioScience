@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 DeepOrganiser (deepscientist.cc)
+ * Copyright 2026 OpenScience
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next';
 import { Button, Input, Message, Modal, Tag } from '@arco-design/web-react';
 import { ipcBridge } from '@/common';
 import type { ILarkAutomationStatus } from '@/common/adapter/ipcBridge';
-import type { ILarkProjectSettingsSnapshot } from '@/common/adapter/ipcBridge';
 import CollaborationIcon, { type CollaborationIconName } from '@/renderer/components/icons/CollaborationIcon';
 import FeishuConnectionWizardModal from '@/renderer/pages/collaboration/FeishuConnectionWizardModal';
 import {
@@ -35,25 +34,6 @@ const LarkAutomationSettings: React.FC = () => {
   const [editVisible, setEditVisible] = useState(false);
   const [editAppId, setEditAppId] = useState('');
   const [editAppSecret, setEditAppSecret] = useState('');
-  const [projectAgentSettings, setProjectAgentSettings] = useState<ILarkProjectSettingsSnapshot | null>(null);
-  const [leaderPromptDraft, setLeaderPromptDraft] = useState('');
-  const [defaultPromptDraft, setDefaultPromptDraft] = useState('');
-  const [collaborationPromptDraft, setCollaborationPromptDraft] = useState('');
-  const [agentTaskPromptDraft, setAgentTaskPromptDraft] = useState('');
-  const [promptSaving, setPromptSaving] = useState(false);
-
-  const loadProjectAgentSettings = useCallback(async () => {
-    try {
-      const next = await ipcBridge.larkProjectAgent.getSettings.invoke();
-      setProjectAgentSettings(next);
-      setLeaderPromptDraft(next.promptFiles.find((file) => file.role === 'leader')?.content ?? '');
-      setDefaultPromptDraft(next.promptFiles.find((file) => file.role === 'default')?.content ?? '');
-      setCollaborationPromptDraft(next.promptFiles.find((file) => file.role === 'collaboration')?.content ?? '');
-      setAgentTaskPromptDraft(next.promptFiles.find((file) => file.role === 'agent-task')?.content ?? '');
-    } catch {
-      setProjectAgentSettings(null);
-    }
-  }, []);
 
   const refreshStatus = useCallback(async () => {
     setLoading(true);
@@ -80,8 +60,7 @@ const LarkAutomationSettings: React.FC = () => {
 
   useEffect(() => {
     void refreshStatus();
-    void loadProjectAgentSettings();
-  }, [loadProjectAgentSettings, refreshStatus]);
+  }, [refreshStatus]);
 
   const handleOpenWizard = useCallback(() => {
     setBindVisible(true);
@@ -131,56 +110,8 @@ const LarkAutomationSettings: React.FC = () => {
     }
   }, [editAppId, editAppSecret, refreshStatus, status?.profileName, t]);
 
-  const handleSavePrompt = useCallback(
-    async (role: 'leader' | 'default' | 'collaboration' | 'agent-task') => {
-      setPromptSaving(true);
-      try {
-        const next = await ipcBridge.larkProjectAgent.updatePrompt.invoke({
-          role,
-          content:
-            role === 'leader'
-              ? leaderPromptDraft
-              : role === 'collaboration'
-                ? collaborationPromptDraft
-                : role === 'agent-task'
-                  ? agentTaskPromptDraft
-                  : defaultPromptDraft,
-        });
-        setProjectAgentSettings(next);
-        Message.success(
-          role === 'leader'
-            ? t('settings.larkAutomation.promptSaved.leader')
-            : role === 'collaboration'
-              ? t('settings.larkAutomation.promptSaved.collaboration')
-              : role === 'agent-task'
-                ? t('settings.larkAutomation.promptSaved.agentTask')
-              : t('settings.larkAutomation.promptSaved.default')
-        );
-      } finally {
-        setPromptSaving(false);
-      }
-    },
-    [agentTaskPromptDraft, collaborationPromptDraft, defaultPromptDraft, leaderPromptDraft, t]
-  );
-
-  const handleResetPrompt = useCallback(async (role: 'leader' | 'default' | 'collaboration' | 'agent-task') => {
-    setPromptSaving(true);
-    try {
-      const next = await ipcBridge.larkProjectAgent.resetPrompt.invoke({ role });
-      setProjectAgentSettings(next);
-      setLeaderPromptDraft(next.promptFiles.find((file) => file.role === 'leader')?.content ?? '');
-      setDefaultPromptDraft(next.promptFiles.find((file) => file.role === 'default')?.content ?? '');
-      setCollaborationPromptDraft(next.promptFiles.find((file) => file.role === 'collaboration')?.content ?? '');
-      setAgentTaskPromptDraft(next.promptFiles.find((file) => file.role === 'agent-task')?.content ?? '');
-      Message.success(t('settings.larkAutomation.promptReset'));
-    } finally {
-      setPromptSaving(false);
-    }
-  }, [t]);
-
   const runtimeReady = isRuntimeReady(status);
   const eventReady = Boolean(status?.eventListener?.ready);
-  const taskAutomationReady = Boolean(eventReady && status?.bindingReady);
   const ready = runtimeReady && eventReady && webLoginReady;
   const userName = status?.user?.userName;
   const channelValue = channelReady
@@ -293,24 +224,12 @@ const LarkAutomationSettings: React.FC = () => {
               ready={Boolean(status?.bindingReady)}
             />
             <StatusCell icon='listener' label={t('settings.larkAutomation.status.listener')} value={listenerValue} ready={eventReady} />
-            <StatusCell
-              icon='taskAutomation'
-              label={t('settings.larkAutomation.status.taskAutomation')}
-              value={
-                taskAutomationReady
-                  ? t('settings.larkAutomation.status.enabledCount', { count: status?.eventListener?.taskCreatedCount ?? 0 })
-                  : status?.bindingReady
-                    ? t('settings.larkAutomation.status.waitingListener')
-                    : t('settings.larkAutomation.status.pendingBinding')
-              }
-              ready={taskAutomationReady}
-            />
           </div>
 
           {status?.bindingReady && status.binding ? (
             <div className='rd-8px border border-border-1 bg-bg-1 p-12px text-12px text-t-secondary leading-20px'>
               <span className='font-650 text-t-primary'>{t('settings.larkAutomation.status.boundPrefix')}</span>
-              {status.binding.appName || 'DeepOrganiser'}
+              {status.binding.appName || 'OpenScience'}
               {status.binding.appId ? ` · App ID: ${status.binding.appId}` : ''}
               {status.binding.profileName ? ` · Profile: ${status.binding.profileName}` : ''}
               {status.binding.userName ? ` · ${t('settings.larkAutomation.status.boundUser', { name: status.binding.userName })}` : ''}
@@ -380,73 +299,6 @@ const LarkAutomationSettings: React.FC = () => {
           </div>
 
           {status?.error && <div className='text-12px text-[rgb(var(--danger-6))]'>{status.error}</div>}
-        </div>
-
-        <div className='border border-border-1 rd-8px bg-bg-2 p-18px flex flex-col gap-16px'>
-          <div className='flex items-start justify-between gap-12px'>
-            <div className='min-w-0 flex items-start gap-10px'>
-              <span className='size-38px flex-center shrink-0'>
-                <CollaborationIcon name='promptManager' size={33} />
-              </span>
-              <div className='min-w-0'>
-              <div className='text-16px font-650 text-t-primary'>{t('settings.larkAutomation.prompts.title')}</div>
-              <div className='mt-4px text-12px text-t-secondary leading-20px'>
-                {t('settings.larkAutomation.prompts.description')}
-              </div>
-              </div>
-            </div>
-            <Button
-              size='small'
-              icon={<CollaborationIcon name='refreshSync' size={20} />}
-              onClick={() => void loadProjectAgentSettings()}
-            >
-              {t('common.refresh')}
-            </Button>
-          </div>
-          <PromptEditor
-            icon='leaderAgent'
-            title={t('settings.larkAutomation.prompts.leaderTitle')}
-            description={t('settings.larkAutomation.prompts.leaderDesc')}
-            value={leaderPromptDraft}
-            filePath={projectAgentSettings?.promptFiles.find((file) => file.role === 'leader')?.path}
-            saving={promptSaving}
-            onChange={setLeaderPromptDraft}
-            onSave={() => void handleSavePrompt('leader')}
-            onReset={() => void handleResetPrompt('leader')}
-          />
-          <PromptEditor
-            icon='message'
-            title={t('settings.larkAutomation.prompts.collaborationTitle')}
-            description={t('settings.larkAutomation.prompts.collaborationDesc')}
-            value={collaborationPromptDraft}
-            filePath={projectAgentSettings?.promptFiles.find((file) => file.role === 'collaboration')?.path}
-            saving={promptSaving}
-            onChange={setCollaborationPromptDraft}
-            onSave={() => void handleSavePrompt('collaboration')}
-            onReset={() => void handleResetPrompt('collaboration')}
-          />
-          <PromptEditor
-            icon='sopSkill'
-            title={t('settings.larkAutomation.prompts.agentTaskTitle')}
-            description={t('settings.larkAutomation.prompts.agentTaskDesc')}
-            value={agentTaskPromptDraft}
-            filePath={projectAgentSettings?.promptFiles.find((file) => file.role === 'agent-task')?.path}
-            saving={promptSaving}
-            onChange={setAgentTaskPromptDraft}
-            onSave={() => void handleSavePrompt('agent-task')}
-            onReset={() => void handleResetPrompt('agent-task')}
-          />
-          <PromptEditor
-            icon='subAgent'
-            title={t('settings.larkAutomation.prompts.defaultTitle')}
-            description={t('settings.larkAutomation.prompts.defaultDesc')}
-            value={defaultPromptDraft}
-            filePath={projectAgentSettings?.promptFiles.find((file) => file.role === 'default')?.path}
-            saving={promptSaving}
-            onChange={setDefaultPromptDraft}
-            onSave={() => void handleSavePrompt('default')}
-            onReset={() => void handleResetPrompt('default')}
-          />
         </div>
       </div>
 
@@ -518,49 +370,5 @@ const StatusCell: React.FC<{ icon: CollaborationIconName; label: string; value: 
     <div className='mt-6px text-14px font-600 text-t-primary truncate'>{value}</div>
   </div>
 );
-
-const PromptEditor: React.FC<{
-  icon: CollaborationIconName;
-  title: string;
-  description: string;
-  value: string;
-  filePath?: string;
-  saving: boolean;
-  onChange: (value: string) => void;
-  onSave: () => void;
-  onReset: () => void;
-}> = ({ icon, title, description, value, filePath, saving, onChange, onSave, onReset }) => {
-  const { t } = useTranslation();
-  return (
-    <div className='rd-8px border border-border-1 bg-bg-1 p-14px flex flex-col gap-10px'>
-      <div className='flex items-start justify-between gap-12px'>
-        <div className='min-w-0 flex items-start gap-9px'>
-          <span className='size-34px flex-center shrink-0'>
-            <CollaborationIcon name={icon} size={29} />
-          </span>
-          <div className='min-w-0'>
-          <div className='text-14px font-650 text-t-primary'>{title}</div>
-          <div className='mt-2px text-12px text-t-secondary leading-20px'>{description}</div>
-          {filePath ? <div className='mt-2px text-11px text-t-tertiary truncate'>{filePath}</div> : null}
-          </div>
-        </div>
-        <div className='flex items-center gap-8px shrink-0'>
-          <Button size='small' loading={saving} onClick={onReset}>
-            {t('settings.larkAutomation.prompts.restoreDefault')}
-          </Button>
-          <Button size='small' type='primary' className='collaboration-light-primary' loading={saving} onClick={onSave}>
-            {t('common.save')}
-          </Button>
-        </div>
-      </div>
-      <Input.TextArea
-        value={value}
-        onChange={onChange}
-        autoSize={{ minRows: 8, maxRows: 18 }}
-        placeholder={t('settings.larkAutomation.prompts.placeholder')}
-      />
-    </div>
-  );
-};
 
 export default LarkAutomationSettings;

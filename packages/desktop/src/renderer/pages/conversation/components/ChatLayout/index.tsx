@@ -28,6 +28,9 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import './chat-layout.css';
 
+const AGENT_CONVERSATION_BACKGROUND_COLOR = 'rgb(254, 254, 254)';
+type PreviewLayoutMode = 'split' | 'fullscreen';
+
 // headerExtra allows injecting custom actions (e.g., model picker) into the header's right area
 const ChatLayout: React.FC<{
   children: React.ReactNode;
@@ -74,6 +77,14 @@ const ChatLayout: React.FC<{
 
   // Preview panel state
   const { isOpen: isPreviewOpen, closePreview } = usePreviewContext();
+  const [previewLayoutMode, setPreviewLayoutMode] = useState<PreviewLayoutMode>(() => {
+    try {
+      const stored = localStorage.getItem('chat-preview-layout-mode');
+      return stored === 'fullscreen' ? 'fullscreen' : 'split';
+    } catch {
+      return 'split';
+    }
+  });
 
   // --- Hook A: workspace collapse ---
   const { rightSiderCollapsed, setRightSiderCollapsed } = useWorkspaceCollapse({
@@ -120,6 +131,23 @@ const ChatLayout: React.FC<{
     onDragPastMin: () => setRightSiderCollapsed(true),
     dragPastMinThresholdPx: 48,
   });
+
+  const handlePreviewLayoutModeChange = (mode: PreviewLayoutMode) => {
+    setPreviewLayoutMode(mode);
+    try {
+      localStorage.setItem('chat-preview-layout-mode', mode);
+    } catch {
+      // ignore localStorage failures
+    }
+    if (mode === 'split') {
+      setChatSplitRatio(50);
+    }
+  };
+
+  const requestHalfPreviewPanel = () => {
+    handlePreviewLayoutModeChange('split');
+    setChatSplitRatio(50);
+  };
 
   // Pre-hook metrics: compute dynamic min/max for the chat-preview split hook
   const { dynamicChatMinRatio, dynamicChatMaxRatio } = calcLayoutMetrics({
@@ -248,38 +276,55 @@ const ChatLayout: React.FC<{
 
   return (
     <ArcoLayout
-      className='size-full color-black '
+      className='size-full color-black agent-conversation-surface'
       style={{
+        backgroundColor: AGENT_CONVERSATION_BACKGROUND_COLOR,
         // fontFamily: `cursive,"anthropicSans","anthropicSans Fallback",system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif`,
       }}
     >
       <div ref={containerRef} className='flex flex-1 relative w-full overflow-hidden'>
         {/* Unified layout: single DOM structure prevents children unmount/remount on preview toggle */}
         <div
-          className='flex flex-col min-w-0'
+          className='flex flex-col min-w-0 agent-conversation-chat-column'
           style={{
             flexGrow: 1,
             flexShrink: 1,
             flexBasis: 0,
+            backgroundColor: AGENT_CONVERSATION_BACKGROUND_COLOR,
           }}
         >
-          <div className='shrink-0 !bg-1'>{headerBlock}</div>
+          <div
+            className='shrink-0 !bg-1 agent-conversation-header'
+            style={{ backgroundColor: AGENT_CONVERSATION_BACKGROUND_COLOR }}
+          >
+            {headerBlock}
+          </div>
           <div className='flex flex-1 min-h-0 relative'>
             {/* Chat area - always mounted, never unmounted on preview toggle */}
             <div
-              className='flex flex-col relative'
+              className='flex flex-col relative agent-conversation-chat-column'
               style={{
                 flexGrow: isPreviewOpen && isDesktop ? 0 : 1,
                 flexShrink: 0,
-                flexBasis: isPreviewOpen && isDesktop ? `${chatFlex}%` : 0,
-                display: isPreviewOpen && isMobile ? 'none' : 'flex',
+                flexBasis:
+                  isPreviewOpen && isDesktop
+                    ? previewLayoutMode === 'fullscreen'
+                      ? 0
+                      : `${chatFlex}%`
+                    : 0,
+                display:
+                  isPreviewOpen && (isMobile || (isDesktop && previewLayoutMode === 'fullscreen')) ? 'none' : 'flex',
                 minWidth: '240px',
+                backgroundColor: AGENT_CONVERSATION_BACKGROUND_COLOR,
               }}
               onClick={() => {
                 if (window.innerWidth < 768 && !rightSiderCollapsed) setRightSiderCollapsed(true);
               }}
             >
-              <ArcoLayout.Content className='flex flex-col flex-1 bg-1 overflow-hidden'>
+              <ArcoLayout.Content
+                className='flex flex-col flex-1 bg-1 overflow-hidden agent-conversation-content'
+                style={{ backgroundColor: AGENT_CONVERSATION_BACKGROUND_COLOR }}
+              >
                 {props.children}
               </ArcoLayout.Content>
             </div>
@@ -288,6 +333,7 @@ const ChatLayout: React.FC<{
               <div
                 className={classNames(
                   'preview-panel flex flex-col relative overflow-visible rounded-[15px]',
+                  previewLayoutMode === 'fullscreen' && isDesktop && 'preview-panel--fullscreen',
                   isDesktop ? 'mb-[12px] mr-[12px] ml-[8px]' : 'm-[8px]'
                 )}
                 style={{
@@ -302,6 +348,7 @@ const ChatLayout: React.FC<{
                 }}
               >
                 {isDesktop &&
+                  previewLayoutMode !== 'fullscreen' &&
                   createPreviewDragHandle({
                     className: 'absolute top-0 bottom-0 z-30',
                     style: { width: '20px', left: '-20px' },
@@ -310,7 +357,11 @@ const ChatLayout: React.FC<{
                     lineStyle: { width: '2px' },
                   })}
                 <div className='h-full w-full overflow-hidden rounded-[15px]'>
-                  <PreviewPanel />
+                  <PreviewPanel
+                    previewLayoutMode={previewLayoutMode}
+                    onPreviewLayoutModeChange={handlePreviewLayoutModeChange}
+                    onRequestHalfPanel={requestHalfPreviewPanel}
+                  />
                 </div>
               </div>
             )}

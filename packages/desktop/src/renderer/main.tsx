@@ -81,6 +81,7 @@ import { registerPwa } from './services/registerPwa';
 
 import { mutate as swrMutate } from 'swr';
 import { ipcBridge } from '@/common';
+import { isCodexCompactionMemoryText } from '@/common/chat/codexMemory';
 import { DETECTED_AGENTS_SWR_KEY, fetchDetectedAgents } from './utils/model/agentTypes';
 import { repairAllCronJobTimeZonesOnce } from '@renderer/pages/cron/repairCronJobTimeZone';
 
@@ -92,12 +93,10 @@ import { useAuth } from './hooks/context/AuthContext';
 import { ConversationHistoryProvider } from './hooks/context/ConversationHistoryContext';
 import HOC from './utils/ui/HOC';
 import type { BackendStartupFailureInfo } from '@/common/types/platform/electron';
-import type { IRuntimeStatusEvent, RuntimeFailureKind } from '@/common/adapter/ipcBridge';
-import type { ITeamChildTurnEvent } from '@/common/types/team/teamTypes';
+import type { IConversationTurnCompletedEvent, IRuntimeStatusEvent, RuntimeFailureKind } from '@/common/adapter/ipcBridge';
 import {
   InstallationIntegrityContent,
   InstallationIntegrityModalHost,
-  type InstallationIntegrityDiagnostics,
   getBackendStartupInstallationDescription,
   getDownloadLatestModalActionProps,
   getRuntimeComponentInstallationDescription,
@@ -160,25 +159,6 @@ function captureRuntimeInstallationIntegrityFailure(event: IRuntimeStatusEvent):
     .catch(() => {});
 }
 
-function buildRuntimeInstallationDiagnostics(
-  event: IRuntimeStatusEvent,
-  description: string
-): InstallationIntegrityDiagnostics {
-  return {
-    source: 'runtime_status',
-    description,
-    runtime: {
-      failureKind: event.failure_kind,
-      message: event.message,
-      phase: event.phase,
-      resource: event.resource,
-      resourceId: event.resource_id,
-      scopeId: event.scope.id,
-      scopeKind: event.scope.kind,
-    },
-  };
-}
-
 function resolveRuntimeResourceLabel(event: IRuntimeStatusEvent, t: TFunction): string {
   if (event.resource === 'node') {
     return t('settings.runtimeResource.node');
@@ -222,7 +202,7 @@ const RuntimeFailureDialogs: React.FC = () => {
         : t('settings.runtimeStatus.failedUnknown', { resource });
       if (installationIntegrityFailure) {
         captureRuntimeInstallationIntegrityFailure(event);
-        showInstallationIntegrityModal(modal, t, description, buildRuntimeInstallationDiagnostics(event, description));
+        showInstallationIntegrityModal(modal, t, description);
         return;
       }
 
@@ -239,28 +219,49 @@ const RuntimeFailureDialogs: React.FC = () => {
   return <>{modalContextHolder}</>;
 };
 
-const LarkProjectTeamBridgeListener: React.FC = () => {
+function extractTurnCompletedText(event: IConversationTurnCompletedEvent): string | undefined {
+  const content = event.last_message.content;
+  if (typeof content === 'string') return content;
+  if (!content || typeof content !== 'object') return undefined;
+  const record = content as Record<string, unknown>;
+  const nested = record.content;
+  return typeof nested === 'string' ? nested : undefined;
+}
+
+const CodexMemoryEventListener: React.FC = () => {
   const handledTurnKeysRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    return ipcBridge.team.childTurnCompleted.on((event: ITeamChildTurnEvent) => {
-      const key = `${event.team_run_id}:${event.slot_id}:${event.turn_id}`;
+    return ipcBridge.conversation.turnCompleted.on((event) => {
+      if (event.status !== 'finished') return;
+      const message = extractTurnCompletedText(event);
+      if (!message || !isCodexCompactionMemoryText(message)) return;
+
+      const key = `${event.session_id}:${event.turn_id}:${event.last_message.id ?? message}`;
       if (handledTurnKeysRef.current.has(key)) return;
       handledTurnKeysRef.current.add(key);
-      void ipcBridge.larkProjectAgent.handleTeamChildTurnCompleted
-        .invoke({
-          team_id: event.team_id,
-          team_run_id: event.team_run_id,
-          slot_id: event.slot_id,
-          role: event.role,
-          conversation_id: event.conversation_id,
-          turn_id: event.turn_id,
-          status: event.status,
-        })
-        .catch((error) => {
-          console.warn('[LarkProjectAgent] failed to consume Team child turn completion', error);
-          handledTurnKeysRef.current.delete(key);
+
+      const persist = (workspace?: string) =>
+        ipcBridge.codexMemory.persist.invoke({
+          conversationId: event.session_id,
+          workspace,
+          turnId: event.turn_id,
+          messageId: event.last_message.id,
+          message,
+          createdAt: event.last_message.created_at,
         });
+
+      const task = event.workspace
+        ? persist(event.workspace)
+        : ipcBridge.conversation
+            .get
+            .invoke({ id: event.session_id })
+            .then((conversation) => persist(conversation?.extra?.workspace));
+
+      void task.catch((error) => {
+        console.warn('[CodexMemory] failed to persist compaction memory', error);
+        handledTurnKeysRef.current.delete(key);
+      });
     });
   }, []);
 
@@ -281,7 +282,7 @@ const AppProviders: React.FC<PropsWithChildren> = ({ children }) =>
           React.Fragment,
           null,
           React.createElement(RuntimeFailureDialogs, null),
-          React.createElement(LarkProjectTeamBridgeListener, null),
+          React.createElement(CodexMemoryEventListener, null),
           children
         )
       )
@@ -363,11 +364,6 @@ const BackendStartupFailureDialog: React.FC<{ failure: BackendStartupFailureInfo
       <div className='min-h-screen bg-bg-1'>
         <InstallationIntegrityModalHost
           description={description}
-          diagnostics={{
-            source: 'backend_startup_failure',
-            description,
-            backendStartupFailure: failure as unknown as Record<string, unknown>,
-          }}
         />
       </div>
     );

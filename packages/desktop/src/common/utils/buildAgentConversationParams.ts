@@ -92,6 +92,7 @@ export function buildAgentConversationParams(input: BuildAgentConversationInput)
   if (session_mode) extra.session_mode = session_mode;
   if (current_model_id) extra.current_model_id = current_model_id;
   if (thought_level) extra.thought_level = thought_level;
+  if (assistant_locale) extra.assistant_locale = assistant_locale;
 
   return {
     type,

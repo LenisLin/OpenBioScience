@@ -29,11 +29,11 @@
     "statusAvailable": "Available"
   },
   "loopGoal": {
-    "menuLabel": "目標",
+    "menuLabel": "目標モード",
     "modeActive": "目標モードがオンです",
     "createTitle": "継続的な進行を依頼",
     "create": "ループを開始",
-    "placeholder": "継続して進める価値のある目標を書いてください。各実行後、Agent はこの目標に戻り、結果を確認して、次に有用な一歩を進めます。",
+    "placeholder": "継続して進める価値のある目標を書いてください。各実行後、Agent はこの目標に戻り、結果を確認して次の有用な一歩を進めます。",
     "goalRequired": "先に目標を入力してください",
     "statusActive": "継続中の目標",
     "statusPaused": "一時停止中の目標",
@@ -91,5 +91,26 @@
     "taskStatusTodo": "未対応",
     "duePrefix": "期限 {{date}}",
     "noDue": "期限未設定"
+  },
+  "scienceProject": {
+    "badge": "Science",
+    "defaultBadge": "既定",
+    "menuLabel": "科学研究モード",
+    "modeActive": "科学研究モードがオンです",
+    "workInProject": "研究プロジェクトを選択",
+    "clearWorkspace": "研究プロジェクトを解除",
+    "specifyWorkspace": "研究プロジェクトを新規作成または選択",
+    "searchPlaceholder": "研究プロジェクトを検索…",
+    "noProject": "研究プロジェクトなし"
+  },
+  "medicalEvidence": {
+    "menuLabel": "医学的エビデンスモード",
+    "modeActive": "医学的エビデンスモードがオンです"
+  },
+  "skillDeposition": {
+    "menuLabel": "知識蓄積モード",
+    "modeActive": "知識蓄積モードがオンです",
+    "contextHint": "まずレポートを作成し、確認後に有効化",
+    "closeLabel": "知識蓄積モードを閉じる"
   }
 }

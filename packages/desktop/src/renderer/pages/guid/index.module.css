@@ -15,66 +15,40 @@
   width: clamp(var(--app-min-width, 360px), calc(100% - 32px), 920px);
 }
 
-.guidLayoutCollaboration {
-  width: min(1320px, calc(100% - 48px));
-  display: grid;
-  grid-template-columns: minmax(360px, 460px) 18px minmax(520px, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto 20px auto minmax(0, 1fr);
-  row-gap: 0;
-  align-items: start;
-}
-
-.guidLayoutCollaboration .guidHeroStack {
-  grid-column: 3;
-  grid-row: 2;
-  justify-self: stretch;
-  padding-top: 0;
-}
-
-.guidLayoutCollaboration .guidSpectacleStageOpen {
-  display: contents;
-}
-
-.guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleLeft {
-  grid-column: 1;
-  grid-row: 1 / 6;
-  max-height: min(82vh, 860px);
-}
-
-.guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleBridge {
-  grid-column: 2;
-  grid-row: 4;
-  align-self: center;
-}
-
-.guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleRight {
-  grid-column: 3;
-  grid-row: 4;
-  align-self: start;
-  width: 100%;
-  margin-top: 0;
+.guidLayoutPreviewOpen {
+  width: clamp(var(--app-min-width, 360px), calc(100% - 32px), 1480px);
 }
 
 .guidSpectacleStage {
-  --spectacle-left-width: 0px;
-  --spectacle-gap: 0px;
-  --spectacle-bridge-width: 0px;
-  --spectacle-join-y: 278px;
   position: relative;
-  display: grid;
-  grid-template-columns: var(--spectacle-left-width) var(--spectacle-bridge-width) minmax(430px, 1fr);
-  align-items: stretch;
   width: 100%;
   min-width: 0;
-  transition:
-    grid-template-columns 0.62s cubic-bezier(0.16, 1, 0.3, 1),
-    gap 0.62s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.guidSpectacleStageOpen {
-  --spectacle-left-width: minmax(360px, 460px);
-  --spectacle-bridge-width: 18px;
-  --spectacle-join-y: 250px;
+.guidSpectacleStagePreviewOpen {
+  display: grid;
+  grid-template-columns: minmax(380px, 0.52fr) minmax(420px, 1fr);
+  align-items: stretch;
+  gap: 14px;
+}
+
+.guidSpectacleStagePreviewFull {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.guidSpectacleStagePreviewFull .guidSpectacleRight {
+  display: none;
+}
+
+.guidPreviewPanel {
+  min-width: 0;
+  height: min(72vh, calc(100vh - 156px));
+  min-height: 460px;
+  border: 1px solid var(--bg-3);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--color-bg-1);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
 }
 
 .guidHeroStack {
@@ -91,88 +65,11 @@
   margin-bottom: 0;
 }
 
-.guidSpectacleLeft {
-  position: relative;
-  min-width: 0;
-  height: 0;
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateX(32px) scale(0.97);
-  pointer-events: none;
-  filter: blur(8px);
-  z-index: 2;
-  transition:
-    max-height 0.56s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.34s ease,
-    transform 0.62s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.42s ease;
-}
-
-.guidSpectacleStageOpen .guidSpectacleLeft {
-  height: auto;
-  max-height: 820px;
-  overflow: visible;
-  opacity: 1;
-  transform: translateX(0) scale(1);
-  pointer-events: auto;
-  filter: blur(0);
-}
-
-.guidSpectacleBridge {
-  position: relative;
-  align-self: center;
-  height: 36px;
-  margin-top: 0;
-  opacity: 0;
-  transform: scaleX(0.28);
-  transform-origin: center;
-  z-index: 1;
-  transition:
-    opacity 0.28s ease 0.08s,
-    transform 0.52s cubic-bezier(0.16, 1, 0.3, 1) 0.04s;
-}
-
-.guidSpectacleStageOpen .guidSpectacleBridge {
-  opacity: 1;
-  transform: scaleX(1);
-}
-
-.guidSpectacleBridge::before {
-  content: '';
-  position: absolute;
-  inset: 0 -24px;
-  border-radius: 999px;
-  background: var(--bg-2);
-  box-shadow:
-    0 10px 26px rgba(15, 23, 42, 0.04),
-    inset 0 1px 0 color-mix(in srgb, var(--color-white) 50%, transparent);
-}
-
 .guidSpectacleRight {
   min-width: 0;
   width: 100%;
   align-self: center;
   z-index: 2;
-  transition:
-    transform 0.62s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.42s ease;
-}
-
-.guidSpectacleStageOpen .guidSpectacleRight {
-  animation: guidLensSettle 0.68s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes guidLensSettle {
-  0% {
-    transform: translateX(-42px) scale(0.985);
-  }
-  62% {
-    transform: translateX(3px) scale(1.002);
-  }
-  100% {
-    transform: translateX(0) scale(1);
-  }
 }
 
 .heroHeader {
@@ -500,6 +397,10 @@
 }
 
 .guidInputCardWrap {
+  --guid-input-orbit-glow-core: rgba(255, 211, 94, 0.4);
+  --guid-input-orbit-glow-mid: rgba(236, 181, 58, 0.13);
+  --guid-input-orbit-glow-soft: rgba(236, 181, 58, 0);
+  --guid-input-orbit-sweep: rgba(235, 179, 58, 0.13);
   width: 100%;
   box-sizing: border-box;
   background: var(--bg-2);
@@ -507,16 +408,122 @@
   overflow: visible;
 }
 
+.guidInputCardWrapRunning {
+  isolation: isolate;
+}
+
+.guidInputOrbitGlow {
+  position: absolute;
+  inset: -14px;
+  z-index: 0;
+  padding: 14px;
+  border-radius: 38px;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 1;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.guidInputOrbitGlow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    var(--guid-input-orbit-glow-core) 0%,
+    var(--guid-input-orbit-glow-mid) 42%,
+    var(--guid-input-orbit-glow-soft) 74%
+  );
+  filter: blur(17px);
+  offset-path: inset(9px round 34px);
+  offset-distance: 0%;
+  offset-rotate: 0deg;
+  animation: guidInputOrbitGlowPath 14s linear infinite;
+}
+
+.guidInputOrbitGlow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 286deg,
+    var(--guid-input-orbit-sweep) 322deg,
+    transparent 356deg,
+    transparent 360deg
+  );
+  filter: blur(20px);
+  opacity: 0.46;
+  animation: guidInputOrbitGlowSweep 14s linear infinite;
+}
+
 .guidInputInner {
+  position: relative;
+  z-index: 2;
   background: var(--bg-base, #fff);
   border: 1px solid var(--color-border-3);
   border-radius: 24px;
   box-sizing: border-box;
 }
 
+:global([data-theme='dark']) .guidInputCardWrap {
+  --guid-input-orbit-glow-core: rgba(247, 206, 96, 0.32);
+  --guid-input-orbit-glow-mid: rgba(230, 174, 58, 0.12);
+  --guid-input-orbit-sweep: rgba(231, 177, 61, 0.11);
+}
+
 :global([data-theme='dark']) .guidInputInner {
   background: #262626;
   border-color: #3a3a3a;
+}
+
+@keyframes guidInputOrbitGlowPath {
+  to {
+    offset-distance: 100%;
+  }
+}
+
+@keyframes guidInputOrbitGlowSweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@supports not (offset-path: inset(8px round 22px)) {
+  .guidInputOrbitGlow::before {
+    inset: 0;
+    width: auto;
+    height: auto;
+    border-radius: inherit;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 292deg,
+      var(--guid-input-orbit-glow-mid) 326deg,
+      transparent 360deg
+    );
+    animation: guidInputOrbitGlowSweep 14s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guidInputOrbitGlow::before,
+  .guidInputOrbitGlow::after {
+    animation: none;
+  }
 }
 
 .guidContextRow {
@@ -532,6 +539,96 @@
   background: var(--bg-2);
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-border-2) 34%, transparent);
   box-sizing: border-box;
+}
+
+.guidContextRowWithBadge {
+  row-gap: 7px;
+}
+
+.guidContextBadgeSlot {
+  min-width: 0;
+  display: flex;
+  justify-content: flex-start;
+  grid-column: 1 / -1;
+}
+
+.guidContextLeadingSlot {
+  min-width: 0;
+  width: 100%;
+}
+
+.guidContextRow .workspaceFootnote {
+  min-width: 0;
+  width: 100%;
+}
+
+.skillDepositionContextBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  max-width: 100%;
+  padding: 0 7px 0 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, rgb(32, 132, 120) 22%, var(--color-border-2));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.28)),
+    color-mix(in srgb, rgb(32, 132, 120) 8%, var(--bg-base));
+  color: color-mix(in srgb, rgb(20, 92, 88) 78%, var(--color-text-1));
+  font-size: 12px;
+  font-weight: 680;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow:
+    0 1px 6px rgba(15, 23, 42, 0.035),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62);
+}
+
+.skillDepositionContextBadgeHint {
+  color: color-mix(in srgb, rgb(153, 108, 32) 64%, var(--color-text-3));
+  font-size: 11px;
+  font-weight: 560;
+}
+
+.skillDepositionContextBadgeClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 1px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, rgb(32, 132, 120) 10%, transparent);
+  color: currentColor;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform 0.14s ease,
+    background 0.14s ease;
+}
+
+.skillDepositionContextBadgeClose:hover {
+  transform: scale(1.04);
+  background: color-mix(in srgb, rgb(32, 132, 120) 18%, transparent);
+}
+
+@media (max-width: 960px) {
+  .guidSpectacleStagePreviewOpen {
+    grid-template-columns: 1fr;
+  }
+
+  .guidSpectacleStagePreviewOpen .guidSpectacleRight {
+    display: none;
+  }
+
+  .guidPreviewPanel {
+    height: calc(100vh - 132px);
+    min-height: 420px;
+  }
+
 }
 
 .actionRow {
@@ -591,6 +688,54 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.86);
 }
 
+.scienceModeIndicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, rgb(65, 132, 112) 34%, var(--color-border-2));
+  border-radius: 50%;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.2)),
+    color-mix(in srgb, rgb(65, 132, 112) 10%, var(--color-bg-1));
+  color: color-mix(in srgb, rgb(30, 91, 74) 78%, var(--color-text-1));
+  box-shadow:
+    0 7px 20px rgba(15, 23, 42, 0.07),
+    0 0 0 4px rgba(65, 132, 112, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  line-height: 1;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease,
+    color 0.16s ease;
+}
+
+.scienceModeIndicator::after {
+  content: '';
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(65, 132, 112);
+  box-shadow: 0 0 0 3px rgba(65, 132, 112, 0.12);
+}
+
+.scienceModeIndicator:hover {
+  transform: translateY(-1px);
+  background: var(--color-bg-1);
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.1),
+    0 0 0 5px rgba(65, 132, 112, 0.075),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
 .medicalEvidenceModeIndicator {
   position: relative;
   display: inline-flex;
@@ -599,15 +744,15 @@
   width: 32px;
   height: 32px;
   padding: 0;
-  border: 1px solid color-mix(in srgb, rgb(45, 128, 91) 36%, var(--color-border-2));
+  border: 1px solid color-mix(in srgb, rgb(216, 90, 74) 34%, var(--color-border-2));
   border-radius: 50%;
   background:
-    radial-gradient(circle at 50% 48%, rgba(45, 128, 91, 0.1), transparent 68%),
+    radial-gradient(circle at 50% 48%, rgba(216, 90, 74, 0.1), transparent 66%),
+    radial-gradient(circle at 68% 30%, rgba(196, 163, 63, 0.12), transparent 42%),
     color-mix(in srgb, var(--color-bg-1) 94%, var(--color-fill-2));
-  color: rgb(35, 103, 73);
   box-shadow:
     0 7px 20px rgba(15, 23, 42, 0.07),
-    0 0 0 4px rgba(45, 128, 91, 0.06),
+    0 0 0 4px rgba(216, 90, 74, 0.055),
     inset 0 1px 0 rgba(255, 255, 255, 0.78);
   cursor: pointer;
   line-height: 1;
@@ -626,17 +771,64 @@
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  background: rgb(45, 128, 91);
-  box-shadow: 0 0 0 3px rgba(45, 128, 91, 0.12);
+  background: rgb(216, 90, 74);
+  box-shadow: 0 0 0 3px rgba(216, 90, 74, 0.12);
 }
 
 .medicalEvidenceModeIndicator:hover {
   transform: translateY(-1px);
   background: var(--color-bg-1);
-  color: rgb(24, 89, 60);
   box-shadow:
     0 10px 24px rgba(15, 23, 42, 0.1),
-    0 0 0 5px rgba(45, 128, 91, 0.08),
+    0 0 0 5px rgba(216, 90, 74, 0.075),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.skillDepositionModeIndicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, rgb(32, 132, 120) 36%, var(--color-border-2));
+  border-radius: 50%;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.64), rgba(255, 255, 255, 0.2)),
+    color-mix(in srgb, rgb(32, 132, 120) 9%, var(--color-bg-1));
+  color: color-mix(in srgb, rgb(20, 92, 88) 78%, var(--color-text-1));
+  box-shadow:
+    0 7px 20px rgba(15, 23, 42, 0.07),
+    0 0 0 4px rgba(32, 132, 120, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  line-height: 1;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease,
+    color 0.16s ease;
+}
+
+.skillDepositionModeIndicator::after {
+  content: '';
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(207, 144, 39);
+  box-shadow: 0 0 0 3px rgba(207, 144, 39, 0.13);
+}
+
+.skillDepositionModeIndicator:hover {
+  transform: translateY(-1px);
+  background: var(--color-bg-1);
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.1),
+    0 0 0 5px rgba(32, 132, 120, 0.075),
     inset 0 1px 0 rgba(255, 255, 255, 0.86);
 }
 
@@ -648,16 +840,55 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-:global([data-theme='dark']) .medicalEvidenceModeIndicator {
+:global([data-theme='dark']) .scienceModeIndicator {
   background:
-    radial-gradient(circle at 50% 48%, rgba(88, 183, 129, 0.12), transparent 68%),
-    color-mix(in srgb, var(--color-fill-2) 82%, #111);
-  border-color: rgba(88, 183, 129, 0.28);
-  color: rgb(139, 215, 172);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    color-mix(in srgb, rgb(65, 132, 112) 15%, var(--color-fill-2));
+  border-color: rgba(93, 166, 144, 0.32);
+  color: color-mix(in srgb, rgb(160, 211, 195) 74%, var(--color-text-1));
   box-shadow:
     0 8px 22px rgba(0, 0, 0, 0.22),
-    0 0 0 4px rgba(88, 183, 129, 0.08),
+    0 0 0 4px rgba(65, 132, 112, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+:global([data-theme='dark']) .medicalEvidenceModeIndicator {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(216, 90, 74, 0.14), transparent 66%),
+    radial-gradient(circle at 68% 30%, rgba(196, 163, 63, 0.13), transparent 42%),
+    color-mix(in srgb, var(--color-fill-2) 82%, #111);
+  border-color: rgba(216, 90, 74, 0.3);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.22),
+    0 0 0 4px rgba(216, 90, 74, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+:global([data-theme='dark']) .skillDepositionModeIndicator {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    color-mix(in srgb, rgb(32, 132, 120) 14%, var(--color-fill-2));
+  border-color: rgba(65, 163, 151, 0.3);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.22),
+    0 0 0 4px rgba(32, 132, 120, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+:global([data-theme='dark']) .skillDepositionContextBadge {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    color-mix(in srgb, rgb(83, 112, 103) 14%, var(--color-fill-2));
+  border-color: rgba(111, 145, 134, 0.26);
+  color: color-mix(in srgb, rgb(166, 196, 186) 70%, var(--color-text-1));
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+:global([data-theme='dark']) .skillDepositionContextBadge {
+  border-color: rgba(65, 163, 151, 0.28);
+  color: color-mix(in srgb, rgb(136, 214, 201) 70%, var(--color-text-1));
 }
 
 /* 方案E：模型 + 权限各自独立 tb-btn，中间有竖线分隔 */
@@ -756,59 +987,6 @@
 .workspaceEmptyBtnActive:hover {
   color: var(--color-text-1);
   background: var(--bg-base);
-}
-
-.collaborationEmptyBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  width: 100%;
-  min-width: 0;
-  min-height: 32px;
-  font-size: 14px;
-  font-weight: 550;
-  color: var(--color-text-3);
-  background: transparent;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-family: inherit;
-  transition:
-    color 0.15s,
-    background 0.15s,
-    box-shadow 0.18s;
-  line-height: 1;
-}
-
-.collaborationEmptyBtn:hover {
-  color: var(--color-text-2);
-  background: var(--color-fill-3);
-}
-
-.collaborationEmptyBtnActive {
-  color: var(--color-text-1);
-  background: var(--bg-base);
-  box-shadow:
-    0 2px 8px rgba(15, 23, 42, 0.035),
-    inset 0 0 0 1px color-mix(in srgb, var(--color-white) 56%, transparent);
-}
-
-.collaborationEmptyBtnActive:hover {
-  color: var(--color-text-1);
-  background: var(--bg-base);
-}
-
-.collaborationContextName {
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: inherit;
-  opacity: 0.72;
-  font-size: 12px;
-  font-weight: 500;
 }
 
 /* 选中态：和空状态同色系，不做颜色跳变 */
@@ -1027,63 +1205,33 @@
     box-sizing: border-box;
   }
 
-  .guidLayoutCollaboration {
-    display: block;
-    width: clamp(var(--app-min-width, 360px), calc(100% - 24px), 100%);
-  }
-
-  .guidLayoutCollaboration .guidHeroStack,
-  .guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleLeft,
-  .guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleBridge,
-  .guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleRight {
-    grid-column: auto;
-    grid-row: auto;
-  }
-
-  .guidLayoutCollaboration .guidSpectacleStageOpen {
-    display: flex;
-  }
-
-  .guidLayoutCollaboration .guidSpectacleStageOpen .guidSpectacleRight {
-    margin-top: 0;
-  }
-
-  .guidContainerCollaboration {
-    justify-content: center;
-    padding-top: 10px;
-  }
-
   .guidInputCard {
     width: 100%;
   }
 
-  .guidSpectacleStage,
-  .guidSpectacleStageOpen {
+  .guidContextRowWithBadge {
+    row-gap: 6px;
+  }
+
+  .guidContextBadgeSlot {
+    justify-content: flex-start;
+  }
+
+  .guidContextRow {
+    grid-template-columns: 1fr;
+  }
+
+  .skillDepositionContextBadge {
+    height: 26px;
+    max-width: calc(100% - 8px);
+  }
+
+  .guidSpectacleStage {
     display: flex;
     flex-direction: column;
     width: 100%;
     margin-left: 0;
     transform: none;
-  }
-
-  .guidSpectacleLeft {
-    max-height: 0;
-    overflow: hidden;
-    transform: translateY(18px) scale(0.98);
-    transition:
-      max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-      opacity 0.28s ease,
-      transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-      filter 0.32s ease;
-  }
-
-  .guidSpectacleStageOpen .guidSpectacleLeft {
-    max-height: 540px;
-    margin-bottom: 10px;
-  }
-
-  .guidSpectacleBridge {
-    display: none;
   }
 
   .actionRow {
@@ -1148,20 +1296,8 @@
   position: relative;
 }
 
-.guidContainerCollaboration {
-  justify-content: center;
-  padding-top: 10px;
-}
-
 .guidContainer .guidLayout {
   margin-top: 0;
-}
-
-@media (max-width: 768px) {
-  .guidContainerCollaboration {
-    justify-content: center;
-    padding-top: 10px;
-  }
 }
 
 /* Agent 选中时：先放大再回落至略大（pop 动效） */

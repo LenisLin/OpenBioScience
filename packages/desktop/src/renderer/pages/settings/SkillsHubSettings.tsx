@@ -1,6 +1,7 @@
 import { ipcBridge } from '@/common';
-import { Button, Message, Modal, Typography } from '@arco-design/web-react';
-import { Delete, FolderOpen, Info, Lightning, Puzzle, Search, Refresh } from '@icon-park/react';
+import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
+import { Message, Modal } from '@arco-design/web-react';
+import { Delete, FolderOpen, Info, Puzzle, Search, Refresh } from '@icon-park/react';
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
@@ -364,7 +365,7 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
             className='px-[16px] md:px-[32px] py-32px bg-base rd-16px md:rd-24px shadow-sm border border-b-base relative overflow-hidden transition-all'
           >
             <div className='flex items-center gap-10px mb-24px'>
-              <Lightning theme='filled' size={20} fill='var(--color-primary-6)' />
+              <OpenScienceIcon name='settingsSkills' size={22} visualScale={1.08} />
               <span className='text-16px md:text-18px text-t-primary font-bold tracking-tight'>
                 {t('settings.autoInjectedSkills')}
               </span>
@@ -383,7 +384,7 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
                 >
                   <div className='shrink-0 flex items-start sm:mt-2px'>
                     <div className='w-40px h-40px rd-10px bg-[rgba(var(--success-6),0.08)] flex items-center justify-center shadow-sm'>
-                      <Lightning theme='filled' size={20} fill='rgb(var(--success-6))' />
+                      <OpenScienceIcon name='depositionSkill' size={24} visualScale={1.08} />
                     </div>
                   </div>
                   <div className='flex-1 min-w-0 flex flex-col justify-center gap-4px'>

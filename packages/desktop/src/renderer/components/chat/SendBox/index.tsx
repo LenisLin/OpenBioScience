@@ -23,6 +23,13 @@ import { emitter, type ReplyQuote, useAddEventListener } from '@/renderer/utils/
 import { mergeFileSelectionItems, type FileSelectionItem } from '@/renderer/utils/file/fileSelection';
 import type { FileOrFolderItem } from '@/renderer/utils/file/fileTypes';
 import { filterWorkspaceMentionItems } from '@/renderer/utils/file/workspaceMentions';
+import {
+  getFileNameFromSciencePath,
+  loadScienceProjectIndex,
+  type ScienceArtifactFileRef,
+  type ScienceProjectIndex,
+  type ScienceProjectRunIndex,
+} from '@/renderer/utils/science/scienceProjectIndex';
 import { copyText } from '@/renderer/utils/ui/clipboard';
 import { blurActiveElement, shouldBlockMobileInputFocus } from '@/renderer/utils/ui/focus';
 import { Button, Input, Message, Tag } from '@arco-design/web-react';
@@ -164,6 +171,7 @@ const SendBox: React.FC<{
   className?: string;
   tools?: React.ReactNode;
   rightTools?: React.ReactNode;
+  toolbarPrefix?: React.ReactNode;
   prefix?: React.ReactNode;
   placeholder?: string;
   onFilesAdded?: (files: FileMetadata[]) => void;
@@ -194,6 +202,7 @@ const SendBox: React.FC<{
   loading,
   tools,
   rightTools,
+  toolbarPrefix,
   disabled,
   placeholder,
   value: input = '',
@@ -259,7 +268,7 @@ const SendBox: React.FC<{
   useAddEventListener('sendbox.reply.clear', () => setReplyQuote(null), []);
 
   // 集成预览面板的"添加到聊天"功能 / Integrate preview panel's "Add to chat" functionality
-  const { setSendBoxHandler, domSnippets, removeDomSnippet, clearDomSnippets } = usePreviewContext();
+  const { setSendBoxHandler, domSnippets, removeDomSnippet, clearDomSnippets, activeTab } = usePreviewContext();
 
   // 注册处理器以接收来自预览面板的文本 / Register handler to receive text from preview panel
   useEffect(() => {
@@ -406,8 +415,20 @@ const SendBox: React.FC<{
     if (!conversationContext?.workspace || !activeAtFileQuery) {
       return null;
     }
-    return `${conversationContext.workspace}:${activeAtFileQuery.start}`;
-  }, [activeAtFileQuery, conversationContext?.workspace]);
+    return [
+      conversationContext.workspace,
+      activeAtFileQuery.start,
+      activeTab?.id || '',
+      activeTab?.metadata?.file_path || '',
+      activeTab?.metadata?.science?.artifactId || '',
+    ].join(':');
+  }, [
+    activeAtFileQuery,
+    activeTab?.id,
+    activeTab?.metadata?.file_path,
+    activeTab?.metadata?.science?.artifactId,
+    conversationContext?.workspace,
+  ]);
   const allAtFileQueries = useMemo(() => getAllAtFileQueries(input), [input]);
   const deferredAtFileQuery = useDeferredValue(activeAtFileQuery?.query ?? '');
   const inputHistory = useMemo(
@@ -684,19 +705,127 @@ const SendBox: React.FC<{
     fetchedAtFileSessionKeyRef.current = atFileSessionKey;
     setWorkspaceMentionLoading(true);
 
-    void ipcBridge.fs.listWorkspaceFiles
-      .invoke({ root: conversationContext.workspace })
-      .then((result) => {
+    void Promise.all([
+      ipcBridge.fs.listWorkspaceFiles.invoke({ root: conversationContext.workspace }),
+      loadScienceProjectIndex(conversationContext.workspace, 8).catch((error: unknown): null => {
+        console.warn('[SendBox] Failed to load Science project index for @ menu:', error);
+        return null;
+      }),
+    ])
+      .then(([result, scienceIndex]: [Awaited<ReturnType<typeof ipcBridge.fs.listWorkspaceFiles.invoke>>, ScienceProjectIndex | null]) => {
         if (cancelled) {
           return;
         }
-        const files = result.map((item) => ({
+        const inViewItems: FileOrFolderItem[] = activeTab?.metadata?.file_path
+          ? [
+              {
+                path: activeTab.metadata.file_path,
+                name: activeTab.metadata.file_name || activeTab.title,
+                isFile: true,
+                relativePath: activeTab.metadata.file_path.startsWith(conversationContext.workspace)
+                  ? activeTab.metadata.file_path.slice(conversationContext.workspace.replace(/\/$/u, '').length + 1)
+                  : activeTab.metadata.file_path,
+                group: 'in_view',
+                kind: activeTab.metadata.science?.artifactId ? 'artifact' : 'file',
+                badge: activeTab.metadata.science?.artifactVersion
+                  ? `v${activeTab.metadata.science.artifactVersion}`
+                  : undefined,
+                description: activeTab.metadata.science?.artifactId
+                  ? `artifact ${activeTab.metadata.science.artifactId}`
+                  : activeTab.metadata.file_path,
+                science: activeTab.metadata.science
+                  ? {
+                      artifactId: activeTab.metadata.science.artifactId,
+                      artifactVersion: activeTab.metadata.science.artifactVersion,
+                      runId: activeTab.metadata.science.panel.runId,
+                    }
+                  : undefined,
+              },
+            ]
+          : [];
+
+        const userUploadItems: FileOrFolderItem[] = (selectedWorkspaceItems ?? [])
+          .map((item) => {
+            if (typeof item !== 'string') {
+              return Object.assign({}, item, {
+                group: 'user_upload' as const,
+                kind: item.kind || ('file' as const),
+              });
+            }
+            return {
+              path: item,
+              name: item.split(/[\\/]/u).pop() || item,
+              isFile: true,
+              relativePath: item.startsWith(conversationContext.workspace)
+                ? item.slice(conversationContext.workspace.replace(/\/$/u, '').length + 1)
+                : item,
+              group: 'user_upload' as const,
+              kind: 'file' as const,
+            };
+          })
+          .filter((item) => Boolean(item.path));
+
+        const scienceItems: FileOrFolderItem[] =
+          scienceIndex?.runs.flatMap((run: ScienceProjectRunIndex) => {
+            const reportItem: FileOrFolderItem = {
+              path: run.panelPath,
+              name: run.title,
+              isFile: true,
+              relativePath: run.panelRelativePath,
+              group: 'project_artifact',
+              kind: 'science_report',
+              badge: `${run.panel.stats.artifacts || run.panel.artifacts.length} artifacts`,
+              description:
+                run.summary ||
+                `${run.panel.stats.evidence || run.panel.evidence.length} evidence · ${run.panel.status}`,
+              science: { runId: run.runId },
+            };
+            const seenArtifactIds = new Set<string>();
+            const artifactItems = run.artifacts
+              .filter((ref: ScienceArtifactFileRef) => ref.role === 'primary' || ref.role === 'preview' || ref.role === 'thumbnail')
+              .filter((ref: ScienceArtifactFileRef) => {
+                if (seenArtifactIds.has(ref.artifactId)) return false;
+                seenArtifactIds.add(ref.artifactId);
+                return true;
+              })
+              .slice(0, 6)
+              .map((ref): FileOrFolderItem => ({
+                path: ref.path,
+                name: ref.artifact.title || getFileNameFromSciencePath(ref.path),
+                isFile: true,
+                relativePath: ref.relativePath,
+                group: 'project_artifact',
+                kind: 'artifact',
+                badge: `v${ref.artifactVersion}`,
+                description: `${ref.artifact.type} · ${ref.relativePath || ref.displayPath}`,
+                thumbnailPath: ref.artifact.thumbnailPath || (ref.artifact.type === 'figure' ? ref.path : undefined),
+                science: {
+                  artifactId: ref.artifactId,
+                  artifactVersion: ref.artifactVersion,
+                  evidenceIds: ref.artifact.evidenceIds,
+                  runId: run.runId,
+                },
+              }));
+            return [reportItem, ...artifactItems];
+          }) ?? [];
+
+        const files: FileOrFolderItem[] = result.map((item) => ({
           path: item.fullPath,
           name: item.name,
           isFile: true,
           relativePath: item.relativePath || undefined,
+          group: 'project_file' as const,
+          kind: 'file' as const,
         }));
-        setWorkspaceMentionItems(files);
+        const seen = new Set<string>();
+        setWorkspaceMentionItems(
+          [...inViewItems, ...userUploadItems, ...scienceItems, ...files].filter((item) => {
+            const key = `${item.kind || 'file'}:${item.path}:${item.science?.artifactId || ''}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          })
+        );
       })
       .catch((error) => {
         if (!cancelled) {
@@ -714,7 +843,7 @@ const SendBox: React.FC<{
     return () => {
       cancelled = true;
     };
-  }, [atFileSessionKey, conversationContext?.workspace, isAtFileMenuOpen]);
+  }, [activeTab, atFileSessionKey, conversationContext?.workspace, isAtFileMenuOpen, selectedWorkspaceItems]);
 
   useEffect(() => {
     if (!activeAtFileTokenKey) {
@@ -1245,6 +1374,7 @@ const SendBox: React.FC<{
   const { handleLiveTranscript } = useLiveTranscriptInsertion(speechDispatch.dispatch);
 
   const hasDraftToSend = input.trim().length > 0 || domSnippets.length > 0;
+  const showRunningGlow = Boolean(isLoading || loading) && !isFileDragging;
   const inputPlaceholder =
     placeholder ??
     (bottomHint as string | undefined) ??
@@ -1315,6 +1445,7 @@ const SendBox: React.FC<{
   // tools/rightTools into the `+` launcher and skip the inline speech button.
   const renderedTools = isMobileCompact ? mobilePlusButton : tools;
   const renderedRightTools = isMobileCompact ? null : rightTools;
+  const renderedToolbarPrefix = toolbarPrefix ? <div className='sendbox-toolbar-prefix'>{toolbarPrefix}</div> : null;
   const renderedSpeechButton = isMobileCompact ? null : (
     <SpeechInputButton
       disabled={disabled || isLoading || loading || isUploading}
@@ -1367,7 +1498,7 @@ const SendBox: React.FC<{
     <div className={className}>
       <div
         ref={containerRef}
-        className={`sendbox-panel relative p-16px border-3 b bg-dialog-fill-0 b-solid rd-20px flex flex-col ${isOverlayOpen ? 'overflow-visible' : 'overflow-hidden'} ${isFileDragging ? 'b-dashed sendbox-panel--dragging' : ''}`}
+        className={`sendbox-panel relative p-16px border-3 b bg-dialog-fill-0 b-solid rd-20px flex flex-col ${isOverlayOpen ? 'overflow-visible' : 'overflow-hidden'} ${isFileDragging ? 'b-dashed sendbox-panel--dragging' : ''} ${showRunningGlow ? 'sendbox-panel--running' : ''}`}
         style={{
           transition: 'box-shadow 0.25s ease, border-color 0.25s ease',
           ...(isFileDragging
@@ -1376,14 +1507,15 @@ const SendBox: React.FC<{
                 borderColor: 'rgb(var(--primary-3))',
                 borderWidth: '1px',
               }
-            : {
-                borderWidth: '1px',
-                borderColor: isInputActive ? activeBorderColor : inactiveBorderColor,
-                boxShadow: isInputActive ? activeShadow : 'none',
-              }),
+              : {
+                  borderWidth: '1px',
+                  borderColor: isInputActive ? activeBorderColor : inactiveBorderColor,
+                  boxShadow: isInputActive || showRunningGlow ? activeShadow : 'none',
+                }),
         }}
         {...dragHandlers}
       >
+        {showRunningGlow ? <span className='sendbox-orbit-glow' aria-hidden='true' /> : null}
         <BtwOverlay
           answer={btwCommand.answer}
           anchorEl={containerRef.current}
@@ -1538,6 +1670,7 @@ const SendBox: React.FC<{
               }
             >
               {renderedTools}
+              {renderedToolbarPrefix}
             </div>
           )}
           <div
@@ -1630,6 +1763,7 @@ const SendBox: React.FC<{
               }
             >
               {renderedTools}
+              {renderedToolbarPrefix}
             </div>
             <div className='sendbox-actions flex items-center gap-2'>
               {renderedRightTools}

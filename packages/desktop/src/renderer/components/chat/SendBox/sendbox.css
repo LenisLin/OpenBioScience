@@ -88,6 +88,116 @@
   color: #a1a2aa !important;
 }
 
+.sendbox-panel {
+  --sendbox-orbit-glow-core: rgba(255, 211, 94, 0.42);
+  --sendbox-orbit-glow-mid: rgba(236, 181, 58, 0.14);
+  --sendbox-orbit-glow-soft: rgba(236, 181, 58, 0);
+  --sendbox-orbit-sweep: rgba(235, 179, 58, 0.14);
+}
+
+.sendbox-orbit-glow {
+  position: absolute;
+  inset: -14px;
+  z-index: 0;
+  padding: 14px;
+  border-radius: 34px;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 260ms ease;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.sendbox-panel--running {
+  overflow: visible !important;
+  isolation: isolate;
+}
+
+.sendbox-panel--running .sendbox-orbit-glow {
+  opacity: 1;
+}
+
+.sendbox-orbit-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    var(--sendbox-orbit-glow-core) 0%,
+    var(--sendbox-orbit-glow-mid) 42%,
+    var(--sendbox-orbit-glow-soft) 74%
+  );
+  filter: blur(16px);
+  offset-path: inset(8px round 30px);
+  offset-distance: 0%;
+  offset-rotate: 0deg;
+  animation: sendbox-orbit-glow-path 13.5s linear infinite;
+}
+
+.sendbox-orbit-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 286deg,
+    var(--sendbox-orbit-sweep) 322deg,
+    transparent 356deg,
+    transparent 360deg
+  );
+  filter: blur(18px);
+  opacity: 0.5;
+  animation: sendbox-orbit-glow-sweep 13.5s linear infinite;
+}
+
+[data-theme='dark'] .sendbox-panel {
+  --sendbox-orbit-glow-core: rgba(247, 206, 96, 0.34);
+  --sendbox-orbit-glow-mid: rgba(230, 174, 58, 0.13);
+  --sendbox-orbit-sweep: rgba(231, 177, 61, 0.12);
+}
+
+@keyframes sendbox-orbit-glow-path {
+  to {
+    offset-distance: 100%;
+  }
+}
+
+@keyframes sendbox-orbit-glow-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@supports not (offset-path: inset(7px round 18px)) {
+  .sendbox-orbit-glow::before {
+    inset: 0;
+    width: auto;
+    height: auto;
+    border-radius: inherit;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 292deg,
+      var(--sendbox-orbit-glow-mid) 326deg,
+      transparent 360deg
+    );
+    animation: sendbox-orbit-glow-sweep 13.5s linear infinite;
+  }
+}
+
 .sendbox-run-status {
   display: inline-flex;
   align-items: center;
@@ -119,6 +229,98 @@
   background: currentColor;
   opacity: 0.58;
   animation: speech-processing-pulse 1.2s ease-in-out infinite;
+}
+
+.sendbox-medical-evidence-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 26px;
+  margin: 0;
+  padding: 4px 9px 4px 7px;
+  border: 1px solid color-mix(in srgb, #8fb9a8 34%, var(--color-border-2, #e5e6eb));
+  border-radius: 999px;
+  background: color-mix(in srgb, #edf6f1 76%, var(--color-bg-1, #fff));
+  color: color-mix(in srgb, #1c5c48 82%, var(--color-text-1, #1d2129));
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0;
+  user-select: none;
+}
+
+.sendbox-mode-strip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.sendbox-mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 26px;
+  margin: 0;
+  padding: 4px 9px 4px 7px;
+  border: 1px solid color-mix(in srgb, #8aaea3 30%, var(--color-border-2, #e5e6eb));
+  border-radius: 999px;
+  background: color-mix(in srgb, #f3f7f5 78%, var(--color-bg-1, #fff));
+  color: color-mix(in srgb, #2f5f53 80%, var(--color-text-1, #1d2129));
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0;
+  user-select: none;
+}
+
+.sendbox-mode-pill--science {
+  border-color: color-mix(in srgb, #7b9f95 32%, var(--color-border-2, #e5e6eb));
+  background: color-mix(in srgb, #f2f7f4 80%, var(--color-bg-1, #fff));
+  color: color-mix(in srgb, #285f50 82%, var(--color-text-1, #1d2129));
+}
+
+.sendbox-mode-pill--skill {
+  border-color: color-mix(in srgb, #b9a872 32%, var(--color-border-2, #e5e6eb));
+  background: color-mix(in srgb, #faf8f0 82%, var(--color-bg-1, #fff));
+  color: color-mix(in srgb, #6a5721 82%, var(--color-text-1, #1d2129));
+}
+
+.sendbox-mode-pill__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sendbox-medical-evidence-mode__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-theme='dark'] .sendbox-medical-evidence-mode {
+  border-color: color-mix(in srgb, #8fb9a8 38%, var(--color-border-2, #363636));
+  background: color-mix(in srgb, #1f3d34 48%, var(--color-bg-2, #262626));
+  color: color-mix(in srgb, #b8dbc9 86%, var(--color-text-1, #f2f3f5));
+}
+
+[data-theme='dark'] .sendbox-mode-pill {
+  border-color: color-mix(in srgb, #8aaea3 34%, var(--color-border-2, #363636));
+  background: color-mix(in srgb, #263530 52%, var(--color-bg-2, #262626));
+  color: color-mix(in srgb, #c0d8cf 86%, var(--color-text-1, #f2f3f5));
+}
+
+[data-theme='dark'] .sendbox-mode-pill--skill {
+  border-color: color-mix(in srgb, #b9a872 34%, var(--color-border-2, #363636));
+  background: color-mix(in srgb, #393321 52%, var(--color-bg-2, #262626));
+  color: color-mix(in srgb, #dfd4a6 86%, var(--color-text-1, #f2f3f5));
 }
 
 [data-theme='dark'] .sendbox-run-status {
@@ -338,9 +540,33 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .sendbox-orbit-glow::before,
+  .sendbox-orbit-glow::after {
+    animation: none;
+  }
+}
+
 /* Allow sendbox tools area to shrink so the send button stays visible */
 .sendbox-tools {
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sendbox-toolbar-prefix {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: min(560px, 56vw);
+  flex-shrink: 1;
+}
+
+.sendbox-toolbar-prefix > * {
+  min-width: 0;
+  max-width: 100%;
+  flex-shrink: 1;
 }
 
 /* Circle / icon-only buttons must not shrink */

@@ -20,9 +20,30 @@ import {
   type MedicalEvidenceMcpEnvResolveResult,
 } from '@/common/config/medicalEvidenceMcpEnv';
 import {
+  removeResearchEvidenceEnvKeys,
+  resolveResearchEvidenceMcpEnv,
+  type ResearchEvidenceMcpEnvResolveResult,
+} from '@/common/config/researchEvidenceMcpEnv';
+import {
+  removeScienceArtifactEnvKeys,
+  resolveScienceArtifactMcpEnv,
+  type ScienceArtifactMcpEnvResolveResult,
+} from '@/common/config/scienceArtifactMcpEnv';
+import {
   BUILTIN_IMAGE_GEN_NAME,
+  BUILTIN_IMAGE_GEN_LEGACY_NAMES,
+  BUILTIN_LAB_SKILL_NAME,
+  BUILTIN_LAB_SKILL_LEGACY_NAMES,
   BUILTIN_LARK_PROJECT_AGENT_NAME,
+  BUILTIN_LARK_PROJECT_AGENT_LEGACY_NAMES,
   BUILTIN_MEDICAL_EVIDENCE_NAME,
+  BUILTIN_MEDICAL_EVIDENCE_LEGACY_NAMES,
+  BUILTIN_RESEARCH_EVIDENCE_NAME,
+  BUILTIN_RESEARCH_EVIDENCE_LEGACY_NAMES,
+  BUILTIN_SCIENCE_ARTIFACT_NAME,
+  BUILTIN_SCIENCE_ARTIFACT_LEGACY_NAMES,
+  BUILTIN_USER_INPUT_NAME,
+  BUILTIN_USER_INPUT_LEGACY_NAMES,
   type IMcpServer,
   type IProvider,
 } from '@/common/config/storage';
@@ -31,12 +52,31 @@ import { legacyEnvName } from '@/common/config/legacyIdentifiers';
 import { getProjectAgentDataDir } from '@/deepscientist_lark/project_agent/store';
 import { getBuiltinMcpScriptPath, type ProcessConfig as ProcessConfigType } from './initStorage';
 import { migrateAssistantsToBackend } from './migrateAssistants';
+import { getUserInputGatewayEnv, startUserInputGateway } from '../bridge/userInputBridge';
 
 type ConfigFile = typeof ProcessConfigType;
 type MigrationStepResult = boolean;
 type McpImportServer = Partial<IMcpServer> & Pick<IMcpServer, 'name' | 'transport'>;
 type BackendClientPreferences = Record<string, unknown>;
 const BUILTIN_CHROME_DEVTOOLS_NAME = 'chrome-devtools';
+
+const BUILTIN_SERVER_LEGACY_NAMES = new Map<string, readonly string[]>([
+  [BUILTIN_IMAGE_GEN_NAME, BUILTIN_IMAGE_GEN_LEGACY_NAMES],
+  [BUILTIN_LARK_PROJECT_AGENT_NAME, BUILTIN_LARK_PROJECT_AGENT_LEGACY_NAMES],
+  [BUILTIN_MEDICAL_EVIDENCE_NAME, BUILTIN_MEDICAL_EVIDENCE_LEGACY_NAMES],
+  [BUILTIN_RESEARCH_EVIDENCE_NAME, BUILTIN_RESEARCH_EVIDENCE_LEGACY_NAMES],
+  [BUILTIN_SCIENCE_ARTIFACT_NAME, BUILTIN_SCIENCE_ARTIFACT_LEGACY_NAMES],
+  [BUILTIN_LAB_SKILL_NAME, BUILTIN_LAB_SKILL_LEGACY_NAMES],
+  [BUILTIN_USER_INPUT_NAME, BUILTIN_USER_INPUT_LEGACY_NAMES],
+]);
+
+function findExistingBuiltinServer(existingByName: Map<string, IMcpServer>, name: string): IMcpServer | undefined {
+  return existingByName.get(name) ?? BUILTIN_SERVER_LEGACY_NAMES.get(name)?.map((legacy) => existingByName.get(legacy)).find(Boolean);
+}
+
+function hasExistingBuiltinServer(existingByName: Map<string, IMcpServer>, name: string): boolean {
+  return !!findExistingBuiltinServer(existingByName, name);
+}
 
 const LEGACY_BACKEND_CLIENT_PREFERENCE_KEYS = [
   'assistants',
@@ -113,6 +153,65 @@ function resolveMedicalEvidenceMigrationConfigSource(
   fileConfig?: ConfigKeyMap['tools.medicalEvidence']
 ): 'backend' | 'file' | 'none' {
   const backendConfig = backendPrefs['tools.medicalEvidence'];
+  if (backendConfig && typeof backendConfig === 'object') {
+    return 'backend';
+  }
+  return fileConfig ? 'file' : 'none';
+}
+
+function researchEvidenceConfigFromMedical(
+  medicalConfig?: ConfigKeyMap['tools.medicalEvidence']
+): ConfigKeyMap['tools.researchEvidence'] | undefined {
+  if (!medicalConfig) return undefined;
+  return {
+    paperclipApiKey: medicalConfig.paperclipApiKey,
+    paperclipBaseUrl: medicalConfig.paperclipBaseUrl,
+    defaultSources: medicalConfig.defaultSources,
+    timeoutMs: medicalConfig.timeoutMs,
+  };
+}
+
+function resolveResearchEvidenceMigrationConfig(
+  backendPrefs: BackendClientPreferences,
+  fileConfig?: ConfigKeyMap['tools.researchEvidence'],
+  fallbackMedicalConfig?: ConfigKeyMap['tools.medicalEvidence']
+): ConfigKeyMap['tools.researchEvidence'] | undefined {
+  const backendConfig = backendPrefs['tools.researchEvidence'];
+  if (backendConfig && typeof backendConfig === 'object') {
+    return backendConfig as ConfigKeyMap['tools.researchEvidence'];
+  }
+  return fileConfig || researchEvidenceConfigFromMedical(fallbackMedicalConfig);
+}
+
+function resolveResearchEvidenceMigrationConfigSource(
+  backendPrefs: BackendClientPreferences,
+  fileConfig?: ConfigKeyMap['tools.researchEvidence'],
+  fallbackMedicalConfig?: ConfigKeyMap['tools.medicalEvidence']
+): 'backend' | 'file' | 'medicalEvidence' | 'none' {
+  const backendConfig = backendPrefs['tools.researchEvidence'];
+  if (backendConfig && typeof backendConfig === 'object') {
+    return 'backend';
+  }
+  if (fileConfig) return 'file';
+  return fallbackMedicalConfig ? 'medicalEvidence' : 'none';
+}
+
+function resolveScienceArtifactMigrationConfig(
+  backendPrefs: BackendClientPreferences,
+  fileConfig?: ConfigKeyMap['tools.scienceArtifact']
+): ConfigKeyMap['tools.scienceArtifact'] | undefined {
+  const backendConfig = backendPrefs['tools.scienceArtifact'];
+  if (backendConfig && typeof backendConfig === 'object') {
+    return backendConfig as ConfigKeyMap['tools.scienceArtifact'];
+  }
+  return fileConfig;
+}
+
+function resolveScienceArtifactMigrationConfigSource(
+  backendPrefs: BackendClientPreferences,
+  fileConfig?: ConfigKeyMap['tools.scienceArtifact']
+): 'backend' | 'file' | 'none' {
+  const backendConfig = backendPrefs['tools.scienceArtifact'];
   if (backendConfig && typeof backendConfig === 'object') {
     return 'backend';
   }
@@ -250,6 +349,133 @@ function buildBuiltinMedicalEvidenceServer(resolution: MedicalEvidenceMcpEnvReso
   };
 }
 
+function logResearchEvidenceEnvResolution(
+  result: ResearchEvidenceMcpEnvResolveResult,
+  context: 'bootstrap' | 'update'
+): void {
+  if (result.ok === true) {
+    console.info(
+      '[Migration] research evidence MCP env resolved during %s, base url: %s, api key present: yes',
+      context,
+      result.config.paperclipBaseUrl || 'https://paperclip.gxl.ai'
+    );
+    return;
+  }
+
+  console.warn(
+    '[Migration] research evidence MCP env resolution incomplete during %s, reason: %s, message: %s',
+    context,
+    result.reason,
+    result.message
+  );
+}
+
+function buildBuiltinResearchEvidenceServer(resolution: ResearchEvidenceMcpEnvResolveResult): McpImportServer {
+  const scriptPath = getBuiltinMcpScriptPath('builtin-mcp-research-evidence');
+  const env = resolution.env || {};
+  const serverConfig = {
+    command: 'node',
+    args: [scriptPath],
+    env,
+  };
+
+  return {
+    name: BUILTIN_RESEARCH_EVIDENCE_NAME,
+    description: 'Shared PaperClip research evidence bridge for Medical Evidence Mode and Science Mode.',
+    enabled: false,
+    builtin: true,
+    transport: {
+      type: 'stdio',
+      command: 'node',
+      args: [scriptPath],
+      env,
+    },
+    original_json: JSON.stringify({ mcpServers: { [BUILTIN_RESEARCH_EVIDENCE_NAME]: serverConfig } }, null, 2),
+  };
+}
+
+function logScienceArtifactEnvResolution(
+  result: ScienceArtifactMcpEnvResolveResult,
+  context: 'bootstrap' | 'update'
+): void {
+  console.info(
+    '[Migration] science artifact MCP env resolved during %s, strict provenance: %s, manifest writes: %s',
+    context,
+    result.config.strictProvenance ? 'yes' : 'no',
+    result.config.writeProjectManifest ? 'yes' : 'no'
+  );
+}
+
+function buildBuiltinScienceArtifactServer(resolution: ScienceArtifactMcpEnvResolveResult): McpImportServer {
+  const scriptPath = getBuiltinMcpScriptPath('builtin-mcp-science-artifact');
+  const env = resolution.env || {};
+  const serverConfig = {
+    command: 'node',
+    args: [scriptPath],
+    env,
+  };
+
+  return {
+    name: BUILTIN_SCIENCE_ARTIFACT_NAME,
+    description: 'Built-in Science Mode artifact graph, provenance, versioning, and report panel bridge.',
+    enabled: false,
+    builtin: true,
+    transport: {
+      type: 'stdio',
+      command: 'node',
+      args: [scriptPath],
+      env,
+    },
+    original_json: JSON.stringify({ mcpServers: { [BUILTIN_SCIENCE_ARTIFACT_NAME]: serverConfig } }, null, 2),
+  };
+}
+
+function buildBuiltinLabSkillServer(): McpImportServer {
+  const scriptPath = getBuiltinMcpScriptPath('builtin-mcp-lab-skill');
+  const serverConfig = {
+    command: 'node',
+    args: [scriptPath],
+    env: {},
+  };
+
+  return {
+    name: BUILTIN_LAB_SKILL_NAME,
+    description: 'Built-in Lab Skill deposition bridge for SOP, protocol, evidence-ledger, and skill draft reports.',
+    enabled: false,
+    builtin: true,
+    transport: {
+      type: 'stdio',
+      command: 'node',
+      args: [scriptPath],
+      env: {},
+    },
+    original_json: JSON.stringify({ mcpServers: { [BUILTIN_LAB_SKILL_NAME]: serverConfig } }, null, 2),
+  };
+}
+
+function buildBuiltinUserInputServer(env: Record<string, string>): McpImportServer {
+  const scriptPath = getBuiltinMcpScriptPath('builtin-mcp-user-input');
+  const serverConfig = {
+    command: 'node',
+    args: [scriptPath],
+    env,
+  };
+
+  return {
+    name: BUILTIN_USER_INPUT_NAME,
+    description: 'Built-in structured user input bridge for Agent clarification questions.',
+    enabled: true,
+    builtin: true,
+    transport: {
+      type: 'stdio',
+      command: 'node',
+      args: [scriptPath],
+      env,
+    },
+    original_json: JSON.stringify({ mcpServers: { [BUILTIN_USER_INPUT_NAME]: serverConfig } }, null, 2),
+  };
+}
+
 function areStringArraysEqual(left?: string[], right?: string[]): boolean {
   const leftValue = left || [];
   const rightValue = right || [];
@@ -259,8 +485,8 @@ function areStringArraysEqual(left?: string[], right?: string[]): boolean {
 function areStringRecordsEqual(left?: Record<string, string>, right?: Record<string, string>): boolean {
   const leftValue = left || {};
   const rightValue = right || {};
-  const leftKeys = Object.keys(leftValue).sort();
-  const rightKeys = Object.keys(rightValue).sort();
+  const leftKeys = Object.keys(leftValue).toSorted();
+  const rightKeys = Object.keys(rightValue).toSorted();
   return areStringArraysEqual(leftKeys, rightKeys) && leftKeys.every((key) => leftValue[key] === rightValue[key]);
 }
 
@@ -366,10 +592,19 @@ function buildOriginalJsonFromTransport(server: Pick<IMcpServer, 'name' | 'descr
 }
 
 async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<void> {
-  const [backendPrefs, fileImageConfig, fileMedicalEvidenceConfig, providers] = await Promise.all([
+  const [
+    backendPrefs,
+    fileImageConfig,
+    fileMedicalEvidenceConfig,
+    fileResearchEvidenceConfig,
+    fileScienceArtifactConfig,
+    providers,
+  ] = await Promise.all([
     fetchBackendClientPreferences(),
     configFile.get('tools.imageGenerationModel').catch((): undefined => undefined),
     configFile.get('tools.medicalEvidence').catch((): undefined => undefined),
+    configFile.get('tools.researchEvidence').catch((): undefined => undefined),
+    configFile.get('tools.scienceArtifact').catch((): undefined => undefined),
     fetchProviders(),
   ]);
   const imageConfig = resolveImageGenerationMigrationConfig(backendPrefs, fileImageConfig);
@@ -379,25 +614,78 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
     backendPrefs,
     fileMedicalEvidenceConfig
   );
+  const researchEvidenceConfig = resolveResearchEvidenceMigrationConfig(
+    backendPrefs,
+    fileResearchEvidenceConfig,
+    medicalEvidenceConfig
+  );
+  const researchEvidenceConfigSource = resolveResearchEvidenceMigrationConfigSource(
+    backendPrefs,
+    fileResearchEvidenceConfig,
+    medicalEvidenceConfig
+  );
+  const scienceArtifactConfig = resolveScienceArtifactMigrationConfig(backendPrefs, fileScienceArtifactConfig);
+  const scienceArtifactConfigSource = resolveScienceArtifactMigrationConfigSource(
+    backendPrefs,
+    fileScienceArtifactConfig
+  );
   const existing = await mcpService.listServers.invoke();
   const existingByName = new Map((existing ?? []).map((server) => [server.name, server]));
-  const existingImageServer = existingByName.get(BUILTIN_IMAGE_GEN_NAME);
-  const existingMedicalEvidenceServer = existingByName.get(BUILTIN_MEDICAL_EVIDENCE_NAME);
+  const existingImageServer = findExistingBuiltinServer(existingByName, BUILTIN_IMAGE_GEN_NAME);
+  const existingMedicalEvidenceServer = findExistingBuiltinServer(existingByName, BUILTIN_MEDICAL_EVIDENCE_NAME);
+  const existingResearchEvidenceServer = findExistingBuiltinServer(existingByName, BUILTIN_RESEARCH_EVIDENCE_NAME);
+  const existingScienceArtifactServer = findExistingBuiltinServer(existingByName, BUILTIN_SCIENCE_ARTIFACT_NAME);
+  const existingLabSkillServer = findExistingBuiltinServer(existingByName, BUILTIN_LAB_SKILL_NAME);
   const existingImageEnv =
     existingImageServer?.transport.type === 'stdio' ? existingImageServer.transport.env : undefined;
   const existingMedicalEvidenceEnv =
     existingMedicalEvidenceServer?.transport.type === 'stdio' ? existingMedicalEvidenceServer.transport.env : undefined;
+  const existingResearchEvidenceEnv =
+    existingResearchEvidenceServer?.transport.type === 'stdio'
+      ? existingResearchEvidenceServer.transport.env
+      : undefined;
+  const existingScienceArtifactEnv =
+    existingScienceArtifactServer?.transport.type === 'stdio' ? existingScienceArtifactServer.transport.env : undefined;
   const imageEnvResolution = resolveImageGenerationMcpEnv(imageConfig, providers, existingImageEnv);
-  const medicalEvidenceEnvResolution = resolveMedicalEvidenceMcpEnv(medicalEvidenceConfig, existingMedicalEvidenceEnv);
+  const medicalEvidenceEnvResolution = resolveMedicalEvidenceMcpEnv(
+    medicalEvidenceConfig,
+    existingMedicalEvidenceEnv,
+    researchEvidenceConfig
+  );
+  const researchEvidenceEnvResolution = resolveResearchEvidenceMcpEnv(
+    researchEvidenceConfig,
+    existingResearchEvidenceEnv,
+    medicalEvidenceConfig
+  );
+  const scienceArtifactEnvResolution = resolveScienceArtifactMcpEnv(scienceArtifactConfig, existingScienceArtifactEnv);
   logImageGenerationEnvResolution(imageEnvResolution, 'bootstrap');
   logMedicalEvidenceEnvResolution(medicalEvidenceEnvResolution, 'bootstrap');
+  logResearchEvidenceEnvResolution(researchEvidenceEnvResolution, 'bootstrap');
+  logScienceArtifactEnvResolution(scienceArtifactEnvResolution, 'bootstrap');
   const imageServer = buildBuiltinImageGenerationServer(imageEnvResolution, imageConfig);
   const medicalEvidenceServer = buildBuiltinMedicalEvidenceServer(medicalEvidenceEnvResolution);
+  const researchEvidenceServer = buildBuiltinResearchEvidenceServer(researchEvidenceEnvResolution);
+  const scienceArtifactServer = buildBuiltinScienceArtifactServer(scienceArtifactEnvResolution);
+  const labSkillServer = buildBuiltinLabSkillServer();
   const larkProjectAgentServer = buildBuiltinLarkProjectAgentServer();
+  await startUserInputGateway();
+  const userInputServer = buildBuiltinUserInputServer(getUserInputGatewayEnv());
   const defaultServers = [...buildDefaultMcpServers(), larkProjectAgentServer];
-  const missing = [...defaultServers, imageServer, medicalEvidenceServer].filter((server) => !existingByName.has(server.name));
+  const missing = [
+    ...defaultServers,
+    imageServer,
+    medicalEvidenceServer,
+    researchEvidenceServer,
+    scienceArtifactServer,
+    labSkillServer,
+    userInputServer,
+  ].filter((server) => !hasExistingBuiltinServer(existingByName, server.name));
   let imageServerUpdated = false;
   let medicalEvidenceServerUpdated = false;
+  let researchEvidenceServerUpdated = false;
+  let scienceArtifactServerUpdated = false;
+  let labSkillServerUpdated = false;
+  let userInputServerUpdated = false;
 
   if (missing.length > 0) {
     await mcpService.batchImportServers.invoke({ servers: missing });
@@ -420,18 +708,43 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
     });
   }
 
-  const existingLarkProjectAgentServer = existingByName.get(BUILTIN_LARK_PROJECT_AGENT_NAME);
+  if (
+    existingImageServer &&
+    (existingImageServer.name !== BUILTIN_IMAGE_GEN_NAME ||
+      existingImageServer.builtin !== true ||
+      !existingImageServer.original_json ||
+      existingImageServer.original_json.trim() === '' ||
+      existingImageServer.original_json.trim() === '{}')
+  ) {
+    await mcpService.updateServer.invoke({
+      id: existingImageServer.id,
+      data: {
+        name: BUILTIN_IMAGE_GEN_NAME,
+        builtin: true,
+        original_json: buildOriginalJsonFromTransport({
+          ...existingImageServer,
+          name: BUILTIN_IMAGE_GEN_NAME,
+        }),
+      },
+    });
+    imageServerUpdated = true;
+  }
+
+  const existingLarkProjectAgentServer = findExistingBuiltinServer(existingByName, BUILTIN_LARK_PROJECT_AGENT_NAME);
   if (
     existingLarkProjectAgentServer &&
-    (existingLarkProjectAgentServer.builtin !== true ||
+    (existingLarkProjectAgentServer.name !== BUILTIN_LARK_PROJECT_AGENT_NAME ||
+      existingLarkProjectAgentServer.builtin !== true ||
       !existingLarkProjectAgentServer.original_json ||
       existingLarkProjectAgentServer.original_json.trim() === '' ||
       existingLarkProjectAgentServer.original_json.trim() === '{}' ||
+      existingLarkProjectAgentServer.original_json !== larkProjectAgentServer.original_json ||
       !isSameStdioTransport(existingLarkProjectAgentServer.transport, larkProjectAgentServer.transport))
   ) {
     await mcpService.updateServer.invoke({
       id: existingLarkProjectAgentServer.id,
       data: {
+        name: BUILTIN_LARK_PROJECT_AGENT_NAME,
         builtin: true,
         transport: larkProjectAgentServer.transport,
         original_json: larkProjectAgentServer.original_json,
@@ -439,9 +752,33 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
     });
   }
 
+  const existingUserInputServer = findExistingBuiltinServer(existingByName, BUILTIN_USER_INPUT_NAME);
+  if (
+    existingUserInputServer &&
+    (existingUserInputServer.name !== BUILTIN_USER_INPUT_NAME ||
+      existingUserInputServer.builtin !== true ||
+      !existingUserInputServer.original_json ||
+      existingUserInputServer.original_json.trim() === '' ||
+      existingUserInputServer.original_json.trim() === '{}' ||
+      existingUserInputServer.original_json !== userInputServer.original_json ||
+      !isSameStdioTransport(existingUserInputServer.transport, userInputServer.transport))
+  ) {
+    await mcpService.updateServer.invoke({
+      id: existingUserInputServer.id,
+      data: {
+        name: BUILTIN_USER_INPUT_NAME,
+        builtin: true,
+        transport: userInputServer.transport,
+        original_json: userInputServer.original_json,
+      },
+    });
+    userInputServerUpdated = true;
+  }
+
   if (
     existingMedicalEvidenceServer &&
-    (existingMedicalEvidenceServer.builtin !== true ||
+    (existingMedicalEvidenceServer.name !== BUILTIN_MEDICAL_EVIDENCE_NAME ||
+      existingMedicalEvidenceServer.builtin !== true ||
       !existingMedicalEvidenceServer.original_json ||
       existingMedicalEvidenceServer.original_json.trim() === '' ||
       existingMedicalEvidenceServer.original_json.trim() === '{}' ||
@@ -450,12 +787,77 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
     await mcpService.updateServer.invoke({
       id: existingMedicalEvidenceServer.id,
       data: {
+        name: BUILTIN_MEDICAL_EVIDENCE_NAME,
         builtin: true,
         transport: medicalEvidenceServer.transport,
         original_json: medicalEvidenceServer.original_json,
       },
     });
     medicalEvidenceServerUpdated = true;
+  }
+
+  if (
+    existingResearchEvidenceServer &&
+    (existingResearchEvidenceServer.name !== BUILTIN_RESEARCH_EVIDENCE_NAME ||
+      existingResearchEvidenceServer.builtin !== true ||
+      !existingResearchEvidenceServer.original_json ||
+      existingResearchEvidenceServer.original_json.trim() === '' ||
+      existingResearchEvidenceServer.original_json.trim() === '{}' ||
+      !isSameStdioTransport(existingResearchEvidenceServer.transport, researchEvidenceServer.transport))
+  ) {
+    await mcpService.updateServer.invoke({
+      id: existingResearchEvidenceServer.id,
+      data: {
+        name: BUILTIN_RESEARCH_EVIDENCE_NAME,
+        builtin: true,
+        transport: researchEvidenceServer.transport,
+        original_json: researchEvidenceServer.original_json,
+      },
+    });
+    researchEvidenceServerUpdated = true;
+  }
+
+  if (
+    existingScienceArtifactServer &&
+    (existingScienceArtifactServer.name !== BUILTIN_SCIENCE_ARTIFACT_NAME ||
+      existingScienceArtifactServer.builtin !== true ||
+      !existingScienceArtifactServer.original_json ||
+      existingScienceArtifactServer.original_json.trim() === '' ||
+      existingScienceArtifactServer.original_json.trim() === '{}' ||
+      !isSameStdioTransport(existingScienceArtifactServer.transport, scienceArtifactServer.transport))
+  ) {
+    await mcpService.updateServer.invoke({
+      id: existingScienceArtifactServer.id,
+      data: {
+        name: BUILTIN_SCIENCE_ARTIFACT_NAME,
+        builtin: true,
+        transport: scienceArtifactServer.transport,
+        original_json: scienceArtifactServer.original_json,
+      },
+    });
+    scienceArtifactServerUpdated = true;
+  }
+
+  if (
+    existingLabSkillServer &&
+    (existingLabSkillServer.name !== BUILTIN_LAB_SKILL_NAME ||
+      existingLabSkillServer.builtin !== true ||
+      !existingLabSkillServer.original_json ||
+      existingLabSkillServer.original_json.trim() === '' ||
+      existingLabSkillServer.original_json.trim() === '{}' ||
+      existingLabSkillServer.original_json !== labSkillServer.original_json ||
+      !isSameStdioTransport(existingLabSkillServer.transport, labSkillServer.transport))
+  ) {
+    await mcpService.updateServer.invoke({
+      id: existingLabSkillServer.id,
+      data: {
+        name: BUILTIN_LAB_SKILL_NAME,
+        builtin: true,
+        transport: labSkillServer.transport,
+        original_json: labSkillServer.original_json,
+      },
+    });
+    labSkillServerUpdated = true;
   }
 
   const refreshedServers = await mcpService.listServers.invoke();
@@ -503,6 +905,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
       await mcpService.updateServer.invoke({
         id: existingImageServer.id,
         data: {
+          name: BUILTIN_IMAGE_GEN_NAME,
           transport: updatedTransport,
           original_json,
         },
@@ -557,11 +960,110 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
       await mcpService.updateServer.invoke({
         id: existingMedicalEvidenceServer.id,
         data: {
+          name: BUILTIN_MEDICAL_EVIDENCE_NAME,
           transport: updatedTransport,
           original_json,
         },
       });
       medicalEvidenceServerUpdated = true;
+    }
+  }
+
+  if (
+    existingResearchEvidenceServer &&
+    existingResearchEvidenceServer.transport.type === 'stdio' &&
+    researchEvidenceServer.transport.type === 'stdio'
+  ) {
+    const mergedEnv = {
+      ...removeResearchEvidenceEnvKeys(existingResearchEvidenceServer.transport.env || {}),
+      ...researchEvidenceEnvResolution.env,
+    };
+    const updatedTransport = {
+      ...researchEvidenceServer.transport,
+      env: mergedEnv,
+    };
+    const original_json = JSON.stringify(
+      {
+        mcpServers: {
+          [BUILTIN_RESEARCH_EVIDENCE_NAME]: {
+            command: updatedTransport.command,
+            args: updatedTransport.args || [],
+            env: mergedEnv,
+          },
+        },
+      },
+      null,
+      2
+    );
+    const researchTransportChanged = !isSameStdioTransport(existingResearchEvidenceServer.transport, updatedTransport);
+    const researchOriginalJsonChanged = existingResearchEvidenceServer.original_json !== original_json;
+    const researchServerChanged = researchTransportChanged || researchOriginalJsonChanged;
+    console.info(
+      '[Migration] research evidence MCP bootstrap decision, server id: %s, transport changed: %s, json changed: %s, will update: %s',
+      existingResearchEvidenceServer.id,
+      researchTransportChanged ? 'yes' : 'no',
+      researchOriginalJsonChanged ? 'yes' : 'no',
+      researchServerChanged ? 'yes' : 'no'
+    );
+    if (researchServerChanged) {
+      await mcpService.updateServer.invoke({
+        id: existingResearchEvidenceServer.id,
+        data: {
+          name: BUILTIN_RESEARCH_EVIDENCE_NAME,
+          transport: updatedTransport,
+          original_json,
+        },
+      });
+      researchEvidenceServerUpdated = true;
+    }
+  }
+
+  if (
+    existingScienceArtifactServer &&
+    existingScienceArtifactServer.transport.type === 'stdio' &&
+    scienceArtifactServer.transport.type === 'stdio'
+  ) {
+    const mergedEnv = {
+      ...removeScienceArtifactEnvKeys(existingScienceArtifactServer.transport.env || {}),
+      ...scienceArtifactEnvResolution.env,
+    };
+    const updatedTransport = {
+      ...scienceArtifactServer.transport,
+      env: mergedEnv,
+    };
+    const original_json = JSON.stringify(
+      {
+        mcpServers: {
+          [BUILTIN_SCIENCE_ARTIFACT_NAME]: {
+            command: updatedTransport.command,
+            args: updatedTransport.args || [],
+            env: mergedEnv,
+          },
+        },
+      },
+      null,
+      2
+    );
+    const scienceTransportChanged = !isSameStdioTransport(existingScienceArtifactServer.transport, updatedTransport);
+    const scienceOriginalJsonChanged = existingScienceArtifactServer.original_json !== original_json;
+    const scienceServerChanged = scienceTransportChanged || scienceOriginalJsonChanged;
+    console.info(
+      '[Migration] science artifact MCP bootstrap decision, server id: %s, transport changed: %s, json changed: %s, will update: %s',
+      existingScienceArtifactServer.id,
+      scienceTransportChanged ? 'yes' : 'no',
+      scienceOriginalJsonChanged ? 'yes' : 'no',
+      scienceServerChanged ? 'yes' : 'no'
+    );
+    if (scienceServerChanged) {
+      await mcpService.updateServer.invoke({
+        id: existingScienceArtifactServer.id,
+        data: {
+          name: BUILTIN_SCIENCE_ARTIFACT_NAME,
+          transport: updatedTransport,
+          original_json,
+        },
+      });
+      scienceArtifactServerUpdated = true;
     }
   }
 
@@ -571,12 +1073,18 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   }
 
   console.info(
-    '[Migration] MCP bootstrap completed, imported %d missing defaults, updated image server: %s, updated medical evidence server: %s, image config source: %s, medical evidence config source: %s, image enabled: %s',
+    '[Migration] MCP bootstrap completed, imported %d missing defaults, updated image server: %s, updated medical evidence server: %s, updated research evidence server: %s, updated science artifact server: %s, updated lab skill server: %s, updated user input server: %s, image config source: %s, medical evidence config source: %s, research evidence config source: %s, science artifact config source: %s, image enabled: %s',
     missing.length,
     imageServerUpdated ? 'yes' : 'no',
     medicalEvidenceServerUpdated ? 'yes' : 'no',
+    researchEvidenceServerUpdated ? 'yes' : 'no',
+    scienceArtifactServerUpdated ? 'yes' : 'no',
+    labSkillServerUpdated ? 'yes' : 'no',
+    userInputServerUpdated ? 'yes' : 'no',
     imageConfigSource,
     medicalEvidenceConfigSource,
+    researchEvidenceConfigSource,
+    scienceArtifactConfigSource,
     imageConfig?.switch === true ? 'yes' : 'no'
   );
 }

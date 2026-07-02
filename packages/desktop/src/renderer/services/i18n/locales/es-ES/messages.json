@@ -203,5 +203,17 @@
       "listedTarget": "Listed {{target}}"
     },
     "progressLog": "Registro de progreso"
+  },
+  "codexMemory": {
+    "title": "Memoria de Codex",
+    "fallbackTitle": "Instantánea de memoria",
+    "marker": "Punto de memoria",
+    "markerWithNumber": "Memoria {{number}}",
+    "window": "Ventana {{number}}",
+    "line": "Línea {{number}}",
+    "loading": "Cargando instantánea de memoria...",
+    "empty": "Esta instantánea de memoria aún no está lista.",
+    "refresh": "Actualizar",
+    "copy": "Copiar"
   }
 }

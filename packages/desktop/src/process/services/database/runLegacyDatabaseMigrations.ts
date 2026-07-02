@@ -12,6 +12,7 @@ import {
   LEGACY_LOCAL_RUNTIME_NAME,
   legacyContainsLocalRuntime,
 } from '@/common/config/legacyIdentifiers';
+import { DEFAULT_CODEX_MODEL_ID } from '@/common/types/codex/codexModels';
 import { ensureDirectory, getDataPath } from '@process/utils';
 import type { ISqliteDriver } from '@process/services/database/drivers/ISqliteDriver';
 import { runMigrations } from '@process/services/database/migrations';
@@ -235,7 +236,7 @@ function migrateDeprecatedRuntimeRows(db: ISqliteDriver): number {
       const extra = normalizeDeprecatedRuntimeJson(row.extra, {
         backend: 'codex',
         provider_id: 'codex',
-        current_model_id: 'default',
+        current_model_id: DEFAULT_CODEX_MODEL_ID,
         session_mode: 'full-access',
       });
       const result = update.run(LEGACY_LOCAL_RUNTIME_ID, extra, `%${LEGACY_LOCAL_RUNTIME_ID}%`, now, row.id);

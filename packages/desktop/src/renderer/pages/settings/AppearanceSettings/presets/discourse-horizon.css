@@ -97,24 +97,23 @@
   --horizon-surface: #ffffff;
   --horizon-surface-soft: #f7f8fc;
   --horizon-selected: #d7dfff;
-  --horizon-focus-ring: rgba(89, 91, 202, 0.18);
+  --horizon-focus-ring: rgba(223, 168, 45, 0.12);
   --horizon-shadow-soft: 0 8px 24px -22px rgba(45, 52, 68, 0.22);
-  --horizon-shadow-hover: 0 16px 28px -24px rgba(89, 91, 202, 0.24);
+  --horizon-shadow-hover: 0 16px 28px -24px rgba(181, 132, 34, 0.14);
   --horizon-aurora-input-gradient: linear-gradient(
     90deg,
-    #ff6a01 0%,
-    #f8c91c 12.5%,
-    #8a2be2 25%,
-    #00bfff 37.5%,
-    #ff6a01 50%,
-    #f8c91c 62.5%,
-    #8a2be2 75%,
-    #00bfff 87.5%,
-    #ff6a01 100%
+    #c9932f 0%,
+    #f4cf6d 16%,
+    #fff0b8 28%,
+    #dca63d 42%,
+    #f6d980 56%,
+    #b8832c 72%,
+    #f1c75a 86%,
+    #c9932f 100%
   );
-  --horizon-aurora-input-ring: rgba(255, 162, 84, 0.24);
-  --horizon-aurora-input-shadow: 0 18px 40px rgba(110, 58, 102, 0.16), 0 0 28px rgba(15, 120, 135, 0.1);
-  --horizon-aurora-input-shadow-strong: 0 22px 48px rgba(110, 58, 102, 0.2), 0 0 34px rgba(0, 191, 255, 0.18);
+  --horizon-aurora-input-ring: rgba(238, 194, 82, 0.16);
+  --horizon-aurora-input-shadow: 0 18px 40px rgba(181, 132, 34, 0.08), 0 0 28px rgba(238, 194, 82, 0.1);
+  --horizon-aurora-input-shadow-strong: 0 22px 48px rgba(181, 132, 34, 0.12), 0 0 34px rgba(245, 211, 108, 0.14);
   --horizon-aurora-placeholder: #8f7c7b;
 }
 
@@ -213,24 +212,23 @@
   --horizon-surface: #1c1d22;
   --horizon-surface-soft: #22242d;
   --horizon-selected: #3b3e56;
-  --horizon-focus-ring: rgba(123, 127, 240, 0.22);
+  --horizon-focus-ring: rgba(214, 168, 72, 0.15);
   --horizon-shadow-soft: 0 12px 28px -24px rgba(0, 0, 0, 0.45);
   --horizon-shadow-hover: 0 18px 32px -24px rgba(0, 0, 0, 0.58);
   --horizon-aurora-input-gradient: linear-gradient(
     90deg,
-    #ff6a01 0%,
-    #f8c91c 12.5%,
-    #8a2be2 25%,
-    #00bfff 37.5%,
-    #ff6a01 50%,
-    #f8c91c 62.5%,
-    #8a2be2 75%,
-    #00bfff 87.5%,
-    #ff6a01 100%
+    #9c742a 0%,
+    #d4a947 16%,
+    #ffe29a 28%,
+    #b98b31 42%,
+    #e5bb5a 56%,
+    #8d6926 72%,
+    #d7aa48 86%,
+    #9c742a 100%
   );
-  --horizon-aurora-input-ring: rgba(166, 214, 255, 0.22);
-  --horizon-aurora-input-shadow: 0 22px 48px rgba(6, 10, 18, 0.5), 0 0 32px rgba(138, 43, 226, 0.16);
-  --horizon-aurora-input-shadow-strong: 0 26px 54px rgba(4, 8, 16, 0.62), 0 0 38px rgba(0, 191, 255, 0.22);
+  --horizon-aurora-input-ring: rgba(238, 194, 82, 0.16);
+  --horizon-aurora-input-shadow: 0 22px 48px rgba(6, 10, 18, 0.5), 0 0 32px rgba(214, 168, 72, 0.11);
+  --horizon-aurora-input-shadow-strong: 0 26px 54px rgba(4, 8, 16, 0.62), 0 0 38px rgba(245, 211, 108, 0.12);
   --horizon-aurora-placeholder: #958a83;
 }
 
@@ -704,9 +702,9 @@ body {
   background-clip: padding-box, border-box !important;
   box-shadow:
     0 0 0 1px var(--horizon-aurora-input-ring),
-    0 0 16px rgba(255, 106, 1, 0.1),
-    0 0 18px rgba(138, 43, 226, 0.1),
-    0 0 20px rgba(0, 191, 255, 0.12),
+    0 0 20px rgba(245, 211, 108, 0.08),
+    0 0 28px rgba(223, 168, 45, 0.07),
+    0 0 34px rgba(181, 132, 34, 0.05),
     var(--horizon-aurora-input-shadow) !important;
   animation:
     horizonAuroraFlow 2.8s linear infinite,
@@ -1503,18 +1501,18 @@ body {
   100% {
     box-shadow:
       0 0 0 1px var(--horizon-aurora-input-ring),
-      0 0 16px rgba(255, 106, 1, 0.1),
-      0 0 18px rgba(138, 43, 226, 0.1),
-      0 0 20px rgba(0, 191, 255, 0.12),
+      0 0 20px rgba(245, 211, 108, 0.08),
+      0 0 28px rgba(223, 168, 45, 0.07),
+      0 0 34px rgba(181, 132, 34, 0.05),
       var(--horizon-aurora-input-shadow);
   }
 
   50% {
     box-shadow:
       0 0 0 1px color-mix(in srgb, #f8c91c 30%, transparent),
-      0 0 18px rgba(255, 106, 1, 0.14),
-      0 0 22px rgba(138, 43, 226, 0.14),
-      0 0 24px rgba(0, 191, 255, 0.18),
+      0 0 24px rgba(245, 211, 108, 0.11),
+      0 0 34px rgba(223, 168, 45, 0.09),
+      0 0 42px rgba(181, 132, 34, 0.07),
       var(--horizon-aurora-input-shadow-strong);
   }
 }

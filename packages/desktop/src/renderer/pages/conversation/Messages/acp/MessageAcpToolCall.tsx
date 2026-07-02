@@ -46,7 +46,7 @@ const DiffContentView: React.FC<{ old_text: string; new_text: string; path: stri
     [display_name, old_text, new_text]
   );
   const fileInfo = useMemo(() => parseDiff(formattedDiff, display_name), [formattedDiff, display_name]);
-  const { handleFileClick, handleDiffClick } = useDiffPreviewHandlers({
+  const { handleDiffClick } = useDiffPreviewHandlers({
     diffText: formattedDiff,
     display_name,
     file_path: path || display_name,
@@ -56,7 +56,7 @@ const DiffContentView: React.FC<{ old_text: string; new_text: string; path: stri
     <FileChangesPanel
       title={display_name}
       files={[fileInfo]}
-      onFileClick={handleFileClick}
+      onFileClick={handleDiffClick}
       onDiffClick={handleDiffClick}
       defaultExpanded={true}
     />

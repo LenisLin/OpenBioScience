@@ -5,6 +5,24 @@
  */
 
 import type { IConversationArtifact } from '@/common/adapter/ipcBridge';
+import { ipcBridge } from '@/common';
+import type { CodexMemoryDetail, CodexMemoryRecord } from '@/deepscientist_lark/codex_memory/types';
+import type { MedicalEvidenceReportRecord } from '@/deepscientist_lark/medical_evidence_reports/types';
+import {
+  latestMedicalEvidencePanel,
+  summarizeMedicalEvidenceRuntime,
+  type MedicalEvidencePanelData,
+  type MedicalEvidenceRuntimeSummary,
+} from '@/common/chat/medicalEvidence';
+import { latestLabSkillDepositionPanel, type LabSkillDepositionPanelData } from '@/common/chat/labSkillDeposition';
+import {
+  extractSciencePayloadsFromTools,
+  latestSciencePanel,
+  resolveScienceDisplayTarget,
+  type ScienceDisplayTarget,
+  type SciencePanelData,
+} from '@/common/chat/science';
+import { extractUserInputResultsFromTools } from '@/common/chat/userInput';
 import type {
   IMessageAcpToolCall,
   IMessageText,
@@ -18,6 +36,7 @@ import { iconColors } from '@/renderer/styles/colors';
 import { CHAT_MESSAGE_JUMP_EVENT, type ChatMessageJumpDetail } from '@/renderer/utils/chat/chatMinimapEvents';
 import { Image } from '@arco-design/web-react';
 import { Down } from '@icon-park/react';
+import type { TFunction } from 'i18next';
 import MessageAcpPermission from '@renderer/pages/conversation/Messages/acp/MessageAcpPermission';
 import MessagePermission from './components/MessagePermission';
 import MessageAcpToolCall from '@renderer/pages/conversation/Messages/acp/MessageAcpToolCall';
@@ -43,11 +62,20 @@ import AgentSteps from './agent-steps/AgentSteps';
 import MessageCronTrigger from './components/MessageCronTrigger';
 import MessageSkillSuggest from './components/MessageSkillSuggest';
 import MessageText from './components/MessageText';
+import { MedicalEvidenceAccumulator, MedicalEvidencePanel } from './components/MedicalEvidencePanel';
+import LabSkillDepositionPanel from './components/LabSkillDepositionPanel';
+import ScienceReportPanel from './components/ScienceReportPanel';
+import UserInputSummary from '../user-input/UserInputSummary';
 import MessageThinking from './components/MessageThinking';
+import CodexMemoryModal from './components/CodexMemoryModal';
 import { useAutoScroll } from './useAutoScroll';
 import { useAutoPreviewOfficeFiles } from '@/renderer/hooks/file/useAutoPreviewOfficeFiles';
+import { useLocalFilePreview } from '@/renderer/pages/conversation/Preview/hooks/useLocalFilePreview';
+import { usePreviewContext } from '@/renderer/pages/conversation/Preview';
 import SelectionReplyButton from './components/SelectionReplyButton';
 import { isCodexConversationRuntime } from '@/renderer/pages/conversation/utils/agentBackend';
+
+const AGENT_MESSAGE_BACKGROUND_COLOR = 'rgb(254, 254, 254)';
 
 type IToolSummaryVO = {
   type: 'tool_summary';
@@ -74,8 +102,15 @@ type ICodexProcessGroupVO = {
   sourceMessageIds: string[];
   created_at: number;
   hasRunningSteps: boolean;
+  liveRunning: boolean;
 };
-type IRenderableItem = IProcessedItem | ICodexProcessGroupVO;
+type ICodexMemoryMarkerVO = {
+  type: 'codex_memory_marker';
+  id: string;
+  memory: CodexMemoryRecord;
+  created_at: number;
+};
+type IRenderableItem = IProcessedItem | ICodexProcessGroupVO | ICodexMemoryMarkerVO;
 
 type ConversationLocationState = {
   targetMessageId?: string;
@@ -85,6 +120,9 @@ type ConversationLocationState = {
 const getProcessedItemSourceMessageIds = (item: IRenderableItem): string[] => {
   if ('type' in item && item.type === 'codex_process_group') {
     return item.sourceMessageIds;
+  }
+  if ('type' in item && item.type === 'codex_memory_marker') {
+    return [];
   }
   if ('type' in item && item.type === 'artifact') {
     return [item.id];
@@ -111,13 +149,25 @@ const getProcessedItemAnchorId = (item: IRenderableItem): string => {
 };
 
 const getProcessedItemElementAnchorId = (item: IRenderableItem): string =>
-  'type' in item && item.type === 'codex_process_group' ? item.id : getProcessedItemAnchorId(item);
+  'type' in item && (item.type === 'codex_process_group' || item.type === 'codex_memory_marker')
+    ? item.id
+    : getProcessedItemAnchorId(item);
 
 const getProcessedItemCreatedAt = (item: IProcessedItem): number => {
   if ('type' in item && ['file_summary', 'tool_summary', 'artifact'].includes(item.type)) {
     return item.created_at;
   }
   return item.created_at ?? 0;
+};
+
+const getRenderableItemCreatedAt = (item: IRenderableItem): number => {
+  if ('type' in item && item.type === 'codex_process_group') {
+    return item.created_at;
+  }
+  if ('type' in item && item.type === 'codex_memory_marker') {
+    return item.created_at;
+  }
+  return getProcessedItemCreatedAt(item);
 };
 
 const highlightStyle: React.CSSProperties = {
@@ -130,6 +180,34 @@ const getUnhandledMessageType = (_message: never): string => 'unknown';
 
 const isToolMessage = (message: TMessage): message is IMessageToolGroup | IMessageAcpToolCall | IMessageToolCall =>
   message.type === 'tool_group' || message.type === 'acp_tool_call' || message.type === 'tool_call';
+
+const getRenderableItemStableId = (item: IRenderableItem): string =>
+  'id' in item ? item.id : getProcessedItemAnchorId(item);
+
+const getRenderableItemToolMessages = (
+  item: IRenderableItem
+): Array<IMessageToolGroup | IMessageAcpToolCall | IMessageToolCall> => {
+  if ('type' in item && item.type === 'tool_summary') return item.messages;
+  if ('type' in item && item.type === 'codex_process_group') {
+    return item.items.flatMap((child) => (child.type === 'tool_summary' ? child.messages : []));
+  }
+  return [];
+};
+
+const getMedicalEvidencePanelKey = (panel: MedicalEvidencePanelData): string =>
+  `${panel.schema}:${panel.runId}:${panel.generatedAt ?? ''}:${panel.evidence.length}:${panel.report?.sections?.length ?? 0}`;
+
+const getSciencePanelKey = (panel: SciencePanelData): string =>
+  `${panel.schema}:${panel.runId}:${panel.generatedAt ?? ''}:${panel.artifacts.length}:${panel.evidence.length}:${panel.report.sections.length}`;
+
+const getLabSkillDepositionPanelKey = (panel: LabSkillDepositionPanelData): string =>
+  `${panel.schema}:${panel.sessionId}:${panel.generatedAt ?? ''}:${panel.sources.length}:${panel.claims?.length ?? 0}:${panel.report.sections.length}`;
+
+const getStoredMedicalEvidencePanelKey = (
+  panel: MedicalEvidencePanelData,
+  textMessageId?: string,
+  sourceMessageId?: string
+): string => `${textMessageId ?? ''}:${sourceMessageId ?? ''}:${getMedicalEvidencePanelKey(panel)}`;
 
 const isEmptyAssistantText = (message: TMessage): boolean =>
   message.type === 'text' && message.position === 'left' && !message.content.content.trim();
@@ -173,10 +251,7 @@ const inferCodexFinalTextIds = (items: IProcessedItem[], isProcessing: boolean):
 };
 
 const isAssistantFinalTextItem = (item: IProcessedItem, finalTextIds: Set<string>): item is IMessageText =>
-  isAssistantTextItem(item) &&
-  item.type === 'text' &&
-  item.position === 'left' &&
-  finalTextIds.has(item.id);
+  isAssistantTextItem(item) && item.type === 'text' && item.position === 'left' && finalTextIds.has(item.id);
 
 const isCodexProcessItem = (item: IProcessedItem, finalTextIds: Set<string>): boolean => {
   if ('type' in item && item.type === 'tool_summary') return item.messages.length > 0;
@@ -187,16 +262,53 @@ const isCodexProcessItem = (item: IProcessedItem, finalTextIds: Set<string>): bo
   return item.type === 'thinking' || item.type === 'plan';
 };
 
-const formatCodexProcessDuration = (durationMs: number): string | undefined => {
-  const totalSeconds = Math.max(0, Math.floor(durationMs / 1000));
-  if (totalSeconds === 0) return undefined;
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  if (minutes > 0) return `${minutes}分 ${String(seconds).padStart(2, '0')}秒`;
-  return `${seconds}秒`;
+const useLiveNow = (active: boolean): number => {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!active) return undefined;
+    setNow(Date.now());
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [active]);
+
+  return now;
 };
 
-const getCodexProcessGroupDurationLabel = (items: IProcessedItem[], liveRunning: boolean): string | undefined => {
+const padDurationUnit = (value: number): string => String(value).padStart(2, '0');
+
+const formatCodexProcessDuration = (durationMs: number, t: TFunction): string | undefined => {
+  const totalSeconds = Math.max(0, Math.floor(durationMs / 1000));
+  if (totalSeconds === 0) return undefined;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const separator = t('messages.agentSteps.duration.separator', { defaultValue: ' ' });
+  const unit = (key: string, value: string | number, suffix: string) =>
+    t(key, { value, defaultValue: `${value}${suffix}` });
+  if (hours > 0) {
+    return [
+      unit('messages.agentSteps.duration.hour', hours, 'h'),
+      unit('messages.agentSteps.duration.minute', padDurationUnit(minutes), 'm'),
+      unit('messages.agentSteps.duration.second', padDurationUnit(seconds), 's'),
+    ].join(separator);
+  }
+  if (minutes > 0) {
+    return [
+      unit('messages.agentSteps.duration.minute', minutes, 'm'),
+      unit('messages.agentSteps.duration.second', padDurationUnit(seconds), 's'),
+    ].join(separator);
+  }
+  return unit('messages.agentSteps.duration.second', seconds, 's');
+};
+
+const getCodexProcessGroupDurationLabel = (
+  items: IProcessedItem[],
+  liveRunning: boolean,
+  now: number,
+  t: TFunction,
+  liveStartedAt?: number | null
+): string | undefined => {
   const times = items
     .flatMap((item) => {
       if ('type' in item && item.type === 'tool_summary') {
@@ -207,9 +319,10 @@ const getCodexProcessGroupDurationLabel = (items: IProcessedItem[], liveRunning:
     .filter((value): value is number => typeof value === 'number');
 
   if (!times.length) return undefined;
-  const startTime = Math.min(...times);
-  const endTime = liveRunning ? Date.now() : Math.max(...times);
-  return formatCodexProcessDuration(endTime - startTime);
+  const startTime =
+    liveRunning && liveStartedAt !== null && liveStartedAt !== undefined ? liveStartedAt : Math.min(...times);
+  const endTime = liveRunning ? now : Math.max(...times);
+  return formatCodexProcessDuration(endTime - startTime, t);
 };
 
 const groupCodexProcessItems = (items: IProcessedItem[], isProcessing: boolean): IRenderableItem[] => {
@@ -227,6 +340,7 @@ const groupCodexProcessItems = (items: IProcessedItem[], isProcessing: boolean):
       sourceMessageIds: sourceIds,
       created_at: pending[0].created_at ?? 0,
       hasRunningSteps: pending.some((item) => item.type === 'tool_summary' && item.hasRunningSteps),
+      liveRunning: false,
     });
     pending = [];
   };
@@ -257,7 +371,39 @@ const groupCodexProcessItems = (items: IProcessedItem[], isProcessing: boolean):
   }
 
   flush();
+  if (isProcessing) {
+    const latestRightMessageIndex = result.findLastIndex(
+      (item) =>
+        !('type' in item && (item.type === 'codex_process_group' || item.type === 'codex_memory_marker')) &&
+        isMessageItem(item) &&
+        item.position === 'right'
+    );
+    const latestProcessGroupIndex = result.findLastIndex(
+      (item) => 'type' in item && item.type === 'codex_process_group'
+    );
+    if (latestProcessGroupIndex > latestRightMessageIndex) {
+      const latestProcessGroup = result[latestProcessGroupIndex] as ICodexProcessGroupVO;
+      latestProcessGroup.liveRunning = true;
+      latestProcessGroup.hasRunningSteps = true;
+    }
+  }
   return result;
+};
+
+const getCodexMemoryCreatedAt = (memory: CodexMemoryRecord): number => {
+  const parsed = Date.parse(memory.timestamp);
+  return Number.isFinite(parsed) ? parsed : (memory.generatedAt ?? 0);
+};
+
+const mergeCodexMemoryMarkers = (items: IRenderableItem[], memories: CodexMemoryRecord[]): IRenderableItem[] => {
+  if (!memories.length) return items;
+  const markers: ICodexMemoryMarkerVO[] = memories.map((memory) => ({
+    type: 'codex_memory_marker',
+    id: `codex-memory-${memory.id}`,
+    memory,
+    created_at: getCodexMemoryCreatedAt(memory),
+  }));
+  return [...items, ...markers].toSorted((a, b) => getRenderableItemCreatedAt(a) - getRenderableItemCreatedAt(b));
 };
 
 const visibleConversationArtifacts = (artifacts: IConversationArtifact[]): IArtifactVO[] =>
@@ -382,6 +528,8 @@ const MessageItem: React.FC<{
   highlighted?: boolean;
   showCopyRow?: boolean;
   resultFileChanges?: FileChangeInfo[];
+  resultMedicalEvidencePanel?: MedicalEvidencePanelData;
+  hideMedicalEvidenceText?: boolean;
 }> = React.memo(
   HOC((props) => {
     const { message, highlighted } = props as { message: TMessage; highlighted?: boolean };
@@ -410,11 +558,15 @@ const MessageItem: React.FC<{
       message,
       showCopyRow,
       resultFileChanges,
+      resultMedicalEvidencePanel,
+      hideMedicalEvidenceText,
     }: {
       message: TMessage;
       highlighted?: boolean;
       showCopyRow?: boolean;
       resultFileChanges?: FileChangeInfo[];
+      resultMedicalEvidencePanel?: MedicalEvidencePanelData;
+      hideMedicalEvidenceText?: boolean;
     }) => {
       const { t } = useTranslation();
       switch (message.type) {
@@ -424,6 +576,8 @@ const MessageItem: React.FC<{
               message={message}
               showCopyRow={showCopyRow}
               resultFileChanges={resultFileChanges}
+              resultMedicalEvidencePanel={resultMedicalEvidencePanel}
+              hideMedicalEvidenceText={hideMedicalEvidenceText}
             ></MessageText>
           );
         case 'tips':
@@ -458,16 +612,53 @@ const MessageItem: React.FC<{
     prev.message.type === next.message.type &&
     prev.highlighted === next.highlighted &&
     prev.showCopyRow === next.showCopyRow &&
-    prev.resultFileChanges === next.resultFileChanges
+    prev.resultFileChanges === next.resultFileChanges &&
+    prev.resultMedicalEvidencePanel === next.resultMedicalEvidencePanel &&
+    prev.hideMedicalEvidenceText === next.hideMedicalEvidenceText
 );
 
 const CodexProcessGroup: React.FC<{
   group: ICodexProcessGroupVO;
   renderChild: (index: number, item: IProcessedItem) => React.ReactNode;
-}> = ({ group, renderChild }) => {
-  const [expanded, setExpanded] = useState(false);
-  const durationLabel = getCodexProcessGroupDurationLabel(group.items, group.hasRunningSteps);
-  const processedLabel = durationLabel ? `已处理 ${durationLabel}` : '已处理';
+  activeStartedAt: number | null;
+}> = ({ group, renderChild, activeStartedAt }) => {
+  const { t } = useTranslation();
+  const userInputResults = useMemo(() => {
+    const toolMessages = group.items.flatMap((item) => (item.type === 'tool_summary' ? item.messages : []));
+    return extractUserInputResultsFromTools(toolMessages);
+  }, [group.items]);
+  const liveNow = useLiveNow(group.liveRunning);
+  const [expanded, setExpanded] = useState(group.liveRunning);
+  const wasLiveRunningRef = useRef(group.liveRunning);
+  useEffect(() => {
+    if (group.liveRunning) {
+      setExpanded(true);
+    } else if (wasLiveRunningRef.current) {
+      setExpanded(false);
+    }
+    wasLiveRunningRef.current = group.liveRunning;
+  }, [group.liveRunning]);
+  const durationLabel = getCodexProcessGroupDurationLabel(group.items, group.liveRunning, liveNow, t, activeStartedAt);
+  const processedLabel = durationLabel
+    ? [
+        group.liveRunning ? t('messages.agentSteps.summary.working', { defaultValue: '正在处理' }) : undefined,
+        t('messages.agentSteps.processedDuration', {
+          duration: durationLabel,
+          defaultValue: `已处理 ${durationLabel}`,
+        }),
+      ]
+        .filter((value): value is string => Boolean(value))
+        .join(' · ')
+    : group.liveRunning
+      ? t('messages.agentSteps.summary.working', { defaultValue: '正在处理' })
+      : t('messages.agentSteps.processedDuration', { duration: '', defaultValue: '已处理' }).trim();
+  const evidenceSummary = useMemo<MedicalEvidenceRuntimeSummary | undefined>(() => {
+    const toolMessages = group.items.flatMap((item) => (item.type === 'tool_summary' ? item.messages : []));
+    return summarizeMedicalEvidenceRuntime(toolMessages);
+  }, [group.items]);
+  const showEvidenceAccumulator = Boolean(
+    group.liveRunning && evidenceSummary && evidenceSummary.processEventCount > 0
+  );
 
   return (
     <div
@@ -478,16 +669,23 @@ const CodexProcessGroup: React.FC<{
     >
       <button
         type='button'
-        className={classNames('codex-process-group__toggle', group.hasRunningSteps && 'codex-process-group__toggle--running')}
+        className={classNames(
+          'codex-process-group__toggle',
+          group.liveRunning && 'codex-process-group__toggle--running'
+        )}
         aria-expanded={expanded}
         onClick={() => setExpanded((value) => !value)}
       >
         <span className='codex-process-group__label'>{processedLabel}</span>
+        {showEvidenceAccumulator ? (
+          <MedicalEvidenceAccumulator summary={evidenceSummary} running={group.liveRunning} />
+        ) : null}
         <span className='codex-process-group__chevron'>{expanded ? '⌄' : '›'}</span>
         <span className='codex-process-group__rule' />
       </button>
       {expanded && (
         <div className='codex-process-group__body'>
+          {userInputResults.length > 0 ? <UserInputSummary results={userInputResults} /> : null}
           {group.items.map((item, index) => (
             <React.Fragment key={getProcessedItemAnchorId(item) || `${group.id}-${index}`}>
               {renderChild(index, item)}
@@ -499,11 +697,44 @@ const CodexProcessGroup: React.FC<{
   );
 };
 
+const CodexMemoryDivider: React.FC<{
+  marker: ICodexMemoryMarkerVO;
+  onOpen: (memory: CodexMemoryRecord) => void;
+}> = ({ marker, onOpen }) => {
+  const { t } = useTranslation();
+  const label =
+    marker.memory.windowNumber > 0
+      ? t('messages.codexMemory.markerWithNumber', { number: marker.memory.windowNumber })
+      : t('messages.codexMemory.marker');
+  return (
+    <div
+      id={`message-${marker.id}`}
+      className='context-compacted-divider max-w-full md:max-w-780px mx-auto'
+      data-testid='codex-memory-divider'
+    >
+      <span className='context-compacted-divider__line' />
+      <button
+        type='button'
+        className='context-compacted-divider__label context-compacted-divider__button'
+        onClick={() => onOpen(marker.memory)}
+        title={marker.memory.title}
+      >
+        <span className='context-compacted-divider__dot' />
+        <span>{label}</span>
+        <span className='context-compacted-divider__title'>{marker.memory.title}</span>
+      </button>
+      <span className='context-compacted-divider__line' />
+    </div>
+  );
+};
+
 const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }> = ({ emptySlot }) => {
   const list = useMessageList();
   const isMessageListLoading = useMessageListLoading();
   const artifacts = useConversationArtifacts();
   const conversationContext = useConversationContextSafe();
+  const openLocalFilePreview = useLocalFilePreview(conversationContext?.workspace);
+  const { openPreview } = usePreviewContext();
   useAutoPreviewOfficeFiles(conversationContext);
   // While the agent is still streaming, the in-progress turn's last text keeps
   // moving down, so we defer its copy/timestamp row until the turn finishes to
@@ -517,6 +748,91 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | undefined>();
   const handledTargetKeyRef = useRef<string>('');
   const isCodexRuntime = isCodexConversationRuntime(conversationContext);
+  const [codexMemories, setCodexMemories] = useState<CodexMemoryRecord[]>([]);
+  const [selectedMemory, setSelectedMemory] = useState<CodexMemoryRecord | undefined>();
+  const [selectedMemoryDetail, setSelectedMemoryDetail] = useState<CodexMemoryDetail | undefined>();
+  const [memoryDetailLoading, setMemoryDetailLoading] = useState(false);
+  const [medicalEvidenceReports, setMedicalEvidenceReports] = useState<MedicalEvidenceReportRecord[]>([]);
+  const handledScienceDisplayKeysRef = useRef<Set<string> | null>(null);
+
+  const loadCodexMemories = React.useCallback(async (): Promise<void> => {
+    if (!isCodexRuntime || !conversationContext?.conversation_id) {
+      setCodexMemories([]);
+      return;
+    }
+    const result = await ipcBridge.codexMemory.list.invoke({ conversationId: conversationContext.conversation_id });
+    if (result.ok) setCodexMemories(result.memories);
+  }, [conversationContext?.conversation_id, isCodexRuntime]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!isCodexRuntime || !conversationContext?.conversation_id) {
+      setCodexMemories([]);
+      return;
+    }
+    loadCodexMemories().catch(() => {});
+    const disposeChanged = ipcBridge.codexMemory.changed.on((event) => {
+      if (event.conversationId !== conversationContext.conversation_id || cancelled) return;
+      loadCodexMemories().catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+      disposeChanged();
+    };
+  }, [conversationContext?.conversation_id, isCodexRuntime, loadCodexMemories]);
+
+  const loadMedicalEvidenceReports = React.useCallback(async (): Promise<void> => {
+    if (!conversationContext?.conversation_id) {
+      setMedicalEvidenceReports([]);
+      return;
+    }
+    const result = await ipcBridge.medicalEvidenceReports.list.invoke({
+      conversationId: conversationContext.conversation_id,
+    });
+    if (result.ok) setMedicalEvidenceReports(result.reports);
+  }, [conversationContext?.conversation_id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const conversationId = conversationContext?.conversation_id;
+    if (!conversationId) {
+      setMedicalEvidenceReports([]);
+      return;
+    }
+    ipcBridge.medicalEvidenceReports.list
+      .invoke({ conversationId })
+      .then((result) => {
+        if (!cancelled && result.ok) setMedicalEvidenceReports(result.reports);
+      })
+      .catch(() => {});
+    const disposeChanged = ipcBridge.medicalEvidenceReports.changed.on((event) => {
+      if (event.conversationId !== conversationId || cancelled) return;
+      loadMedicalEvidenceReports().catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+      disposeChanged();
+    };
+  }, [conversationContext?.conversation_id, loadMedicalEvidenceReports]);
+
+  const openCodexMemory = React.useCallback(
+    async (memory: CodexMemoryRecord) => {
+      if (!conversationContext?.conversation_id) return;
+      setSelectedMemory(memory);
+      setSelectedMemoryDetail(undefined);
+      setMemoryDetailLoading(true);
+      try {
+        const detail = await ipcBridge.codexMemory.get.invoke({
+          conversationId: conversationContext.conversation_id,
+          memoryId: memory.id,
+        });
+        setSelectedMemoryDetail(detail);
+      } finally {
+        setMemoryDetailLoading(false);
+      }
+    },
+    [conversationContext?.conversation_id]
+  );
 
   // Pre-process message list to group tool outputs into summary cards
   const processedList = useMemo(() => {
@@ -579,8 +895,11 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
   }, [processedList]);
 
   const renderableList = useMemo(
-    () => (isCodexRuntime ? groupCodexProcessItems(processedList, isProcessing) : processedList),
-    [isCodexRuntime, isProcessing, processedList]
+    () =>
+      isCodexRuntime
+        ? mergeCodexMemoryMarkers(groupCodexProcessItems(processedList, isProcessing), codexMemories)
+        : processedList,
+    [codexMemories, isCodexRuntime, isProcessing, processedList]
   );
 
   const resultFileChangesByTextId = useMemo(() => {
@@ -619,6 +938,288 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
 
     return changesByTextId;
   }, [list]);
+
+  const resultMedicalEvidencePanelByTextId = useMemo(() => {
+    const panelsByTextId = new Map<string, MedicalEvidencePanelData>();
+    let turnToolMessages: Array<IMessageToolGroup | IMessageAcpToolCall | IMessageToolCall> = [];
+    let turnAssistantTextIds: string[] = [];
+
+    const flush = () => {
+      const targetTextId = turnAssistantTextIds.at(-1);
+      if (!targetTextId || turnToolMessages.length === 0) {
+        turnToolMessages = [];
+        turnAssistantTextIds = [];
+        return;
+      }
+      const panel = latestMedicalEvidencePanel(turnToolMessages);
+      if (panel) {
+        panelsByTextId.set(targetTextId, panel);
+      }
+      turnToolMessages = [];
+      turnAssistantTextIds = [];
+    };
+
+    for (const message of list) {
+      if (message.hidden || message.type === 'available_commands') continue;
+      if (message.position === 'right') {
+        flush();
+        continue;
+      }
+      if (isToolMessage(message)) {
+        turnToolMessages.push(message);
+        continue;
+      }
+      if (message.type === 'text' && message.position === 'left' && message.content.content.trim()) {
+        turnAssistantTextIds.push(message.id);
+      }
+    }
+    flush();
+
+    for (const report of medicalEvidenceReports) {
+      if (!report.textMessageId) continue;
+      if (!panelsByTextId.has(report.textMessageId)) {
+        panelsByTextId.set(report.textMessageId, report.panel);
+      }
+    }
+
+    return panelsByTextId;
+  }, [list, medicalEvidenceReports]);
+
+  const medicalEvidencePanelByRenderableItemId = useMemo(() => {
+    const panelsByItemId = new Map<string, MedicalEvidencePanelData>();
+    const renderedPanelKeys = new Set(
+      Array.from(resultMedicalEvidencePanelByTextId.values()).map(getMedicalEvidencePanelKey)
+    );
+    for (const item of renderableList) {
+      const toolMessages = getRenderableItemToolMessages(item);
+      if (!toolMessages.length) continue;
+      const panel = latestMedicalEvidencePanel(toolMessages);
+      if (panel && !renderedPanelKeys.has(getMedicalEvidencePanelKey(panel))) {
+        panelsByItemId.set(getRenderableItemStableId(item), panel);
+        renderedPanelKeys.add(getMedicalEvidencePanelKey(panel));
+      }
+    }
+    for (const report of medicalEvidenceReports) {
+      if (!report.sourceMessageId) continue;
+      const panelKey = getMedicalEvidencePanelKey(report.panel);
+      if (renderedPanelKeys.has(panelKey)) continue;
+      panelsByItemId.set(report.sourceMessageId, report.panel);
+      renderedPanelKeys.add(panelKey);
+    }
+    return panelsByItemId;
+  }, [medicalEvidenceReports, renderableList, resultMedicalEvidencePanelByTextId]);
+
+  const resultLabSkillDepositionPanelByTextId = useMemo(() => {
+    const panelsByTextId = new Map<string, LabSkillDepositionPanelData>();
+    let turnToolMessages: Array<IMessageToolGroup | IMessageAcpToolCall | IMessageToolCall> = [];
+    let turnAssistantTextIds: string[] = [];
+
+    const flush = () => {
+      const targetTextId = turnAssistantTextIds.at(-1);
+      if (!targetTextId || turnToolMessages.length === 0) {
+        turnToolMessages = [];
+        turnAssistantTextIds = [];
+        return;
+      }
+      const panel = latestLabSkillDepositionPanel(turnToolMessages);
+      if (panel) {
+        panelsByTextId.set(targetTextId, panel);
+      }
+      turnToolMessages = [];
+      turnAssistantTextIds = [];
+    };
+
+    for (const message of list) {
+      if (message.hidden || message.type === 'available_commands') continue;
+      if (message.position === 'right') {
+        flush();
+        continue;
+      }
+      if (isToolMessage(message)) {
+        turnToolMessages.push(message);
+        continue;
+      }
+      if (message.type === 'text' && message.position === 'left' && message.content.content.trim()) {
+        turnAssistantTextIds.push(message.id);
+      }
+    }
+    flush();
+
+    return panelsByTextId;
+  }, [list]);
+
+  const labSkillDepositionPanelByRenderableItemId = useMemo(() => {
+    const panelsByItemId = new Map<string, LabSkillDepositionPanelData>();
+    const renderedPanelKeys = new Set(
+      Array.from(resultLabSkillDepositionPanelByTextId.values()).map(getLabSkillDepositionPanelKey)
+    );
+    for (const item of renderableList) {
+      const toolMessages = getRenderableItemToolMessages(item);
+      if (!toolMessages.length) continue;
+      const panel = latestLabSkillDepositionPanel(toolMessages);
+      if (panel && !renderedPanelKeys.has(getLabSkillDepositionPanelKey(panel))) {
+        panelsByItemId.set(getRenderableItemStableId(item), panel);
+        renderedPanelKeys.add(getLabSkillDepositionPanelKey(panel));
+      }
+    }
+    return panelsByItemId;
+  }, [renderableList, resultLabSkillDepositionPanelByTextId]);
+
+  const resultSciencePanelByTextId = useMemo(() => {
+    const panelsByTextId = new Map<string, SciencePanelData>();
+    let turnToolMessages: Array<IMessageToolGroup | IMessageAcpToolCall | IMessageToolCall> = [];
+    let turnAssistantTextIds: string[] = [];
+
+    const flush = () => {
+      const targetTextId = turnAssistantTextIds.at(-1);
+      if (!targetTextId || turnToolMessages.length === 0) {
+        turnToolMessages = [];
+        turnAssistantTextIds = [];
+        return;
+      }
+      const panel = latestSciencePanel(turnToolMessages);
+      if (panel) {
+        panelsByTextId.set(targetTextId, panel);
+      }
+      turnToolMessages = [];
+      turnAssistantTextIds = [];
+    };
+
+    for (const message of list) {
+      if (message.hidden || message.type === 'available_commands') continue;
+      if (message.position === 'right') {
+        flush();
+        continue;
+      }
+      if (isToolMessage(message)) {
+        turnToolMessages.push(message);
+        continue;
+      }
+      if (message.type === 'text' && message.position === 'left' && message.content.content.trim()) {
+        turnAssistantTextIds.push(message.id);
+      }
+    }
+    flush();
+
+    return panelsByTextId;
+  }, [list]);
+
+  const sciencePanelByRenderableItemId = useMemo(() => {
+    const panelsByItemId = new Map<string, SciencePanelData>();
+    const renderedPanelKeys = new Set(Array.from(resultSciencePanelByTextId.values()).map(getSciencePanelKey));
+    for (const item of renderableList) {
+      const toolMessages = getRenderableItemToolMessages(item);
+      if (!toolMessages.length) continue;
+      const panel = latestSciencePanel(toolMessages);
+      if (panel && !renderedPanelKeys.has(getSciencePanelKey(panel))) {
+        panelsByItemId.set(getRenderableItemStableId(item), panel);
+        renderedPanelKeys.add(getSciencePanelKey(panel));
+      }
+    }
+    return panelsByItemId;
+  }, [renderableList, resultSciencePanelByTextId]);
+
+  useEffect(() => {
+    const toolMessages = list.filter((message): message is IMessageToolGroup | IMessageAcpToolCall | IMessageToolCall => {
+      if (message.hidden || message.type === 'available_commands' || message.position === 'right') return false;
+      return isToolMessage(message);
+    });
+    const targets = extractSciencePayloadsFromTools(toolMessages)
+      .map(resolveScienceDisplayTarget)
+      .filter((target): target is ScienceDisplayTarget => Boolean(target));
+    const eventKeys = targets.map((target) => {
+      const artifactPart = target.kind === 'artifact' ? `${target.artifact.id}@${target.artifact.version}` : 'report';
+      return `${target.panel.runId}:${target.eventId}:${target.pageId || 'no-page'}:${artifactPart}:${target.intent}`;
+    });
+
+    if (handledScienceDisplayKeysRef.current == null) {
+      handledScienceDisplayKeysRef.current = new Set(eventKeys);
+      return;
+    }
+
+    targets.forEach((target, index) => {
+      const key = eventKeys[index];
+      const handled = handledScienceDisplayKeysRef.current;
+      if (!handled || handled.has(key)) return;
+      handled.add(key);
+
+      if (target.kind === 'artifact') {
+        void openLocalFilePreview(
+          target.path,
+          undefined,
+          {
+            title: target.artifact.title,
+            workspace: target.panel.projectRoot || conversationContext?.workspace,
+            science: {
+              panel: target.panel,
+              artifactId: target.artifact.id,
+              artifactVersion: target.artifact.version,
+              workspaceView: true,
+            },
+          },
+          { replace: true }
+        );
+        return;
+      }
+
+      openPreview(
+        '',
+        'science_report',
+        {
+          title: target.panel.report.title || target.panel.question || 'Science report',
+          workspace: target.panel.projectRoot || conversationContext?.workspace,
+          science: {
+            panel: target.panel,
+            artifactId: 'report',
+          },
+        },
+        { replace: true }
+      );
+    });
+  }, [conversationContext?.workspace, list, openLocalFilePreview, openPreview]);
+
+  useEffect(() => {
+    const conversationId = conversationContext?.conversation_id;
+    if (!conversationId) return;
+    const existingKeys = new Set(
+      medicalEvidenceReports.map((report) =>
+        getStoredMedicalEvidencePanelKey(report.panel, report.textMessageId, report.sourceMessageId)
+      )
+    );
+    const saves: Array<{ textMessageId?: string; sourceMessageId?: string; panel: MedicalEvidencePanelData }> = [];
+    for (const [textMessageId, panel] of resultMedicalEvidencePanelByTextId) {
+      const key = getStoredMedicalEvidencePanelKey(panel, textMessageId);
+      if (!existingKeys.has(key)) {
+        existingKeys.add(key);
+        saves.push({ textMessageId, panel });
+      }
+    }
+    for (const [sourceMessageId, panel] of medicalEvidencePanelByRenderableItemId) {
+      const key = getStoredMedicalEvidencePanelKey(panel, undefined, sourceMessageId);
+      if (!existingKeys.has(key)) {
+        existingKeys.add(key);
+        saves.push({ sourceMessageId, panel });
+      }
+    }
+    if (!saves.length) return;
+    void Promise.all(
+      saves.map((item) =>
+        ipcBridge.medicalEvidenceReports.save.invoke({
+          conversationId,
+          textMessageId: item.textMessageId,
+          sourceMessageId: item.sourceMessageId,
+          panel: item.panel,
+        })
+      )
+    ).catch((error) => {
+      console.warn('[MessageList] Failed to persist medical evidence report:', error);
+    });
+  }, [
+    conversationContext?.conversation_id,
+    medicalEvidencePanelByRenderableItemId,
+    medicalEvidenceReports,
+    resultMedicalEvidencePanelByTextId,
+  ]);
 
   // An AI reply can be split into several messages (thinking / multiple text /
   // tool blocks). The hover copy + timestamp row should appear once per turn,
@@ -725,6 +1326,7 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
           (item as { type?: string }).type === 'file_summary' ||
           (item as { type?: string }).type === 'tool_summary' ||
           (item as { type?: string }).type === 'artifact' ||
+          (item as { type?: string }).type === 'codex_memory_marker' ||
           (item as { type?: string }).type === 'codex_process_group'
         ) {
           return false;
@@ -762,7 +1364,37 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
 
   const renderItem = (_index: number, item: IRenderableItem) => {
     if ('type' in item && item.type === 'codex_process_group') {
-      return <CodexProcessGroup group={item} renderChild={renderItem} />;
+      const fallbackPanel = medicalEvidencePanelByRenderableItemId.get(getRenderableItemStableId(item));
+      const fallbackLabSkillPanel = !fallbackPanel
+        ? labSkillDepositionPanelByRenderableItemId.get(getRenderableItemStableId(item))
+        : undefined;
+      const fallbackSciencePanel =
+        !fallbackPanel && !fallbackLabSkillPanel
+          ? sciencePanelByRenderableItemId.get(getRenderableItemStableId(item))
+          : undefined;
+      return (
+        <React.Fragment key={item.id}>
+          <CodexProcessGroup group={item} renderChild={renderItem} activeStartedAt={runtimeView.view.activeStartedAt} />
+          {fallbackPanel ? (
+            <div className='min-w-0 message-item px-8px m-t-10px max-w-full md:max-w-780px mx-auto'>
+              <MedicalEvidencePanel panel={fallbackPanel} />
+            </div>
+          ) : null}
+          {fallbackLabSkillPanel ? (
+            <div className='min-w-0 message-item px-8px m-t-10px max-w-full mx-auto'>
+              <LabSkillDepositionPanel panel={fallbackLabSkillPanel} />
+            </div>
+          ) : null}
+          {fallbackSciencePanel ? (
+            <div className='min-w-0 message-item px-8px m-t-10px max-w-full mx-auto'>
+              <ScienceReportPanel panel={fallbackSciencePanel} />
+            </div>
+          ) : null}
+        </React.Fragment>
+      );
+    }
+    if ('type' in item && item.type === 'codex_memory_marker') {
+      return <CodexMemoryDivider marker={item} onOpen={openCodexMemory} />;
     }
     const highlighted = matchesTargetMessage(item, highlightedMessageId);
     if ('type' in item && item.type === 'artifact') {
@@ -784,22 +1416,46 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
       );
     }
     if ('type' in item && ['file_summary', 'tool_summary'].includes(item.type)) {
+      const fallbackPanel = medicalEvidencePanelByRenderableItemId.get(getRenderableItemStableId(item));
+      const fallbackLabSkillPanel = !fallbackPanel
+        ? labSkillDepositionPanelByRenderableItemId.get(getRenderableItemStableId(item))
+        : undefined;
+      const fallbackSciencePanel =
+        !fallbackPanel && !fallbackLabSkillPanel
+          ? sciencePanelByRenderableItemId.get(getRenderableItemStableId(item))
+          : undefined;
       return (
-        <div
-          key={item.id}
-          id={`message-${getProcessedItemAnchorId(item)}`}
-          className={'min-w-0 message-item px-8px m-t-10px max-w-full md:max-w-780px mx-auto ' + item.type}
-          style={highlighted ? highlightStyle : undefined}
-        >
-          {item.type === 'file_summary' && <MessageFileChanges diffsChanges={item.diffs} />}
-          {item.type === 'tool_summary' && (
-            <AgentSteps
-              messages={item.messages}
-              runtimeView={runtimeView.view}
-              allowLiveWithoutTurnId={item.id === latestRunningToolSummaryId}
-            />
-          )}
-        </div>
+        <React.Fragment key={item.id}>
+          <div
+            id={`message-${getProcessedItemAnchorId(item)}`}
+            className={'min-w-0 message-item px-8px m-t-10px max-w-full md:max-w-780px mx-auto ' + item.type}
+            style={highlighted ? highlightStyle : undefined}
+          >
+            {item.type === 'file_summary' && <MessageFileChanges diffsChanges={item.diffs} />}
+            {item.type === 'tool_summary' && (
+              <AgentSteps
+                messages={item.messages}
+                runtimeView={runtimeView.view}
+                allowLiveWithoutTurnId={item.id === latestRunningToolSummaryId}
+              />
+            )}
+          </div>
+          {fallbackPanel ? (
+            <div className='min-w-0 message-item px-8px m-t-10px max-w-full md:max-w-780px mx-auto'>
+              <MedicalEvidencePanel panel={fallbackPanel} />
+            </div>
+          ) : null}
+          {fallbackLabSkillPanel ? (
+            <div className='min-w-0 message-item px-8px m-t-10px max-w-full mx-auto'>
+              <LabSkillDepositionPanel panel={fallbackLabSkillPanel} />
+            </div>
+          ) : null}
+          {fallbackSciencePanel ? (
+            <div className='min-w-0 message-item px-8px m-t-10px max-w-full mx-auto'>
+              <ScienceReportPanel panel={fallbackSciencePanel} />
+            </div>
+          ) : null}
+        </React.Fragment>
       );
     }
     const message = item as TMessage;
@@ -809,14 +1465,42 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
       message.type === 'text' && aiCopyRowTextIds.has(message.id)
         ? resultFileChangesByTextId.get(message.id)
         : undefined;
+    const resultMedicalEvidencePanel =
+      message.type === 'text' ? resultMedicalEvidencePanelByTextId.get(message.id) : undefined;
+    const resultLabSkillDepositionPanel =
+      message.type === 'text' && !resultMedicalEvidencePanel
+        ? resultLabSkillDepositionPanelByTextId.get(message.id)
+        : undefined;
+    const resultSciencePanel =
+      message.type === 'text' && !resultMedicalEvidencePanel && !resultLabSkillDepositionPanel
+        ? resultSciencePanelByTextId.get(message.id)
+        : undefined;
     return (
-      <MessageItem
-        message={message}
-        key={message.id}
-        highlighted={highlighted}
-        showCopyRow={showCopyRow}
-        resultFileChanges={resultFileChanges}
-      ></MessageItem>
+      <React.Fragment key={message.id}>
+        <MessageItem
+          message={message}
+          highlighted={highlighted}
+          showCopyRow={showCopyRow}
+          resultFileChanges={resultFileChanges}
+          resultMedicalEvidencePanel={resultMedicalEvidencePanel}
+          hideMedicalEvidenceText={Boolean(resultMedicalEvidencePanel)}
+        ></MessageItem>
+        {resultMedicalEvidencePanel ? (
+          <div className='min-w-0 message-item px-8px m-t-10px max-w-full md:max-w-780px mx-auto'>
+            <MedicalEvidencePanel panel={resultMedicalEvidencePanel} />
+          </div>
+        ) : null}
+        {resultLabSkillDepositionPanel ? (
+          <div className='min-w-0 message-item px-8px m-t-10px max-w-full mx-auto'>
+            <LabSkillDepositionPanel panel={resultLabSkillDepositionPanel} />
+          </div>
+        ) : null}
+        {resultSciencePanel ? (
+          <div className='min-w-0 message-item px-8px m-t-10px max-w-full mx-auto'>
+            <ScienceReportPanel panel={resultSciencePanel} />
+          </div>
+        ) : null}
+      </React.Fragment>
     );
   };
 
@@ -829,7 +1513,10 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
   }
 
   return (
-    <div className='relative flex-1 h-full'>
+    <div
+      className='relative flex-1 h-full agent-message-surface'
+      style={{ backgroundColor: AGENT_MESSAGE_BACKGROUND_COLOR }}
+    >
       {/* Use PreviewGroup to wrap all messages for cross-message image preview */}
       <Image.PreviewGroup actionsLayout={['zoomIn', 'zoomOut', 'originalSize', 'rotateLeft', 'rotateRight']}>
         <ImagePreviewContext.Provider value={{ inPreviewGroup: true }}>
@@ -838,8 +1525,8 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
             data-testid='message-list-scroller'
             // Break out of the parent's 20px horizontal padding so the scrollbar hugs the
             // window edge, while re-applying that padding inside to keep message content inset.
-            className='flex-1 h-full overflow-y-auto pb-10px box-border -mx-20px px-20px'
-            style={{ overflowAnchor: 'none' }}
+            className='flex-1 h-full overflow-y-auto pb-10px box-border -mx-20px px-20px agent-message-scroller'
+            style={{ overflowAnchor: 'none', backgroundColor: AGENT_MESSAGE_BACKGROUND_COLOR }}
             onPointerDown={handlePointerDown}
             onScroll={handleScroll}
             onWheel={handleWheel}
@@ -876,6 +1563,21 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
       )}
 
       <SelectionReplyButton messages={list} />
+      <CodexMemoryModal
+        visible={Boolean(selectedMemory)}
+        memory={selectedMemory}
+        detail={selectedMemoryDetail}
+        loading={memoryDetailLoading}
+        onClose={() => {
+          setSelectedMemory(undefined);
+          setSelectedMemoryDetail(undefined);
+        }}
+        onRefresh={() => {
+          void loadCodexMemories().then(() => {
+            if (selectedMemory) void openCodexMemory(selectedMemory);
+          });
+        }}
+      />
     </div>
   );
 };

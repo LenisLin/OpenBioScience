@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { type NavigateOptions, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { usePreviewContext } from '@renderer/pages/conversation/Preview/context/PreviewContext';
 import { cleanupSiderTooltips, getSiderTooltipProps } from '@renderer/utils/ui/siderTooltip';
 import { useAuth } from '@renderer/hooks/context/AuthContext';
@@ -12,7 +12,6 @@ import { SiderToolbar, SiderSearchEntry, SiderScheduledEntry } from './SiderNav'
 import SiderFooter from './SiderFooter';
 import CronJobSiderSection from './CronJobSiderSection';
 import CollaborationProjectSiderSection from './CollaborationProjectSiderSection';
-import LarkProjectTaskSiderSection from './LarkProjectTaskSiderSection';
 import siderStyles from './Sider.module.css';
 
 const WorkspaceGroupedHistory = React.lazy(() => import('@renderer/pages/conversation/GroupedHistory'));
@@ -36,6 +35,7 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
   const [isBatchMode, setIsBatchMode] = useState(false);
   const { jobs: cronJobs } = useAllCronJobs();
   const isSettings = pathname.startsWith('/settings');
+  const isNewConversationPage = pathname === '/guid';
   const lastNonSettingsPathRef = useRef('/guid');
   const showLogout =
     typeof window !== 'undefined' && !(window as { electronAPI?: unknown }).electronAPI && status === 'authenticated';
@@ -149,15 +149,6 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
     if (onSessionClick) onSessionClick();
   };
 
-  const handleProjectNavigate = (path: string, options?: NavigateOptions) => {
-    cleanupSiderTooltips();
-    blurActiveElement();
-    closePreview();
-    setIsBatchMode(false);
-    Promise.resolve(navigate(path, options)).catch(console.error);
-    if (onSessionClick) onSessionClick();
-  };
-
   const tooltipEnabled = collapsed && !isMobile;
   const siderTooltipProps = getSiderTooltipProps(tooltipEnabled);
 
@@ -170,7 +161,7 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
   };
 
   return (
-    <div className='size-full flex flex-col'>
+    <div className='size-full flex flex-col app-left-sider-inner'>
       {/* Main content area */}
       <div className='flex-1 min-h-0 overflow-hidden'>
         {isSettings ? (
@@ -211,7 +202,7 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
               )}
             />
             {/* Scrollable content: pinned → cron (slot) → projects → conversations */}
-            <div className={classNames('flex-1 min-h-0 overflow-y-auto', siderStyles.scrollArea)}>
+            <div className={classNames('flex-1 min-h-0 overflow-y-auto app-left-sider-scroll', siderStyles.scrollArea)}>
               <Suspense fallback={<div className='min-h-200px' />}>
                 <WorkspaceGroupedHistory
                   {...workspaceHistoryProps}
@@ -220,11 +211,12 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
                       {!collapsed && (
                         <>
                           <CronJobSiderSection jobs={cronJobs} pathname={pathname} onNavigate={handleCronNavigate} />
-                          <CollaborationProjectSiderSection
-                            pathname={pathname}
-                            onNavigate={handleCollaborationNavigate}
-                          />
-                          <LarkProjectTaskSiderSection pathname={pathname} onNavigate={handleProjectNavigate} />
+                          {!isNewConversationPage && (
+                            <CollaborationProjectSiderSection
+                              pathname={pathname}
+                              onNavigate={handleCollaborationNavigate}
+                            />
+                          )}
                         </>
                       )}
                     </>
@@ -235,18 +227,21 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
           </div>
         )}
       </div>
-      {/* Footer */}
-      <SiderFooter
-        isMobile={isMobile}
-        isSettings={isSettings}
-        collapsed={collapsed}
-        theme={theme}
-        siderTooltipProps={siderTooltipProps}
-        onSettingsClick={handleSettingsClick}
-        onThemeToggle={handleQuickThemeToggle}
-        showLogout={showLogout}
-        onLogoutClick={handleLogout}
-      />
+      {/* The settings page already uses the whole sider as settings navigation.
+          Keep the footer only on chat-like pages so the settings entry appears once. */}
+      {!isSettings && (
+        <SiderFooter
+          isMobile={isMobile}
+          isSettings={isSettings}
+          collapsed={collapsed}
+          theme={theme}
+          siderTooltipProps={siderTooltipProps}
+          onSettingsClick={handleSettingsClick}
+          onThemeToggle={handleQuickThemeToggle}
+          showLogout={showLogout}
+          onLogoutClick={handleLogout}
+        />
+      )}
     </div>
   );
 };

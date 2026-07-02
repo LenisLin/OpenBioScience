@@ -29,11 +29,11 @@
     "statusAvailable": "Available"
   },
   "loopGoal": {
-    "menuLabel": "目標",
+    "menuLabel": "目標模式",
     "modeActive": "目標模式已開啟",
-    "createTitle": "要求後續變更",
+    "createTitle": "要求持續推進",
     "create": "開始循環",
-    "placeholder": "寫下一個值得持續推進的目標。Agent 每輪完成後會回到這個目標，檢查結果，並推進下一個有用步驟。",
+    "placeholder": "寫下一個值得持續推進的目標。Agent 每輪完成後會回到這個目標，檢查結果並推進下一步。",
     "goalRequired": "請先寫下目標",
     "statusActive": "持續目標",
     "statusPaused": "已暫停的目標",
@@ -91,5 +91,26 @@
     "taskStatusTodo": "待办",
     "duePrefix": "截止 {{date}}",
     "noDue": "未设置截止时间"
+  },
+  "scienceProject": {
+    "badge": "Science",
+    "defaultBadge": "預設",
+    "menuLabel": "科學研究模式",
+    "modeActive": "科學研究模式已開啟",
+    "workInProject": "選擇研究專案",
+    "clearWorkspace": "移除研究專案",
+    "specifyWorkspace": "新增或選擇研究專案",
+    "searchPlaceholder": "搜尋研究專案…",
+    "noProject": "暫不綁定研究專案"
+  },
+  "medicalEvidence": {
+    "menuLabel": "醫學循證模式",
+    "modeActive": "醫學循證模式已啟用"
+  },
+  "skillDeposition": {
+    "menuLabel": "知識沉澱模式",
+    "modeActive": "知識沉澱模式已啟用",
+    "contextHint": "先產生報告，確認後啟用",
+    "closeLabel": "關閉知識沉澱模式"
   }
 }

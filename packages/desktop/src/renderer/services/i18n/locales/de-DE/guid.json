@@ -25,5 +25,42 @@
     "statusTesting": "Latenz wird gemessen...",
     "statusUnreachable": "Nicht erreichbar",
     "statusAvailable": "Verfügbar"
+  },
+  "scienceProject": {
+    "badge": "Science",
+    "defaultBadge": "Standard",
+    "menuLabel": "Wissenschaftsmodus",
+    "modeActive": "Wissenschaftsmodus ist aktiv",
+    "workInProject": "Forschungsprojekt wählen",
+    "clearWorkspace": "Forschungsprojekt entfernen",
+    "specifyWorkspace": "Forschungsprojekt erstellen oder wählen",
+    "searchPlaceholder": "Forschungsprojekte suchen…",
+    "noProject": "Kein Forschungsprojekt"
+  },
+  "loopGoal": {
+    "menuLabel": "Zielmodus",
+    "modeActive": "Zielmodus ist aktiv",
+    "createTitle": "Kontinuierlichen Fortschritt anfordern",
+    "create": "Schleife starten",
+    "placeholder": "Beschreibe ein Ziel, das kontinuierlich verfolgt werden soll. Nach jedem Lauf kehrt der Agent zu diesem Ziel zurück, prüft das Ergebnis und geht den nächsten sinnvollen Schritt.",
+    "goalRequired": "Bitte zuerst ein Ziel eingeben",
+    "statusActive": "Laufendes Ziel",
+    "statusPaused": "Pausiertes Ziel",
+    "statusDeleted": "Gelöschtes Ziel",
+    "edit": "Ziel bearbeiten",
+    "editTitle": "Ziel bearbeiten",
+    "pause": "Pausieren",
+    "resume": "Fortsetzen",
+    "delete": "Löschen"
+  },
+  "medicalEvidence": {
+    "menuLabel": "Medizinischer Evidenzmodus",
+    "modeActive": "Medizinischer Evidenzmodus ist aktiv"
+  },
+  "skillDeposition": {
+    "menuLabel": "Wissensdepositionsmodus",
+    "modeActive": "Wissensdepositionsmodus ist aktiv",
+    "contextHint": "Erst Bericht erstellen, nach Prüfung aktivieren",
+    "closeLabel": "Wissensdepositionsmodus schließen"
   }
 }

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 DeepOrganiser (deepscientist.cc)
+ * Copyright 2026 OpenScience
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -35,7 +35,7 @@ const STAGE_ICON_BY_STAGE: Record<WizardStage, CollaborationIconName> = {
   app: 'createApp',
   auth: 'auth',
 };
-const APP_DISPLAY_NAME = 'DeepOrganiser';
+const APP_DISPLAY_NAME = 'OpenScience';
 
 interface FeishuConnectionWizardModalProps {
   visible: boolean;
@@ -951,7 +951,7 @@ const AuthorizationWebPanel: React.FC<{
             <div className='text-13px font-650 text-t-primary truncate'>{verifying ? verifyingText : body}</div>
             {targetAppId || targetProfileName || targetAppName ? (
               <div className='mt-2px text-11px text-t-tertiary truncate'>
-                {targetAppLabel}: {targetAppName || targetAppId || 'DeepOrganiser'}
+                {targetAppLabel}: {targetAppName || targetAppId || 'OpenScience'}
                 {targetProfileName ? ` · ${profileLabel}: ${targetProfileName}` : ''}
               </div>
             ) : null}
@@ -977,7 +977,7 @@ const AuthorizationTargetInfo: React.FC<{
     <div className='mt-16px rd-8px border border-border-1 bg-fill-1 px-14px py-11px text-left'>
       <div className='text-12px text-t-tertiary'>{targetAppLabel}</div>
       <div className='mt-4px text-14px font-650 text-t-primary truncate'>
-        {appName || appId || 'DeepOrganiser'}
+        {appName || appId || 'OpenScience'}
       </div>
       {appName && appId ? <div className='mt-4px text-12px text-t-tertiary truncate'>App ID: {appId}</div> : null}
       {profileName ? (

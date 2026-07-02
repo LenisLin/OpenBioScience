@@ -30,8 +30,7 @@ import { useConversationContextSafe } from '@/renderer/hooks/context/Conversatio
 import { usePreviewLauncher } from '@/renderer/hooks/file/usePreviewLauncher';
 import type { ConversationRuntimeView } from '@/renderer/pages/conversation/runtime/conversationRuntimeViewStore';
 import type { I18nKey } from '@/renderer/services/i18n';
-import { extractContentFromDiff, parseDiff } from '@/renderer/utils/file/diffUtils';
-import { getFileTypeInfo } from '@/renderer/utils/file/fileType';
+import { parseDiff } from '@/renderer/utils/file/diffUtils';
 import { Popover } from '@arco-design/web-react';
 import { IconDown, IconRight } from '@arco-design/web-react/icon';
 import classNames from 'classnames';
@@ -331,6 +330,161 @@ const limitLines = (text?: string, count = 3): { text: string; truncated: boolea
   return { text: lines.slice(0, count).join('\n'), truncated: true };
 };
 
+const compactInline = (text: string, max = 72): string => {
+  const normalized = text.replace(/\s+/g, ' ').trim();
+  return normalized.length > max ? `${normalized.slice(0, Math.max(0, max - 1))}…` : normalized;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const compactJsonValue = (value: unknown): string => {
+  if (Array.isArray(value)) return `${value.length} items`;
+  if (isRecord(value)) return '{...}';
+  if (typeof value === 'string') return compactInline(value);
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (value == null) return 'null';
+  return compactInline(String(value));
+};
+
+const normalizeComparableText = (value?: string): string =>
+  value?.replace(/\s+/g, ' ').replace(/[.…]+$/u, '').trim().toLowerCase() || '';
+
+const isLikelyMachineId = (value: string): boolean => {
+  const text = value.trim();
+  return (
+    /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/iu.test(text) ||
+    /^[a-z]+_[a-z0-9_-]{12,}$/iu.test(text) ||
+    /^[a-z]?\d{1,4}$/iu.test(text) ||
+    /^[a-f0-9]{16,}$/iu.test(text)
+  );
+};
+
+const isInternalJsonKey = (key: string): boolean => {
+  const normalized = key.replace(/[-_\s]/g, '').toLowerCase();
+  return (
+    normalized === 'schema' ||
+    normalized === 'event' ||
+    normalized === 'status' ||
+    normalized === 'timestamp' ||
+    normalized === 'createdat' ||
+    normalized === 'updatedat' ||
+    normalized === 'runid' ||
+    normalized === 'callid' ||
+    normalized === 'toolcallid' ||
+    normalized === 'messageid' ||
+    normalized === 'conversationid' ||
+    normalized === 'sourceid' ||
+    normalized === 'evidenceid' ||
+    normalized === 'figureid' ||
+    normalized === 'tableid' ||
+    normalized === 'panelid' ||
+    normalized.endsWith('ids') ||
+    normalized.endsWith('id')
+  );
+};
+
+const isMeaningfulJsonValue = (key: string, value: unknown): boolean => {
+  if (isInternalJsonKey(key)) return false;
+  if (value == null) return false;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed.length > 0 && !isLikelyMachineId(trimmed);
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') return true;
+  if (Array.isArray(value)) {
+    return value.some((item) => {
+      if (item == null) return false;
+      if (typeof item === 'string') return item.trim().length > 0 && !isLikelyMachineId(item);
+      if (isRecord(item)) {
+        return Object.entries(item).some(([childKey, childValue]) => isMeaningfulJsonValue(childKey, childValue));
+      }
+      return true;
+    });
+  }
+  if (isRecord(value)) {
+    return Object.entries(value).some(([childKey, childValue]) => isMeaningfulJsonValue(childKey, childValue));
+  }
+  return true;
+};
+
+const parseJsonOutput = (text?: string): unknown | undefined => {
+  const trimmed = text?.trim();
+  if (!trimmed || (!trimmed.startsWith('{') && !trimmed.startsWith('['))) return undefined;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return undefined;
+  }
+};
+
+const summarizeJsonOutput = (text?: string): JsonOutputSummary | undefined => {
+  const data = parseJsonOutput(text);
+  if (Array.isArray(data)) {
+    return data.length > 0 ? { title: 'JSON', items: [{ label: 'items', value: String(data.length) }] } : undefined;
+  }
+  if (!isRecord(data)) return undefined;
+
+  const schema = typeof data.schema === 'string' ? data.schema : '';
+  const title = schema.includes('medical_evidence') ? 'MCP Event' : 'JSON';
+  const preferredKeys = [
+    'query',
+    'url',
+    'path',
+    'count',
+    'results',
+    'evidence',
+    'anchors',
+    'artifacts',
+    'figures',
+    'tables',
+    'message',
+    'title',
+    'summary',
+    'outputPreview',
+    'rawOutput',
+    'command',
+    'source',
+    'sourceTitle',
+  ];
+  const seen = new Set<string>();
+  const items: JsonOutputSummary['items'] = [];
+
+  for (const key of preferredKeys) {
+    if (!(key in data) || !isMeaningfulJsonValue(key, data[key])) continue;
+    seen.add(key);
+    items.push({ label: key, value: compactJsonValue(data[key]) });
+    if (items.length >= 4) break;
+  }
+
+  if (items.length < 4) {
+    for (const [key, value] of Object.entries(data)) {
+      if (seen.has(key) || !isMeaningfulJsonValue(key, value)) continue;
+      items.push({ label: key, value: compactJsonValue(value) });
+      if (items.length >= 4) break;
+    }
+  }
+
+  return items.length ? { title, items } : undefined;
+};
+
+const isInlineRedundantJsonSummary = (summary: JsonOutputSummary | undefined, inlineText: string): boolean => {
+  if (!summary?.items.length) return false;
+  const inline = normalizeComparableText(inlineText);
+  const inlineOnlyLabels = new Set(['query', 'url', 'path', 'message', 'title', 'source', 'sourceTitle']);
+  const boilerplate = /^(ok|success|succeeded|completed|complete|done|submitted|received|created|updated)$/iu;
+
+  return summary.items.every((item) => {
+    if (!inlineOnlyLabels.has(item.label)) return false;
+    const value = normalizeComparableText(item.value);
+    if (!value || boilerplate.test(value)) return true;
+    if (!inline) return false;
+    const valuePrefix = value.slice(0, Math.min(value.length, 48));
+    const inlinePrefix = inline.slice(0, Math.min(inline.length, 48));
+    return inline.includes(value) || value.includes(inline) || inline.includes(valuePrefix) || value.includes(inlinePrefix);
+  });
+};
+
 const commandSummary = (command?: string): string => {
   if (!command?.trim()) return '';
   return command
@@ -364,6 +518,11 @@ const commandStatusLabel = (
 const safeFileName = (path?: string): string => {
   const parts = path?.split(/[\\/]/);
   return parts?.findLast(Boolean) || path || 'file';
+};
+
+type JsonOutputSummary = {
+  title: string;
+  items: Array<{ label: string; value: string }>;
 };
 
 type WebResult = {
@@ -740,27 +899,55 @@ const AgentCommandTool: React.FC<{ step: AgentCommandStep; liveRunning: boolean 
   const [showFullOutput, setShowFullOutput] = useState(false);
   const { t } = useTranslation();
   const livePending = isLivePendingStatus(step.status, liveRunning);
-  const stdout = limitLines(step.stdout);
-  const stderr = limitLines(step.stderr);
-  const hasMore = stdout.truncated || stderr.truncated;
-  const hasOutput = !!step.stdout || !!step.stderr;
+  const stdout = limitLines(step.stdout, 6);
+  const stderr = limitLines(step.stderr, 6);
+  const stdoutSummary = useMemo(() => summarizeJsonOutput(step.stdout), [step.stdout]);
+  const stdoutIsJson = useMemo(() => parseJsonOutput(step.stdout) !== undefined, [step.stdout]);
   const summary =
     commandSummary(step.command) ||
     step.subtitle ||
     t('messages.agentSteps.commandFallback', { defaultValue: 'command' });
+  const visibleStdoutSummary = useMemo(
+    () =>
+      isInlineRedundantJsonSummary(stdoutSummary, `${step.title} ${summary}`)
+        ? undefined
+        : stdoutSummary,
+    [step.title, stdoutSummary, summary]
+  );
+  const hasVisibleStdout = !!step.stdout && (!stdoutIsJson || !!visibleStdoutSummary);
+  const hasVisibleStderr = !!step.stderr;
+  const showRawStdout = hasVisibleStdout && !stdoutIsJson;
+  const hasMore = (showRawStdout && stdout.truncated) || (hasVisibleStderr && stderr.truncated);
+  const hasOutput = hasVisibleStdout || hasVisibleStderr;
   const statusLabel = commandStatusLabel(step.status, t);
+  const hasExpandableContent = hasOutput || !!step.command || hasMore;
+  const singleLineOnly = !hasExpandableContent;
+  const hasBody = expanded || hasOutput || !!step.command;
+  const bodyTitle =
+    step.stderr && !hasVisibleStdout ? 'Error' : visibleStdoutSummary?.title || (step.command ? 'Shell' : 'Output');
 
   useEffect(() => {
     setShowFullOutput(false);
   }, [step.id]);
 
   return (
-    <div className='agent-command-card'>
+    <div
+      className={classNames(
+        'agent-command-card',
+        singleLineOnly && 'agent-command-card--single-line',
+        hasBody && !singleLineOnly && 'agent-command-card--output-panel'
+      )}
+    >
       <button
         type='button'
-        className={classNames('agent-command-header', livePending && 'agent-step-running-sweep')}
-        aria-expanded={expanded}
-        onClick={() => setExpanded((v) => !v)}
+        className={classNames(
+          'agent-command-header',
+          !hasExpandableContent && 'agent-command-header--static',
+          livePending && 'agent-step-running-sweep'
+        )}
+        disabled={!hasExpandableContent}
+        aria-expanded={hasExpandableContent ? expanded : undefined}
+        onClick={hasExpandableContent ? () => setExpanded((v) => !v) : undefined}
       >
         <AgentStepKindIcon step={step} liveRunning={liveRunning} />
         <span className='agent-step-title'>
@@ -768,19 +955,32 @@ const AgentCommandTool: React.FC<{ step: AgentCommandStep; liveRunning: boolean 
           {summary ? ':' : ''}
         </span>
         <span className='agent-step-subtitle'>{summary}</span>
-        <span className='agent-step-chevron'>
-          <ExpandIcon expanded={expanded} />
-        </span>
+        {hasExpandableContent && (
+          <span className='agent-step-chevron'>
+            <ExpandIcon expanded={expanded} />
+          </span>
+        )}
       </button>
-      {(expanded || hasOutput || step.command) && (
+      {hasBody && (
         <div className='agent-command-body'>
+          <div className='agent-command-body-title'>{bodyTitle}</div>
+          {visibleStdoutSummary && (
+            <div className='agent-command-json-summary'>
+              {visibleStdoutSummary.items.map((item) => (
+                <span className='agent-command-json-summary-item' key={item.label}>
+                  <span className='agent-command-json-summary-label'>{item.label}</span>
+                  <span className='agent-command-json-summary-value'>{item.value}</span>
+                </span>
+              ))}
+            </div>
+          )}
           {step.command && <pre className='agent-command-code'>$ {step.command}</pre>}
-          {step.stdout && (
+          {showRawStdout && (
             <pre className={classNames('agent-command-output', showFullOutput && 'agent-command-output--full')}>
               {showFullOutput ? step.stdout : stdout.text}
             </pre>
           )}
-          {step.stderr && (
+          {hasVisibleStderr && (
             <pre
               className={classNames(
                 'agent-command-output agent-command-output--stderr',
@@ -832,25 +1032,7 @@ const AgentFileChangeTool: React.FC<{ step: AgentFileChangeStep; liveRunning: bo
   const diffLines = useMemo(() => diffText.split('\n').filter(Boolean), [diffText]);
   const previewLines = expanded ? diffLines : diffLines.slice(0, 9);
 
-  const openFile = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      event.stopPropagation();
-      if (!fileInfo) return;
-      const { contentType, editable, language } = getFileTypeInfo(fileInfo.file_name);
-      void launchPreview({
-        relativePath: fileInfo.fullPath,
-        file_name: fileInfo.file_name,
-        contentType,
-        editable,
-        language,
-        fallbackContent: editable ? extractContentFromDiff(fileInfo.diff) : undefined,
-        diffContent: fileInfo.diff,
-      });
-    },
-    [fileInfo, launchPreview]
-  );
-
-  const openDiff = useCallback(
+  const openPreview = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
       if (!fileInfo) return;
@@ -904,11 +1086,8 @@ const AgentFileChangeTool: React.FC<{ step: AgentFileChangeStep; liveRunning: bo
         ))}
       </div>
       <div className='agent-file-actions'>
-        <button className='agent-file-action' type='button' onClick={openFile}>
+        <button className='agent-file-action' type='button' onClick={openPreview}>
           {t('messages.agentSteps.preview', { defaultValue: 'Preview' })}
-        </button>
-        <button className='agent-file-action' type='button' onClick={openDiff}>
-          {t('messages.agentSteps.diff', { defaultValue: 'Diff' })}
         </button>
       </div>
     </div>

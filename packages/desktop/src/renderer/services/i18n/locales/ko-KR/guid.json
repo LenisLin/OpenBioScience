@@ -25,5 +25,42 @@
     "statusTesting": "Testing latency...",
     "statusUnreachable": "Unreachable",
     "statusAvailable": "Available"
+  },
+  "scienceProject": {
+    "badge": "Science",
+    "defaultBadge": "기본",
+    "menuLabel": "과학 연구 모드",
+    "modeActive": "과학 연구 모드가 켜져 있습니다",
+    "workInProject": "연구 프로젝트 선택",
+    "clearWorkspace": "연구 프로젝트 해제",
+    "specifyWorkspace": "연구 프로젝트 새로 만들기 또는 선택",
+    "searchPlaceholder": "연구 프로젝트 검색…",
+    "noProject": "연구 프로젝트 없음"
+  },
+  "loopGoal": {
+    "menuLabel": "목표 모드",
+    "modeActive": "목표 모드가 켜져 있습니다",
+    "createTitle": "지속 진행 요청",
+    "create": "루프 시작",
+    "placeholder": "계속 추진할 목표를 적어 주세요. 각 실행 후 Agent가 이 목표로 돌아와 결과를 점검하고 다음 단계를 진행합니다.",
+    "goalRequired": "먼저 목표를 입력해 주세요",
+    "statusActive": "진행 중인 목표",
+    "statusPaused": "일시 중지된 목표",
+    "statusDeleted": "삭제된 목표",
+    "edit": "목표 편집",
+    "editTitle": "목표 편집",
+    "pause": "일시 중지",
+    "resume": "재개",
+    "delete": "삭제"
+  },
+  "medicalEvidence": {
+    "menuLabel": "의학 근거 모드",
+    "modeActive": "의학 근거 모드가 켜져 있습니다"
+  },
+  "skillDeposition": {
+    "menuLabel": "지식 축적 모드",
+    "modeActive": "지식 축적 모드가 켜져 있습니다",
+    "contextHint": "먼저 보고서를 만들고 승인 후 활성화",
+    "closeLabel": "지식 축적 모드 닫기"
   }
 }

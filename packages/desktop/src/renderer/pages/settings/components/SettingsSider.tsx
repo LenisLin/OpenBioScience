@@ -3,7 +3,8 @@ import { isElectronDesktop, resolveExtensionAssetUrl } from '@/renderer/utils/pl
 import { type IExtensionSettingsTab } from '@/common/adapter/ipcBridge';
 import { useExtI18n } from '@/renderer/hooks/system/useExtI18n';
 import { useExtensionSettingsTabs } from '@/renderer/hooks/system/useExtensionSettingsTabs';
-import { Api, Cat, Communication, Computer, Earth, Info, Lightning, LinkCloud, Puzzle, Shield, System } from '@icon-park/react';
+import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
+import { Api, Cat, Communication, Earth, Info, Puzzle } from '@icon-park/react';
 import classNames from 'classnames';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,12 +15,16 @@ import { getSiderTooltipProps } from '@/renderer/utils/ui/siderTooltip';
 /** Builtin settings tab IDs in display order (must match router paths). */
 export const BUILTIN_TAB_IDS = [
   'model',
+  'skills',
   'capabilities',
+  'science',
   'medical-evidence',
+  'compute',
   'appearance',
   'webui',
   'lark-automation',
   'pet',
+  'diagnostics',
   'system',
   'about',
 ] as const;
@@ -30,7 +35,7 @@ export const BUILTIN_TAB_IDS = [
  * This keeps older extensions working without requiring them to update.
  */
 export const LEGACY_ANCHOR_REMAP: Record<string, string> = {
-  'skills-hub': 'capabilities',
+  'skills-hub': 'skills',
   tools: 'capabilities',
   display: 'appearance',
 };
@@ -70,20 +75,48 @@ const SettingsSider: React.FC<{ collapsed?: boolean; tooltipEnabled?: boolean }>
   const { menus, groupHeaderAt } = useMemo(() => {
     // Build builtin items
     const builtinMap: Record<string, SiderItem> = {
-      model: { id: 'model', label: t('settings.model'), icon: <LinkCloud />, path: 'model' },
+      model: {
+        id: 'model',
+        label: t('settings.model'),
+        icon: <OpenScienceIcon name='settingsMcp' size={20} />,
+        path: 'model',
+      },
+      skills: {
+        id: 'skills',
+        label: t('settings.skills.title', { defaultValue: '技能' }),
+        icon: <OpenScienceIcon name='settingsSkills' size={20} />,
+        path: 'skills',
+      },
       capabilities: {
         id: 'capabilities',
         label: t('settings.capabilities', { defaultValue: 'Capabilities' }),
-        icon: <Lightning />,
+        icon: <OpenScienceIcon name='settingsSkills' size={20} />,
         path: 'capabilities',
+      },
+      science: {
+        id: 'science',
+        label: t('settings.science.title', { defaultValue: 'Science' }),
+        icon: <OpenScienceIcon name='settingsScience' size={20} />,
+        path: 'science',
       },
       'medical-evidence': {
         id: 'medical-evidence',
         label: t('settings.medicalEvidence.title', { defaultValue: 'Medical Evidence' }),
-        icon: <Shield />,
+        icon: <OpenScienceIcon name='settingsMedical' size={20} />,
         path: 'medical-evidence',
       },
-      appearance: { id: 'appearance', label: t('settings.appearancePanel'), icon: <Computer />, path: 'appearance' },
+      compute: {
+        id: 'compute',
+        label: t('settings.compute.title', { defaultValue: '服务器管理' }),
+        icon: <OpenScienceIcon name='remoteJob' size={20} />,
+        path: 'compute',
+      },
+      appearance: {
+        id: 'appearance',
+        label: t('settings.appearancePanel'),
+        icon: <OpenScienceIcon name='settingsAppearance' size={20} />,
+        path: 'appearance',
+      },
       webui: {
         id: 'webui',
         label: t('settings.webui'),
@@ -97,7 +130,18 @@ const SettingsSider: React.FC<{ collapsed?: boolean; tooltipEnabled?: boolean }>
         path: 'lark-automation',
       },
       pet: { id: 'pet', label: t('pet.desktopPet'), icon: <Cat />, path: 'pet' },
-      system: { id: 'system', label: t('settings.system'), icon: <System />, path: 'system' },
+      diagnostics: {
+        id: 'diagnostics',
+        label: t('settings.diagnostics.title', { defaultValue: '诊断' }),
+        icon: <OpenScienceIcon name='settingsPermission' size={20} />,
+        path: 'diagnostics',
+      },
+      system: {
+        id: 'system',
+        label: t('settings.system'),
+        icon: <OpenScienceIcon name='settingsPermission' size={20} />,
+        path: 'system',
+      },
       about: { id: 'about', label: t('settings.about'), icon: <Info />, path: 'about' },
     };
 

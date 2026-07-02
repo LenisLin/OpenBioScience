@@ -40,8 +40,6 @@ import humanMemberIcon from '@/renderer/assets/icons/generated/collab-human-memb
 import humanMemberIconDark from '@/renderer/assets/icons/generated/collab-human-member-dark.png';
 import imageUploadIcon from '@/renderer/assets/icons/generated/collab-image-upload.png';
 import imageUploadIconDark from '@/renderer/assets/icons/generated/collab-image-upload-dark.png';
-import leaderAgentIcon from '@/renderer/assets/icons/generated/collab-leader-agent.png';
-import leaderAgentIconDark from '@/renderer/assets/icons/generated/collab-leader-agent-dark.png';
 import listenerIcon from '@/renderer/assets/icons/generated/collab-listener.png';
 import listenerIconDark from '@/renderer/assets/icons/generated/collab-listener-dark.png';
 import memoryIcon from '@/renderer/assets/icons/generated/collab-memory.png';
@@ -58,8 +56,6 @@ import profileSelectIcon from '@/renderer/assets/icons/generated/collab-profile-
 import profileSelectIconDark from '@/renderer/assets/icons/generated/collab-profile-select-dark.png';
 import projectIcon from '@/renderer/assets/icons/generated/collab-project.png';
 import projectIconDark from '@/renderer/assets/icons/generated/collab-project-dark.png';
-import promptManagerIcon from '@/renderer/assets/icons/generated/collab-prompt-manager.png';
-import promptManagerIconDark from '@/renderer/assets/icons/generated/collab-prompt-manager-dark.png';
 import refreshSyncIcon from '@/renderer/assets/icons/generated/collab-refresh-sync.png';
 import refreshSyncIconDark from '@/renderer/assets/icons/generated/collab-refresh-sync-dark.png';
 import reopenIcon from '@/renderer/assets/icons/generated/collab-reopen.png';
@@ -70,14 +66,8 @@ import secretKeyIcon from '@/renderer/assets/icons/generated/collab-secret-key.p
 import secretKeyIconDark from '@/renderer/assets/icons/generated/collab-secret-key-dark.png';
 import sendCommentIcon from '@/renderer/assets/icons/generated/collab-send-comment.png';
 import sendCommentIconDark from '@/renderer/assets/icons/generated/collab-send-comment-dark.png';
-import sopSkillIcon from '@/renderer/assets/icons/generated/collab-sop-skill.png';
-import sopSkillIconDark from '@/renderer/assets/icons/generated/collab-sop-skill-dark.png';
-import subAgentIcon from '@/renderer/assets/icons/generated/collab-sub-agent.png';
-import subAgentIconDark from '@/renderer/assets/icons/generated/collab-sub-agent-dark.png';
 import syncFeedbackIcon from '@/renderer/assets/icons/generated/collab-sync-feedback.png';
 import syncFeedbackIconDark from '@/renderer/assets/icons/generated/collab-sync-feedback-dark.png';
-import taskAutomationIcon from '@/renderer/assets/icons/generated/collab-task-automation.png';
-import taskAutomationIconDark from '@/renderer/assets/icons/generated/collab-task-automation-dark.png';
 import taskDetailIcon from '@/renderer/assets/icons/generated/collab-task-detail.png';
 import taskDetailIconDark from '@/renderer/assets/icons/generated/collab-task-detail-dark.png';
 import taskPageIcon from '@/renderer/assets/icons/generated/collab-task-page.png';
@@ -105,7 +95,6 @@ export type CollaborationIconName =
   | 'handoff'
   | 'humanMember'
   | 'imageUpload'
-  | 'leaderAgent'
   | 'listener'
   | 'memory'
   | 'message'
@@ -114,16 +103,12 @@ export type CollaborationIconName =
   | 'planGate'
   | 'profileSelect'
   | 'project'
-  | 'promptManager'
   | 'refreshSync'
   | 'reopen'
   | 'runtime'
   | 'secretKey'
   | 'sendComment'
-  | 'sopSkill'
-  | 'subAgent'
   | 'syncFeedback'
-  | 'taskAutomation'
   | 'taskDetail'
   | 'taskPage'
   | 'tasklist'
@@ -160,7 +145,6 @@ const ICON_ASSETS: Record<CollaborationIconName, IconAsset> = {
   handoff: { light: handoffIcon, dark: handoffIconDark },
   humanMember: { light: humanMemberIcon, dark: humanMemberIconDark },
   imageUpload: { light: imageUploadIcon, dark: imageUploadIconDark },
-  leaderAgent: { light: leaderAgentIcon, dark: leaderAgentIconDark },
   listener: { light: listenerIcon, dark: listenerIconDark },
   memory: { light: memoryIcon, dark: memoryIconDark },
   message: { light: messageIcon, dark: messageIconDark },
@@ -169,23 +153,20 @@ const ICON_ASSETS: Record<CollaborationIconName, IconAsset> = {
   planGate: { light: planGateIcon, dark: planGateIconDark },
   profileSelect: { light: profileSelectIcon, dark: profileSelectIconDark },
   project: { light: projectIcon, dark: projectIconDark },
-  promptManager: { light: promptManagerIcon, dark: promptManagerIconDark },
   refreshSync: { light: refreshSyncIcon, dark: refreshSyncIconDark },
   reopen: { light: reopenIcon, dark: reopenIconDark },
   runtime: { light: runtimeIcon, dark: runtimeIconDark },
   secretKey: { light: secretKeyIcon, dark: secretKeyIconDark },
   sendComment: { light: sendCommentIcon, dark: sendCommentIconDark },
-  sopSkill: { light: sopSkillIcon, dark: sopSkillIconDark },
-  subAgent: { light: subAgentIcon, dark: subAgentIconDark },
   syncFeedback: { light: syncFeedbackIcon, dark: syncFeedbackIconDark },
-  taskAutomation: { light: taskAutomationIcon, dark: taskAutomationIconDark },
   taskDetail: { light: taskDetailIcon, dark: taskDetailIconDark },
   taskPage: { light: taskPageIcon, dark: taskPageIconDark },
   tasklist: { light: tasklistIcon, dark: tasklistIconDark },
   webLogin: { light: webLoginIcon, dark: webLoginIconDark },
 };
 
-const sizeToCss = (size: number | string): number | string => (typeof size === 'number' ? `${size}px` : size);
+const sizeToCss = (size: number | string): string =>
+  typeof size === 'number' || /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size;
 
 const CollaborationIcon: React.FC<CollaborationIconProps> = ({
   name,

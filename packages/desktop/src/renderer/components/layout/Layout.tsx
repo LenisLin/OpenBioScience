@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 DeepOrganiser (deepscientist.cc)
+ * Copyright 2025 OpenScience
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -20,7 +20,6 @@ import { useDirectorySelection } from '@renderer/hooks/file/useDirectorySelectio
 import { cleanupSiderTooltips } from '@renderer/utils/ui/siderTooltip';
 import { useConversationShortcuts } from '@renderer/hooks/ui/useConversationShortcuts';
 import { isElectronDesktop } from '@renderer/utils/platform';
-import DeepScientistLogo from '@/renderer/components/icons/DeepScientistLogo';
 import DeepScientistWordmark from '@/renderer/components/icons/DeepScientistWordmark';
 import CollaborationWebviewPool from '@/renderer/pages/collaboration/CollaborationWebviewPool';
 import '@renderer/styles/layout.css';
@@ -83,6 +82,8 @@ const SIDER_DRAG_HYSTERESIS = 6;
 const MOBILE_SIDER_WIDTH_RATIO = 0.67;
 const MOBILE_SIDER_MIN_WIDTH = 260;
 const MOBILE_SIDER_MAX_WIDTH = 420;
+const SIDER_BACKGROUND_COLOR = 'rgb(250, 250, 250)';
+const CONTENT_BACKGROUND_COLOR = 'rgb(254, 254, 254)';
 
 const detectMobileViewportOrTouch = (): boolean => {
   if (typeof window === 'undefined') return false;
@@ -116,7 +117,7 @@ const Layout: React.FC<{
   useConversationShortcuts({ navigate });
   const location = useLocation();
   const { t } = useTranslation();
-  // The DeepOrganiser wordmark acts as Home / Back-to-Chat, but only from settings routes.
+  // The OpenScience wordmark acts as Home / Back-to-Chat, but only from settings routes.
   // In non-settings routes the user is already "home", so it is a no-op (and not actionable).
   const isSettingsRoute = location.pathname.startsWith('/settings');
   // Only wired to the wordmark in the isSettingsRoute branch below, so the
@@ -304,6 +305,7 @@ const Layout: React.FC<{
         position: 'fixed' as const,
         left: 0,
         zIndex: 100,
+        backgroundColor: SIDER_BACKGROUND_COLOR,
         transform: collapsed ? 'translateX(-100%)' : 'translateX(0)',
         transition: 'none',
         pointerEvents: collapsed ? ('none' as const) : ('auto' as const),
@@ -311,6 +313,7 @@ const Layout: React.FC<{
     : {
         position: 'relative' as const,
         overflow: 'visible' as const,
+        backgroundColor: SIDER_BACKGROUND_COLOR,
       };
 
   return (
@@ -328,7 +331,7 @@ const Layout: React.FC<{
               collapsedWidth={isMobile ? 0 : 0}
               collapsed={collapsed}
               width={siderWidth}
-              className={classNames('!bg-2 layout-sider', {
+              className={classNames('!bg-2 layout-sider app-left-sider', {
                 collapsed: collapsed,
               })}
               style={siderStyle}
@@ -342,30 +345,14 @@ const Layout: React.FC<{
                   }
                 )}
               >
-                <div
-                  className={classNames(
-                    'layout-brand-logo shrink-0 size-38px relative rd-0.5rem flex items-center justify-center',
-                    {
-                      '!size-24px': collapsed,
-                    }
-                  )}
-                  onClick={onClick}
-                >
-                  <DeepScientistLogo
-                    alt=''
-                    aria-hidden='true'
-                    className={classNames('w-36px h-36px object-contain', {
-                      '!w-23px !h-23px': collapsed,
-                    })}
-                  />
-                </div>
                 {isSettingsRoute ? (
                   <Tooltip content={t('common.back', { defaultValue: 'Back to Chat' })} position='bottom'>
                     <div
-                      className='collapsed-hidden min-w-0 flex-1 cursor-pointer'
+                      className='layout-brand-wordmark collapsed-hidden min-w-0 flex-1 cursor-pointer'
                       role='button'
                       tabIndex={0}
                       aria-label={t('common.back', { defaultValue: 'Back to Chat' })}
+                      onDoubleClick={onClick}
                       onClick={handleBrandHome}
                       onKeyDown={(event) => {
                         if (event.key === 'Enter' || event.key === ' ') {
@@ -374,12 +361,16 @@ const Layout: React.FC<{
                         }
                       }}
                     >
-                      <DeepScientistWordmark aria-hidden='true' className='h-40px w-228px max-w-full object-contain' />
+                      <span className='layout-brand-lockup'>
+                        <DeepScientistWordmark aria-hidden='true' className='h-56px w-224px max-w-full object-contain' />
+                      </span>
                     </div>
                   </Tooltip>
                 ) : (
-                  <div className='collapsed-hidden min-w-0 flex-1'>
-                    <DeepScientistWordmark className='h-40px w-228px max-w-full object-contain' />
+                  <div className='layout-brand-wordmark collapsed-hidden min-w-0 flex-1' onDoubleClick={onClick}>
+                    <span className='layout-brand-lockup'>
+                      <DeepScientistWordmark className='h-56px w-224px max-w-full object-contain' />
+                    </span>
                   </div>
                 )}
                 {isMobile && !collapsed && (
@@ -427,8 +418,11 @@ const Layout: React.FC<{
                 isMobile
                   ? {
                       width: '100%',
+                      backgroundColor: CONTENT_BACKGROUND_COLOR,
                     }
-                  : undefined
+                  : {
+                      backgroundColor: CONTENT_BACKGROUND_COLOR,
+                    }
               }
             >
               <div className={`relative flex min-h-0 flex-1 flex-col ${isCollaborationRoute ? 'z-1' : 'z-3'}`}>

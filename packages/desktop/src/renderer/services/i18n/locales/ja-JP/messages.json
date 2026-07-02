@@ -177,5 +177,17 @@
       "listedTarget": "Listed {{target}}"
     },
     "progressLog": "進行ログ"
+  },
+  "codexMemory": {
+    "title": "Codex メモリ",
+    "fallbackTitle": "メモリスナップショット",
+    "marker": "メモリポイント",
+    "markerWithNumber": "メモリ {{number}}",
+    "window": "ウィンドウ {{number}}",
+    "line": "行 {{number}}",
+    "loading": "メモリスナップショットを読み込んでいます...",
+    "empty": "このメモリスナップショットはまだ準備できていません。",
+    "refresh": "更新",
+    "copy": "コピー"
   }
 }

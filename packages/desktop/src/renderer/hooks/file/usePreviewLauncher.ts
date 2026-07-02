@@ -111,6 +111,7 @@ export const usePreviewLauncher = () => {
         language,
         truncated: false,
       };
+      const previewEditable = contentType === 'molecular_structure' ? false : editable;
 
       // 1. 乐观预览：如果有回退内容（如 Diff 中提取的内容），立即显示 / Optimistic preview: Show fallback content immediately if available
       let hasOpened = false;
@@ -118,7 +119,7 @@ export const usePreviewLauncher = () => {
         const normalizedFallback = normalizeLargeTextPreview(fallbackContent, contentType);
         openPreview(normalizedFallback.content, contentType, {
           ...metadata,
-          editable: normalizedFallback.truncated ? false : editable,
+          editable: normalizedFallback.truncated ? false : previewEditable,
           truncated: normalizedFallback.truncated,
         });
         hasOpened = true;
@@ -138,7 +139,7 @@ export const usePreviewLauncher = () => {
               }
               openPreview(base64, contentType, {
                 ...metadata,
-                editable,
+                editable: previewEditable,
               });
               return;
             }
@@ -149,7 +150,7 @@ export const usePreviewLauncher = () => {
               // These formats rely on file path; no need to read file content
               openPreview('', contentType, {
                 ...metadata,
-                editable,
+                editable: previewEditable,
               });
               return;
             }
@@ -166,7 +167,7 @@ export const usePreviewLauncher = () => {
             const normalizedContent = normalizeLargeTextPreview(content, contentType);
             openPreview(normalizedContent.content, contentType, {
               ...metadata,
-              editable: normalizedContent.truncated ? false : editable,
+              editable: normalizedContent.truncated ? false : previewEditable,
               truncated: normalizedContent.truncated,
             });
             return;

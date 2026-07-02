@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 DeepOrganiser (deepscientist.cc)
+ * Copyright 2025 OpenScience
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,7 +23,7 @@ export function setAppConfig(config: { name: string; version: string; protocolVe
  * Gets the application client name from the app config if available
  */
 export const getConfiguredAppClientName = (): string => {
-  return appConfig?.name || 'DeepOrganiser';
+  return appConfig?.name || 'OpenScience';
 };
 
 /**

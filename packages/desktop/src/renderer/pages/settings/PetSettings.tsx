@@ -33,7 +33,7 @@ const PET_STYLE_OPTIONS: Array<{ value: PetStyle; asset: string; labelKey: strin
   {
     value: 'deepscientist',
     asset: './pet-states/deepscientist/idle.svg',
-    labelKey: 'pet.styleDeepScientist',
+    labelKey: 'pet.styleOpenScience',
   },
   {
     value: 'classic',

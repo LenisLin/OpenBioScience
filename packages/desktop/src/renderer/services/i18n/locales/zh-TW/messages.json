@@ -177,5 +177,17 @@
       "working": "正在處理"
     },
     "progressLog": "過程記錄"
+  },
+  "codexMemory": {
+    "title": "Codex 記憶",
+    "fallbackTitle": "記憶快照",
+    "marker": "記憶點",
+    "markerWithNumber": "記憶點 {{number}}",
+    "window": "視窗 {{number}}",
+    "line": "第 {{number}} 行",
+    "loading": "正在載入記憶快照...",
+    "empty": "這份記憶快照尚未準備好。",
+    "refresh": "重新整理",
+    "copy": "複製"
   }
 }

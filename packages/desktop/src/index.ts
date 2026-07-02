@@ -385,7 +385,7 @@ const createWindow = ({ showOnReady = true }: { showOnReady?: boolean } = {}): v
   // Get app icon for development mode (Windows/Linux need icon in BrowserWindow)
   // In production, icons are set via forge.config.ts packagerConfig
   let devIcon: Electron.NativeImage | undefined;
-  if (!app.isPackaged) {
+  if (!app.isPackaged && !isE2ETestMode && !isEnvEnabled('DEEPORGANISER_DISABLE_DEVTOOLS')) {
     try {
       // Windows: app.ico (no dev version), Linux: app_dev.png (with padding)
       const iconFile = process.platform === 'win32' ? 'app.ico' : 'app_dev.png';
@@ -575,7 +575,7 @@ const handleAppReady = async (): Promise<void> => {
     console.log(`[DeepOrganiser:ready] ${label} +${Math.round(performance.now() - t0)}ms`);
   mark('start');
 
-  if (!app.isPackaged) {
+  if (!app.isPackaged && !isE2ETestMode && !isEnvEnabled('DEEPORGANISER_DISABLE_DEVTOOLS')) {
     try {
       const { default: installExtension, REACT_DEVELOPER_TOOLS } = await import('electron-devtools-installer');
       await installExtension(REACT_DEVELOPER_TOOLS);

@@ -63,13 +63,13 @@ const ReplacePreview: React.FC<{ message: IMessageToolCall }> = ({ message }) =>
 
   const fileInfo = useMemo(() => parseDiff(diffText, file_path), [diffText, file_path]);
   const display_name = file_path.split(/[/\\]/).pop() || file_path;
-  const { handleFileClick, handleDiffClick } = useDiffPreviewHandlers({ diffText, display_name, file_path });
+  const { handleDiffClick } = useDiffPreviewHandlers({ diffText, display_name, file_path });
 
   return (
     <FileChangesPanel
       title={fileInfo.file_name}
       files={[fileInfo]}
-      onFileClick={handleFileClick}
+      onFileClick={handleDiffClick}
       onDiffClick={handleDiffClick}
       defaultExpanded={true}
     />

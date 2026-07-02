@@ -10,8 +10,7 @@ import FileChangesPanel, {
 } from '@/renderer/components/base/FileChangesPanel';
 import { useConversationContextSafe } from '@/renderer/hooks/context/ConversationContext';
 import { usePreviewLauncher } from '@/renderer/hooks/file/usePreviewLauncher';
-import { extractContentFromDiff, parseDiff, type FileChangeInfo } from '@/renderer/utils/file/diffUtils';
-import { getFileTypeInfo } from '@/renderer/utils/file/fileType';
+import { parseDiff, type FileChangeInfo } from '@/renderer/utils/file/diffUtils';
 import { Message, Modal } from '@arco-design/web-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -193,26 +192,6 @@ const MessageFileChanges: React.FC<MessageFileChangesProps> = ({
     };
   }, [canUndo, conversationContext?.workspace, fileChanges, getBlockedUndoTitle, t, undoStorageKey]);
 
-  const handleFileClick = useCallback(
-    (file: FileChangeItem) => {
-      const fileInfo = fileChanges.find((candidate) => candidate.fullPath === file.fullPath);
-      if (!fileInfo) return;
-
-      const { contentType, editable, language } = getFileTypeInfo(fileInfo.file_name);
-
-      void launchPreview({
-        relativePath: fileInfo.fullPath,
-        file_name: fileInfo.file_name,
-        contentType,
-        editable,
-        language,
-        fallbackContent: editable ? extractContentFromDiff(fileInfo.diff) : undefined,
-        diffContent: fileInfo.diff,
-      });
-    },
-    [fileChanges, launchPreview]
-  );
-
   const handleDiffClick = useCallback(
     (file: FileChangeItem) => {
       const fileInfo = fileChanges.find((candidate) => candidate.fullPath === file.fullPath);
@@ -318,7 +297,7 @@ const MessageFileChanges: React.FC<MessageFileChangesProps> = ({
         variant='result'
         title={t('messages.fileChangesCount', { count: fileChanges.length })}
         files={fileChanges}
-        onFileClick={handleFileClick}
+        onFileClick={handleDiffClick}
         onDiffClick={handleDiffClick}
         onUndo={canUndo ? handleUndo : undefined}
         undoState={canUndo ? undoState : 'hidden'}

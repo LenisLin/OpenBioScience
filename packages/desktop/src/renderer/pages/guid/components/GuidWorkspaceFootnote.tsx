@@ -20,6 +20,13 @@ type GuidWorkspaceFootnoteProps = {
   active?: boolean;
   onActivate?: () => void;
   onDeactivate?: () => void;
+  labels?: {
+    workInProject?: string;
+    clearWorkspace?: string;
+    specifyWorkspace?: string;
+    searchPlaceholder?: string;
+    noProject?: string;
+  };
 };
 
 const FolderIcon = ({ size = 12 }: { size?: number }) => (
@@ -57,8 +64,16 @@ const GuidWorkspaceFootnote: React.FC<GuidWorkspaceFootnoteProps> = ({
   active = false,
   onActivate,
   onDeactivate,
+  labels,
 }) => {
   const { t } = useTranslation();
+  const workspaceLabels = {
+    workInProject: labels?.workInProject || t('guid.workspace.workInProject'),
+    clearWorkspace: labels?.clearWorkspace || t('guid.workspace.clearWorkspace'),
+    specifyWorkspace: labels?.specifyWorkspace || t('guid.workspace.specifyWorkspace'),
+    searchPlaceholder: labels?.searchPlaceholder || t('guid.workspace.searchPlaceholder'),
+    noProject: labels?.noProject || t('guid.workspace.noProject'),
+  };
   const recentWorkspaces = getRecentWorkspaces();
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -175,7 +190,7 @@ const GuidWorkspaceFootnote: React.FC<GuidWorkspaceFootnoteProps> = ({
             <input
               ref={searchRef}
               className={styles.wsDropdownSearchInput}
-              placeholder={t('guid.workspace.searchPlaceholder')}
+              placeholder={workspaceLabels.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -213,7 +228,7 @@ const GuidWorkspaceFootnote: React.FC<GuidWorkspaceFootnoteProps> = ({
 
           <div className={`${styles.wsDropdownItem} ${styles.wsDropdownItemAccent}`} onClick={handleBrowseWorkspace}>
             <PlusIcon />
-            <span>{t('guid.workspace.specifyWorkspace')}</span>
+            <span>{workspaceLabels.specifyWorkspace}</span>
           </div>
 
           <>
@@ -238,7 +253,7 @@ const GuidWorkspaceFootnote: React.FC<GuidWorkspaceFootnoteProps> = ({
                 <path d='M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z' />
                 <line x1='2' y1='2' x2='22' y2='22' strokeWidth='1.5' />
               </svg>
-              <span>{t('guid.workspace.noProject')}</span>
+              <span>{workspaceLabels.noProject}</span>
             </div>
           </>
         </div>,
@@ -268,7 +283,7 @@ const GuidWorkspaceFootnote: React.FC<GuidWorkspaceFootnoteProps> = ({
               </button>
               <span
                 role='button'
-                aria-label={t('guid.workspace.clearWorkspace')}
+                aria-label={workspaceLabels.clearWorkspace}
                 className={styles.workspacePillClose}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -291,7 +306,7 @@ const GuidWorkspaceFootnote: React.FC<GuidWorkspaceFootnoteProps> = ({
             onClick={recentWorkspaces.length > 0 ? toggleOpen : handleBrowseWorkspace}
           >
             <FolderIcon size={14} />
-            <span>{t('guid.workspace.workInProject')}</span>
+            <span>{workspaceLabels.workInProject}</span>
             {recentWorkspaces.length > 0 && (
               <Down
                 theme='outline'

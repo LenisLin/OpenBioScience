@@ -1,4 +1,5 @@
 import { ipcBridge } from '@/common';
+import type { LoopGoalState } from '@/common/chat/loopGoal';
 import type { IConversationMcpStatus } from '@/common/config/storage';
 import { isBackendHttpError } from '@/common/adapter/httpBridge';
 import { isSideQuestionSupported } from '@/common/chat/sideQuestion';
@@ -6,6 +7,7 @@ import { parseError, uuid } from '@/common/utils';
 import ContextUsageIndicator from '@/renderer/components/agent/ContextUsageIndicator';
 import AgentModeSelector from '@/renderer/components/agent/AgentModeSelector';
 import CommandQueuePanel from '@/renderer/components/chat/CommandQueuePanel';
+import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
 import MobileActionSheet, {
   type MobileActionSheetEntry,
   type MobileActionSheetOption,
@@ -28,6 +30,7 @@ import { useOpenFileSelector } from '@/renderer/hooks/file/useOpenFileSelector';
 import { useLatestRef } from '@/renderer/hooks/ui/useLatestRef';
 import { useAddOrUpdateMessage } from '@/renderer/pages/conversation/Messages/hooks';
 import RunningAgentProgress from '@/renderer/pages/conversation/Messages/agent-steps/RunningAgentProgress';
+import LoopGoalBar from '@/renderer/pages/conversation/components/LoopGoalBar';
 import {
   shouldEnqueueConversationCommand,
   useConversationCommandQueue,
@@ -46,7 +49,7 @@ import { mergeFileSelectionItems } from '@/renderer/utils/file/fileSelection';
 import { buildDisplayMessage } from '@/renderer/utils/file/messageFiles';
 import { getModelContextLimit } from '@/renderer/utils/model/modelContextLimits';
 import { Message, Tag } from '@arco-design/web-react';
-import { Brain, MagicHat, Shield } from '@icon-park/react';
+import { Brain, Shield } from '@icon-park/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buildSendFailureError } from './buildSendFailureError';
@@ -112,6 +115,11 @@ const AcpSendBox: React.FC<{
   messageState: UseAcpMessageReturn;
   teamSendMessage?: (payload: { input: string; files: string[] }) => Promise<void>;
   teamRuntime?: TeamSendBoxRuntime;
+  isMedicalEvidenceMode?: boolean;
+  isScienceMode?: boolean;
+  isLabSkillDepositionMode?: boolean;
+  loopGoal?: LoopGoalState;
+  onLoopGoalChange?: (next: LoopGoalState) => void | Promise<void>;
 }> = ({
   conversation_id,
   backend,
@@ -121,6 +129,11 @@ const AcpSendBox: React.FC<{
   messageState,
   teamSendMessage,
   teamRuntime,
+  isMedicalEvidenceMode = false,
+  isScienceMode = false,
+  isLabSkillDepositionMode = false,
+  loopGoal,
+  onLoopGoalChange,
 }) => {
   const { setAiProcessing, resetState, slashCommands, fetchSlashCommands, tokenUsage, context_limit } = messageState;
   const { t } = useTranslation();
@@ -260,6 +273,47 @@ const AcpSendBox: React.FC<{
     () => slashCommands.some((command) => command.name === 'compact') || /codex/i.test(backend),
     [backend, slashCommands]
   );
+  const medicalEvidenceModeLabel = t('guid.medicalEvidence.menuLabel');
+  const scienceModeLabel = t('guid.scienceProject.menuLabel');
+  const labSkillDepositionModeLabel = t('guid.skillDeposition.menuLabel');
+  const showToolbarLoopGoal = Boolean(loopGoal && loopGoal.status !== 'deleted' && onLoopGoalChange);
+  const showScienceModePill =
+    isScienceMode && !showToolbarLoopGoal && !isMedicalEvidenceMode && !isLabSkillDepositionMode;
+  const toolbarModePrefix =
+    showToolbarLoopGoal || isMedicalEvidenceMode || showScienceModePill || isLabSkillDepositionMode ? (
+      <div className='sendbox-mode-strip'>
+        {showToolbarLoopGoal && loopGoal && onLoopGoalChange ? (
+          <LoopGoalBar loopGoal={loopGoal} variant='toolbar' onChange={onLoopGoalChange} />
+        ) : null}
+        {isMedicalEvidenceMode ? (
+          <div
+            className='sendbox-mode-pill sendbox-mode-pill--medical sendbox-medical-evidence-mode'
+            role='status'
+            aria-label={medicalEvidenceModeLabel}
+            data-testid='medical-evidence-conversation-mode-pill'
+          >
+            <OpenScienceIcon name='modeMedicalEvidence' size={18} visualScale={1.12} />
+            <span className='sendbox-medical-evidence-mode__label'>{medicalEvidenceModeLabel}</span>
+          </div>
+        ) : null}
+        {showScienceModePill ? (
+          <div className='sendbox-mode-pill sendbox-mode-pill--science' role='status' aria-label={scienceModeLabel}>
+            <OpenScienceIcon name='modeScience' size={18} visualScale={1.1} />
+            <span className='sendbox-mode-pill__label'>{scienceModeLabel}</span>
+          </div>
+        ) : null}
+        {isLabSkillDepositionMode ? (
+          <div
+            className='sendbox-mode-pill sendbox-mode-pill--skill'
+            role='status'
+            aria-label={labSkillDepositionModeLabel}
+          >
+            <OpenScienceIcon name='modeDeposition' size={18} visualScale={1.1} />
+            <span className='sendbox-mode-pill__label'>{labSkillDepositionModeLabel}</span>
+          </div>
+        ) : null}
+      </div>
+    ) : null;
 
   // Register handler for adding text from preview panel to sendbox
   useEffect(() => {
@@ -578,7 +632,7 @@ Please check your local CLI tool authentication status`,
       }));
       entries.push({
         key: 'skills',
-        icon: <MagicHat theme='outline' size='16' />,
+        icon: <OpenScienceIcon name='settingsSkills' size={16} visualScale={1.04} />,
         label: t('common.skills', { defaultValue: 'Skills' }),
         variant: 'muted',
         submenu: {
@@ -750,6 +804,7 @@ Please check your local CLI tool authentication status`,
             loadedMcpStatuses={loadedMcpStatuses}
           />
         }
+        toolbarPrefix={toolbarModePrefix}
         rightTools={
           <div className='flex items-center gap-8px min-w-0'>
             {showModeSelector && (

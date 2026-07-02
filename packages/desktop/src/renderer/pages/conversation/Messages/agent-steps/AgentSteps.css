@@ -285,6 +285,24 @@
   background: var(--color-fill-1, #232324);
 }
 
+.agent-command-card--single-line {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+[data-theme='dark'] .agent-command-card--output-panel,
+[data-theme='dark'] .agent-command-card--single-line {
+  background: transparent;
+}
+
+.agent-command-card--output-panel {
+  border-color: transparent;
+  background: transparent;
+  overflow: visible;
+}
+
 .agent-command-header,
 .agent-file-header,
 .agent-todo-card .agent-step-line,
@@ -292,9 +310,77 @@
   padding: 8px 10px;
 }
 
+.agent-command-card--output-panel .agent-command-header {
+  padding: 3px 0 8px;
+}
+
+.agent-command-card--single-line .agent-command-header {
+  min-height: 24px;
+  padding: 2px 0;
+}
+
+.agent-command-header--static,
+.agent-command-header--static:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.agent-command-header--static .agent-step-subtitle {
+  user-select: text;
+}
+
 .agent-command-body {
   position: relative;
   padding: 0 10px 10px 24px;
+}
+
+.agent-command-card--output-panel .agent-command-body {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-fill-2, #f2f3f5) 76%, var(--color-bg-1, #fff));
+}
+
+[data-theme='dark'] .agent-command-card--output-panel .agent-command-body {
+  background: color-mix(in srgb, var(--color-fill-2, #2b2b2c) 74%, var(--color-bg-1, #1f1f20));
+}
+
+.agent-command-body-title {
+  margin-bottom: 8px;
+  color: var(--color-text-3, #6b7280);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.agent-command-json-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin: 0 0 8px;
+  color: var(--color-text-3, #6b7280);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.agent-command-json-summary-item {
+  display: inline-flex;
+  min-width: 0;
+  gap: 5px;
+}
+
+.agent-command-json-summary-label {
+  flex: 0 0 auto;
+  color: var(--color-text-4, #9ca3af);
+}
+
+.agent-command-json-summary-value {
+  min-width: 0;
+  max-width: 360px;
+  color: var(--color-text-2, #4e5969);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .agent-command-code,
@@ -316,6 +402,11 @@
 .agent-command-output {
   margin-top: 6px;
   color: var(--color-text-3, #86909c);
+}
+
+.agent-command-card--output-panel .agent-command-code,
+.agent-command-card--output-panel .agent-command-output {
+  color: var(--color-text-2, #4e5969);
 }
 
 .agent-command-output--full {
@@ -761,5 +852,17 @@
   .agent-todo-card .agent-step-line,
   .agent-image-card .agent-step-line {
     padding: 7px 8px;
+  }
+
+  .agent-command-card--output-panel .agent-command-header {
+    padding: 3px 0 8px;
+  }
+
+  .agent-command-card--single-line .agent-command-header {
+    padding: 2px 0;
+  }
+
+  .agent-command-json-summary-value {
+    max-width: 220px;
   }
 }

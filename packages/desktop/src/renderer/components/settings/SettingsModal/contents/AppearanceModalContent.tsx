@@ -62,7 +62,7 @@ const AppearanceModalContent: React.FC = () => {
           {/* 主题画廊 / Theme Gallery */}
           <SettingsSection
             title={t('settings.theme')}
-            description={t('settings.cssTheme.selectOrCustomize', { defaultValue: 'Choose how DeepScientist looks.' })}
+            description={t('settings.cssTheme.selectOrCustomize', { defaultValue: 'Choose how OpenScience looks.' })}
             icon='theme'
           >
             <CssThemeSettings />

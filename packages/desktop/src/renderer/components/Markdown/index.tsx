@@ -75,6 +75,20 @@ const MarkdownView: React.FC<MarkdownViewProps> = React.memo(
         e.preventDefault();
         e.stopPropagation();
         const target = e.currentTarget as HTMLAnchorElement;
+        const rawHref = target.getAttribute('href') || '';
+        if (rawHref.startsWith('#')) {
+          const targetElement = document.getElementById(rawHref.slice(1));
+          targetElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (targetElement) {
+            targetElement.classList.remove('medical-evidence-card--jumped');
+            // Restart the highlight animation even when the same citation is clicked repeatedly.
+            window.setTimeout(() => {
+              targetElement.classList.add('medical-evidence-card--jumped');
+              window.setTimeout(() => targetElement.classList.remove('medical-evidence-card--jumped'), 2200);
+            }, 0);
+          }
+          return;
+        }
         const href = target.href;
         if (!href) return;
         if (onLinkPreview) {

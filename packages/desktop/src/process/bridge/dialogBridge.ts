@@ -13,6 +13,7 @@ export function initDialogBridge(): void {
     // This ensures the dialog appears in front on Windows and has proper modal behavior
     const parentWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
     const dialogOptions = {
+      title: options?.title,
       defaultPath: options?.defaultPath,
       properties: options?.properties,
       filters: options?.filters,

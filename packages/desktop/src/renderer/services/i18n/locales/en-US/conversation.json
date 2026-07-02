@@ -12,10 +12,10 @@
     "clearWorkspace": "Remove project",
     "openFolder": "Open Folder",
     "none": "None",
-    "quickActionsTitle": "What can DeepOrganiser do?",
+    "quickActionsTitle": "What can OpenScience do?",
     "quickActionFeedback": "Report Issue",
     "quickActionStar": "Like us? Give us a star!",
-    "skillsMarket": "DeepOrganiser Skills Market",
+    "skillsMarket": "OpenScience Skills Market",
     "skillsMarketDesc": "Search and activate community Skills on demand. Configure once, available for all agents.",
     "skillsMarketDetails": "View More >>"
   },
@@ -68,10 +68,10 @@
     "earlier": "Earlier",
     "projectsSection": "Local Projects",
     "conversationsSection": "Conversations",
-    "removeProjectTitle": "Remove project",
-    "removeProject": "Remove project",
-    "removeProjectConfirm": "Remove project \"{{name}}\"? Its {{count}} conversation(s) will be removed too.",
-    "newConversationInProject": "New chat in this project"
+    "removeProjectTitle": "Remove local project",
+    "removeProject": "Remove local project",
+    "removeProjectConfirm": "Remove local project \"{{name}}\" from the sidebar? This deletes {{count}} chat record(s) in the project, but it will not delete files from the local folder.",
+    "newConversationInProject": "New chat in this local project"
   },
   "historySearch": {
     "tooltip": "Search messages",

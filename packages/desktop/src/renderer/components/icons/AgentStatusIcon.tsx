@@ -112,7 +112,8 @@ const ICON_ASSETS: Record<AgentStatusIconName, IconAsset> = {
   imageFiles: { light: imageFilesIcon, dark: imageFilesIconDark },
 };
 
-const sizeToCss = (size: number | string): number | string => (typeof size === 'number' ? `${size}px` : size);
+const sizeToCss = (size: number | string): string =>
+  typeof size === 'number' || /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size;
 
 const AgentStatusIcon: React.FC<AgentStatusIconProps> = ({
   name,

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 DeepOrganiser (deepscientist.cc)
+ * Copyright 2025 OpenScience (deepscientist.cc)
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,7 +16,7 @@ import { LEGACY_LOCAL_RUNTIME_ID } from '@/common/config/legacyIdentifiers';
 import type { TChatConversation, TProviderWithModel } from '@/common/config/storage';
 import { httpRequest } from '@/common/adapter/httpBridge';
 import { normalizeCodexMode } from '@/common/types/codex/codexModes';
-import { DEFAULT_CODEX_MODELS } from '@/common/types/codex/codexModels';
+import { DEFAULT_CODEX_MODEL_ID, DEFAULT_CODEX_MODELS } from '@/common/types/codex/codexModels';
 import {
   configureProjectAgent,
   intakeAgentTask,
@@ -1095,7 +1095,7 @@ async function buildCollaborationPrompt(input: {
     '',
     '# Current Lark Message Routing Context',
     '',
-    `Bound App: ${input.binding.appName || 'DeepOrganiser'}`,
+    `Bound App: ${input.binding.appName || 'OpenScience'}`,
     input.binding.userName ? `Local Owner: ${input.binding.userName}` : undefined,
     `Chat Type: ${input.event.chat_type || 'unknown'}`,
     input.event.chat_id ? `Chat ID: ${input.event.chat_id}` : undefined,
@@ -1134,12 +1134,12 @@ function buildFallbackImReply(input: { content: string; taskIntent: boolean; age
     zh: {
       error: [
         '我已经收到你的消息，但本地 Agent 会话暂时没有顺利完成自动处理。',
-        '你可以稍后再发一次，或在 DeepOrganiser 里检查协作自动化的默认模型和本地运行状态。',
+        '你可以稍后再发一次，或在 OpenScience 里检查协作自动化的默认模型和本地运行状态。',
       ].join('\n'),
       agentTask: '收到，这条消息已按 Agent 任务入口处理。我会把任务内容交给本地 Agent 链路，并在任务评论区保留后续上下文。',
       task: '收到，这条消息看起来是一个待办/任务请求。我会优先把它进入协作任务链路；如果你希望交给 Agent 执行，可以用 [AGENT_TASK] 写清目标、上下文、交付物和验收标准。',
       default: [
-        '你好，我是 DeepOrganiser 的协作 Agent。',
+        '你好，我是 OpenScience 的协作 Agent。',
         '我可以帮你讨论项目计划、整理需求、把明确事项转成协作任务，并在需要时协调本地 Agent 继续处理。',
         '如果你想创建任务，可以直接说“创建任务：……”。如果要交给 Agent 执行，可以使用 [AGENT_TASK] 写清目标、输入、交付物和验收标准。',
       ].join('\n'),
@@ -1147,12 +1147,12 @@ function buildFallbackImReply(input: { content: string; taskIntent: boolean; age
     ja: {
       error: [
         'メッセージは受け取りましたが、ローカル Agent セッションでの自動処理が一時的に完了できませんでした。',
-        '少し時間を置いて再送するか、DeepOrganiser の協作自動化設定で既定モデルとローカル実行状態を確認してください。',
+        '少し時間を置いて再送するか、OpenScience の協作自動化設定で既定モデルとローカル実行状態を確認してください。',
       ].join('\n'),
       agentTask: '受け取りました。このメッセージは Agent タスクとして扱います。内容をローカル Agent の処理フローに渡し、以後の文脈はタスクのコメントにも残します。',
       task: '受け取りました。このメッセージはタスク依頼のようです。まず協作タスクの流れに入れます。Agent に実行させたい場合は、[AGENT_TASK] に目標、文脈、成果物、受け入れ基準を書いてください。',
       default: [
-        'こんにちは。DeepOrganiser の協作 Agent です。',
+        'こんにちは。OpenScience の協作 Agent です。',
         'プロジェクト計画の相談、要件整理、明確な依頼のタスク化、必要に応じたローカル Agent への引き継ぎを支援できます。',
         'タスクを作成したい場合は、そのまま依頼を書いてください。Agent に実行させたい場合は [AGENT_TASK] に目標、入力、成果物、受け入れ基準を書いてください。',
       ].join('\n'),
@@ -1160,12 +1160,12 @@ function buildFallbackImReply(input: { content: string; taskIntent: boolean; age
     es: {
       error: [
         'He recibido tu mensaje, pero la sesión local del Agent no pudo completar el procesamiento automático por ahora.',
-        'Puedes reenviarlo más tarde o revisar el modelo predeterminado y el estado local en la automatización de colaboración de DeepOrganiser.',
+        'Puedes reenviarlo más tarde o revisar el modelo predeterminado y el estado local en la automatización de colaboración de OpenScience.',
       ].join('\n'),
       agentTask: 'Recibido. Trataré este mensaje como una tarea de Agent, lo pasaré al flujo local y conservaré el contexto posterior en los comentarios de la tarea.',
       task: 'Recibido. Este mensaje parece una solicitud de tarea. Lo llevaré primero al flujo de tareas de colaboración. Si quieres que lo ejecute un Agent, usa [AGENT_TASK] e incluye objetivo, contexto, entregable y criterios de aceptación.',
       default: [
-        'Hola, soy el Agent de colaboración de DeepOrganiser.',
+        'Hola, soy el Agent de colaboración de OpenScience.',
         'Puedo ayudarte a discutir planes de proyecto, ordenar requisitos, convertir solicitudes claras en tareas y coordinar un Agent local cuando haga falta.',
         'Para crear una tarea, escribe la solicitud directamente. Para que la ejecute un Agent, usa [AGENT_TASK] con objetivo, entradas, entregable y criterios de aceptación.',
       ].join('\n'),
@@ -1173,12 +1173,12 @@ function buildFallbackImReply(input: { content: string; taskIntent: boolean; age
     en: {
       error: [
         'I received your message, but the local Agent session could not complete the automatic handling yet.',
-        'Please try again later, or check the collaboration automation default model and local runtime status in DeepOrganiser.',
+        'Please try again later, or check the collaboration automation default model and local runtime status in OpenScience.',
       ].join('\n'),
       agentTask: 'Received. I will treat this as an Agent task, pass it into the local Agent flow, and keep follow-up context in the task comments.',
       task: 'Received. This looks like a task request, so I will route it into the collaboration task flow first. If you want an Agent to execute it, use [AGENT_TASK] with the goal, context, deliverable, and acceptance criteria.',
       default: [
-        'Hello, I am the DeepOrganiser collaboration Agent.',
+        'Hello, I am the OpenScience collaboration Agent.',
         'I can help discuss project plans, clarify requirements, turn clear requests into collaboration tasks, and coordinate a local Agent when needed.',
         'To create a task, write the request directly. To delegate execution to an Agent, use [AGENT_TASK] and include the goal, inputs, deliverable, and acceptance criteria.',
       ].join('\n'),
@@ -1223,7 +1223,7 @@ async function getOrCreateImConversation(input: {
       await upsertLocalImChatConfig({
         chatId,
         profileName: input.profileName,
-        displayName: input.binding.appName || 'DeepOrganiser',
+        displayName: input.binding.appName || 'OpenScience',
         conversationId: saved.id,
         workspace,
         visible: true,
@@ -1239,7 +1239,7 @@ async function getOrCreateImConversation(input: {
     await upsertLocalImChatConfig({
       chatId,
       profileName: input.profileName,
-      displayName: input.binding.appName || 'DeepOrganiser',
+      displayName: input.binding.appName || 'OpenScience',
       conversationId: existing.id,
       workspace,
       visible: true,
@@ -1252,7 +1252,7 @@ async function getOrCreateImConversation(input: {
   const agentType = resolveLarkAgentType(settings);
   const agent = settings['assistant.lark.agent'];
   const acpBackend = resolveLarkAcpBackend(agent);
-  const defaultCodexModel = DEFAULT_CODEX_MODELS[0]?.id ?? 'gpt-5.3-codex';
+  const defaultCodexModel = DEFAULT_CODEX_MODELS[0]?.id ?? DEFAULT_CODEX_MODEL_ID;
   const model = {
     id: modelRef?.id || acpBackend,
     use_model: modelRef?.use_model || (acpBackend === 'codex' ? defaultCodexModel : ''),
@@ -1272,11 +1272,11 @@ async function getOrCreateImConversation(input: {
       lark_im_profile_name: input.profileName,
       lark_im_chat_id: chatId,
       lark_im_sender_id: input.event.sender_id,
-      lark_im_display_group: input.binding.appName || 'DeepOrganiser',
+      lark_im_display_group: input.binding.appName || 'OpenScience',
       lark_im_kind: input.event.chat_type === 'group' ? 'group_chat' : 'direct_chat',
       lark_im_last_message_id: input.event.message_id,
       is_temporary_workspace: true,
-      agent_name: input.binding.appName || 'DeepOrganiser',
+      agent_name: input.binding.appName || 'OpenScience',
       ...(agentType === 'acp'
         ? {
             backend: acpBackend,
@@ -1293,7 +1293,7 @@ async function getOrCreateImConversation(input: {
   await upsertLocalImChatConfig({
     chatId,
     profileName: input.profileName,
-    displayName: input.binding.appName || 'DeepOrganiser',
+    displayName: input.binding.appName || 'OpenScience',
     conversationId: created.id || deterministicId,
     workspace,
     visible: true,
@@ -1847,7 +1847,7 @@ async function createTaskFromEvent(profileName: string, binding: ILarkAutomation
           taskGuid: created.data.guid,
           taskTitle: summary,
           taskDescription: description,
-          targetAgent: binding.appName || 'DeepOrganiser',
+          targetAgent: binding.appName || 'OpenScience',
           requiredResponse: 'context_packet',
           language: 'auto',
         },
@@ -2142,7 +2142,7 @@ async function backfillKnownChats(profileName: string, binding: ILarkAutomationB
 }
 
 async function seedKnownChatsForBinding(profileName: string, binding: ILarkAutomationBindingRecord): Promise<void> {
-  const targetName = (binding.appName || 'DeepOrganiser').trim();
+  const targetName = (binding.appName || 'OpenScience').trim();
   if (!targetName) return;
 
   const result = await runLarkCliSafe(
@@ -3375,7 +3375,7 @@ async function listProfiles(): Promise<ILarkAutomationProfilesResult> {
 
     const selectedSafeName = safeFileName(selectedProfile);
     const appList = await runLarkCliSafe(
-      withProfile(['apps', '+list', '--as', 'user', '--keyword', 'DeepOrganiser', '--json'], selectedProfile),
+      withProfile(['apps', '+list', '--as', 'user', '--keyword', 'OpenScience', '--json'], selectedProfile),
       25_000
     );
     rawDataFiles.push(writeRawDataFile(`apps-list.${selectedSafeName}.stdout.json`, sanitizeOutput(appList.stdout)));

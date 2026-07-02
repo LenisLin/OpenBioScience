@@ -35,7 +35,8 @@ const ICON_ASSETS: Record<SettingsIconName, IconAsset> = {
   motion: { light: motionIcon, dark: motionIconDark },
 };
 
-const sizeToCss = (size: number | string): string => (typeof size === 'number' ? `${size}px` : size);
+const sizeToCss = (size: number | string): string =>
+  typeof size === 'number' || /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size;
 
 const SettingsIcon: React.FC<SettingsIconProps> = ({ name, size = 22, title, className, style, ...props }) => {
   const asset = ICON_ASSETS[name] || ICON_ASSETS.theme;

@@ -25,5 +25,42 @@
     "statusTesting": "Testing latency...",
     "statusUnreachable": "Unreachable",
     "statusAvailable": "Available"
+  },
+  "scienceProject": {
+    "badge": "Science",
+    "defaultBadge": "Varsayılan",
+    "menuLabel": "Bilimsel araştırma modu",
+    "modeActive": "Bilimsel araştırma modu açık",
+    "workInProject": "Araştırma projesi seç",
+    "clearWorkspace": "Araştırma projesini kaldır",
+    "specifyWorkspace": "Araştırma projesi oluştur veya seç",
+    "searchPlaceholder": "Araştırma projelerinde ara…",
+    "noProject": "Araştırma projesi yok"
+  },
+  "loopGoal": {
+    "menuLabel": "Hedef modu",
+    "modeActive": "Hedef modu açık",
+    "createTitle": "Sürekli ilerleme iste",
+    "create": "Döngüyü başlat",
+    "placeholder": "Sürdürmeye değer bir hedef yazın. Her çalışmadan sonra Agent bu hedefe döner, sonucu inceler ve bir sonraki yararlı adımı ilerletir.",
+    "goalRequired": "Önce bir hedef yazın",
+    "statusActive": "Devam eden hedef",
+    "statusPaused": "Duraklatılmış hedef",
+    "statusDeleted": "Silinmiş hedef",
+    "edit": "Hedefi düzenle",
+    "editTitle": "Hedefi düzenle",
+    "pause": "Duraklat",
+    "resume": "Sürdür",
+    "delete": "Sil"
+  },
+  "medicalEvidence": {
+    "menuLabel": "Tıbbi kanıt modu",
+    "modeActive": "Tıbbi kanıt modu açık"
+  },
+  "skillDeposition": {
+    "menuLabel": "Bilgi biriktirme modu",
+    "modeActive": "Bilgi biriktirme modu açık",
+    "contextHint": "Önce rapor oluşturun; onaydan sonra etkinleştirin",
+    "closeLabel": "Bilgi biriktirme modunu kapat"
   }
 }

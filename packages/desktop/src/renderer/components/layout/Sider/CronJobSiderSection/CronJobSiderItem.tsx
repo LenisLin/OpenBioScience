@@ -16,7 +16,11 @@ import type { ICronJob } from '@/common/adapter/ipcBridge';
 import type { TChatConversation } from '@/common/config/storage';
 import { ipcBridge } from '@/common';
 import { emitter } from '@/renderer/utils/emitter';
-import { isConversationPinned } from '@renderer/pages/conversation/GroupedHistory/utils/groupingHelpers';
+import {
+  getLegacyRecentWorkspaceSet,
+  getLocalProjectWorkspace,
+  isConversationPinned,
+} from '@renderer/pages/conversation/GroupedHistory/utils/groupingHelpers';
 import { refreshConversationCache } from '@/renderer/pages/conversation/utils/conversationCache';
 import { useCronJobConversations } from '@renderer/pages/cron/useCronJobs';
 import ConversationRow from '@renderer/pages/conversation/GroupedHistory/ConversationRow';
@@ -197,12 +201,15 @@ const CronJobSiderItem: React.FC<CronJobSiderItemProps> = ({
   }, []);
 
   const hasChildren = childConversations.length > 0;
+  const legacyRecentWorkspaceSet = useMemo(() => getLegacyRecentWorkspaceSet(), [childConversations]);
   const getConversationId = useCallback((conversation: TChatConversation) => conversation.id, []);
-  const getConversationGroupKey = useCallback((conv: TChatConversation) => {
-    const ws = (conv.extra as Record<string, unknown> | undefined)?.workspace as string | undefined;
-    const customWs = (conv.extra as Record<string, unknown> | undefined)?.custom_workspace;
-    return customWs && ws ? `workspace:${ws}` : 'plain';
-  }, []);
+  const getConversationGroupKey = useCallback(
+    (conv: TChatConversation) => {
+      const ws = getLocalProjectWorkspace(conv, legacyRecentWorkspaceSet);
+      return ws ? `workspace:${ws}` : 'plain';
+    },
+    [legacyRecentWorkspaceSet]
+  );
   const {
     orderedItems: orderedChildConversations,
     sensors,
@@ -220,9 +227,8 @@ const CronJobSiderItem: React.FC<CronJobSiderItemProps> = ({
     const groups = new Map<string, TChatConversation[]>();
     const plain: TChatConversation[] = [];
     for (const conv of orderedChildConversations) {
-      const ws = (conv.extra as Record<string, unknown> | undefined)?.workspace as string | undefined;
-      const customWs = (conv.extra as Record<string, unknown> | undefined)?.custom_workspace;
-      if (customWs && ws) {
+      const ws = getLocalProjectWorkspace(conv, legacyRecentWorkspaceSet);
+      if (ws) {
         if (!groups.has(ws)) groups.set(ws, []);
         groups.get(ws)!.push(conv);
       } else {
@@ -230,7 +236,7 @@ const CronJobSiderItem: React.FC<CronJobSiderItemProps> = ({
       }
     }
     return { workspaceGroups: groups, noWorkspaceConvs: plain };
-  }, [orderedChildConversations]);
+  }, [legacyRecentWorkspaceSet, orderedChildConversations]);
 
   const [expandedWorkspaces, setExpandedWorkspaces] = useState<Set<string>>(() => new Set());
 

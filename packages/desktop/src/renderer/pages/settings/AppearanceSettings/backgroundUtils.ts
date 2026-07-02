@@ -8,8 +8,8 @@
  * Helpers for injecting user-selected background images into theme CSS.
  */
 
-export const BACKGROUND_BLOCK_START = '/* DeepOrganiser Theme Background Start */';
-export const BACKGROUND_BLOCK_END = '/* DeepOrganiser Theme Background End */';
+export const BACKGROUND_BLOCK_START = '/* OpenScience Theme Background Start */';
+export const BACKGROUND_BLOCK_END = '/* OpenScience Theme Background End */';
 
 // Precompiled regex for better performance / 预编译正则以提升性能
 const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

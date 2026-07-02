@@ -8,11 +8,28 @@ import { ipcBridge } from '@/common';
 import {
   buildMedicalEvidenceConversationExtra,
   buildMedicalEvidenceModePrompt,
+  DEFAULT_MEDICAL_EVIDENCE_SKILL_IDS,
 } from '@/common/chat/medicalEvidence';
+import { normalizeMedicalEvidenceSources } from '@/common/chat/medicalEvidenceDefaults';
+import {
+  buildLabSkillDepositionConversationExtra,
+  buildLabSkillDepositionModePrompt,
+} from '@/common/chat/labSkillDeposition';
+import {
+  buildScienceConversationExtra,
+  buildScienceModePrompt,
+  DEFAULT_SCIENCE_SKILL_IDS,
+} from '@/common/chat/science';
+import { buildComputeConversationExtra } from '@/common/chat/compute';
 import { configService } from '@/common/config/configService';
 import { LEGACY_LOCAL_RUNTIME_ID } from '@/common/config/legacyIdentifiers';
+import { applyPaperclipCredentialFallback } from '@/common/config/paperclipConfig';
 import {
   BUILTIN_MEDICAL_EVIDENCE_NAME,
+  BUILTIN_LAB_SKILL_NAME,
+  BUILTIN_RESEARCH_EVIDENCE_NAME,
+  BUILTIN_SCIENCE_ARTIFACT_NAME,
+  BUILTIN_USER_INPUT_NAME,
   type IMcpServer,
   type ISessionMcpServer,
   type TProviderWithModel,
@@ -29,7 +46,6 @@ import { mutate as swrMutate } from 'swr';
 import { getConversationCreateErrorMessage } from '@/renderer/pages/conversation/utils/conversationCreateError';
 import type { AcpModelInfo, AvailableAgent, EffectiveAgentInfo } from '../types';
 import { getPreferredThoughtLevel } from './agentSelectionUtils';
-import type { GuidLarkProjectContext } from '../components/GuidLarkProjectPanel';
 import {
   createLoopGoalState,
   buildLoopGoalKickoffPrompt,
@@ -37,75 +53,8 @@ import {
   type LoopGoalState,
 } from '@/common/chat/loopGoal';
 
-function buildLarkProjectContextPrompt(context: GuidLarkProjectContext): string {
-  const focusedTask = context.focusedTask;
-  const basePrompt =
-    context.role === 'leader'
-      ? context.leaderPrompt?.trim() ||
-        [
-          '# Lark Project Leader Context',
-          '',
-          `Project tasklist: ${context.tasklistName}`,
-          `Tasklist GUID: ${context.tasklistGuid}`,
-          '',
-          'You are the leader Agent for this Lark project tasklist. Treat the whole tasklist as the project scope and help move it forward in an organized way.',
-          'First align with the project owner on goals, participants, responsibilities, milestones, and approval boundaries.',
-          'Before explicit approval, do not create, assign, modify, close, or delete Lark tasks. Keep the work in planning and coordination mode.',
-        ].join('\n')
-      : [
-          '# Lark Project Context',
-          '',
-          `Project tasklist: ${context.tasklistName}`,
-          `Tasklist GUID: ${context.tasklistGuid}`,
-          '',
-          'You are entering this Lark project as a regular project Agent, not as the leader Agent. Use the project tasklist as shared context. Do not take over project orchestration unless the user explicitly asks you to become the leader Agent.',
-        ].join('\n');
-  if (!focusedTask) return basePrompt;
-  return [
-    basePrompt,
-    '',
-    '# Focused Lark Task',
-    '',
-    context.role === 'leader'
-      ? 'The leader Agent remains responsible for the whole Lark tasklist. The following task is only a user-selected focus item and should be treated as additional context, not as a narrowed assignment.'
-      : 'The following task is a user-selected focus item inside the project tasklist. Treat it as additional context, not as an automatic assignment unless the user asks you to work on it.',
-    '',
-    `Task: ${focusedTask.summary}`,
-    `Task GUID: ${focusedTask.guid}`,
-    focusedTask.dueAt ? `Due: ${focusedTask.dueAt}` : undefined,
-    focusedTask.url ? `URL: ${focusedTask.url}` : undefined,
-    focusedTask.completed !== undefined ? `Completed: ${focusedTask.completed ? 'yes' : 'no'}` : undefined,
-    focusedTask.isAgentTask !== undefined ? `Agent Task: ${focusedTask.isAgentTask ? 'yes' : 'no'}` : undefined,
-    '',
-    '## Task Description',
-    focusedTask.description?.trim() || '(No description provided.)',
-  ]
-    .filter((line): line is string => typeof line === 'string')
-    .join('\n');
-}
-
-async function attachLarkProjectConversation(
-  context: GuidLarkProjectContext | undefined,
-  conversationId: string
-): Promise<void> {
-  if (!context?.tasklistGuid) return;
-  await ipcBridge.larkProjectAgent.attachConversation.invoke({
-    conversationId,
-    role: context.role,
-    tasklistGuid: context.tasklistGuid,
-    tasklistName: context.tasklistName,
-    bindingId: context.bindingId,
-    replaceExistingLeader: false,
-  });
-}
-
 const normalizeLegacyBackend = (backend: string | undefined): string | undefined =>
   backend === LEGACY_LOCAL_RUNTIME_ID ? 'codex' : backend;
-
-const normalizeMedicalEvidenceSources = (sources?: string[]): string[] =>
-  (sources?.length ? sources : ['pmc', 'abstracts', 'fda', 'clinicaltrials']).map((source) =>
-    source === 'clinicaltrials' ? 'trials/us' : source
-  );
 
 const appendPrompt = (...parts: Array<string | undefined>): string | undefined => {
   const value = parts
@@ -123,6 +72,20 @@ const mergeSessionMcpServers = (servers: ISessionMcpServer[]): ISessionMcpServer
   return [...byId.values()];
 };
 
+const mergeSkillIds = (...groups: Array<readonly string[] | undefined>): string[] | undefined => {
+  const values = groups.flatMap((group) => group || []);
+  if (!values.length) return undefined;
+  return Array.from(new Set(values));
+};
+
+const resolveBuiltinSessionMcpServer = (
+  availableMcpServers: IMcpServer[],
+  name: string
+): ISessionMcpServer | undefined => {
+  const server = availableMcpServers.find((item) => item.name === name);
+  return server ? toSessionMcpServer(server) : undefined;
+};
+
 const resolveMedicalEvidenceSessionMcpServer = (
   availableMcpServers: IMcpServer[],
   apiKey?: string,
@@ -137,9 +100,56 @@ const resolveMedicalEvidenceSessionMcpServer = (
     transport: {
       ...sessionServer.transport,
       env: {
-        ...(sessionServer.transport.env || {}),
+        ...sessionServer.transport.env,
         ...(apiKey ? { PAPERCLIP_API_KEY: apiKey } : {}),
         ...(baseUrl ? { PAPERCLIP_BASE_URL: baseUrl } : {}),
+      },
+    },
+  };
+};
+
+const resolveResearchEvidenceSessionMcpServer = (
+  availableMcpServers: IMcpServer[],
+  apiKey?: string,
+  baseUrl?: string
+): ISessionMcpServer | undefined => {
+  const server = availableMcpServers.find((item) => item.name === BUILTIN_RESEARCH_EVIDENCE_NAME);
+  if (!server) return undefined;
+  const sessionServer = toSessionMcpServer(server);
+  if (sessionServer.transport.type !== 'stdio') return sessionServer;
+  return {
+    ...sessionServer,
+    transport: {
+      ...sessionServer.transport,
+      env: {
+        ...sessionServer.transport.env,
+        ...(apiKey ? { PAPERCLIP_API_KEY: apiKey } : {}),
+        ...(baseUrl ? { PAPERCLIP_BASE_URL: baseUrl } : {}),
+      },
+    },
+  };
+};
+
+const resolveScienceArtifactSessionMcpServer = (
+  availableMcpServers: IMcpServer[],
+  config?: { strictProvenance?: boolean; writeProjectManifest?: boolean; defaultSkillIds?: string[] }
+): ISessionMcpServer | undefined => {
+  const server = availableMcpServers.find((item) => item.name === BUILTIN_SCIENCE_ARTIFACT_NAME);
+  if (!server) return undefined;
+  const sessionServer = toSessionMcpServer(server);
+  if (sessionServer.transport.type !== 'stdio') return sessionServer;
+  return {
+    ...sessionServer,
+    transport: {
+      ...sessionServer.transport,
+      env: {
+        ...sessionServer.transport.env,
+        OPENSCIENCE_STRICT_PROVENANCE: config?.strictProvenance ? 'true' : 'false',
+        OPENSCIENCE_WRITE_PROJECT_MANIFEST: config?.writeProjectManifest === false ? 'false' : 'true',
+        OPENSCIENCE_DEFAULT_SKILL_IDS: (config?.defaultSkillIds?.length
+          ? config.defaultSkillIds
+          : [...DEFAULT_SCIENCE_SKILL_IDS]
+        ).join(','),
       },
     },
   };
@@ -186,12 +196,15 @@ export type GuidSendDeps = {
   assistantDefaultMcpIds?: string[];
   currentEffectiveAgentInfo: EffectiveAgentInfo;
   isGoogleAuth: boolean;
-  larkProjectContext?: GuidLarkProjectContext;
   loopGoal?: LoopGoalState;
   isLoopGoalMode?: boolean;
   onLoopGoalSent?: () => void;
+  isScienceMode?: boolean;
   isMedicalEvidenceMode?: boolean;
   onMedicalEvidenceModeSent?: () => void;
+  isSkillDepositionMode?: boolean;
+  onSkillDepositionModeSent?: () => void;
+  selectedComputeHostIds?: string[];
 
   // Mention state reset
   setMentionOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -244,12 +257,15 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     selectedMcpServerIds,
     assistantDefaultMcpIds,
     currentEffectiveAgentInfo: _currentEffectiveAgentInfo,
-    larkProjectContext,
     loopGoal,
     isLoopGoalMode,
     onLoopGoalSent,
+    isScienceMode = true,
     isMedicalEvidenceMode,
     onMedicalEvidenceModeSent,
+    isSkillDepositionMode,
+    onSkillDepositionModeSent,
+    selectedComputeHostIds,
     setMentionOpen,
     setMentionQuery,
     setMentionSelectorOpen,
@@ -262,10 +278,15 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
 
   const handleSend = useCallback(async () => {
     const trimmedInput = input.trim();
-    const hasLarkProjectContext = Boolean(larkProjectContext?.tasklistGuid);
-    const hasLoopGoal = Boolean(loopGoal?.goal.trim() && loopGoal.status !== 'deleted');
     const hasMedicalEvidenceMode = Boolean(isMedicalEvidenceMode);
-    const shouldCreateLoopGoalFromInput = !hasLoopGoal && Boolean(isLoopGoalMode && trimmedInput);
+    const hasSkillDepositionMode = Boolean(isSkillDepositionMode);
+    const hasScienceMode = Boolean(isScienceMode) && !hasMedicalEvidenceMode && !hasSkillDepositionMode;
+    const hasLoopGoal =
+      !hasMedicalEvidenceMode &&
+      !hasSkillDepositionMode &&
+      Boolean(loopGoal?.goal.trim() && loopGoal.status !== 'deleted');
+    const shouldCreateLoopGoalFromInput =
+      !hasLoopGoal && !hasMedicalEvidenceMode && !hasSkillDepositionMode && Boolean(isLoopGoalMode && trimmedInput);
     const loopGoalForCreate = hasLoopGoal
       ? { ...loopGoal!, status: 'active' as const, updated_at: Date.now() }
       : shouldCreateLoopGoalFromInput
@@ -274,17 +295,10 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const conversationName =
       (loopGoalForCreate ? summarizeLoopGoal(loopGoalForCreate.goal) : undefined) ||
       trimmedInput ||
-      larkProjectContext?.tasklistName ||
-      t('guid.larkProject.defaultConversationName');
-    const initialUserInput =
-      loopGoalForCreate
-        ? buildLoopGoalKickoffPrompt(loopGoalForCreate, hasLoopGoal ? trimmedInput : undefined)
-        : trimmedInput ||
-          (hasLarkProjectContext
-            ? larkProjectContext?.role === 'leader'
-              ? t('guid.larkProject.leaderInitialPrompt', { tasklistName: larkProjectContext!.tasklistName })
-              : t('guid.larkProject.agentInitialPrompt', { tasklistName: larkProjectContext!.tasklistName })
-            : input);
+      t('conversation.newConversation', { defaultValue: 'New conversation' });
+    const initialUserInput = loopGoalForCreate
+      ? buildLoopGoalKickoffPrompt(loopGoalForCreate, hasLoopGoal ? trimmedInput : undefined, localeKey)
+      : trimmedInput || input;
     const isCustomWorkspace = !!dir;
     const finalWorkspace = dir || '';
 
@@ -302,11 +316,16 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const presetEnabledSkillsDefault = resolveEnabledSkills(agentInfo);
     const enabled_skills =
       guidEnabledSkills ?? (is_presetAgent ? assistantDefaultSkillIds : presetEnabledSkillsDefault);
-    const enabled_skills_to_send = is_presetAgent
+    const base_enabled_skills_to_send = is_presetAgent
       ? enabled_skills
       : guidEnabledSkills?.length
         ? guidEnabledSkills
         : undefined;
+    const enabled_skills_to_send = hasMedicalEvidenceMode
+      ? mergeSkillIds(base_enabled_skills_to_send, DEFAULT_MEDICAL_EVIDENCE_SKILL_IDS)
+      : hasScienceMode
+        ? mergeSkillIds(base_enabled_skills_to_send, DEFAULT_SCIENCE_SKILL_IDS)
+        : base_enabled_skills_to_send;
     const excludeBuiltinSkills =
       guidDisabledBuiltinSkills ??
       (is_presetAgent ? assistantDefaultDisabledBuiltinSkillIds : resolveDisabledBuiltinSkills(agentInfo));
@@ -336,12 +355,24 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
             .filter((server) => (defaultSelectedMcpServerIds ?? []).includes(server.id))
             .map((server) => toSessionMcpServer(server));
 
-    const medicalEvidenceConfig = hasMedicalEvidenceMode ? configService.get('tools.medicalEvidence') : undefined;
+    const rawMedicalEvidenceConfig = configService.get('tools.medicalEvidence');
+    const rawResearchEvidenceConfig = configService.get('tools.researchEvidence');
+    const medicalEvidenceConfig = hasMedicalEvidenceMode
+      ? applyPaperclipCredentialFallback(rawMedicalEvidenceConfig, rawResearchEvidenceConfig)
+      : undefined;
     const medicalEvidenceSources = normalizeMedicalEvidenceSources(medicalEvidenceConfig?.defaultSources);
     const medicalEvidenceStrictAnchors = medicalEvidenceConfig?.strictAnchors !== false;
     const medicalEvidencePrompt = hasMedicalEvidenceMode
-      ? buildMedicalEvidenceModePrompt(medicalEvidenceSources, medicalEvidenceStrictAnchors)
+      ? buildMedicalEvidenceModePrompt(medicalEvidenceSources, medicalEvidenceStrictAnchors, localeKey)
       : undefined;
+    const sciencePrompt = hasScienceMode ? buildScienceModePrompt(finalWorkspace, localeKey) : undefined;
+    const labSkillDepositionPrompt = hasSkillDepositionMode
+      ? buildLabSkillDepositionModePrompt(finalWorkspace, localeKey)
+      : undefined;
+    const computeContext =
+      selectedComputeHostIds && selectedComputeHostIds.length > 0
+        ? await ipcBridge.computeHosts.buildContext.invoke({ hostIds: selectedComputeHostIds })
+        : undefined;
     const medicalEvidenceSessionMcpServer = hasMedicalEvidenceMode
       ? resolveMedicalEvidenceSessionMcpServer(
           availableMcpServers,
@@ -349,11 +380,36 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
           medicalEvidenceConfig?.paperclipBaseUrl
         )
       : undefined;
+    const researchEvidenceConfig = hasScienceMode
+      ? applyPaperclipCredentialFallback(rawResearchEvidenceConfig, rawMedicalEvidenceConfig)
+      : undefined;
+    const scienceArtifactConfig = hasScienceMode ? configService.get('tools.scienceArtifact') : undefined;
+    const researchEvidenceSessionMcpServer = hasScienceMode
+      ? resolveResearchEvidenceSessionMcpServer(
+          availableMcpServers,
+          researchEvidenceConfig?.paperclipApiKey,
+          researchEvidenceConfig?.paperclipBaseUrl
+        )
+      : undefined;
+    const scienceArtifactSessionMcpServer = hasScienceMode
+      ? resolveScienceArtifactSessionMcpServer(availableMcpServers, scienceArtifactConfig)
+      : undefined;
+    const labSkillSessionMcpServer = hasSkillDepositionMode
+      ? resolveBuiltinSessionMcpServer(availableMcpServers, BUILTIN_LAB_SKILL_NAME)
+      : undefined;
+    const userInputSessionMcpServer =
+      hasMedicalEvidenceMode || hasScienceMode || hasSkillDepositionMode
+        ? resolveBuiltinSessionMcpServer(availableMcpServers, BUILTIN_USER_INPUT_NAME)
+        : undefined;
     const baseSelectedSessionMcpServersForExtra =
       selectedMcpServerIds !== undefined ? selectedSessionMcpServers : selectedSessionMcpServersToSend;
     const selectedSessionMcpServersWithMedicalEvidence = mergeSessionMcpServers([
       ...baseSelectedSessionMcpServersForExtra,
       ...(medicalEvidenceSessionMcpServer ? [medicalEvidenceSessionMcpServer] : []),
+      ...(researchEvidenceSessionMcpServer ? [researchEvidenceSessionMcpServer] : []),
+      ...(scienceArtifactSessionMcpServer ? [scienceArtifactSessionMcpServer] : []),
+      ...(labSkillSessionMcpServer ? [labSkillSessionMcpServer] : []),
+      ...(userInputSessionMcpServer ? [userInputSessionMcpServer] : []),
     ]);
 
     const finalEffectiveAgentType = effectiveAgentType;
@@ -366,28 +422,23 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       disabled_builtin_skill_ids: excludeBuiltinSkills,
       mcp_ids: assistantOverrideMcpIds,
     };
-    const larkProjectPrompt = hasLarkProjectContext ? buildLarkProjectContextPrompt(larkProjectContext!) : undefined;
-    const combinedPresetContext = appendPrompt(larkProjectPrompt, medicalEvidencePrompt);
-    const larkProjectExtra = hasLarkProjectContext && larkProjectPrompt
-      ? {
-          context: larkProjectPrompt,
-          context_file_name:
-            larkProjectContext!.role === 'leader' ? 'lark-project-leader.md' : 'lark-project-context.md',
-          lark_project_binding_id: larkProjectContext!.bindingId,
-          lark_project_tasklist_guid: larkProjectContext!.tasklistGuid,
-          lark_project_tasklist_name: larkProjectContext!.tasklistName,
-          lark_project_role: larkProjectContext!.role,
-          lark_project_focused_task_guid: larkProjectContext!.focusedTask?.guid,
-          lark_project_focused_task_title: larkProjectContext!.focusedTask?.summary,
-        }
-      : {};
+    const combinedPresetContext = appendPrompt(
+      sciencePrompt,
+      medicalEvidencePrompt,
+      labSkillDepositionPrompt,
+      computeContext?.prompt
+    );
     const medicalEvidenceExtra = hasMedicalEvidenceMode
       ? {
-          medical_evidence: buildMedicalEvidenceConversationExtra(
-            medicalEvidenceSources,
-            medicalEvidenceStrictAnchors
-          ),
+          medical_evidence: buildMedicalEvidenceConversationExtra(medicalEvidenceSources, medicalEvidenceStrictAnchors),
         }
+      : {};
+    const scienceExtra = hasScienceMode ? { science: buildScienceConversationExtra(finalWorkspace) } : {};
+    const labSkillDepositionExtra = hasSkillDepositionMode
+      ? { lab_skill_deposition: buildLabSkillDepositionConversationExtra(finalWorkspace) }
+      : {};
+    const computeExtra = computeContext?.hosts?.length
+      ? { compute: buildComputeConversationExtra(computeContext.hosts) }
       : {};
 
     // Remaining agent path (ACP/remote/custom, including preset fallbacks)
@@ -440,9 +491,13 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
           selected_mcp_server_ids: selectedUserMcpServerIdsToSend,
           selected_session_mcp_servers: selectedSessionMcpServersWithMedicalEvidence,
           ...(loopGoalForCreate ? { loop_goal: loopGoalForCreate } : {}),
-          ...larkProjectExtra,
           ...medicalEvidenceExtra,
-          ...(combinedPresetContext ? { preset_context: combinedPresetContext, preset_rules: combinedPresetContext } : {}),
+          ...scienceExtra,
+          ...labSkillDepositionExtra,
+          ...computeExtra,
+          ...(combinedPresetContext
+            ? { preset_context: combinedPresetContext, preset_rules: combinedPresetContext }
+            : {}),
         },
       });
 
@@ -452,10 +507,6 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
           console.error('Failed to create ACP conversation - conversation object is null or missing id');
           return;
         }
-
-        await attachLarkProjectConversation(larkProjectContext, conversation.id).catch((error) => {
-          console.warn('[Guid] Failed to attach Lark project conversation:', error);
-        });
 
         if (isCustomWorkspace) {
           updateWorkspaceTime(finalWorkspace);
@@ -470,7 +521,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
 
         emitter.emit('chat.history.refresh');
 
-        if (trimmedInput || hasLarkProjectContext || hasLoopGoal || shouldCreateLoopGoalFromInput || files.length > 0) {
+        if (trimmedInput || hasLoopGoal || shouldCreateLoopGoalFromInput || files.length > 0) {
           const initialMessage = {
             input: initialUserInput,
             files: files.length > 0 ? files : undefined,
@@ -480,6 +531,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
 
         onLoopGoalSent?.();
         onMedicalEvidenceModeSent?.();
+        onSkillDepositionModeSent?.();
         await navigate(`/conversation/${conversation.id}`);
       } catch (error: unknown) {
         console.error('Failed to create ACP conversation:', error);
@@ -498,12 +550,15 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     selectedAcpModel,
     currentAcpCachedModelInfo,
     current_model,
-    larkProjectContext,
     loopGoal,
     isLoopGoalMode,
     onLoopGoalSent,
+    isScienceMode,
     isMedicalEvidenceMode,
     onMedicalEvidenceModeSent,
+    isSkillDepositionMode,
+    onSkillDepositionModeSent,
+    selectedComputeHostIds,
     findAgentByKey,
     getEffectiveAgentType,
     resolveEnabledSkills,
@@ -557,7 +612,8 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
   ]);
 
   // Calculate button disabled state
-  const isButtonDisabled = loading || (!input.trim() && !larkProjectContext?.tasklistGuid && !loopGoal?.goal.trim());
+  const hasSendableLoopGoal = !isMedicalEvidenceMode && Boolean(loopGoal?.goal.trim());
+  const isButtonDisabled = loading || (!input.trim() && !hasSendableLoopGoal);
 
   return {
     handleSend,

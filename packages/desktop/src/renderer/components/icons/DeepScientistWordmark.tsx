@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2026 DeepOrganiser (deepscientist.cc)
+ * Copyright 2026 OpenScience
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import React from 'react';
 
-import wordmarkDark from '@/renderer/assets/deeporganiser-wordmark-dark.svg';
-import wordmarkLight from '@/renderer/assets/deeporganiser-wordmark.svg';
+import wordmarkDark from '@/renderer/assets/openscience-wordmark-dark.png';
+import wordmarkLight from '@/renderer/assets/openscience-wordmark.png';
 
 type DeepScientistWordmarkProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   label?: string;
@@ -17,7 +17,7 @@ type DeepScientistWordmarkProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>
 
 const DeepScientistWordmark: React.FC<DeepScientistWordmarkProps> = ({
   className,
-  label = 'DeepOrganiser',
+  label = 'OpenScience',
   wrapperClassName,
   variant: _variant,
   'aria-hidden': ariaHidden,

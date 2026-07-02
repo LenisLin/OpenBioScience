@@ -22,7 +22,7 @@ import styles from './LoopGoalBar.module.css';
 
 type LoopGoalBarProps = {
   loopGoal: LoopGoalState;
-  variant?: 'guid' | 'conversation';
+  variant?: 'guid' | 'conversation' | 'toolbar';
   disabled?: boolean;
   onChange: (next: LoopGoalState) => void | Promise<void>;
 };
@@ -57,6 +57,10 @@ const LoopGoalBar: React.FC<LoopGoalBarProps> = ({ loopGoal, variant = 'conversa
   const elapsedLabel = formatLoopGoalElapsed(getLoopGoalElapsedMs(loopGoal, now));
   const isPaused = loopGoal.status === 'paused';
   const isDeleted = loopGoal.status === 'deleted';
+  const isToolbar = variant === 'toolbar';
+  const wrapClassName =
+    variant === 'guid' ? styles.loopGoalWrapGuid : isToolbar ? styles.loopGoalWrapToolbar : styles.loopGoalWrap;
+  const summaryLimit = variant === 'guid' ? 48 : isToolbar ? 34 : 64;
 
   const commitChange = useCallback(
     async (next: LoopGoalState) => {
@@ -75,7 +79,7 @@ const LoopGoalBar: React.FC<LoopGoalBarProps> = ({ loopGoal, variant = 'conversa
 
   return (
     <div
-      className={variant === 'guid' ? styles.loopGoalWrapGuid : styles.loopGoalWrap}
+      className={wrapClassName}
       data-testid='loop-goal-wrap'
     >
       <div className={styles.loopGoalBar} data-loop-status={loopGoal.status} data-testid='loop-goal-bar'>
@@ -87,7 +91,7 @@ const LoopGoalBar: React.FC<LoopGoalBarProps> = ({ loopGoal, variant = 'conversa
             {statusLabel}
           </span>
           <span className={styles.goalSummary} data-testid='loop-goal-summary'>
-            {summarizeLoopGoal(loopGoal.goal, variant === 'guid' ? 48 : 64)}
+            {summarizeLoopGoal(loopGoal.goal, summaryLimit)}
           </span>
         </div>
         <div className={styles.goalMeta}>
@@ -132,24 +136,26 @@ const LoopGoalBar: React.FC<LoopGoalBarProps> = ({ loopGoal, variant = 'conversa
               <Delete theme='outline' size={18} />
             </button>
           </Tooltip>
-          <Tooltip content={expanded ? t('common.collapse') : t('common.expand')}>
-            <button
-              type='button'
-              className={styles.goalActionButton}
-              data-testid='loop-goal-expand-btn'
-              onClick={() => setExpanded((value) => !value)}
-              aria-label={expanded ? t('common.collapse') : t('common.expand')}
-            >
-              <Right
-                theme='outline'
-                size={18}
-                style={{ transform: expanded ? 'rotate(90deg)' : undefined, transition: 'transform 0.16s ease' }}
-              />
-            </button>
-          </Tooltip>
+          {!isToolbar ? (
+            <Tooltip content={expanded ? t('common.collapse') : t('common.expand')}>
+              <button
+                type='button'
+                className={styles.goalActionButton}
+                data-testid='loop-goal-expand-btn'
+                onClick={() => setExpanded((value) => !value)}
+                aria-label={expanded ? t('common.collapse') : t('common.expand')}
+              >
+                <Right
+                  theme='outline'
+                  size={18}
+                  style={{ transform: expanded ? 'rotate(90deg)' : undefined, transition: 'transform 0.16s ease' }}
+                />
+              </button>
+            </Tooltip>
+          ) : null}
         </div>
       </div>
-      {expanded ? (
+      {expanded && !isToolbar ? (
         <div className={styles.goalExpanded} data-testid='loop-goal-expanded'>
           {loopGoal.goal}
         </div>

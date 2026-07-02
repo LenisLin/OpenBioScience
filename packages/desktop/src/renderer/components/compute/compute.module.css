@@ -1,0 +1,204 @@
+.hostModal :global(.arco-modal-content) {
+  padding-top: 4px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 0.34fr);
+  gap: 12px;
+}
+
+.hintBox {
+  border: 1px solid rgba(24, 24, 27, 0.08);
+  background: color-mix(in srgb, var(--color-fill-1) 84%, white);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--color-text-2);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.selectorButton {
+  height: 30px;
+  border: 1px solid var(--color-border-2);
+  border-radius: 999px;
+  background: var(--color-bg-2);
+  color: var(--color-text-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease;
+}
+
+.selectorButton:hover,
+.selectorButtonActive {
+  background: var(--color-fill-2);
+  border-color: var(--color-border-3);
+  color: var(--color-text-1);
+}
+
+.selectorContextButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-text-3);
+  padding: 6px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 560;
+  line-height: 1;
+  transition:
+    color 0.15s,
+    background 0.15s,
+    box-shadow 0.18s;
+}
+
+.selectorContextButton:hover {
+  background: var(--color-fill-3);
+  color: var(--color-text-2);
+}
+
+.selectorContextButtonActive,
+.selectorContextButtonSelected {
+  background: var(--bg-base);
+  color: var(--color-text-1);
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.035),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-white) 56%, transparent);
+}
+
+.selectorContextButtonActive:hover,
+.selectorContextButtonSelected:hover {
+  background: var(--bg-base);
+  color: var(--color-text-1);
+}
+
+.selectorContextLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selectorContextChevron {
+  flex-shrink: 0;
+  transform: translateY(1px);
+}
+
+.selectorPanel {
+  width: min(390px, calc(100vw - 32px));
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border-2);
+  background: var(--color-bg-popup);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.16);
+}
+
+.selectorHeader {
+  padding: 7px 8px 9px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--color-border-1);
+}
+
+.hostList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 270px;
+  overflow: auto;
+  padding: 7px 0;
+}
+
+.hostOption {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  border-radius: 10px;
+  padding: 9px 8px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+}
+
+.hostOption:hover {
+  background: var(--color-fill-2);
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--color-fill-4);
+  flex-shrink: 0;
+}
+
+.statusConnected {
+  background: #287a4b;
+}
+
+.statusFailed {
+  background: #a33b2f;
+}
+
+.hostCard {
+  border: 1px solid var(--color-border-2);
+  border-radius: 14px;
+  background: var(--color-bg-2);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hostCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.hostMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.miniBadge {
+  border: 1px solid var(--color-border-2);
+  background: var(--color-fill-1);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--color-text-2);
+}
+
+@media (max-width: 640px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .selectorPanel {
+    width: calc(100vw - 24px);
+  }
+}

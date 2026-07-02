@@ -5,6 +5,7 @@
  */
 
 import type { IMessageText } from '@/common/chat/chatLib';
+import type { MedicalEvidencePanelData } from '@/common/chat/medicalEvidence';
 import { APP_FILES_MARKER, LEGACY_FILES_MARKER } from '@/common/config/constants';
 import type { FileChangeInfo } from '../MessageFileChanges';
 import MessageFileChanges from '../MessageFileChanges';
@@ -197,10 +198,27 @@ const LarkIncomingMessageCard: React.FC<{ incoming: LarkIncomingMessageDisplay }
   );
 };
 
-const MessageText: React.FC<{ message: IMessageText; showCopyRow?: boolean; resultFileChanges?: FileChangeInfo[] }> = ({
+const linkMedicalEvidenceCitations = (text: string, panel?: MedicalEvidencePanelData): string => {
+  if (!panel?.evidence?.length) return text;
+  const ids = new Set(panel.evidence.map((item) => item.id));
+  return text.replace(/\[([A-Z]\d+)\]/g, (match, id) => {
+    if (!ids.has(id)) return match;
+    return `[[${id}]](#medical-evidence-${id})`;
+  });
+};
+
+const MessageText: React.FC<{
+  message: IMessageText;
+  showCopyRow?: boolean;
+  resultFileChanges?: FileChangeInfo[];
+  resultMedicalEvidencePanel?: MedicalEvidencePanelData;
+  hideMedicalEvidenceText?: boolean;
+}> = ({
   message,
   showCopyRow = true,
   resultFileChanges = [],
+  resultMedicalEvidencePanel,
+  hideMedicalEvidenceText = false,
 }) => {
   // Filter think tags from content before rendering
   // 在渲染前过滤 think 标签
@@ -219,7 +237,11 @@ const MessageText: React.FC<{ message: IMessageText; showCopyRow?: boolean; resu
     return content;
   }, [message.content.content]);
 
-  const { text, files } = parseFileMarker(contentToRender);
+  const { text: parsedText, files } = parseFileMarker(contentToRender);
+  const text =
+    typeof parsedText === 'string' && !message.content.teammateMessage
+      ? linkMedicalEvidenceCitations(parsedText, resultMedicalEvidencePanel)
+      : parsedText;
   const { data, json } = useFormatContent(text);
   const { t } = useTranslation();
   const [showCopyAlert, setShowCopyAlert] = useState(false);
@@ -329,7 +351,7 @@ const MessageText: React.FC<{ message: IMessageText; showCopyRow?: boolean; resu
             )}
           </div>
         )}
-        {larkIncomingMessage ? (
+        {hideMedicalEvidenceText && !isUserMessage ? null : larkIncomingMessage ? (
           <LarkIncomingMessageCard incoming={larkIncomingMessage} />
         ) : (
           <div

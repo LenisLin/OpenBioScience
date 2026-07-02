@@ -35,7 +35,7 @@ export interface UpdateCheckResult {
 
 export interface UpdateCheckRequest {
   includePrerelease?: boolean;
-  /** Defaults to ResearAI/DeepOrganiser when omitted */
+  /** Defaults to ResearAI/OpenScience when omitted */
   repo?: string;
 }
 

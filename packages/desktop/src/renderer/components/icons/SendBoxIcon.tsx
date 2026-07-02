@@ -63,7 +63,8 @@ const ICON_ASSETS: Record<SendBoxIconName, IconAsset> = {
   domSnippet: { light: domSnippetIcon, dark: domSnippetIconDark },
 };
 
-const sizeToCss = (size: number | string): number | string => (typeof size === 'number' ? `${size}px` : size);
+const sizeToCss = (size: number | string): string =>
+  typeof size === 'number' || /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size;
 
 const SendBoxIcon: React.FC<SendBoxIconProps> = ({ name, size = 18, title, className, style, ...props }) => {
   const asset = ICON_ASSETS[name] || ICON_ASSETS.send;

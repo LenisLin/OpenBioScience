@@ -18,6 +18,17 @@
     "searchPlaceholder": "搜索项目…",
     "noProject": "不使用项目"
   },
+  "scienceProject": {
+    "badge": "Science",
+    "defaultBadge": "默认",
+    "menuLabel": "科学研究模式",
+    "modeActive": "科学研究模式已开启",
+    "workInProject": "选择研究项目",
+    "clearWorkspace": "移除研究项目",
+    "specifyWorkspace": "新建或选择研究项目",
+    "searchPlaceholder": "搜索研究项目…",
+    "noProject": "暂不绑定研究项目"
+  },
   "scanning": {
     "initialMessage": "当前Agent不可用, 正在检测其他可用agent...",
     "scanningMessage": "正在扫描本地可用agent...",
@@ -29,7 +40,7 @@
     "statusAvailable": "可用"
   },
   "loopGoal": {
-    "menuLabel": "目标",
+    "menuLabel": "目标模式",
     "modeActive": "目标模式已开启",
     "createTitle": "要求后续变更",
     "create": "开始循环",
@@ -91,5 +102,15 @@
     "taskStatusTodo": "待办",
     "duePrefix": "截止 {{date}}",
     "noDue": "未设置截止时间"
+  },
+  "medicalEvidence": {
+    "menuLabel": "医学循证模式",
+    "modeActive": "医学循证模式已启用"
+  },
+  "skillDeposition": {
+    "menuLabel": "知识沉淀模式",
+    "modeActive": "知识沉淀模式已启用",
+    "contextHint": "先生成报告，确认后启用",
+    "closeLabel": "关闭知识沉淀模式"
   }
 }

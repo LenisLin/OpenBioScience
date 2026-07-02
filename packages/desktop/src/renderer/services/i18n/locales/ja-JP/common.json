@@ -61,10 +61,10 @@
   "more": "その他",
   "refresh": "更新",
   "readOnly": "読み取り専用",
-  "tray.showWindow": "DeepOrganiser を表示",
+  "tray.showWindow": "OpenScience を表示",
   "tray.newChat": "新しいチャット",
   "tray.closeToTray": "トレイに隠す",
-  "tray.about": "DeepOrganiser について",
+  "tray.about": "OpenScience について",
   "tray.restart": "アプリを再起動",
   "tray.quit": "終了",
   "tray.runningTasks": "実行中のタスク",
@@ -75,22 +75,22 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "このシステムは同梱バックエンドに対応していません",
-      "description": "DeepOrganiser は開きましたが、ローカルの DeepOrganiser Core バックエンドはこの Linux バージョンでは実行できません。対応している Linux ディストリビューションにアップグレードしてから DeepOrganiser を再起動してください。",
+      "description": "OpenScience は開きましたが、ローカルの OpenScience Core バックエンドはこの Linux バージョンでは実行できません。対応している Linux ディストリビューションにアップグレードしてから OpenScience を再起動してください。",
       "requiredVersions": "必要なランタイムシンボル: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "DeepOrganiser のインストールが不完全です",
-      "description": "このインストールには必要なローカルリソースが不足しているため、DeepOrganiser Core を起動できません。最新の DeepOrganiser をダウンロードして再インストールしてください。再インストール後も問題が再発する場合は、セキュリティソフトまたはウイルス対策ソフトが DeepOrganiser Core を隔離していないか確認してください。",
+      "title": "OpenScience のインストールが不完全です",
+      "description": "このインストールには必要なローカルリソースが不足しているため、OpenScience Core を起動できません。最新の OpenScience をダウンロードして再インストールしてください。再インストール後も問題が再発する場合は、セキュリティソフトまたはウイルス対策ソフトが OpenScience Core を隔離していないか確認してください。",
       "downloadLatest": "最新版をダウンロード",
       "sendDiagnostics": "診断レポートを送信",
       "diagnosticsSent": "診断レポートを送信済み",
       "diagnosticsReportSuccess": "診断レポートを送信しました",
       "diagnosticsReportFailed": "診断レポートの送信に失敗しました",
-      "runtimeComponentDescription": "このインストールには必要な組み込み実行コンポーネントが不足しているため、{{resource}} を起動できません。最新版の DeepOrganiser パッケージを再インストールしてください。再インストール後も続く場合は、セキュリティソフトまたはウイルス対策ソフトが DeepOrganiser コンポーネントを隔離していないか確認してください。"
+      "runtimeComponentDescription": "このインストールには必要な組み込み実行コンポーネントが不足しているため、{{resource}} を起動できません。最新版の OpenScience パッケージを再インストールしてください。再インストール後も続く場合は、セキュリティソフトまたはウイルス対策ソフトが OpenScience コンポーネントを隔離していないか確認してください。"
     },
     "packageArchitectureMismatch": {
-      "title": "DeepOrganiser package architecture mismatch",
-      "description": "This DeepOrganiser package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
+      "title": "OpenScience package architecture mismatch",
+      "description": "This OpenScience package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
     }
   },
   "fileAttach.addFiles": "ファイルを追加",
@@ -114,7 +114,7 @@
     "minute_short": "分",
     "second_short": "秒"
   },
-  "loadingDeepScientist": "DeepOrganiser を読み込んでいます...",
+  "loadingOpenScience": "OpenScience を読み込んでいます...",
   "collaboration": {
     "title": "共同作業",
     "projectTitle": "チームプロジェクト",
@@ -137,7 +137,7 @@
       "openLink": "リンクを開く",
       "waiting": "確認待ち",
       "connected": "接続済み",
-      "footerHint": "Web サインイン、アプリ設定、認可が完了すると、DeepOrganiser は現在の共同作業ページへ自動で戻ります。",
+      "footerHint": "Web サインイン、アプリ設定、認可が完了すると、OpenScience は現在の共同作業ページへ自動で戻ります。",
       "floatingHintTitle": "共同作業モードを使うにはサインインしてください",
       "stages": [
         "Web サインイン",
@@ -155,8 +155,8 @@
         "loading": "サインインページを開いています..."
       },
       "auth": {
-        "title": "DeepOrganiser を認可",
-        "subtitle": "右側に認可ページが開きます。現在のアカウントでアクセスを許可すると、DeepOrganiser が自動で検証します。",
+        "title": "OpenScience を認可",
+        "subtitle": "右側に認可ページが開きます。現在のアカウントでアクセスを許可すると、OpenScience が自動で検証します。",
         "steps": [
           "認可ページを開く",
           "現在のアカウントで権限を許可",
@@ -164,7 +164,7 @@
         ],
         "start": "リンクを再生成",
         "needsApp": "先にアプリを作成または接続してください",
-        "needsAppDesc": "認可にはステップ 2 で作成または接続した DeepOrganiser アプリが必要です。先にステップ 2 を完了してください。App ID が検出されると続行できます。",
+        "needsAppDesc": "認可にはステップ 2 で作成または接続した OpenScience アプリが必要です。先にステップ 2 を完了してください。App ID が検出されると続行できます。",
         "needsWeb": "先に Web サインインが必要です",
         "needsWebDesc": "ステップ 1 の Web サインインを完了すると、同じ Web セッションでアプリ設定と認可を続けられます。",
         "goWeb": "Web サインインへ",
@@ -175,7 +175,7 @@
         "targetApp": "認可対象",
         "profile": "プロファイル",
         "chooseProfileTitle": "設定を選択",
-        "chooseProfileDesc": "既存のプロファイルを選択してください。DeepOrganiser は共同作業自動化の対象として保存し、新しい認可ページを生成します。",
+        "chooseProfileDesc": "既存のプロファイルを選択してください。OpenScience は共同作業自動化の対象として保存し、新しい認可ページを生成します。",
         "noProfiles": "プロファイルが見つかりません。先にアプリを作成してください。",
         "refreshProfiles": "プロファイルを更新",
         "authorizeSelected": "このプロファイルを使用",
@@ -184,24 +184,24 @@
         "profileRequired": "先にプロファイルを選択してください。",
         "user": "ユーザー",
         "tokenStatus": "認可状態",
-        "opening": "DeepOrganiser 認可ページを作成しています...",
+        "opening": "OpenScience 認可ページを作成しています...",
         "verifying": "認可ページを開きました。承認と自動検証を待っています。",
         "retry": "認可をやり直す"
       },
       "app": {
         "title": "接続アプリを作成",
-        "subtitle": "先に DeepOrganiser アプリを作成または接続します。以後の認可はこのアプリから行われます。",
+        "subtitle": "先に OpenScience アプリを作成または接続します。以後の認可はこのアプリから行われます。",
         "steps": [
-          "DeepOrganiser を作成",
+          "OpenScience を作成",
           "App ID を検出",
           "Channels に保存"
         ],
         "appName": "アプリ名",
         "appNameHint": "開発者コンソールで識別しやすいよう、この名前を使ってください。",
-        "setupHint": "DeepOrganiser が設定フローを直接開きます。アプリ名は DeepOrganiser を使用してください。設定後に App ID を自動検出します。",
-        "create": "DeepOrganiser アプリを作成",
+        "setupHint": "OpenScience が設定フローを直接開きます。アプリ名は OpenScience を使用してください。設定後に App ID を自動検出します。",
+        "create": "OpenScience アプリを作成",
         "currentApp": "現在のアプリを検出しました",
-        "createPanelTitle": "DeepOrganiser アプリを作成",
+        "createPanelTitle": "OpenScience アプリを作成",
         "createPanelDesc": "下のボタンから直接アプリ作成フローに入れます。開発者コンソール内で入口を探す必要はありません。",
         "sync": "Channels に保存",
         "refresh": "状態を確認",
@@ -340,11 +340,15 @@
         "sendComment": "コメントを送信",
         "view": "表示"
       },
-      "hideTasklistAction": "このサイドバーから削除",
-      "hideTasklistTitle": "このタスクリストをローカルから削除しますか？",
-      "hideTasklistConfirm": "「{{name}}」はこの端末の共同作業サイドバーとプロジェクト選択から非表示になります。Lark 側のタスクリストは削除されず、他のメンバーにも影響しません。",
-      "hideTasklistOk": "ローカルから削除",
-      "hideTasklistSuccess": "このサイドバーから削除しました"
+      "hideTasklistAction": "サイドバーから削除",
+      "hideTasklistTitle": "この共同プロジェクトを削除しますか？",
+      "hideTasklistConfirm": "「{{name}}」はこの端末のサイドバーとプロジェクト選択から非表示になります。既定では、リモートのタスクリストは削除されません。",
+      "hideTasklistRemoteDelete": "リモートのタスクリストも削除する",
+      "hideTasklistRemoteDeleteHint": "オンにすると、確認時にリモートのタスクリストも削除します。この選択は次回以降も記憶されます。",
+      "hideTasklistOk": "サイドバーのみ",
+      "hideTasklistRemoteOk": "両方削除",
+      "hideTasklistSuccess": "サイドバーから削除しました",
+      "hideTasklistRemoteSuccess": "サイドバーとリモートのタスクリストから削除しました"
     }
   }
 }

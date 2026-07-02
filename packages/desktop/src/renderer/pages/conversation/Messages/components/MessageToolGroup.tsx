@@ -200,7 +200,7 @@ const EditConfirmationDiff: React.FC<{ diff: string; file_name: string; title: s
 }) => {
   const fileInfo = useMemo(() => parseDiff(diff, file_name), [diff, file_name]);
   const display_name = file_name.split(/[/\\]/).pop() || file_name;
-  const { handleFileClick, handleDiffClick } = useDiffPreviewHandlers({
+  const { handleDiffClick } = useDiffPreviewHandlers({
     diffText: diff,
     display_name,
     file_path: file_name,
@@ -211,7 +211,7 @@ const EditConfirmationDiff: React.FC<{ diff: string; file_name: string; title: s
     <FileChangesPanel
       title={title}
       files={[fileInfo]}
-      onFileClick={handleFileClick}
+      onFileClick={handleDiffClick}
       onDiffClick={handleDiffClick}
       defaultExpanded={true}
     />

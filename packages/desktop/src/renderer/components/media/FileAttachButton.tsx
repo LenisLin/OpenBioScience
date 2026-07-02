@@ -5,9 +5,9 @@
  */
 
 import type { IConversationMcpStatus, IConversationMcpStatusKind } from '@/common/config/storage';
-import { ipcBridge } from '@/common';
 import { Button, Message, Trigger } from '@arco-design/web-react';
-import { FolderOpen, Lightning, Paperclip, Plus, Right, Shield } from '@icon-park/react';
+import { FolderOpen, Paperclip, Plus, Right, Shield } from '@icon-park/react';
+import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
 import { useConversationContextSafe } from '@/renderer/hooks/context/ConversationContext';
 import { iconColors } from '@/renderer/styles/colors';
 import { isElectronDesktop } from '@/renderer/utils/platform';
@@ -17,7 +17,6 @@ import { emitter } from '@/renderer/utils/emitter';
 import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import useSWR from 'swr';
 
 interface FileAttachButtonProps {
   openFileSelector: () => void;
@@ -92,10 +91,6 @@ const FileAttachButton: React.FC<FileAttachButtonProps> = ({
     loadedMcpStatuses ?? conversationContext?.loadedMcpStatuses,
     conversationContext?.loadedMcpServers
   );
-  const { data: skillIndex } = useSWR(skillNames.length > 0 ? 'skills-index' : null, () =>
-    ipcBridge.fs.listAvailableSkills.invoke()
-  );
-  const descriptionByName = new Map((skillIndex ?? []).map((s) => [s.name, s.description]));
 
   const handleSkillClick = useCallback((name: string) => {
     setOpen(false);
@@ -159,7 +154,7 @@ const FileAttachButton: React.FC<FileAttachButtonProps> = ({
       {skillNames.map((name) => (
         <MenuItem
           key={name}
-          icon={<Lightning theme='outline' size={15} strokeWidth={2.5} />}
+          icon={<OpenScienceIcon name='settingsSkills' size={16} visualScale={1.04} />}
           label={name}
           onClick={() => handleSkillClick(name)}
           className='mx-6px'
@@ -260,7 +255,7 @@ const FileAttachButton: React.FC<FileAttachButtonProps> = ({
               >
                 <div>
                   <MenuItem
-                    icon={<Lightning theme='outline' size={15} strokeWidth={2.5} />}
+                    icon={<OpenScienceIcon name='settingsSkills' size={16} visualScale={1.04} />}
                     label={`${t('conversation.skills.loaded', { defaultValue: 'Loaded Skills' })} · ${skillNames.length}`}
                     suffix={<Right theme='outline' size={12} strokeWidth={3} style={{ color: '#c9cdd4' }} />}
                   />

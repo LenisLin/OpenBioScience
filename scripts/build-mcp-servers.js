@@ -47,6 +47,26 @@ async function main() {
       entryPoints: [path.join(ROOT, 'packages/desktop/src/process/resources/builtinMcp/medicalEvidenceServer.ts')],
       outfile: path.join(ROOT, 'out/main/builtin-mcp-medical-evidence.js'),
     }),
+    esbuild.build({
+      ...SHARED_OPTIONS,
+      entryPoints: [path.join(ROOT, 'packages/desktop/src/process/resources/builtinMcp/researchEvidenceServer.ts')],
+      outfile: path.join(ROOT, 'out/main/builtin-mcp-research-evidence.js'),
+    }),
+    esbuild.build({
+      ...SHARED_OPTIONS,
+      entryPoints: [path.join(ROOT, 'packages/desktop/src/process/resources/builtinMcp/scienceArtifactServer.ts')],
+      outfile: path.join(ROOT, 'out/main/builtin-mcp-science-artifact.js'),
+    }),
+    esbuild.build({
+      ...SHARED_OPTIONS,
+      entryPoints: [path.join(ROOT, 'packages/desktop/src/process/resources/builtinMcp/labSkillServer.ts')],
+      outfile: path.join(ROOT, 'out/main/builtin-mcp-lab-skill.js'),
+    }),
+    esbuild.build({
+      ...SHARED_OPTIONS,
+      entryPoints: [path.join(ROOT, 'packages/desktop/src/process/resources/builtinMcp/userInputServer.ts')],
+      outfile: path.join(ROOT, 'out/main/builtin-mcp-user-input.js'),
+    }),
   ]);
 }
 

@@ -12,10 +12,10 @@
     "clearWorkspace": "プロジェクトを解除",
     "openFolder": "Open Folder",
     "none": "None",
-    "quickActionsTitle": "DeepOrganiser で何ができる？",
+    "quickActionsTitle": "OpenScience で何ができる？",
     "quickActionFeedback": "問題を報告",
     "quickActionStar": "気に入った？スターをください！",
-    "skillsMarket": "DeepOrganiser Skills Market",
+    "skillsMarket": "OpenScience Skills Market",
     "skillsMarketDesc": "コミュニティ Skills をオンデマンドで検索・有効化。一度設定すれば、すべてのAgentで利用可能。",
     "skillsMarketDetails": "詳細 >>"
   },
@@ -66,12 +66,12 @@
     "pinnedSection": "Pinned",
     "deleteSuccess": "削除しました",
     "deleteFailed": "削除に失敗しました",
-    "projectsSection": "プロジェクト",
+    "projectsSection": "ローカルプロジェクト",
     "conversationsSection": "会話",
-    "removeProjectTitle": "プロジェクトを削除",
-    "removeProject": "プロジェクトを削除",
-    "removeProjectConfirm": "プロジェクト「{{name}}」を削除しますか？プロジェクト内の {{count}} 件の会話も削除されます。",
-    "newConversationInProject": "このプロジェクト内で新しい会話"
+    "removeProjectTitle": "ローカルプロジェクトを削除",
+    "removeProject": "ローカルプロジェクトを削除",
+    "removeProjectConfirm": "ローカルプロジェクト「{{name}}」をサイドバーから削除しますか？プロジェクト内の {{count}} 件の会話履歴は削除されますが、ローカルフォルダ内のファイルは削除されません。",
+    "newConversationInProject": "このローカルプロジェクトで新しい会話"
   },
   "historySearch": {
     "tooltip": "メッセージを検索",

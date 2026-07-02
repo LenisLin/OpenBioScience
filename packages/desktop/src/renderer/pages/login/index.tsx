@@ -231,15 +231,15 @@ const LoginPage: React.FC = () => {
 
       <header className='login-page__topbar'>
         <div className='login-page__identity'>
+          <DeepScientistWordmark
+            aria-label='OpenScience'
+            className='login-page__wordmark-image'
+            wrapperClassName='login-page__wordmark'
+          />
           <DeepScientistLogo
             aria-hidden='true'
             className='login-page__identity-logo-image'
             wrapperClassName='login-page__identity-logo'
-          />
-          <DeepScientistWordmark
-            aria-label='DeepOrganiser'
-            className='login-page__wordmark-image'
-            wrapperClassName='login-page__wordmark'
           />
         </div>
         <span className='login-page__topbar-meta'>{t('login.sessionCode')}</span>

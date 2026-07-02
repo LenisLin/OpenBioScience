@@ -14,6 +14,57 @@
   "history": "历史",
   "historyNotSupported": "当前内容不支持历史版本",
   "downloadFile": "下载文件",
+  "rename": "重命名",
+  "renameFile": "重命名文件",
+  "renameInvalidName": "请使用不含路径分隔符的文件名。",
+  "renameSuccess": "文件已重命名",
+  "renameFailed": "重命名文件失败",
+  "provenance": "溯源",
+  "provenanceUnavailable": "这个文件暂无 Science 项目溯源。",
+  "provenanceUnknownSource": "未登记文件",
+  "provenanceSource": "来源",
+  "provenanceFile": "文件",
+  "provenanceCreated": "创建时间",
+  "provenanceRole": "角色",
+  "provenanceCommit": "快照",
+  "provenanceEvidence": "证据",
+  "provenanceHistory": "历史",
+  "provenanceNoSnapshot": "暂无",
+  "provenanceUntrackedHint": "这个文件还没有被 science_artifact 登记。请让 Agent 对它执行 snapshot 或 publish，以补齐证据链。",
+  "provenanceStatus": {
+    "tracked": "已追踪",
+    "modified": "快照后有改动",
+    "pointer": "仅记录指针",
+    "ignored": "已跳过",
+    "missing": "文件缺失",
+    "untracked": "未登记",
+    "unknown": "未知"
+  },
+  "provenanceRoleValues": {
+    "primary": "主文件",
+    "preview": "预览",
+    "thumbnail": "缩略图",
+    "source": "来源文件",
+    "input": "输入",
+    "output": "输出",
+    "code": "代码",
+    "log": "日志",
+    "environment": "环境",
+    "reference": "参考",
+    "file": "文件"
+  },
+  "provenanceActionValues": {
+    "create": "创建",
+    "patch": "更新",
+    "version": "版本",
+    "publish": "发布",
+    "annotate": "批注",
+    "snapshot": "快照",
+    "copied": "已复制",
+    "pointer": "指针",
+    "ignored": "已跳过",
+    "missing": "缺失"
+  },
   "closePreview": "关闭预览",
   "collapsePanel": "收起面板",
   "source": "原文",
@@ -79,7 +130,7 @@
       "outsideSandbox": "该文件不在当前项目沙箱范围内。"
     },
     "serverInstall": {
-      "hint": "DeepOrganiser 运行在服务器上，预览组件需要安装在该服务器上。请在服务器执行以下命令后重试：",
+      "hint": "OpenScience 运行在服务器上，预览组件需要安装在该服务器上。请在服务器执行以下命令后重试：",
       "icuNote": "若安装后仍无法启动，请在服务器安装 ICU 库（Debian/Ubuntu：apt-get install -y libicu-dev）。"
     }
   },
@@ -111,6 +162,11 @@
       "startFailed": "启动 Excel 预览失败",
       "installHint": "需要 officecli，将自动安装。"
     }
+  },
+  "csv": {
+    "empty": "没有可预览的数据行",
+    "column": "第 {{count}} 列",
+    "truncated": "当前显示前 {{rows}} 行、{{columns}} 列。"
   },
   "pdf": {
     "title": "PDF 文档",

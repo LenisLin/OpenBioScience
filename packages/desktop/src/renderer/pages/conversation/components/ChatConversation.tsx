@@ -5,6 +5,9 @@
  */
 
 import { ipcBridge } from '@/common';
+import { isLabSkillDepositionConversationExtra } from '@/common/chat/labSkillDeposition';
+import { isMedicalEvidenceConversationExtra } from '@/common/chat/medicalEvidence';
+import { isScienceConversationExtra } from '@/common/chat/science';
 import { LEGACY_LOCAL_RUNTIME_ID } from '@/common/config/legacyIdentifiers';
 import type { IConversationMcpStatus, TChatConversation } from '@/common/config/storage';
 import { uuid } from '@/common/utils';
@@ -15,7 +18,7 @@ import { usePresetAssistantInfo, resolveAssistantConfigId } from '@/renderer/hoo
 import { iconColors } from '@/renderer/styles/colors';
 import { Button, Dropdown, Menu, Message, Tooltip, Typography } from '@arco-design/web-react';
 import { History } from '@icon-park/react';
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
@@ -23,7 +26,6 @@ import { emitter } from '../../../utils/emitter';
 import AcpChat from '../platforms/acp/AcpChat';
 import ChatLayout from './ChatLayout';
 import ChatSlider from './ChatSlider.tsx';
-import LarkLeaderProjectPanel from './LarkLeaderProjectPanel';
 import AcpModelSelector from '@/renderer/components/agent/AcpModelSelector';
 import { getConversationOrNull } from '@/renderer/pages/conversation/utils/conversationCache';
 import { getConversationCreateErrorMessage } from '@/renderer/pages/conversation/utils/conversationCreateError';
@@ -34,7 +36,7 @@ import { useConversationLoopGoal } from './useConversationLoopGoal';
 import { useTeamConversationRuntime } from '../hooks/useTeamConversationRuntime';
 import { TeamPermissionProvider } from '@/renderer/pages/team/hooks/TeamPermissionContext';
 import type { TTeam } from '@/common/types/team/teamTypes';
-import type { TeamSendBoxRuntime } from '@/renderer/pages/team/components/teamSendRuntime';
+import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
 
 /** Check whether a specific skill is mounted on the conversation. */
 const hasLoadedSkill = (conversation: TChatConversation | undefined, skillName: string): boolean => {
@@ -42,20 +44,15 @@ const hasLoadedSkill = (conversation: TChatConversation | undefined, skillName: 
   return skills?.includes(skillName) ?? false;
 };
 
-type LarkProjectConversationExtra = {
-  lark_project_tasklist_guid?: string;
-  lark_project_tasklist_name?: string;
-  lark_project_role?: 'leader' | 'agent';
+type CollaborationConversationExtra = {
   lark_im_chat_id?: string;
 };
 
-const getLarkProjectExtra = (conversation: TChatConversation | undefined): LarkProjectConversationExtra =>
-  (conversation?.extra ?? {}) as LarkProjectConversationExtra;
+const getCollaborationExtra = (conversation: TChatConversation | undefined): CollaborationConversationExtra =>
+  (conversation?.extra ?? {}) as CollaborationConversationExtra;
 
 const isLarkImConversation = (conversation: TChatConversation | undefined): boolean =>
-  Boolean(getLarkProjectExtra(conversation).lark_im_chat_id);
-
-const LARK_PROJECT_WORKSPACE_WIDTH_PX = 390;
+  Boolean(getCollaborationExtra(conversation).lark_im_chat_id);
 
 const normalizeLegacyLocalRuntimeConversation = (
   conversation: TChatConversation | undefined
@@ -66,16 +63,13 @@ const normalizeLegacyLocalRuntimeConversation = (
     ...conversation,
     type: 'acp',
     extra: {
-      ...(rawConversation.extra ?? {}),
+      ...rawConversation.extra,
       backend: 'codex',
     },
   } as TChatConversation;
 };
 
-function getTeamLeaderConversationId(
-  runtime: { team: TTeam } | null,
-  fallbackConversationId?: string
-): string {
+function getTeamLeaderConversationId(runtime: { team: TTeam } | null, fallbackConversationId?: string): string {
   return (
     runtime?.team.agents.find((agent) => agent.slot_id === runtime.team.leader_agent_id)?.conversation_id ??
     fallbackConversationId ??
@@ -183,14 +177,13 @@ const ChatConversation: React.FC<{
   const conversation = normalizeLegacyLocalRuntimeConversation(rawConversation);
   const { t } = useTranslation();
   const workspaceEnabled = Boolean(conversation?.extra?.workspace) && !isLarkImConversation(conversation);
-  const larkProjectExtra = getLarkProjectExtra(conversation);
-  const larkProjectPanelEnabled = Boolean(
-    larkProjectExtra.lark_project_tasklist_guid && larkProjectExtra.lark_project_role === 'leader'
-  );
   const layout = useLayoutContext();
   const isMobile = Boolean(layout?.isMobile);
   const { loopGoal, updateLoopGoal } = useConversationLoopGoal(conversation);
   const teamConversationRuntime = useTeamConversationRuntime(conversation);
+  const isMedicalEvidenceMode = isMedicalEvidenceConversationExtra(conversation?.extra);
+  const isScienceMode = isScienceConversationExtra(conversation?.extra);
+  const isLabSkillDepositionMode = isLabSkillDepositionConversationExtra(conversation?.extra);
 
   const isLegacyReadOnlyConversation = isLegacyReadOnlyConversationType(conversation?.type);
   const resolvedHideSendBox = hideSendBox || isLegacyReadOnlyConversationType(conversation?.type);
@@ -231,6 +224,9 @@ const ChatConversation: React.FC<{
             onLoopGoalChange={updateLoopGoal}
             teamSendMessage={teamConversationRuntime?.teamSendMessage}
             teamRuntime={teamConversationRuntime?.teamRuntime}
+            isMedicalEvidenceMode={isMedicalEvidenceMode}
+            isScienceMode={isScienceMode}
+            isLabSkillDepositionMode={isLabSkillDepositionMode}
           ></AcpChat>
         );
       default:
@@ -245,6 +241,9 @@ const ChatConversation: React.FC<{
     loopGoal,
     updateLoopGoal,
     teamConversationRuntime,
+    isMedicalEvidenceMode,
+    isScienceMode,
+    isLabSkillDepositionMode,
   ]);
 
   const sliderTitle = useMemo(() => {
@@ -280,18 +279,35 @@ const ChatConversation: React.FC<{
 
   // 如果有预设助手信息，使用预设助手的 logo 和名称；加载中时不进入 fallback；否则使用 backend 的 logo
   // If preset assistant info exists, use preset logo/name; while loading, avoid fallback; otherwise use backend logo
-  const chatLayoutProps = presetAssistantInfo
+  const modeHeaderLeading = isMedicalEvidenceMode ? (
+    <OpenScienceIcon
+      name='modeMedicalEvidence'
+      size={16}
+      visualScale={1.12}
+      title={t('guid.medicalEvidence.menuLabel')}
+    />
+  ) : isLabSkillDepositionMode ? (
+    <OpenScienceIcon name='modeDeposition' size={16} visualScale={1.1} title={t('guid.skillDeposition.menuLabel')} />
+  ) : isScienceMode ? (
+    <OpenScienceIcon name='modeScience' size={16} visualScale={1.1} title={t('guid.scienceProject.menuLabel')} />
+  ) : undefined;
+
+  const chatLayoutProps = modeHeaderLeading
     ? {
-        presetAssistant: { ...presetAssistantInfo, id: acpAssistantId },
+        headerLeading: modeHeaderLeading,
       }
-    : isLoadingPreset
-      ? {} // Still loading custom agents — avoid showing backend logo prematurely
-      : {
-          backend:
-            conversation?.type === 'acp'
-              ? conversation?.extra?.backend
-              : conversation?.type === 'codex'
-                ? 'codex'
+    : presetAssistantInfo
+      ? {
+          presetAssistant: { ...presetAssistantInfo, id: acpAssistantId },
+        }
+      : isLoadingPreset
+        ? {} // Still loading custom agents — avoid showing backend logo prematurely
+        : {
+            backend:
+              conversation?.type === 'acp'
+                ? conversation?.extra?.backend
+                : conversation?.type === 'codex'
+                  ? 'codex'
                   : conversation?.type === 'openclaw-gateway'
                     ? 'openclaw-gateway'
                     : conversation?.type === 'nanobot'
@@ -299,8 +315,8 @@ const ChatConversation: React.FC<{
                       : conversation?.type === 'remote'
                         ? 'remote'
                         : undefined,
-          agent_name: conversationAgentName,
-        };
+            agent_name: conversationAgentName,
+          };
 
   const headerExtraNode = (
     <div className='flex items-center gap-8px'>
@@ -322,28 +338,9 @@ const ChatConversation: React.FC<{
       title={conversation?.name}
       {...chatLayoutProps}
       headerExtra={headerExtraNode}
-      siderTitle={
-        larkProjectPanelEnabled ? (
-          <div className='flex items-center justify-between'>
-            <span className='text-16px font-bold text-t-primary'>项目</span>
-          </div>
-        ) : (
-          sliderTitle
-        )
-      }
-      sider={
-        larkProjectPanelEnabled ? (
-          <LarkLeaderProjectPanel
-            tasklistGuid={larkProjectExtra.lark_project_tasklist_guid!}
-            tasklistName={larkProjectExtra.lark_project_tasklist_name}
-          />
-        ) : (
-          <ChatSlider conversation={conversation} />
-        )
-      }
-      workspaceEnabled={workspaceEnabled || larkProjectPanelEnabled}
-      workspaceDefaultWidthPx={larkProjectPanelEnabled ? LARK_PROJECT_WORKSPACE_WIDTH_PX : undefined}
-      workspaceWidthStorageKey={larkProjectPanelEnabled ? 'chat-lark-project-panel-width-px' : undefined}
+      siderTitle={sliderTitle}
+      sider={<ChatSlider conversation={conversation} />}
+      workspaceEnabled={workspaceEnabled}
       workspacePath={conversation?.extra?.workspace}
       isTemporaryWorkspace={
         (conversation?.extra as { is_temporary_workspace?: boolean } | undefined)?.is_temporary_workspace

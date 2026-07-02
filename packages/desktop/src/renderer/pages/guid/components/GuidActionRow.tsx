@@ -7,6 +7,7 @@
 import { ipcBridge } from '@/common';
 import type { IMcpServer } from '@/common/config/storage';
 import AgentModeSelector from '@/renderer/components/agent/AgentModeSelector';
+import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
 import { supportsModeSwitch, type AgentModeOption } from '@/renderer/utils/model/agentModes';
 import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
 import { getCleanFileNames, FileService } from '@/renderer/services/FileService';
@@ -16,7 +17,7 @@ import type { AvailableAgent } from '../types';
 import type { Assistant } from '@/common/types/agent/assistantTypes';
 import PresetAgentTag, { type AgentSwitcherItem } from './PresetAgentTag';
 import { Button, Checkbox, Dropdown, Menu, Message, Tooltip } from '@arco-design/web-react';
-import { ArrowUp, Lightning, Plus, Shield, Target, UploadOne } from '@icon-park/react';
+import { ArrowUp, Plus, Shield, UploadOne } from '@icon-park/react';
 import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from '../index.module.css';
@@ -60,8 +61,12 @@ type GuidActionRowProps = {
   onToggleMcpServer: (serverId: string) => void;
   isLoopGoalMode?: boolean;
   onToggleLoopGoalMode?: () => void;
+  isScienceMode?: boolean;
+  onToggleScienceMode?: () => void;
   isMedicalEvidenceMode?: boolean;
   onToggleMedicalEvidenceMode?: () => void;
+  isSkillDepositionMode?: boolean;
+  onStartSkillDepositionMode?: () => void;
 
   // Send button
   loading: boolean;
@@ -95,8 +100,12 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
   onToggleMcpServer,
   isLoopGoalMode,
   onToggleLoopGoalMode,
+  isScienceMode,
+  onToggleScienceMode,
   isMedicalEvidenceMode,
   onToggleMedicalEvidenceMode,
+  isSkillDepositionMode,
+  onStartSkillDepositionMode,
   hidePresetTag = false,
   loading,
   isButtonDisabled,
@@ -169,9 +178,15 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
         } else if (key === 'loop-goal') {
           setIsPlusDropdownOpen(false);
           onToggleLoopGoalMode?.();
+        } else if (key === 'science') {
+          setIsPlusDropdownOpen(false);
+          onToggleScienceMode?.();
         } else if (key === 'medical-evidence') {
           setIsPlusDropdownOpen(false);
           onToggleMedicalEvidenceMode?.();
+        } else if (key === 'skill-deposition') {
+          setIsPlusDropdownOpen(false);
+          onStartSkillDepositionMode?.();
         }
       }}
     >
@@ -198,15 +213,18 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
           </div>
         </Menu.Item>
       )}
+      {onToggleScienceMode ? (
+        <Menu.Item key='science'>
+          <div className='flex items-center gap-8px' data-testid='science-menu-item'>
+            <OpenScienceIcon name='modeScience' size={17} visualScale={isScienceMode ? 1.14 : 1.04} />
+            <span>{t('guid.scienceProject.menuLabel')}</span>
+          </div>
+        </Menu.Item>
+      ) : null}
       {onToggleLoopGoalMode ? (
         <Menu.Item key='loop-goal'>
           <div className='flex items-center gap-8px' data-testid='loop-goal-menu-item'>
-            <Target
-              theme={isLoopGoalMode ? 'filled' : 'outline'}
-              size='16'
-              fill={isLoopGoalMode ? iconColors.primary : iconColors.secondary}
-              style={{ lineHeight: 0 }}
-            />
+            <OpenScienceIcon name='modeGoal' size={17} visualScale={isLoopGoalMode ? 1.14 : 1.04} />
             <span>{t('guid.loopGoal.menuLabel')}</span>
           </div>
         </Menu.Item>
@@ -214,13 +232,16 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
       {onToggleMedicalEvidenceMode ? (
         <Menu.Item key='medical-evidence'>
           <div className='flex items-center gap-8px' data-testid='medical-evidence-menu-item'>
-            <Shield
-              theme={isMedicalEvidenceMode ? 'filled' : 'outline'}
-              size='16'
-              fill={isMedicalEvidenceMode ? 'rgb(45,128,91)' : iconColors.secondary}
-              style={{ lineHeight: 0 }}
-            />
-            <span>医学循证模式</span>
+            <OpenScienceIcon name='modeMedicalEvidence' size={18} visualScale={1.12} />
+            <span>{t('guid.medicalEvidence.menuLabel')}</span>
+          </div>
+        </Menu.Item>
+      ) : null}
+      {onStartSkillDepositionMode ? (
+        <Menu.Item key='skill-deposition'>
+          <div className='flex items-center gap-8px' data-testid='skill-deposition-menu-item'>
+            <OpenScienceIcon name='modeDeposition' size={17} visualScale={isSkillDepositionMode ? 1.14 : 1.04} />
+            <span>{t('guid.skillDeposition.menuLabel')}</span>
           </div>
         </Menu.Item>
       ) : null}
@@ -229,7 +250,7 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
           key='skills'
           title={
             <div className='flex items-center gap-8px'>
-              <Lightning theme='filled' size='16' fill={iconColors.primary} style={{ lineHeight: 0 }} />
+              <OpenScienceIcon name='settingsSkills' size={17} visualScale={1.05} />
               <span>
                 {t('settings.capabilitiesTab.skills')} ({activeSkillCount}/{allSkills.length})
               </span>
@@ -346,21 +367,49 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
                 aria-label={t('guid.loopGoal.modeActive')}
                 data-testid='loop-goal-mode-pill'
               >
-                <Target theme='outline' size='16' fill='currentColor' style={{ lineHeight: 0 }} />
+                <OpenScienceIcon name='modeGoal' size={18} visualScale={1.12} />
+              </button>
+            </Tooltip>
+          ) : null}
+          {isScienceMode && onToggleScienceMode ? (
+            <Tooltip content={t('guid.scienceProject.modeActive')}>
+              <button
+                type='button'
+                className={styles.scienceModeIndicator}
+                onClick={onToggleScienceMode}
+                aria-pressed='true'
+                aria-label={t('guid.scienceProject.modeActive')}
+                data-testid='science-mode-pill'
+              >
+                <OpenScienceIcon name='modeScience' size={19} visualScale={1.12} />
               </button>
             </Tooltip>
           ) : null}
           {isMedicalEvidenceMode && onToggleMedicalEvidenceMode ? (
-            <Tooltip content='医学循证模式已启用'>
+            <Tooltip content={t('guid.medicalEvidence.modeActive')}>
               <button
                 type='button'
                 className={styles.medicalEvidenceModeIndicator}
                 onClick={onToggleMedicalEvidenceMode}
                 aria-pressed='true'
-                aria-label='医学循证模式已启用'
+                aria-label={t('guid.medicalEvidence.modeActive')}
                 data-testid='medical-evidence-mode-pill'
               >
-                <Shield theme='outline' size='16' fill='currentColor' style={{ lineHeight: 0 }} />
+                <OpenScienceIcon name='modeMedicalEvidence' size={20} visualScale={1.14} />
+              </button>
+            </Tooltip>
+          ) : null}
+          {isSkillDepositionMode && onStartSkillDepositionMode ? (
+            <Tooltip content={t('guid.skillDeposition.modeActive')}>
+              <button
+                type='button'
+                className={styles.skillDepositionModeIndicator}
+                onClick={onStartSkillDepositionMode}
+                aria-pressed='true'
+                aria-label={t('guid.skillDeposition.modeActive')}
+                data-testid='skill-deposition-mode-pill'
+              >
+                <OpenScienceIcon name='modeDeposition' size={19} visualScale={1.12} />
               </button>
             </Tooltip>
           ) : null}

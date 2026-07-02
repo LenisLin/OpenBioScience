@@ -1279,7 +1279,7 @@ async function main() {
 
   server.tool(
     'delegate_task',
-    `Delegate project work through the DeepScientist Lark project bridge.
+    `Delegate project work through the OpenScience Lark project bridge.
 
 Use this only after the project owner has approved the plan. It creates the Lark task, writes the Agent Card, stores delegation state, and for local Agents sends the work into Team Mode as a child turn.
 

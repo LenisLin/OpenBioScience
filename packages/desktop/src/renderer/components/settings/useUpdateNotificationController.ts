@@ -67,7 +67,7 @@ const reduceNotificationState = (
   event: Parameters<typeof updateNotificationReducer>[1]
 ): UpdateNotificationState => updateNotificationReducer(current, event).state;
 
-const RELEASES_PAGE_URL = 'https://github.com/ResearAI/DeepOrganiser/releases';
+const RELEASES_PAGE_URL = 'https://github.com/ResearAI/OpenScience/releases';
 
 export const useUpdateNotificationController = () => {
   const { t } = useTranslation();

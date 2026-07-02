@@ -9,7 +9,8 @@ import type { ICreateConversationParams } from '@/common/adapter/ipcBridge';
 import { LEGACY_LOCAL_RUNTIME_ID } from '@/common/config/legacyIdentifiers';
 import type { TProviderWithModel } from '@/common/config/storage';
 import type { Assistant } from '@/common/types/agent/assistantTypes';
-import { DEFAULT_CODEX_MODELS } from '@/common/types/codex/codexModels';
+import { getFullAutoMode } from '@/common/types/agent/agentModes';
+import { DEFAULT_CODEX_MODEL_ID } from '@/common/types/codex/codexModels';
 import { CODEX_MODE_NATIVE_FULL_ACCESS, normalizeCodexMode } from '@/common/types/codex/codexModes';
 import { resolveLocaleKey } from '@/common/utils';
 import {
@@ -53,6 +54,11 @@ async function resolvePreferredMode(backend: string): Promise<string | undefined
     return legacyMode;
   }
 
+  const fullAutoMode = getFullAutoMode(backend);
+  if (modeOptions.some((option) => option.value === fullAutoMode)) {
+    return fullAutoMode;
+  }
+
   return undefined;
 }
 
@@ -64,6 +70,10 @@ async function resolvePreferredAcpModelId(backend: string): Promise<string | und
     return preferredModelId;
   }
 
+  if (backend === 'codex') {
+    return DEFAULT_CODEX_MODEL_ID;
+  }
+
   // Fallback: last-seen model info persisted on the backend's agent_metadata row.
   const agents = await getAgents();
   const matched = agents.find((a) => (a.backend ?? a.agent_type) === backend);
@@ -71,10 +81,6 @@ async function resolvePreferredAcpModelId(backend: string): Promise<string | und
   const handshakeModelId = handshakeModels?.current_model_id;
   if (typeof handshakeModelId === 'string' && handshakeModelId.trim().length > 0) {
     return handshakeModelId;
-  }
-
-  if (backend === 'codex' && DEFAULT_CODEX_MODELS.length > 0) {
-    return DEFAULT_CODEX_MODELS[0]?.id;
   }
 
   return undefined;

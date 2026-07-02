@@ -14,6 +14,57 @@
   "history": "History",
   "historyNotSupported": "Current content does not support history",
   "downloadFile": "Download file",
+  "rename": "Rename",
+  "renameFile": "Rename file",
+  "renameInvalidName": "Use a file name without path separators.",
+  "renameSuccess": "File renamed",
+  "renameFailed": "Failed to rename file",
+  "provenance": "Provenance",
+  "provenanceUnavailable": "No Science project provenance is available for this file.",
+  "provenanceUnknownSource": "Unregistered file",
+  "provenanceSource": "Source",
+  "provenanceFile": "File",
+  "provenanceCreated": "Created",
+  "provenanceRole": "Role",
+  "provenanceCommit": "Snapshot",
+  "provenanceEvidence": "Evidence",
+  "provenanceHistory": "History",
+  "provenanceNoSnapshot": "none",
+  "provenanceUntrackedHint": "This file has not been registered by science_artifact yet. Ask the Agent to snapshot or publish it to complete the evidence chain.",
+  "provenanceStatus": {
+    "tracked": "Tracked",
+    "modified": "Modified after snapshot",
+    "pointer": "Pointer only",
+    "ignored": "Ignored",
+    "missing": "Missing",
+    "untracked": "Not registered",
+    "unknown": "Unknown"
+  },
+  "provenanceRoleValues": {
+    "primary": "Primary",
+    "preview": "Preview",
+    "thumbnail": "Thumbnail",
+    "source": "Source file",
+    "input": "Input",
+    "output": "Output",
+    "code": "Code",
+    "log": "Log",
+    "environment": "Environment",
+    "reference": "Reference",
+    "file": "File"
+  },
+  "provenanceActionValues": {
+    "create": "Create",
+    "patch": "Update",
+    "version": "Version",
+    "publish": "Publish",
+    "annotate": "Annotate",
+    "snapshot": "Snapshot",
+    "copied": "Copied",
+    "pointer": "Pointer",
+    "ignored": "Ignored",
+    "missing": "Missing"
+  },
   "closePreview": "Close preview",
   "collapsePanel": "Collapse panel",
   "source": "Source",
@@ -79,7 +130,7 @@
       "outsideSandbox": "This file is outside the current project sandbox."
     },
     "serverInstall": {
-      "hint": "DeepOrganiser is running on a server. Install the preview component on that server, then retry:",
+      "hint": "OpenScience is running on a server. Install the preview component on that server, then retry:",
       "icuNote": "If it still fails to start, install the ICU library on the server (Debian/Ubuntu: apt-get install -y libicu-dev)."
     }
   },
@@ -111,6 +162,11 @@
       "startFailed": "Failed to start Excel preview",
       "installHint": "Requires officecli. It will be installed automatically."
     }
+  },
+  "csv": {
+    "empty": "No rows to preview",
+    "column": "Column {{count}}",
+    "truncated": "Showing the first {{rows}} rows and {{columns}} columns."
   },
   "pdf": {
     "title": "PDF Document",

@@ -12,10 +12,10 @@
     "clearWorkspace": "Remove project",
     "openFolder": "Open Folder",
     "none": "None",
-    "quickActionsTitle": "What can DeepOrganiser do?",
+    "quickActionsTitle": "What can OpenScience do?",
     "quickActionFeedback": "Report Issue",
     "quickActionStar": "Like us? Give us a star!",
-    "skillsMarket": "DeepOrganiser Skills Market",
+    "skillsMarket": "OpenScience Skills Market",
     "skillsMarketDesc": "Search and activate community Skills on demand. Configure once, available for all agents.",
     "skillsMarketDetails": "View More >>"
   },
@@ -66,12 +66,12 @@
     "yesterday": "Yesterday",
     "recent7Days": "Last 7 Days",
     "earlier": "Earlier",
-    "projectsSection": "Local Projects",
+    "projectsSection": "Proyectos locales",
     "conversationsSection": "Conversations",
-    "removeProjectTitle": "Remove project",
-    "removeProject": "Remove project",
-    "removeProjectConfirm": "Remove project \"{{name}}\"? Its {{count}} conversation(s) will be removed too.",
-    "newConversationInProject": "New chat in this project"
+    "removeProjectTitle": "Quitar proyecto local",
+    "removeProject": "Quitar proyecto local",
+    "removeProjectConfirm": "¿Quitar el proyecto local \"{{name}}\" de la barra lateral? Se eliminarán {{count}} registro(s) de chat del proyecto, pero no se borrarán archivos de la carpeta local.",
+    "newConversationInProject": "Nuevo chat en este proyecto local"
   },
   "historySearch": {
     "tooltip": "Search messages",

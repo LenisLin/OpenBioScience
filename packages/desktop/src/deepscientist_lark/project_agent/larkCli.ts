@@ -714,6 +714,20 @@ export async function renameTasklist(input: { tasklistGuid: string; name: string
   return tasklist ?? getTasklist(input.tasklistGuid);
 }
 
+export async function deleteTasklist(tasklistGuid: string): Promise<void> {
+  await runLarkCli([
+    'task',
+    'tasklists',
+    'delete',
+    '--params',
+    JSON.stringify({ tasklist_guid: tasklistGuid }),
+    '--as',
+    'user',
+    '--yes',
+    '--json',
+  ]);
+}
+
 export async function createSection(input: {
   tasklistGuid: string;
   name: string;

@@ -138,6 +138,7 @@ export const getAgentOutputFileIconName = (value: string, contentType?: string):
   if (contentType === 'excel') return 'excel';
   if (contentType === 'image') return 'image';
   if (contentType === 'html') return 'html';
+  if (contentType === 'molecular_structure') return 'database';
   if (contentType === 'code') return 'code';
   if (contentType === 'diff') return 'diff';
   if (contentType === 'table') return 'table';
@@ -160,6 +161,7 @@ export const getAgentOutputFileIconName = (value: string, contentType?: string):
   if (['mp4', 'mov', 'webm', 'mkv', 'avi', 'm4v'].includes(ext)) return 'video';
   if (['zip', 'tar', 'gz', 'tgz', 'bz2', 'xz', 'rar', '7z'].includes(ext)) return 'archive';
   if (['db', 'sqlite', 'sqlite3', 'sql'].includes(ext)) return 'database';
+  if (['pdb', 'ent', 'cif', 'mmcif', 'pqr', 'sdf', 'mol', 'mol2', 'xyz'].includes(ext)) return 'database';
   if (['ipynb'].includes(ext)) return 'notebook';
   if (['txt', 'log', 'text'].includes(ext)) return 'text';
   if (['html', 'htm'].includes(ext)) return 'html';
@@ -193,7 +195,8 @@ export const getAgentOutputFileIconName = (value: string, contentType?: string):
   return 'file';
 };
 
-const sizeToCss = (size: number | string): number | string => (typeof size === 'number' ? `${size}px` : size);
+const sizeToCss = (size: number | string): string =>
+  typeof size === 'number' || /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size;
 
 const AgentOutputIcon: React.FC<AgentOutputIconProps> = ({ name, size = 16, title, className, style, ...props }) => {
   const asset = ICON_ASSETS[name] || ICON_ASSETS.file;
