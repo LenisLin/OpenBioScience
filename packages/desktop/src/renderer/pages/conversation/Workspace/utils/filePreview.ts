@@ -63,6 +63,16 @@ export const PREVIEW_SUPPORTED_EXTENSIONS: Set<string> = new Set([
   'tif',
   'tiff',
   'avif',
+  // Molecular / protein structures
+  'pdb',
+  'ent',
+  'cif',
+  'mmcif',
+  'pqr',
+  'sdf',
+  'mol',
+  'mol2',
+  'xyz',
 ]);
 
 /**

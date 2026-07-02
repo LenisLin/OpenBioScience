@@ -5,6 +5,7 @@
  */
 
 import { ipcBridge } from '@/common';
+import type { SciencePanelData } from '@/common/chat/science';
 import type { PreviewContentType } from '@/common/types/office/preview';
 import { emitter } from '@/renderer/utils/emitter';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -31,6 +32,12 @@ export interface PreviewMetadata {
   targetLine?: number; // 打开文件后定位到的目标行 / Target line to reveal after opening
   targetColumn?: number; // 打开文件后定位到的目标列 / Target column to reveal after opening
   missingFile?: boolean; // 文件不存在或无法读取 / Whether the referenced file is missing or unreadable
+  science?: {
+    panel: SciencePanelData;
+    artifactId: string;
+    artifactVersion?: number;
+    workspaceView?: boolean;
+  };
 }
 
 export interface PreviewTab {
@@ -100,12 +107,19 @@ const LEGACY_PREVIEW_STATE_KEY = 'deeporganiser_preview_state';
 const MAX_PERSISTED_TAB_CONTENT_LENGTH = 80_000;
 const PERSISTABLE_CONTENT_TYPES = new Set<PreviewContentType>(['markdown', 'html', 'code', 'diff']);
 
+const stripVolatileMetadata = (metadata?: PreviewMetadata): PreviewMetadata | undefined => {
+  if (!metadata?.science) return metadata;
+  const next = { ...metadata };
+  delete next.science;
+  return next;
+};
+
 const sanitizeTabsForPersistence = (input: PreviewTab[]): PreviewTab[] => {
   return input
     .filter((tab) => PERSISTABLE_CONTENT_TYPES.has(tab.content_type))
     .filter((tab) => tab.content.length <= MAX_PERSISTED_TAB_CONTENT_LENGTH)
-    .map((tab) => ({
-      ...tab,
+    .map((tab) => Object.assign({}, tab, {
+      metadata: stripVolatileMetadata(tab.metadata),
       isDirty: false,
       originalContent: tab.content,
     }));
@@ -127,8 +141,7 @@ const parsePersistedTabs = (value: unknown): PreviewTab[] => {
     })
     .filter((tab) => PERSISTABLE_CONTENT_TYPES.has(tab.content_type))
     .filter((tab) => tab.content.length <= MAX_PERSISTED_TAB_CONTENT_LENGTH)
-    .map((tab) => ({
-      ...tab,
+    .map((tab) => Object.assign({}, tab, {
       originalContent: typeof tab.originalContent === 'string' ? tab.originalContent : tab.content,
       isDirty: false,
     }));
@@ -324,6 +337,9 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
           if (type === 'diff') return 'Diff';
           if (type === 'code') return `${meta?.language || 'Code'}`;
           if (type === 'image') return 'Image'; // 图片预览默认标题 / Default title for image preview
+          if (type === 'science_report') return 'Science report';
+          if (type === 'science_files') return 'Files';
+          if (type === 'molecular_structure') return 'Molecular structure';
           return 'Preview';
         })();
 
@@ -349,10 +365,10 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
           const activeIdx = activeTabIdRef.current
             ? prevTabs.findIndex((tab) => tab.id === activeTabIdRef.current)
             : -1;
-          const activeTab = activeIdx >= 0 ? prevTabs[activeIdx] : null;
-          if (activeTab && !activeTab.isDirty) {
-            nextActiveTabId = activeTab.id;
-            const replacedTab: PreviewTab = { ...newTab, id: activeTab.id };
+          const currentActiveTab = activeIdx >= 0 ? prevTabs[activeIdx] : null;
+          if (currentActiveTab && !currentActiveTab.isDirty) {
+            nextActiveTabId = currentActiveTab.id;
+            const replacedTab: PreviewTab = { ...newTab, id: currentActiveTab.id };
             return prevTabs.map((tab, idx) => (idx === activeIdx ? replacedTab : tab));
           }
         }

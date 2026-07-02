@@ -9,16 +9,25 @@ import { LEGACY_APP_NAMESPACE } from '@/common/config/legacyIdentifiers';
 // Keep this constant local to avoid pulling in common/config/storage side effects
 // when the built-in MCP server boots in a standalone stdio process.
 export const BUILTIN_IMAGE_GEN_ID = 'builtin-image-gen';
-export const BUILTIN_IMAGE_GEN_NAME = 'deeporganiser-image-generation';
+export const BUILTIN_IMAGE_GEN_NAME = 'openscience-image-generation';
 export const BUILTIN_IMAGE_GEN_LEGACY_NAMES = [
   'DeepOrganiser Image Generation',
   BUILTIN_IMAGE_GEN_ID,
   `${LEGACY_APP_NAMESPACE}-image-generation`,
+  'deeporganiser-image-generation',
 ] as const;
 export const BUILTIN_LARK_PROJECT_AGENT_ID = 'builtin-lark-project-agent';
-export const BUILTIN_LARK_PROJECT_AGENT_NAME = 'deeporganiser-lark-project-agent';
+export const BUILTIN_LARK_PROJECT_AGENT_NAME = 'openscience-lark-project-agent';
 export const BUILTIN_MEDICAL_EVIDENCE_ID = 'builtin-medical-evidence';
-export const BUILTIN_MEDICAL_EVIDENCE_NAME = 'deeporganiser-medical-evidence';
+export const BUILTIN_MEDICAL_EVIDENCE_NAME = 'openscience-medical-evidence';
+export const BUILTIN_RESEARCH_EVIDENCE_ID = 'builtin-research-evidence';
+export const BUILTIN_RESEARCH_EVIDENCE_NAME = 'openscience-research-evidence';
+export const BUILTIN_SCIENCE_ARTIFACT_ID = 'builtin-science-artifact';
+export const BUILTIN_SCIENCE_ARTIFACT_NAME = 'openscience-science-artifact';
+export const BUILTIN_LAB_SKILL_ID = 'builtin-lab-skill';
+export const BUILTIN_LAB_SKILL_NAME = 'openscience-lab-skill';
+export const BUILTIN_USER_INPUT_ID = 'builtin-user-input';
+export const BUILTIN_USER_INPUT_NAME = 'openscience-user-input';
 
 export function isBuiltinImageGenName(name?: string | null): boolean {
   if (!name) return false;

@@ -5,26 +5,33 @@
  */
 
 import { ipcBridge } from '@/common';
+import type { ScienceArtifactFileProvenanceResult } from '@/common/chat/science';
 import { downloadFileFromPath, downloadTextContent } from '@/renderer/utils/file/download';
 import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
 import { toLocalFileHref } from '@/renderer/components/Markdown/markdownUtils';
 import { PreviewToolbarExtrasProvider, type PreviewToolbarExtras } from '../../context/PreviewToolbarExtrasContext';
 import { usePreviewContext } from '../../context/PreviewContext';
+import { useLocalFilePreview } from '../../hooks/useLocalFilePreview';
 import { useResizableSplit } from '@/renderer/hooks/ui/useResizableSplit';
-import { Link } from '@arco-design/web-react';
+import { Input, Link, Modal } from '@arco-design/web-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import DiffPreview from '../viewers/DiffViewer';
 import ExcelPreview from '../viewers/ExcelViewer';
+import CsvTableViewer from '../viewers/CsvTableViewer';
 import HTMLEditor from '../editors/HTMLEditor';
 import HTMLRenderer from '../renderers/HTMLRenderer';
 import ImagePreview from '../viewers/ImageViewer';
 import MarkdownEditor from '../editors/MarkdownEditor';
 import MarkdownPreview from '../viewers/MarkdownViewer';
+import MolecularStructureViewer from '../viewers/MolecularStructureViewer';
 import PDFPreview from '../viewers/PDFViewer';
 import OfficeDocPreview from '../viewers/OfficeDocViewer';
 import PptViewer from '../viewers/PptViewer';
 import CodeEditor from '../editors/CodeEditor';
 import URLViewer from '../viewers/URLViewer';
+import ScienceArtifactWorkspace from '../ScienceArtifactWorkspace/ScienceArtifactWorkspace';
+import ScienceFilesView from '../ScienceArtifactWorkspace/ScienceFilesView';
+import { ScienceReportPreviewPanel } from '@/renderer/pages/conversation/Messages/components/ScienceReportPanel';
 import {
   PreviewTabs,
   PreviewToolbar,
@@ -35,7 +42,7 @@ import {
   type CloseTabConfirmState,
   type PreviewTab,
 } from '.';
-import { DEFAULT_SPLIT_RATIO, FILE_TYPES_WITH_BUILTIN_OPEN, MAX_SPLIT_WIDTH, MIN_SPLIT_WIDTH } from '../../constants';
+import { DEFAULT_SPLIT_RATIO, MAX_SPLIT_WIDTH, MIN_SPLIT_WIDTH } from '../../constants';
 import {
   usePreviewHistory,
   usePreviewKeyboardShortcuts,
@@ -46,6 +53,34 @@ import {
 import { useTranslation } from 'react-i18next';
 import './preview.css';
 
+const formatProvenanceTime = (timestamp?: number, fallback = 'Unknown'): string => {
+  if (!timestamp) return fallback;
+  try {
+    return new Date(timestamp).toLocaleString();
+  } catch {
+    return fallback;
+  }
+};
+
+const provenanceStatusFallback = (status?: ScienceArtifactFileProvenanceResult['status']): string => {
+  switch (status) {
+    case 'tracked':
+      return 'Tracked';
+    case 'modified':
+      return 'Modified after snapshot';
+    case 'pointer':
+      return 'Pointer only';
+    case 'ignored':
+      return 'Ignored';
+    case 'missing':
+      return 'Missing';
+    case 'untracked':
+      return 'Not registered';
+    default:
+      return 'Unknown';
+  }
+};
+
 /**
  * 预览面板主组件
  * Main preview panel component
@@ -53,7 +88,19 @@ import './preview.css';
  * 支持多 Tab 切换，每个 Tab 可以显示不同类型的内容
  * Supports multiple tabs, each tab can display different types of content
  */
-const PreviewPanel: React.FC = () => {
+export type PreviewPanelLayoutMode = 'split' | 'fullscreen';
+
+interface PreviewPanelProps {
+  previewLayoutMode?: PreviewPanelLayoutMode;
+  onPreviewLayoutModeChange?: (mode: PreviewPanelLayoutMode) => void;
+  onRequestHalfPanel?: () => void;
+}
+
+const PreviewPanel: React.FC<PreviewPanelProps> = ({
+  previewLayoutMode = 'split',
+  onPreviewLayoutModeChange,
+  onRequestHalfPanel,
+}) => {
   const { t } = useTranslation();
   const {
     isOpen,
@@ -68,12 +115,29 @@ const PreviewPanel: React.FC = () => {
     addDomSnippet,
   } = usePreviewContext();
   const layout = useLayoutContext();
+  const openLocalFilePreview = useLocalFilePreview(activeTab?.metadata?.workspace);
+  const activeScienceArtifact = useMemo(() => {
+    const science = activeTab?.metadata?.science;
+    if (!science?.panel || !science.artifactId) return undefined;
+    return science.panel.artifacts.find(
+      (artifact) =>
+        artifact.id === science.artifactId &&
+        (science.artifactVersion == null || artifact.version === science.artifactVersion)
+    );
+  }, [activeTab?.metadata?.science]);
 
   // 视图状态 / View states
   const [viewMode, setViewMode] = useState<'source' | 'preview'>('preview');
   const [isSplitScreenEnabled, setIsSplitScreenEnabled] = useState(false);
   const [inspectMode, setInspectMode] = useState(false);
   const [toolbarExtras, setToolbarExtras] = useState<PreviewToolbarExtras | null>(null);
+  const [renameState, setRenameState] = useState({ visible: false, value: '', loading: false });
+  const [provenanceState, setProvenanceState] = useState<{
+    visible: boolean;
+    loading: boolean;
+    result?: ScienceArtifactFileProvenanceResult;
+    error?: string;
+  }>({ visible: false, loading: false });
 
   // 切换文件时把视图模式复位为预览，避免上一个文件的 source 模式串到下一个文件（如代码文件丢失语法高亮）。
   // 注意：单预览浏览模式下打开新文件会复用当前 tab 的 id，所以这里要监听实际显示的文件标识（路径 + 类型），
@@ -170,10 +234,17 @@ const PreviewPanel: React.FC = () => {
     [updateContent]
   );
 
+  const openPlainFilePreview = useCallback(
+    (filePath: string) => {
+      void openLocalFilePreview(filePath);
+    },
+    [openLocalFilePreview]
+  );
+
   // 处理关闭tab / Handle close tab
   const handleCloseTab = useCallback(
     (tabId: string) => {
-      const tab = tabs.find((t) => t.id === tabId);
+      const tab = tabs.find((item) => item.id === tabId);
       // 如果tab有未保存的修改，显示确认对话框 / If tab has unsaved changes, show confirmation dialog
       if (tab?.isDirty) {
         setCloseTabConfirm({ show: true, tabId });
@@ -229,7 +300,7 @@ const PreviewPanel: React.FC = () => {
   // 关闭左侧 tabs / Close tabs to the left
   const handleCloseLeft = useCallback(
     (tabId: string) => {
-      const currentIndex = tabs.findIndex((t) => t.id === tabId);
+      const currentIndex = tabs.findIndex((item) => item.id === tabId);
       if (currentIndex <= 0) return;
 
       const tabsToClose = tabs.slice(0, currentIndex);
@@ -242,7 +313,7 @@ const PreviewPanel: React.FC = () => {
   // 关闭右侧 tabs / Close tabs to the right
   const handleCloseRight = useCallback(
     (tabId: string) => {
-      const currentIndex = tabs.findIndex((t) => t.id === tabId);
+      const currentIndex = tabs.findIndex((item) => item.id === tabId);
       if (currentIndex < 0 || currentIndex >= tabs.length - 1) return;
 
       const tabsToClose = tabs.slice(currentIndex + 1);
@@ -255,7 +326,7 @@ const PreviewPanel: React.FC = () => {
   // 关闭其他 tabs / Close other tabs
   const handleCloseOthers = useCallback(
     (tabId: string) => {
-      const tabsToClose = tabs.filter((t) => t.id !== tabId);
+      const tabsToClose = tabs.filter((item) => item.id !== tabId);
       tabsToClose.forEach((tab) => closeTab(tab.id));
       setContextMenu({ show: false, x: 0, y: 0, tabId: null });
     },
@@ -276,14 +347,13 @@ const PreviewPanel: React.FC = () => {
   const isHTML = content_type === 'html';
   const isEditable = metadata?.editable !== false; // 默认可编辑 / Default editable
 
-  // 检查文件类型是否已有内置的打开按钮（Word、PPT、PDF、Excel 组件内部已提供）
-  // Check if file type already has built-in open button
-  // (Word, PPT, PDF, Excel components provide their own)
-  const hasBuiltInOpenButton = (FILE_TYPES_WITH_BUILTIN_OPEN as readonly string[]).includes(content_type);
-
   // 对所有有 file_path 的文件显示"在系统中打开"按钮（统一在工具栏显示）
   // Show "Open in System" button for all files with file_path (unified in toolbar)
   const showOpenInSystemButton = Boolean(metadata?.file_path);
+  const canRenamePreviewFile = Boolean(metadata?.file_path && !metadata?.missingFile);
+  const canShowScienceProvenance = Boolean(
+    metadata?.file_path && !metadata?.missingFile && (metadata?.science?.panel.projectRoot || metadata?.workspace)
+  );
 
   // 下载文件到本地 / Download file to local system
   const handleDownload = useCallback(async () => {
@@ -375,7 +445,8 @@ const PreviewPanel: React.FC = () => {
       } catch {
         // Context holder may be unmounted after async operation
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('[PreviewPanel] Failed to open file in system:', error);
       try {
         messageApi.error(t('preview.openInSystemFailed'));
       } catch {
@@ -383,6 +454,187 @@ const PreviewPanel: React.FC = () => {
       }
     }
   }, [metadata?.file_path, messageApi, t]);
+
+  const handleRenameRequest = useCallback(() => {
+    if (!metadata?.file_path) return;
+    setRenameState({
+      visible: true,
+      value: metadata.file_name || activeTab.title,
+      loading: false,
+    });
+  }, [activeTab.title, metadata?.file_name, metadata?.file_path]);
+
+  const handleRenameConfirm = useCallback(async () => {
+    if (!metadata?.file_path) return;
+    const nextName = renameState.value.trim();
+    if (!nextName || /[/\\]/u.test(nextName)) {
+      messageApi.error(t('preview.renameInvalidName', { defaultValue: 'Use a file name without path separators.' }));
+      return;
+    }
+    setRenameState((prev) => ({ ...prev, loading: true }));
+    try {
+      const result = await ipcBridge.fs.renameEntry.invoke({ path: metadata.file_path, new_name: nextName });
+      await openLocalFilePreview(
+        result.new_path,
+        undefined,
+        {
+          ...metadata,
+          title: nextName,
+          file_name: nextName,
+          file_path: result.new_path,
+          missingFile: false,
+        },
+        { replace: true }
+      );
+      setRenameState({ visible: false, value: '', loading: false });
+      messageApi.success(t('preview.renameSuccess', { defaultValue: 'File renamed' }));
+    } catch (error) {
+      console.error('[PreviewPanel] Failed to rename file:', error);
+      setRenameState((prev) => ({ ...prev, loading: false }));
+      messageApi.error(t('preview.renameFailed', { defaultValue: 'Failed to rename file' }));
+    }
+  }, [metadata, messageApi, openLocalFilePreview, renameState.value, t]);
+
+  const handleShowProvenance = useCallback(async () => {
+    const filePath = metadata?.file_path;
+    const projectRoot = metadata?.science?.panel.projectRoot || metadata?.workspace;
+    if (!filePath || !projectRoot) {
+      setProvenanceState({
+        visible: true,
+        loading: false,
+        error: t('preview.provenanceUnavailable', { defaultValue: 'No Science project provenance is available for this file.' }),
+      });
+      return;
+    }
+    setProvenanceState({ visible: true, loading: true });
+    try {
+      const result = await ipcBridge.scienceArtifactArchive.resolveFile.invoke({
+        projectRoot,
+        filePath,
+        limit: 8,
+      });
+      setProvenanceState({ visible: true, loading: false, result, error: result.ok ? undefined : result.error });
+    } catch (error) {
+      console.error('[PreviewPanel] Failed to resolve Science file provenance:', error);
+      setProvenanceState({
+        visible: true,
+        loading: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }, [metadata?.file_path, metadata?.science?.panel.projectRoot, metadata?.workspace, t]);
+
+  const renderProvenanceModal = () => {
+    const result = provenanceState.result;
+    const record = result?.record;
+    const fallbackArtifact = activeScienceArtifact;
+    const sourceTitle =
+      record?.artifactTitle ||
+      fallbackArtifact?.title ||
+      record?.artifactId ||
+      fallbackArtifact?.id ||
+      t('preview.provenanceUnknownSource', { defaultValue: 'Unregistered file' });
+    const evidenceIds = record?.evidenceIds?.length ? record.evidenceIds : fallbackArtifact?.evidenceIds || [];
+    const history = result?.history || [];
+    const status = result?.status || record?.status || (provenanceState.error ? 'unknown' : 'untracked');
+    const unknownLabel = t('common.unknown', { defaultValue: 'Unknown' });
+    const role = record?.role || 'file';
+    const roleLabel = t(`preview.provenanceRoleValues.${role}`, { defaultValue: role });
+    const statusLabel = t(`preview.provenanceStatus.${status}`, {
+      defaultValue: provenanceStatusFallback(status),
+    });
+    const formatHistoryAction = (item: (typeof history)[number]): string => {
+      const key = item.action || item.role || item.mode || 'snapshot';
+      return t(`preview.provenanceActionValues.${key}`, { defaultValue: key });
+    };
+
+    return (
+      <Modal
+        visible={provenanceState.visible}
+        title={t('preview.provenance', { defaultValue: 'Provenance' })}
+        footer={null}
+        onCancel={() => setProvenanceState({ visible: false, loading: false })}
+        alignCenter
+        getPopupContainer={() => document.body}
+        className='preview-provenance-modal'
+      >
+        {provenanceState.loading ? (
+          <div className='preview-provenance-empty'>
+            {t('common.loading', { defaultValue: 'Loading...' })}
+          </div>
+        ) : provenanceState.error ? (
+          <div className='preview-provenance-empty'>{provenanceState.error}</div>
+        ) : (
+          <div className='preview-provenance'>
+            <div className='preview-provenance__hero'>
+              <div className='preview-provenance__label'>
+                {t('preview.provenanceSource', { defaultValue: 'Source' })}
+              </div>
+              <div className='preview-provenance__title'>{sourceTitle}</div>
+              <div className={`preview-provenance__status preview-provenance__status--${status}`}>
+                {statusLabel}
+              </div>
+            </div>
+
+            <div className='preview-provenance__grid'>
+              <div>
+                <span>{t('preview.provenanceFile', { defaultValue: 'File' })}</span>
+                <strong>{result?.relativePath || metadata?.file_name || activeTab.title}</strong>
+              </div>
+              <div>
+                <span>{t('preview.provenanceCreated', { defaultValue: 'Created' })}</span>
+                <strong>{formatProvenanceTime(record?.timestamp || fallbackArtifact?.createdAt, unknownLabel)}</strong>
+              </div>
+              <div>
+                <span>{t('preview.provenanceRole', { defaultValue: 'Role' })}</span>
+                <strong>{roleLabel}</strong>
+              </div>
+              <div>
+                <span>{t('preview.provenanceCommit', { defaultValue: 'Snapshot' })}</span>
+                <strong>{record?.shortCommit || record?.commit?.slice(0, 8) || t('preview.provenanceNoSnapshot', { defaultValue: 'none' })}</strong>
+              </div>
+            </div>
+
+            {evidenceIds.length > 0 && (
+              <div className='preview-provenance__evidence'>
+                <span>{t('preview.provenanceEvidence', { defaultValue: 'Evidence' })}</span>
+                <div>
+                  {evidenceIds.slice(0, 8).map((id) => (
+                    <b key={id}>{id}</b>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {history.length > 0 && (
+              <div className='preview-provenance__history'>
+                <div className='preview-provenance__sectionTitle'>
+                  {t('preview.provenanceHistory', { defaultValue: 'History' })}
+                </div>
+                {history.slice(0, 5).map((item, index) => (
+                  <div key={`${item.commit || index}-${item.timestamp}`} className='preview-provenance__historyItem'>
+                    <div>
+                      <strong>{item.shortCommit || item.commit?.slice(0, 8) || 'snapshot'}</strong>
+                      <span>{formatProvenanceTime(item.timestamp, unknownLabel)}</span>
+                    </div>
+                    <span>{formatHistoryAction(item)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {status === 'untracked' && (
+              <div className='preview-provenance__note'>
+                {t('preview.provenanceUntrackedHint', {
+                  defaultValue: 'This file has not been registered by science_artifact yet.',
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+    );
+  };
 
   // 渲染历史下拉菜单 / Render history dropdown
   const renderHistoryDropdown = () => {
@@ -420,8 +672,24 @@ const PreviewPanel: React.FC = () => {
     );
   };
 
-  // 渲染预览内容 / Render preview content
-  const renderContent = () => {
+  // 渲染普通预览内容 / Render standard preview content
+  const renderStandardContent = () => {
+    if (content_type === 'science_report') {
+      return metadata?.science?.panel ? (
+        <ScienceReportPreviewPanel panel={metadata.science.panel} />
+      ) : (
+        <div className='flex flex-1 items-center justify-center text-13px text-t-secondary'>Science report is unavailable.</div>
+      );
+    }
+
+    if (content_type === 'science_files') {
+      return metadata?.science?.panel ? (
+        <ScienceFilesView panel={metadata.science.panel} workspace={metadata.workspace || metadata.science.panel.projectRoot} />
+      ) : (
+        <div className='flex flex-1 items-center justify-center text-13px text-t-secondary'>Science files are unavailable.</div>
+      );
+    }
+
     if (metadata?.missingFile) return renderMissingFile();
 
     // Markdown 模式 / Markdown mode
@@ -622,6 +890,9 @@ const PreviewPanel: React.FC = () => {
     } else if (content_type === 'word') {
       return <OfficeDocPreview file_path={metadata?.file_path} content={content} workspace={metadata?.workspace} />;
     } else if (content_type === 'excel') {
+      if (/\.(csv|tsv)$/iu.test(metadata?.file_name || metadata?.file_path || '')) {
+        return <CsvTableViewer content={content} fileName={metadata?.file_name || metadata?.file_path} />;
+      }
       return <ExcelPreview file_path={metadata?.file_path} content={content} workspace={metadata?.workspace} />;
     } else if (content_type === 'image') {
       return (
@@ -632,12 +903,39 @@ const PreviewPanel: React.FC = () => {
           workspace={metadata?.workspace}
         />
       );
+    } else if (content_type === 'molecular_structure') {
+      return (
+        <MolecularStructureViewer
+          content={content}
+          file_path={metadata?.file_path}
+          file_name={metadata?.file_name || metadata?.title}
+          workspace={metadata?.workspace}
+          artifact={activeScienceArtifact}
+        />
+      );
     } else if (content_type === 'url') {
       // URL 预览模式 / URL preview mode
       return <URLViewer url={content} title={metadata?.title} />;
     }
 
     return null;
+  };
+
+  // 渲染预览内容 / Render preview content
+  const renderContent = () => {
+    if (metadata?.science?.panel && metadata.science.workspaceView && content_type !== 'science_report') {
+      return (
+        <ScienceArtifactWorkspace
+          panel={metadata.science.panel}
+          activeTab={activeTab}
+          previewContent={renderStandardContent()}
+          onOpenFile={openPlainFilePreview}
+          onContentChange={handleContentChange}
+        />
+      );
+    }
+
+    return renderStandardContent();
   };
 
   // 将 tabs 转换为 PreviewTab 类型 / Convert tabs to PreviewTab type
@@ -661,6 +959,28 @@ const PreviewPanel: React.FC = () => {
           onCancelCloseTab={handleCancelCloseTab}
         />
 
+        <Modal
+          visible={renameState.visible}
+          title={t('preview.renameFile', { defaultValue: 'Rename file' })}
+          onCancel={() => setRenameState({ visible: false, value: '', loading: false })}
+          onOk={() => void handleRenameConfirm()}
+          confirmLoading={renameState.loading}
+          okText={t('common.save', { defaultValue: 'Save' })}
+          cancelText={t('common.cancel')}
+          alignCenter
+          getPopupContainer={() => document.body}
+          className='preview-rename-modal'
+        >
+          <Input
+            value={renameState.value}
+            autoFocus
+            onChange={(value) => setRenameState((prev) => ({ ...prev, value }))}
+            onPressEnter={() => void handleRenameConfirm()}
+          />
+        </Modal>
+
+        {renderProvenanceModal()}
+
         {/* Tab 栏 / Tab bar */}
         {/* eslint-disable-next-line max-len */}
         <PreviewTabs
@@ -672,17 +992,22 @@ const PreviewPanel: React.FC = () => {
           onCloseTab={handleCloseTab}
           onContextMenu={handleTabContextMenu}
           onClosePanel={closePreview}
+          previewLayoutMode={previewLayoutMode}
+          onPreviewLayoutModeChange={onPreviewLayoutModeChange}
+          onRequestHalfPanel={onRequestHalfPanel}
         />
 
         {/* 工具栏（URL 类型不显示工具栏，因为不需要下载/编辑等功能）/ Toolbar (hidden for URL type as it doesn't need download/edit features) */}
-        {content_type !== 'url' && !metadata?.missingFile && (
+        {content_type !== 'url' &&
+          content_type !== 'science_report' &&
+          content_type !== 'science_files' &&
+          !metadata?.missingFile && (
           <PreviewToolbar
             content_type={content_type}
             isMarkdown={isMarkdown}
             isHTML={isHTML}
             viewMode={viewMode}
             isSplitScreenEnabled={isSplitScreenEnabled}
-            file_name={metadata?.file_name || activeTab.title}
             showOpenInSystemButton={showOpenInSystemButton}
             historyTarget={historyTarget}
             snapshotSaving={snapshotSaving}
@@ -696,7 +1021,10 @@ const PreviewPanel: React.FC = () => {
             renderHistoryDropdown={renderHistoryDropdown}
             onOpenInSystem={handleOpenInSystem}
             onDownload={handleDownload}
-            onClose={closePreview}
+            onRename={handleRenameRequest}
+            onShowProvenance={handleShowProvenance}
+            canRename={canRenamePreviewFile}
+            canShowProvenance={canShowScienceProvenance}
             inspectMode={inspectMode}
             onInspectModeToggle={() => setInspectMode(!inspectMode)}
             leftExtra={toolbarExtras?.left}

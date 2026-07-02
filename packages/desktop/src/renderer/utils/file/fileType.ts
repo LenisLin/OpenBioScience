@@ -50,6 +50,16 @@ const EXTENSION_MAP: Record<string, FileTypeInfo> = {
   tif: { contentType: 'image', editable: false, language: 'image' },
   tiff: { contentType: 'image', editable: false, language: 'image' },
   avif: { contentType: 'image', editable: false, language: 'image' },
+  // Molecular / protein structures
+  pdb: { contentType: 'molecular_structure', editable: false, language: 'pdb' },
+  ent: { contentType: 'molecular_structure', editable: false, language: 'pdb' },
+  cif: { contentType: 'molecular_structure', editable: false, language: 'cif' },
+  mmcif: { contentType: 'molecular_structure', editable: false, language: 'cif' },
+  pqr: { contentType: 'molecular_structure', editable: false, language: 'pqr' },
+  sdf: { contentType: 'molecular_structure', editable: false, language: 'sdf' },
+  mol: { contentType: 'molecular_structure', editable: false, language: 'mol' },
+  mol2: { contentType: 'molecular_structure', editable: false, language: 'mol2' },
+  xyz: { contentType: 'molecular_structure', editable: false, language: 'xyz' },
 };
 
 /**

@@ -14,7 +14,10 @@ export type PreviewContentType =
   | 'word'
   | 'excel'
   | 'image'
-  | 'url';
+  | 'url'
+  | 'science_report'
+  | 'science_files'
+  | 'molecular_structure';
 
 export interface PreviewHistoryTarget {
   contentType: PreviewContentType;

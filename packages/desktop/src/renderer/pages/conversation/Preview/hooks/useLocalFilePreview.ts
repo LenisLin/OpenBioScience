@@ -12,7 +12,11 @@ import {
   LARGE_TEXT_PREVIEW_THRESHOLD,
 } from '@/renderer/pages/conversation/Preview/constants';
 import { getContentTypeByExtension } from '@/renderer/pages/conversation/Preview/fileUtils';
-import { usePreviewContext } from '@/renderer/pages/conversation/Preview/context/PreviewContext';
+import {
+  usePreviewContext,
+  type OpenPreviewOptions,
+  type PreviewMetadata,
+} from '@/renderer/pages/conversation/Preview/context/PreviewContext';
 import { useCallback } from 'react';
 
 const getFileNameFromPath = (file_path: string): string => {
@@ -25,29 +29,37 @@ const getPreviewLanguage = (file_name: string): string => {
   return dotIndex >= 0 ? file_name.slice(dotIndex + 1).toLowerCase() : '';
 };
 
-const shouldReadPreviewContent = (contentType: PreviewContentType): boolean =>
-  !['pdf', 'word', 'excel', 'ppt'].includes(contentType);
+const isDelimitedSpreadsheet = (fileName: string): boolean => /\.(csv|tsv)$/iu.test(fileName);
+
+const shouldReadPreviewContent = (contentType: PreviewContentType, fileName: string): boolean =>
+  isDelimitedSpreadsheet(fileName) || !['pdf', 'word', 'excel', 'ppt'].includes(contentType);
 
 export const useLocalFilePreview = (workspace?: string) => {
   const { openPreview } = usePreviewContext();
 
   return useCallback(
-    async (file_path: string, reference?: LocalFileLinkReference) => {
+    async (
+      file_path: string,
+      reference?: LocalFileLinkReference,
+      metadataOverride?: Partial<PreviewMetadata>,
+      options?: OpenPreviewOptions
+    ) => {
+      const effectiveWorkspace = metadataOverride?.workspace || workspace;
       const fileName = getFileNameFromPath(file_path);
       const contentType = getContentTypeByExtension(fileName);
       let content = '';
       let isLargeTextTruncated = false;
 
       try {
-        const metadata = await ipcBridge.fs.getFileMetadata.invoke({ path: file_path, workspace });
+        const metadata = await ipcBridge.fs.getFileMetadata.invoke({ path: file_path, workspace: effectiveWorkspace });
         if (metadata == null) throw null;
 
         if (contentType === 'image') {
-          const imageContent = await ipcBridge.fs.getImageBase64.invoke({ path: file_path, workspace });
+          const imageContent = await ipcBridge.fs.getImageBase64.invoke({ path: file_path, workspace: effectiveWorkspace });
           if (imageContent == null) throw null;
           content = imageContent;
-        } else if (shouldReadPreviewContent(contentType)) {
-          const textContent = await ipcBridge.fs.readFile.invoke({ path: file_path, workspace });
+        } else if (shouldReadPreviewContent(contentType, fileName)) {
+          const textContent = await ipcBridge.fs.readFile.invoke({ path: file_path, workspace: effectiveWorkspace });
           if (textContent == null) throw null;
           content = textContent;
 
@@ -64,14 +76,21 @@ export const useLocalFilePreview = (workspace?: string) => {
             title: fileName,
             file_name: fileName,
             file_path,
-            workspace,
+            workspace: effectiveWorkspace,
             language: getPreviewLanguage(fileName),
             truncated: isLargeTextTruncated,
             targetLine: reference?.line,
             targetColumn: reference?.column,
-            editable: contentType === 'markdown' || contentType === 'image' || isLargeTextTruncated ? false : undefined,
+            editable:
+              contentType === 'markdown' ||
+              contentType === 'image' ||
+              contentType === 'molecular_structure' ||
+              isLargeTextTruncated
+                ? false
+                : undefined,
+            ...metadataOverride,
           },
-          { replace: true }
+          options || { replace: true }
         );
       } catch {
         openPreview(
@@ -81,14 +100,15 @@ export const useLocalFilePreview = (workspace?: string) => {
             title: fileName,
             file_name: fileName,
             file_path,
-            workspace,
+            workspace: effectiveWorkspace,
             language: getPreviewLanguage(fileName),
             targetLine: reference?.line,
             targetColumn: reference?.column,
             editable: false,
             missingFile: true,
+            ...metadataOverride,
           },
-          { replace: true }
+          options || { replace: true }
         );
       }
     },

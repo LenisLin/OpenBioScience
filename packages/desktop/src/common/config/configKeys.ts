@@ -1,7 +1,15 @@
 import type { AcpInitializeResult, AcpSessionConfigOption, AcpSessionModes } from '@/common/types/platform/acpTypes';
 import type { SpeechToTextConfig } from '@/common/types/provider/speech';
-import type { ICssTheme, IMcpServer, MedicalEvidenceConfig, TProviderWithModel } from '@/common/config/storage';
+import type {
+  ICssTheme,
+  IMcpServer,
+  MedicalEvidenceConfig,
+  ResearchEvidenceConfig,
+  ScienceArtifactConfig,
+  TProviderWithModel,
+} from '@/common/config/storage';
 import type { Theme } from '@/common/theme/types';
+import type { ComputeConfig } from '@/common/types/compute';
 
 export type ConfigKeyMap = {
   'google.config': {
@@ -47,6 +55,9 @@ export type ConfigKeyMap = {
   'theme.userThemes': Theme[];
   'tools.imageGenerationModel': TProviderWithModel & { switch?: boolean };
   'tools.medicalEvidence': MedicalEvidenceConfig | undefined;
+  'tools.researchEvidence': ResearchEvidenceConfig | undefined;
+  'tools.scienceArtifact': ScienceArtifactConfig | undefined;
+  'tools.compute': ComputeConfig | undefined;
   'tools.speechToText': SpeechToTextConfig | undefined;
   'workspace.pasteConfirm': boolean | undefined;
   'upload.saveToWorkspace': boolean | undefined;

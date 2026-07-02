@@ -1,0 +1,749 @@
+.science-report-panel {
+  --science-report-accent: var(--color-text-1);
+  --science-report-blue: var(--color-text-2);
+  --science-report-rule: color-mix(in srgb, var(--color-border-2) 86%, transparent);
+  width: min(780px, calc(100vw - 44px));
+  max-width: 100%;
+  margin: 0 auto;
+  border: 0;
+  border-top: 1px solid var(--science-report-rule);
+  border-bottom: 1px solid var(--science-report-rule);
+  border-radius: 0;
+  background: transparent;
+  padding: 13px 0;
+  color: var(--color-text-1);
+  box-shadow: none;
+  animation: scienceReportCardIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.science-report-cardHeader {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.science-report-cardHeader > div {
+  min-width: 0;
+}
+
+.science-report-cardHeader__actions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.science-report-cardHeader span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--science-report-accent);
+  font-size: 11px;
+  font-weight: 780;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.science-report-cardHeader h3 {
+  margin: 2px 0 0;
+  color: var(--color-text-1);
+  font-size: 17px;
+  font-weight: 760;
+  line-height: 25px;
+}
+
+.science-report-cardHeader button,
+.science-report-artifactRef,
+.science-report-artifactItem,
+.science-report-cardArtifacts button,
+.science-evidence-open {
+  font: inherit;
+  cursor: pointer;
+}
+
+.science-report-cardHeader button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--science-report-accent) 28%, transparent);
+  border-radius: 7px;
+  background: var(--color-bg-1);
+  padding: 6px 10px;
+  color: var(--science-report-accent);
+  font-size: 12px;
+  font-weight: 740;
+  line-height: 17px;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.science-report-cardHeader button:hover,
+.science-report-cardArtifacts button:hover,
+.science-report-artifactItem:hover,
+.science-report-artifactRef:hover {
+  background: color-mix(in srgb, var(--science-report-accent) 7%, var(--color-bg-1));
+  transform: none;
+}
+
+.science-report-cardHeader button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.science-report-gitBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-fill-2) 72%, transparent);
+  padding: 4px 8px;
+  color: var(--color-text-3);
+  font-size: 11.5px;
+  font-weight: 680;
+  line-height: 16px;
+}
+
+.science-report-gitBadge code {
+  color: var(--color-text-1);
+  font-size: 11px;
+}
+
+.science-report-gitBadge span {
+  color: var(--science-report-accent);
+}
+
+.science-report-cardSummary {
+  margin: 8px 0 0;
+  color: var(--color-text-2);
+  font-size: 13px;
+  line-height: 21px;
+}
+
+.science-report-cardArtifacts {
+  display: grid;
+  gap: 0;
+  margin-top: 12px;
+  border-top: 1px solid var(--science-report-rule);
+}
+
+.science-report-cardArtifacts button {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  border: 0;
+  border-bottom: 1px solid var(--science-report-rule);
+  border-radius: 0;
+  background: transparent;
+  padding: 8px 0;
+  text-align: left;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.science-report-cardArtifacts span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--science-report-blue);
+  font-size: 10.5px;
+  font-weight: 720;
+  line-height: 15px;
+  text-transform: uppercase;
+}
+
+.science-report-cardArtifacts b {
+  overflow: hidden;
+  color: var(--color-text-1);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.science-report-previewScroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: var(--color-bg-1);
+  padding: 22px 24px 36px;
+}
+
+.science-report-previewActions {
+  display: flex;
+  width: min(840px, 100%);
+  margin: 0 auto 10px;
+  justify-content: flex-end;
+}
+
+.science-report-previewActions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid color-mix(in srgb, var(--color-border-2) 86%, transparent);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-text-2);
+  padding: 5px 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 17px;
+  cursor: pointer;
+}
+
+.science-report-previewActions button:hover {
+  background: color-mix(in srgb, var(--color-fill-2) 62%, transparent);
+  color: var(--color-text-1);
+}
+
+.science-evidence-report {
+  width: min(840px, 100%);
+  margin: 0 auto;
+  padding-bottom: 24px;
+  --medical-evidence-accent: var(--color-text-1);
+  --medical-evidence-cite: var(--color-text-2);
+  --medical-evidence-blue: var(--color-text-2);
+  --medical-evidence-warm: var(--color-text-2);
+  --medical-evidence-red: var(--color-text-2);
+  --medical-evidence-highlight: color-mix(in srgb, var(--color-fill-2) 74%, transparent);
+  --medical-evidence-highlight-table: color-mix(in srgb, var(--color-fill-2) 60%, transparent);
+}
+
+.science-report-citationList {
+  margin-left: 4px;
+}
+
+.science-report-citationWrap {
+  margin-left: 2px;
+}
+
+.science-evidence-report .medical-evidence-report__section--lead h4,
+.science-evidence-report .medical-evidence-citation,
+.science-evidence-report .medical-evidence-citation--strong,
+.science-evidence-report .medical-evidence-citation--medium,
+.science-evidence-report .medical-evidence-citation--soft {
+  --medical-evidence-citation-color: var(--color-text-2);
+  color: var(--color-text-2);
+}
+
+.science-evidence-report .medical-evidence-citation:hover {
+  color: var(--color-text-1);
+}
+
+.science-evidence-report .medical-evidence-citationCard::before {
+  border-top-color: color-mix(in srgb, var(--color-border-2) 92%, transparent);
+  border-left-color: color-mix(in srgb, var(--color-border-2) 92%, transparent);
+}
+
+.science-evidence-report .medical-evidence-citationCard__meta,
+.science-evidence-report .medical-evidence-reference__index,
+.science-evidence-report .medical-evidence-qualityBadge,
+.science-evidence-report .medical-evidence-qualityBadge--leading_journal,
+.science-evidence-report .medical-evidence-qualityBadge--guideline,
+.science-evidence-report .medical-evidence-qualityBadge--rct,
+.science-evidence-report .medical-evidence-qualityBadge--systematic_review,
+.science-evidence-report .medical-evidence-qualityBadge--anchored,
+.science-evidence-report .medical-evidence-qualityBadge--paperclip_verified,
+.science-evidence-report .medical-evidence-qualityBadge--full_text,
+.science-evidence-report .medical-evidence-qualityBadge--new_research,
+.science-evidence-report .medical-evidence-qualityBadge--recent,
+.science-evidence-report .medical-evidence-qualityBadge--figure_available,
+.science-evidence-report .medical-evidence-qualityBadge--safety,
+.science-evidence-report .medical-evidence-qualityBadge--drug_label,
+.science-evidence-report .medical-evidence-qualityBadge--regulatory,
+.science-evidence-report .medical-evidence-qualityBadge--applicability_limited {
+  border-color: color-mix(in srgb, var(--color-text-2) 18%, transparent);
+  background: var(--color-fill-1);
+  color: var(--color-text-2);
+}
+
+.science-evidence-report .medical-evidence-citationCard code,
+.science-evidence-report .medical-evidence-reference__type,
+.science-evidence-report .medical-evidence-reference__heading code,
+.science-evidence-report .medical-evidence-reference__meta code,
+.science-evidence-report .science-evidence-databaseDetails code {
+  border-color: color-mix(in srgb, var(--color-text-2) 16%, transparent);
+  background: var(--color-fill-1);
+  color: var(--color-text-2);
+}
+
+.science-evidence-report .medical-evidence-reference:target,
+.science-evidence-report .medical-evidence-reference.medical-evidence-card--jumped {
+  background: color-mix(in srgb, var(--color-fill-2) 58%, transparent);
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--color-text-2) 28%, transparent);
+}
+
+.science-report-citationCard {
+  text-transform: none;
+}
+
+.science-report-emphasis {
+  --medical-evidence-highlight: color-mix(in srgb, var(--color-fill-2) 74%, transparent);
+}
+
+.science-report-artifactRef {
+  appearance: none;
+  width: 100%;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  border-radius: 0;
+  background: transparent;
+  padding-right: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+  color: var(--color-text-1);
+  text-align: left;
+  animation: medicalEvidenceReportLayerIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.science-report-artifactRef > div,
+.science-report-artifactItem > div {
+  min-width: 0;
+}
+
+.science-report-artifactRef > span,
+.science-report-artifactItem > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.science-report-artifactsSection {
+  border-top: 1px solid var(--medical-evidence-rule);
+  padding-top: 18px;
+}
+
+.science-report-artifactList {
+  border-top: 1px solid var(--science-report-rule);
+  padding-top: 10px;
+}
+
+.science-report-artifactItem {
+  appearance: none;
+  min-width: 0;
+  width: 100%;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  border-radius: 0;
+  background: transparent;
+  padding-right: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+  text-align: left;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.science-report-artifactItem--missing,
+.science-report-artifactItem--failed {
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--color-text-2) 26%, transparent);
+}
+
+.science-report-empty {
+  border-top: 1px solid var(--science-report-rule);
+  padding: 12px 0;
+  color: var(--color-text-3);
+  font-size: 12.5px;
+  line-height: 19px;
+}
+
+.science-qualityBadge--high {
+  border-color: color-mix(in srgb, var(--color-text-2) 18%, transparent);
+  color: var(--color-text-2);
+}
+
+.science-qualityBadge--moderate {
+  border-color: color-mix(in srgb, var(--color-text-2) 18%, transparent);
+  color: var(--color-text-2);
+}
+
+.science-qualityBadge--low,
+.science-qualityBadge--blocked {
+  border-color: color-mix(in srgb, var(--color-text-2) 18%, transparent);
+  color: var(--color-text-2);
+}
+
+.science-evidence-open {
+  margin-top: 8px;
+  border: 1px solid color-mix(in srgb, var(--science-report-blue) 24%, transparent);
+  border-radius: 6px;
+  background: transparent;
+  padding: 4px 7px;
+  color: var(--science-report-blue);
+  font-size: 11.5px;
+  font-weight: 680;
+  line-height: 16px;
+  overflow-wrap: anywhere;
+}
+
+.science-evidence-databaseDetails {
+  margin-top: 7px;
+  color: var(--color-text-2);
+  font-size: 11.5px;
+  line-height: 17px;
+}
+
+.science-evidence-databaseDetails summary {
+  cursor: pointer;
+  color: var(--science-report-blue);
+  font-weight: 700;
+}
+
+.science-evidence-databaseDetails code {
+  display: block;
+  margin-top: 5px;
+  border-radius: 6px;
+  background: var(--color-fill-1);
+  padding: 5px 7px;
+  color: var(--color-text-2);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.science-evidence-databaseDetails--inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.science-evidence-databaseDetails--inline span {
+  color: var(--science-report-blue);
+  font-weight: 700;
+}
+
+.science-evidence-databaseDetails--inline code {
+  display: inline;
+  margin-top: 0;
+}
+
+.science-evidence-databaseWarnings {
+  margin-top: 8px;
+}
+
+.science-evidence-chainSection {
+  border-top: 1px solid var(--medical-evidence-rule);
+  padding-top: 18px;
+}
+
+.science-evidence-chain,
+.science-evidence-nodeGrid {
+  display: grid;
+  gap: 0;
+  margin-top: 8px;
+  border-top: 1px solid var(--science-report-rule);
+}
+
+.science-evidence-chain__edge {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(90px, 0.26fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+  border-bottom: 1px solid var(--science-report-rule);
+  padding: 10px 0;
+}
+
+.science-evidence-chain__endpoint,
+.science-evidence-node {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: 3px;
+}
+
+.science-evidence-chain__endpoint > span,
+.science-evidence-node > span {
+  color: var(--science-report-blue);
+  font-size: 10.5px;
+  font-weight: 720;
+  line-height: 15px;
+  text-transform: uppercase;
+}
+
+.science-evidence-chain__endpoint b,
+.science-evidence-node b {
+  overflow: hidden;
+  color: var(--color-text-1);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.science-evidence-chain__endpoint code,
+.science-evidence-node code {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--color-fill-1);
+  color: var(--color-text-2);
+  padding: 3px 5px;
+  font-size: 11px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.science-evidence-chain__verb {
+  display: inline-flex;
+  min-width: 0;
+  align-self: center;
+  justify-content: center;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--science-report-blue) 7%, transparent);
+  color: var(--science-report-blue);
+  padding: 4px 7px;
+  font-size: 11px;
+  font-weight: 720;
+  line-height: 15px;
+  text-align: center;
+}
+
+.science-evidence-chain__verb--inferred {
+  color: var(--color-text-2);
+  background: var(--color-fill-1);
+}
+
+.science-evidence-chain__verb--certain {
+  color: var(--color-text-1);
+  background: var(--color-fill-1);
+}
+
+.science-evidence-nodeGrid {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.science-evidence-chain__warnings {
+  margin-top: 12px;
+}
+
+.science-skillTrail {
+  border-top: 1px solid var(--medical-evidence-rule);
+  padding-top: 14px;
+}
+
+.science-skillTrail__body {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--science-report-rule);
+}
+
+.science-skillTrail__item {
+  display: grid;
+  gap: 7px;
+  border-bottom: 1px solid var(--science-report-rule);
+  padding: 11px 0;
+}
+
+.science-skillTrail__head {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.science-skillTrail__head > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.science-skillTrail__head b {
+  overflow: hidden;
+  color: var(--color-text-1);
+  font-size: 12.5px;
+  font-weight: 760;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.science-skillTrail__head code,
+.science-skillTrail__links code {
+  overflow-wrap: anywhere;
+  border-radius: 5px;
+  background: var(--color-fill-1);
+  color: var(--color-text-2);
+  padding: 2px 5px;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.science-skillTrail__head > span {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--science-report-blue) 8%, transparent);
+  padding: 2px 7px;
+  color: var(--science-report-blue);
+  font-size: 10.5px;
+  font-weight: 740;
+  line-height: 15px;
+  text-transform: uppercase;
+}
+
+.science-skillTrail__item--blocked .science-skillTrail__head > span,
+.science-skillTrail__item--unavailable .science-skillTrail__head > span {
+  background: var(--color-fill-1);
+  color: var(--color-text-2);
+}
+
+.science-skillTrail__meta,
+.science-skillTrail__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.science-skillTrail__meta span,
+.science-skillTrail__links > span {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--science-report-accent) 7%, transparent);
+  padding: 2px 7px;
+  color: var(--science-report-accent);
+  font-size: 10.5px;
+  font-weight: 720;
+  line-height: 15px;
+  text-transform: uppercase;
+}
+
+.science-skillTrail__item p,
+.science-skillTrail__item ul {
+  margin: 0;
+  color: var(--color-text-2);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.science-skillTrail__item ul {
+  padding-left: 16px;
+}
+
+.science-skillTrail__links button {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--science-report-blue) 20%, transparent);
+  border-radius: 6px;
+  background: transparent;
+  padding: 3px 7px;
+  color: var(--science-report-blue);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 680;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.science-skillTrail__links button:hover {
+  background: color-mix(in srgb, var(--science-report-blue) 7%, transparent);
+}
+
+.science-report-edgeList,
+.science-report-warningList {
+  display: grid;
+  gap: 7px;
+}
+
+.science-report-edge {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 7px;
+  align-items: center;
+  border-bottom: 1px solid var(--science-report-rule);
+  padding: 6px 0;
+}
+
+.science-report-edge code {
+  overflow: hidden;
+  color: var(--color-text-2);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.science-report-edge span {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--science-report-blue) 8%, transparent);
+  padding: 2px 7px;
+  color: var(--science-report-blue);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.science-report-warning {
+  display: grid;
+  gap: 3px;
+  border-left: 2px solid color-mix(in srgb, var(--color-text-2) 36%, transparent);
+  padding: 5px 0 5px 8px;
+}
+
+.science-report-warning b {
+  color: var(--color-text-1);
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.science-report-warning span {
+  color: var(--color-text-2);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+@media (max-width: 680px) {
+  .science-report-panel {
+    width: min(100%, calc(100vw - 24px));
+    padding: 12px;
+  }
+
+  .science-report-cardHeader {
+    flex-direction: column;
+  }
+
+  .science-report-previewScroll {
+    padding: 16px 14px 28px;
+  }
+
+  .science-report-artifactRef,
+  .science-evidence-chain__edge,
+  .science-report-edge {
+    grid-template-columns: 1fr;
+  }
+
+  .science-evidence-chain__verb {
+    justify-content: flex-start;
+  }
+}
+
+@keyframes scienceReportCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

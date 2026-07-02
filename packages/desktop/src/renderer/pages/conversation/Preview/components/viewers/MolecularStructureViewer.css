@@ -1,0 +1,230 @@
+.molecular-structure-viewer {
+  --structure-line: color-mix(in srgb, var(--color-border-2) 62%, transparent);
+  --structure-accent: rgb(48, 112, 82);
+  --structure-blue: rgb(62, 98, 148);
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  flex: 1;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  background: var(--color-bg-1);
+  color: var(--color-text-1);
+}
+
+.molecular-structure-viewer__toolbar,
+.molecular-structure-viewer__footer {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  background: color-mix(in srgb, var(--color-bg-1) 96%, var(--structure-accent) 4%);
+  padding: 8px 12px;
+}
+
+.molecular-structure-viewer__toolbar {
+  overflow-x: auto;
+}
+
+.molecular-structure-viewer__identity {
+  display: grid;
+  min-width: min(260px, 36vw);
+  margin-right: auto;
+  gap: 1px;
+}
+
+.molecular-structure-viewer__identity span,
+.molecular-structure-viewer__footer span,
+.molecular-structure-viewer__toolbar label span {
+  color: var(--structure-accent);
+  font-size: 10.5px;
+  font-weight: 760;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.molecular-structure-viewer__identity > span {
+  overflow: hidden;
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 740;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.molecular-structure-viewer__identity b,
+.molecular-structure-viewer__footer b {
+  overflow: hidden;
+  color: var(--color-text-2);
+  font-size: 11.5px;
+  font-weight: 650;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.molecular-structure-viewer__toolbar label {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.molecular-structure-viewer__toolbar select {
+  min-width: 92px;
+  border: 0;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--color-bg-1) 90%, var(--structure-blue) 10%);
+  padding: 6px 8px;
+  color: var(--color-text-1);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+}
+
+.molecular-structure-viewer__toolbar button,
+.molecular-structure-viewer__selection button,
+.molecular-structure-viewer__backgrounds button {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--color-text-1) 92%, var(--structure-accent) 8%);
+  padding: 6px 9px;
+  color: white;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 730;
+  cursor: pointer;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+
+.molecular-structure-viewer__toolbar button:hover,
+.molecular-structure-viewer__selection button:not(:disabled):hover,
+.molecular-structure-viewer__backgrounds button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(17, 17, 17, 0.12);
+}
+
+.molecular-structure-viewer__selection button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.molecular-structure-viewer__backgrounds {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 3px;
+  padding: 2px;
+}
+
+.molecular-structure-viewer__backgrounds button {
+  width: 28px;
+  padding: 6px 0;
+  background: color-mix(in srgb, var(--color-text-2) 72%, transparent);
+}
+
+.molecular-structure-viewer__backgrounds button.is-active {
+  background: var(--structure-accent);
+}
+
+.molecular-structure-viewer__stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--color-fill-2) 42%, transparent) 1px, transparent 1px),
+    linear-gradient(0deg, color-mix(in srgb, var(--color-fill-2) 42%, transparent) 1px, transparent 1px),
+    var(--color-bg-1);
+  background-size: 42px 42px;
+}
+
+.molecular-structure-viewer__canvas {
+  position: absolute;
+  inset: 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+.molecular-structure-viewer__canvas canvas {
+  display: block;
+  outline: none;
+}
+
+.molecular-structure-viewer__state {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: color-mix(in srgb, var(--color-bg-1) 90%, transparent);
+  color: var(--color-text-3);
+  font-size: 13px;
+  text-align: center;
+}
+
+.molecular-structure-viewer__state b {
+  color: var(--color-text-1);
+}
+
+.molecular-structure-viewer__state.is-error {
+  color: rgb(var(--danger-6));
+}
+
+.molecular-structure-viewer__footer {
+  display: grid;
+  grid-template-columns: minmax(88px, 0.18fr) minmax(120px, 0.24fr) minmax(0, 1fr);
+  gap: 14px;
+  overflow: hidden;
+}
+
+.molecular-structure-viewer__footer > div {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.molecular-structure-viewer__selection {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px 8px;
+}
+
+.molecular-structure-viewer__selection span {
+  grid-row: 1;
+}
+
+.molecular-structure-viewer__selection b {
+  grid-column: 2;
+}
+
+.molecular-structure-viewer__selection button {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  padding: 6px 10px;
+}
+
+@container (max-width: 760px) {
+  .molecular-structure-viewer__toolbar {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .molecular-structure-viewer__identity {
+    min-width: 100%;
+  }
+
+  .molecular-structure-viewer__footer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

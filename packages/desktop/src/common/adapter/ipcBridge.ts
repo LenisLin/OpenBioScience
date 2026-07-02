@@ -14,6 +14,21 @@
 
 import type { IConfirmation } from '@/common/chat/chatLib';
 import type { AcpSlashCommandApiItem } from '@/common/chat/slash/types';
+import type {
+  UserInputAnswerPayload,
+  UserInputBridgeResult,
+  UserInputCancelPayload,
+  UserInputClaimPayload,
+  UserInputRequest,
+  UserInputRequestInput,
+  UserInputResult,
+} from '@/common/chat/userInput';
+import type { ScienceArtifactFileProvenanceResult } from '@/common/chat/science';
+import type {
+  MedicalEvidenceReportListResult,
+  MedicalEvidenceReportSaveRequest,
+  MedicalEvidenceReportSaveResult,
+} from '@/deepscientist_lark/medical_evidence_reports/types';
 import { bridge } from '@office-ai/platform';
 import type { OpenDialogOptions } from 'electron';
 import type {
@@ -40,6 +55,14 @@ import type {
   SetConfigOptionRequest,
   SetConfigOptionResponse,
 } from '../types/platform/acpTypes';
+import type {
+  ComputeSshHostContextResult,
+  ComputeSshHostPublic,
+  ComputeSshHostSaveResult,
+  ComputeSshHostInput,
+  ComputeSshHostTestRequest,
+  ComputeSshHostTestResult,
+} from '../types/compute';
 import type {
   CreateProviderRequest,
   FetchModelsAnonymousRequest,
@@ -85,6 +108,14 @@ import type {
 import type { Theme } from '@/common/theme/types';
 import type { ProtocolDetectionRequest, ProtocolDetectionResponse } from '../utils/protocolDetector';
 import { LEGACY_LOCAL_RUNTIME_ID, isLegacyLocalRuntimeAgent } from '../config/legacyIdentifiers';
+import type {
+  CodexMemoryDetail,
+  CodexMemoryListResult,
+  CodexMemoryPersistRequest,
+  CodexMemoryPersistResult,
+  CodexMemoryScanRequest,
+  CodexMemoryScanResult,
+} from '@/deepscientist_lark/codex_memory/types';
 import { fromApiConversation, fromApiPaginatedConversations, toApiModelOptional } from './apiModelMapper';
 import { normalizeCronJob, normalizeCronJobs } from './cronMapper';
 import {
@@ -237,7 +268,7 @@ export const conversation = {
             ...rest,
             type: 'acp',
             extra: {
-              ...((rest.extra as Record<string, unknown> | undefined) ?? {}),
+              ...(rest.extra as Record<string, unknown> | undefined),
               backend: 'codex',
             },
           }
@@ -313,6 +344,17 @@ export const conversation = {
     (p) => `/api/conversations/${p.conversation_id}/artifacts/${p.artifact_id}`,
     (p) => ({ status: p.status })
   ),
+  userInput: {
+    requested: bridge.buildEmitter<UserInputRequest>('conversation.user-input.requested'),
+    resolved: bridge.buildEmitter<UserInputResult>('conversation.user-input.resolved'),
+    listPending: bridge.buildProvider<UserInputRequest[], { conversation_id?: string } | undefined>(
+      'conversation.user-input.list-pending'
+    ),
+    claim: bridge.buildProvider<UserInputBridgeResult, UserInputClaimPayload>('conversation.user-input.claim'),
+    answer: bridge.buildProvider<UserInputBridgeResult, UserInputAnswerPayload>('conversation.user-input.answer'),
+    cancel: bridge.buildProvider<UserInputBridgeResult, UserInputCancelPayload>('conversation.user-input.cancel'),
+    request: bridge.buildProvider<UserInputResult, UserInputRequestInput>('conversation.user-input.request'),
+  },
   responseStream: wsEmitter<IResponseMessage>('message.stream'),
   userCreated: wsEmitter<{
     conversation_id: string;
@@ -1075,9 +1117,11 @@ export interface ILarkProjectLocalConfig {
   sidebar: {
     autoSyncLark: boolean;
     showLarkIm: boolean;
+    deleteRemoteTasklistByDefault: boolean;
   };
   tasklists: ILarkProjectLocalTasklistConfig[];
   imChats: ILarkProjectLocalImChatConfig[];
+  hiddenTaskGuids: string[];
 }
 
 export interface ILarkProjectSnapshot {
@@ -1225,6 +1269,126 @@ export interface IRendererLogEntry {
   data?: unknown;
 }
 
+export type ScienceLatexCompileEngine = 'latexmk' | 'pdflatex';
+
+export interface ScienceLatexCompileRequest {
+  sourcePath: string;
+  sourceContent?: string;
+  workspace?: string;
+  timeoutMs?: number;
+}
+
+export interface ScienceLatexCompileResult {
+  ok: boolean;
+  engine?: ScienceLatexCompileEngine;
+  command?: string;
+  sourcePath: string;
+  pdfPath?: string;
+  logPath?: string;
+  stdout?: string;
+  stderr?: string;
+  durationMs: number;
+  exitCode?: number | null;
+  wroteSource?: boolean;
+  error?: string;
+}
+
+export interface ScienceArtifactArchiveHistoryRequest {
+  projectRoot?: string;
+  runId?: string;
+  artifactId?: string;
+  artifactVersion?: number;
+  limit?: number;
+}
+
+export interface ScienceArtifactArchiveHistoryItem {
+  commit: string;
+  shortCommit: string;
+  subject: string;
+  authoredAt?: string;
+  changedFiles: string[];
+}
+
+export interface ScienceArtifactArchiveHistoryResult {
+  ok: boolean;
+  head?: string;
+  items: ScienceArtifactArchiveHistoryItem[];
+  error?: string;
+}
+
+export interface ScienceArtifactArchiveExportRequest {
+  projectRoot?: string;
+  runId: string;
+  commit?: string;
+  exportTypes?: Array<
+    'markdown' | 'html' | 'pdf' | 'notebook' | 'latex' | 'manifest' | 'panel' | 'run_bundle' | 'git_bundle'
+  >;
+  artifactIds?: string[];
+  includeGitHistory?: boolean;
+}
+
+export interface ScienceArtifactArchiveExportResult {
+  ok: boolean;
+  exportId?: string;
+  exportDir?: string;
+  sourceCommit?: string;
+  files: Array<{ type: string; path: string; contentHash?: string }>;
+  error?: string;
+}
+
+export interface ScienceArtifactArchiveResolveFileRequest {
+  projectRoot?: string;
+  filePath: string;
+  limit?: number;
+}
+
+export interface IAppDiagnosticsPathCheck {
+  exists: boolean;
+  kind: 'directory' | 'file' | 'missing' | 'other';
+  label: string;
+  modifiedAt?: string;
+  path: string;
+  required?: boolean;
+  size?: number;
+}
+
+export interface IAppDiagnosticsReport {
+  app: {
+    arch: string;
+    execPath: string;
+    isPackaged: boolean;
+    locale?: string;
+    name: string;
+    platform: NodeJS.Platform;
+    version: string;
+  };
+  autoUpdate?: {
+    currentAppVersion?: string;
+    events?: Array<Record<string, unknown>>;
+    lastEvent?: Record<string, unknown>;
+    lastQuitAndInstallAt?: string;
+  };
+  backendStartupFailure?: Record<string, unknown> | null;
+  downloadUrl: string;
+  env: Array<{
+    name: string;
+    present: boolean;
+    value?: string;
+  }>;
+  generatedAt: string;
+  paths: {
+    appPath: string;
+    cacheDir?: string;
+    configDir?: string;
+    logsDir?: string;
+    resourcesPath: string;
+    userDataPath: string;
+    workDir?: string;
+  };
+  resources: IAppDiagnosticsPathCheck[];
+  versions: Record<string, string | undefined>;
+}
+
 // ---------------------------------------------------------------------------
 // Application — stays IPC (Electron-native)
 // ---------------------------------------------------------------------------
@@ -1263,6 +1427,7 @@ export const application = {
   setGpuOverride: bridge.buildProvider<IBridgeResponse<IGpuStatus>, { override: IGpuOverride | null }>(
     'app.set-gpu-override'
   ),
+  getDiagnostics: bridge.buildProvider<IBridgeResponse<IAppDiagnosticsReport>, void>('app.get-diagnostics'),
   writeRendererLog: bridge.buildProvider<void, IRendererLogEntry>('app.write-renderer-log'),
   logStream: bridge.buildEmitter<{ level: 'log' | 'warn' | 'error'; tag: string; message: string; data?: unknown }>(
     'app.log-stream'
@@ -1316,7 +1481,9 @@ export const larkProjectAgent = {
     'lark-project-agent:reset-prompt'
   ),
   getSnapshot: bridge.buildProvider<ILarkProjectSnapshot, void>('lark-project-agent:get-snapshot'),
-  hideTasklist: bridge.buildProvider<ILarkProjectSnapshot, { tasklistGuid: string }>('lark-project-agent:hide-tasklist'),
+  hideTasklist: bridge.buildProvider<ILarkProjectSnapshot, { tasklistGuid: string; deleteRemote?: boolean }>(
+    'lark-project-agent:hide-tasklist'
+  ),
   updateTasklistLocalState: bridge.buildProvider<
     ILarkProjectSnapshot,
     { tasklistGuid: string; visible?: boolean; pinned?: boolean; pinnedAt?: number }
@@ -1411,6 +1578,93 @@ export const nativeWebPanel = {
 };
 
 // ---------------------------------------------------------------------------
+// Codex memory — Electron-local scanner for compacted context snapshots
+// ---------------------------------------------------------------------------
+
+export const codexMemory = {
+  scan: bridge.buildProvider<CodexMemoryScanResult, CodexMemoryScanRequest>('codex-memory:scan'),
+  persist: bridge.buildProvider<CodexMemoryPersistResult, CodexMemoryPersistRequest>('codex-memory:persist'),
+  list: bridge.buildProvider<CodexMemoryListResult, { conversationId: string }>('codex-memory:list'),
+  get: bridge.buildProvider<CodexMemoryDetail | undefined, { conversationId: string; memoryId: string }>(
+    'codex-memory:get'
+  ),
+  changed: bridge.buildEmitter<{ conversationId: string; memoryId?: string }>('codex-memory:changed'),
+};
+
+// ---------------------------------------------------------------------------
+// Medical evidence reports — durable Electron-local structured report store
+// ---------------------------------------------------------------------------
+
+export const medicalEvidenceReports = {
+  list: bridge.buildProvider<MedicalEvidenceReportListResult, { conversationId: string }>(
+    'medical-evidence-reports:list'
+  ),
+  save: bridge.buildProvider<MedicalEvidenceReportSaveResult, MedicalEvidenceReportSaveRequest>(
+    'medical-evidence-reports:save'
+  ),
+  changed: bridge.buildEmitter<{ conversationId: string; reportId?: string }>('medical-evidence-reports:changed'),
+};
+
+export interface MedicalEvidenceSettingsTestConnectionRequest {
+  paperclipApiKey?: string;
+  paperclipBaseUrl?: string;
+  timeoutMs?: number;
+}
+
+export interface MedicalEvidenceSettingsTestConnectionResult {
+  ok: boolean;
+  message: string;
+  status?: number;
+  toolCount?: number;
+  normalizedBaseUrl?: string;
+}
+
+export const medicalEvidenceSettings = {
+  testPaperclipConnection: bridge.buildProvider<
+    MedicalEvidenceSettingsTestConnectionResult,
+    MedicalEvidenceSettingsTestConnectionRequest
+  >('medical-evidence-settings:test-paperclip-connection'),
+};
+
+// ---------------------------------------------------------------------------
+// Compute hosts — Electron-local SSH host management and connection testing
+// ---------------------------------------------------------------------------
+
+export const computeHosts = {
+  list: bridge.buildProvider<ComputeSshHostPublic[], void>('compute-hosts:list'),
+  save: bridge.buildProvider<ComputeSshHostSaveResult, { input: ComputeSshHostInput; testOnSave?: boolean }>(
+    'compute-hosts:save'
+  ),
+  delete: bridge.buildProvider<{ ok: boolean }, { id: string }>('compute-hosts:delete'),
+  test: bridge.buildProvider<ComputeSshHostTestResult, ComputeSshHostTestRequest>('compute-hosts:test'),
+  buildContext: bridge.buildProvider<ComputeSshHostContextResult, { hostIds: string[] }>('compute-hosts:build-context'),
+};
+
+// ---------------------------------------------------------------------------
+// Science LaTeX — Electron-local compile helper for PreviewPanel artifacts
+// ---------------------------------------------------------------------------
+
+export const scienceLatex = {
+  compile: bridge.buildProvider<ScienceLatexCompileResult, ScienceLatexCompileRequest>('science-latex:compile'),
+};
+
+// ---------------------------------------------------------------------------
+// Science Artifact Archive — project-level artifact git history and exports
+// ---------------------------------------------------------------------------
+
+export const scienceArtifactArchive = {
+  history: bridge.buildProvider<ScienceArtifactArchiveHistoryResult, ScienceArtifactArchiveHistoryRequest>(
+    'science-artifact-archive:history'
+  ),
+  resolveFile: bridge.buildProvider<ScienceArtifactFileProvenanceResult, ScienceArtifactArchiveResolveFileRequest>(
+    'science-artifact-archive:resolve-file'
+  ),
+  export: bridge.buildProvider<ScienceArtifactArchiveExportResult, ScienceArtifactArchiveExportRequest>(
+    'science-artifact-archive:export'
+  ),
+};
+
+// ---------------------------------------------------------------------------
 // Update — stays IPC (Electron-native auto-updater)
 // ---------------------------------------------------------------------------
 
@@ -1443,7 +1697,12 @@ export const autoUpdate = {
 export const dialog = {
   showOpen: bridge.buildProvider<
     string[] | undefined,
-    | { defaultPath?: string; properties?: OpenDialogOptions['properties']; filters?: OpenDialogOptions['filters'] }
+    | {
+        title?: OpenDialogOptions['title'];
+        defaultPath?: string;
+        properties?: OpenDialogOptions['properties'];
+        filters?: OpenDialogOptions['filters'];
+      }
     | undefined
   >('show-open'),
 };
@@ -2393,7 +2652,13 @@ export interface ICreateConversationParams {
     lark_im_kind?: 'direct_chat' | 'group_chat';
     lark_im_last_message_id?: string;
     is_temporary_workspace?: boolean;
+    assistant_locale?: string;
     loop_goal?: import('@/common/config/storage').LoopGoalState;
+    medical_evidence?: import('@/common/chat/medicalEvidence').MedicalEvidenceConversationExtra;
+    science?: import('@/common/chat/science').ScienceConversationExtra;
+    compute?: import('@/common/types/compute').ComputeConversationExtra;
+    enabled_skills?: string[];
+    exclude_builtin_skills?: string[];
     /** Transient: preset opt-in skills. Consumed by backend create handler
      *  and stripped before persistence. */
     preset_enabled_skills?: string[];

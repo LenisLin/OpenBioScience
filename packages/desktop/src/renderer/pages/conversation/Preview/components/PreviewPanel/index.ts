@@ -11,6 +11,7 @@
 
 export { default as PreviewTabs } from './PreviewTabs';
 export type { PreviewTab } from './PreviewTabs';
+export type { PreviewPanelLayoutMode } from './PreviewPanel';
 
 export { default as PreviewToolbar } from './PreviewToolbar';
 

@@ -5,9 +5,7 @@
  */
 
 import type { PreviewHistoryTarget } from '@/common/types/office/preview';
-import { iconColors } from '@/renderer/styles/colors';
 import { Dropdown } from '@arco-design/web-react';
-import { Close } from '@icon-park/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { shouldShowDownload } from './previewToolbarUtils';
@@ -18,6 +16,7 @@ import { shouldShowDownload } from './previewToolbarUtils';
  * flip to true to restore the UI).
  */
 const SHOW_SNAPSHOT_HISTORY = false;
+const SHOW_DIRECT_FILE_ACTIONS = false;
 
 /**
  * PreviewToolbar 组件属性
@@ -53,12 +52,6 @@ interface PreviewToolbarProps {
    * Whether split-screen mode is enabled
    */
   isSplitScreenEnabled: boolean;
-
-  /**
-   * 文件名
-   * Filename
-   */
-  file_name?: string;
 
   /**
    * 是否显示"在系统中打开"按钮
@@ -121,10 +114,24 @@ interface PreviewToolbarProps {
   onDownload: () => void;
 
   /**
-   * 关闭预览面板
-   * Close preview panel
+   * Rename file
    */
-  onClose: () => void;
+  onRename?: () => void;
+
+  /**
+   * Show provenance for a Science-managed file
+   */
+  onShowProvenance?: () => void;
+
+  /**
+   * Whether file rename is available
+   */
+  canRename?: boolean;
+
+  /**
+   * Whether Science provenance is available
+   */
+  canShowProvenance?: boolean;
 
   /**
    * HTML 审核元素模式（仅HTML类型使用）
@@ -165,7 +172,6 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
   isHTML,
   viewMode,
   isSplitScreenEnabled,
-  file_name,
   showOpenInSystemButton,
   historyTarget,
   snapshotSaving,
@@ -176,22 +182,82 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
   renderHistoryDropdown,
   onOpenInSystem,
   onDownload,
-  onClose,
+  onRename,
+  onShowProvenance,
+  canRename = false,
+  canShowProvenance = false,
   inspectMode,
   onInspectModeToggle,
   leftExtra,
   rightExtra,
 }) => {
   const { t } = useTranslation();
+  const [fileActionMenuOpen, setFileActionMenuOpen] = React.useState(false);
   const isDiff = content_type === 'diff';
   const preferActionButtonsInFront = Boolean(leftExtra);
   // showOpenInSystemButton === Boolean(metadata.file_path) upstream — i.e. "file is on disk".
   const showDownload = shouldShowDownload(content_type, showOpenInSystemButton);
+  const showFileActionMenu = showDownload || showOpenInSystemButton || canRename || canShowProvenance;
 
   const toolbarBtn =
     'flex items-center gap-2px px-8px py-3px rd-4px cursor-pointer transition-colors duration-150 text-12px font-medium text-t-secondary hover:text-t-primary hover:bg-bg-3';
   const toolbarBtnActive = '!text-white bg-brand hover:!text-white hover:bg-brand-hover';
+  const toolbarMenuBtn =
+    'w-26px h-26px inline-flex items-center justify-center rd-7px cursor-pointer transition-colors duration-150 text-t-secondary hover:text-t-primary hover:bg-bg-3';
   const toolbarIconSize = 12;
+
+  const renderFileActionMenu = () => (
+    <div className='preview-toolbar-action-menu'>
+      {showDownload && (
+        <button
+          type='button'
+          className='preview-toolbar-action-menu__item'
+          onClick={() => {
+            setFileActionMenuOpen(false);
+            void onDownload();
+          }}
+        >
+          {t('common.download')}
+        </button>
+      )}
+      {canRename && onRename && (
+        <button
+          type='button'
+          className='preview-toolbar-action-menu__item'
+          onClick={() => {
+            setFileActionMenuOpen(false);
+            onRename();
+          }}
+        >
+          {t('preview.rename', { defaultValue: 'Rename' })}
+        </button>
+      )}
+      {canShowProvenance && onShowProvenance && (
+        <button
+          type='button'
+          className='preview-toolbar-action-menu__item'
+          onClick={() => {
+            setFileActionMenuOpen(false);
+            onShowProvenance();
+          }}
+        >
+          {t('preview.provenance', { defaultValue: 'Provenance' })}
+        </button>
+      )}
+      {showOpenInSystemButton && (
+        <button
+          type='button'
+          className='preview-toolbar-action-menu__item'
+          onClick={() => {
+            setFileActionMenuOpen(false);
+            onOpenInSystem();
+          }}
+        >
+          {t('preview.openInSystemApp')}
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <div className='flex items-center justify-between h-32px px-10px bg-bg-2 flex-shrink-0 border-b border-border-1 overflow-x-auto'>
@@ -254,7 +320,7 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
             </>
           )}
 
-          {preferActionButtonsInFront && showOpenInSystemButton && (
+          {SHOW_DIRECT_FILE_ACTIONS && preferActionButtonsInFront && showOpenInSystemButton && (
             <div className={toolbarBtn} onClick={onOpenInSystem} title={t('preview.openInSystemApp')}>
               <svg
                 width={toolbarIconSize}
@@ -272,7 +338,7 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
               <span>{t('preview.openInSystemApp')}</span>
             </div>
           )}
-          {preferActionButtonsInFront && showDownload && (
+          {SHOW_DIRECT_FILE_ACTIONS && preferActionButtonsInFront && showDownload && (
             <div className={toolbarBtn} onClick={() => void onDownload()} title={t('preview.downloadFile')}>
               <svg
                 width={toolbarIconSize}
@@ -367,7 +433,7 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
               </>
             )}
 
-          {!preferActionButtonsInFront && showOpenInSystemButton && (
+          {SHOW_DIRECT_FILE_ACTIONS && !preferActionButtonsInFront && showOpenInSystemButton && (
             <div className={toolbarBtn} onClick={onOpenInSystem} title={t('preview.openInSystemApp')}>
               <svg
                 width={toolbarIconSize}
@@ -386,7 +452,7 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
             </div>
           )}
 
-          {!preferActionButtonsInFront && showDownload && (
+          {SHOW_DIRECT_FILE_ACTIONS && !preferActionButtonsInFront && showDownload && (
             <div className={toolbarBtn} onClick={() => void onDownload()} title={t('preview.downloadFile')}>
               <svg
                 width={toolbarIconSize}
@@ -427,6 +493,33 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
               </svg>
               <span>{inspectMode ? t('preview.html.inspecting') : t('preview.html.inspectElement')}</span>
             </div>
+          )}
+
+          {showFileActionMenu && (
+            <Dropdown
+              droplist={renderFileActionMenu()}
+              trigger={['click']}
+              position='br'
+              popupVisible={fileActionMenuOpen}
+              onVisibleChange={setFileActionMenuOpen}
+            >
+              <div className={toolbarMenuBtn} title={t('common.more', { defaultValue: 'More' })}>
+                <svg
+                  width={16}
+                  height={16}
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                >
+                  <circle cx='12' cy='12' r='1' />
+                  <circle cx='19' cy='12' r='1' />
+                  <circle cx='5' cy='12' r='1' />
+                </svg>
+              </div>
+            </Dropdown>
           )}
         </div>
       </div>

@@ -340,9 +340,15 @@ export function useWorkspaceFileOps(options: UseWorkspaceFileOpsOptions) {
             workspace: workspace,
             language: ext,
             truncated: isLargeTextTruncated,
-            // Markdown 和图片文件默认为只读模式
-            // Markdown and image files default to read-only mode
-            editable: contentType === 'markdown' || contentType === 'image' || isLargeTextTruncated ? false : undefined,
+            // Markdown、图片和分子结构文件默认为只读模式
+            // Markdown, image, and molecular structure files default to read-only mode
+            editable:
+              contentType === 'markdown' ||
+              contentType === 'image' ||
+              contentType === 'molecular_structure' ||
+              isLargeTextTruncated
+                ? false
+                : undefined,
           },
           { replace: true }
         );

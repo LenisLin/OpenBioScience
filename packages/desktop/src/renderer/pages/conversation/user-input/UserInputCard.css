@@ -1,0 +1,327 @@
+.user-input-card-shell {
+  width: min(100%, 920px);
+  margin: 0 auto 12px;
+  padding: 0 0 2px;
+  animation: userInputCardIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.user-input-card {
+  border: 1px solid rgba(29, 33, 41, 0.08);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow:
+    0 18px 48px rgba(29, 33, 41, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  padding: 22px 24px 18px;
+}
+
+.user-input-card__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin-bottom: 8px;
+  color: #165dff;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 18px;
+}
+
+.user-input-card__eyebrow span {
+  flex: 0 0 auto;
+}
+
+.user-input-card__eyebrow em {
+  min-width: 0;
+  overflow: hidden;
+  color: #86909c;
+  font-style: normal;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-input-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-width: 0;
+}
+
+.user-input-card__title {
+  min-width: 0;
+  color: #1d2129;
+  font-size: 16px;
+  font-weight: 760;
+  line-height: 24px;
+}
+
+.user-input-card__pager {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex: 0 0 auto;
+  color: #9499a3;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 20px;
+}
+
+.user-input-card__pager button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #a8adb6;
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease;
+}
+
+.user-input-card__pager button:not(:disabled):hover {
+  background: #f2f3f5;
+  color: #4e5969;
+}
+
+.user-input-card__pager button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.user-input-card__description {
+  margin-top: 6px;
+  color: #86909c;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.user-input-card__options {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.user-input-option {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 42px;
+  border: 0;
+  border-radius: 13px;
+  background: transparent;
+  color: #4e5969;
+  padding: 7px 12px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.user-input-option:hover {
+  background: rgba(242, 243, 245, 0.8);
+}
+
+.user-input-option--active {
+  background: #f2f3f5;
+  color: #1d2129;
+}
+
+.user-input-option:active {
+  transform: scale(0.997);
+}
+
+.user-input-option__index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #e5e6eb;
+  border-radius: 999px;
+  background: #fff;
+  color: #86909c;
+  font-size: 13px;
+  font-weight: 730;
+  font-variant-numeric: tabular-nums;
+  line-height: 24px;
+}
+
+.user-input-option--active .user-input-option__index {
+  border-color: #1d2129;
+  background: #1d2129;
+  color: #fff;
+}
+
+.user-input-option__main {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  gap: 8px;
+}
+
+.user-input-option__label {
+  min-width: 0;
+  overflow: hidden;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 720;
+  line-height: 22px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-input-option__label b {
+  margin-left: 4px;
+  color: #86909c;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.user-input-option__description {
+  min-width: 0;
+  overflow: hidden;
+  color: #9499a3;
+  font-size: 13px;
+  font-weight: 560;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-input-card__textarea,
+.user-input-card__other {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #e5e6eb;
+  border-radius: 14px;
+  background: #fff;
+  color: #1d2129;
+  outline: none;
+  transition:
+    border 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.user-input-card__textarea {
+  min-height: 92px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  resize: vertical;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.user-input-card__other {
+  height: 38px;
+  padding: 0 13px;
+  font-size: 14px;
+}
+
+.user-input-card__textarea:focus,
+.user-input-card__other:focus {
+  border-color: rgba(22, 93, 255, 0.42);
+  box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.08);
+}
+
+.user-input-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.user-input-card__skip,
+.user-input-card__submit {
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 15px;
+  font-size: 14px;
+  font-weight: 720;
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.user-input-card__skip {
+  background: transparent;
+  color: #86909c;
+}
+
+.user-input-card__skip:hover {
+  background: #f2f3f5;
+  color: #4e5969;
+}
+
+.user-input-card__skip kbd {
+  margin-left: 4px;
+  border: 0;
+  border-radius: 6px;
+  background: #f2f3f5;
+  color: #4e5969;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.user-input-card__submit {
+  min-width: 86px;
+  background: #3296fa;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(50, 150, 250, 0.22);
+}
+
+.user-input-card__submit:hover {
+  background: #2486e8;
+}
+
+.user-input-card__submit:disabled {
+  background: #c9d8eb;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.user-input-card__submit:active,
+.user-input-card__skip:active {
+  transform: translateY(1px);
+}
+
+@keyframes userInputCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 680px) {
+  .user-input-card {
+    border-radius: 18px;
+    padding: 18px 16px 15px;
+  }
+
+  .user-input-card__head {
+    align-items: flex-start;
+  }
+
+  .user-input-option__main {
+    flex-direction: column;
+    gap: 0;
+  }
+}

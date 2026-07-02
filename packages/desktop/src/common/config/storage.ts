@@ -5,8 +5,12 @@
  */
 
 import type { SpeechToTextConfig } from '@/common/types/provider/speech';
-import { LEGACY_APP_NAMESPACE } from '@/common/config/legacyIdentifiers';
+import type { LEGACY_APP_NAMESPACE } from '@/common/config/legacyIdentifiers';
 import type { Theme } from '@/common/theme/types';
+import type { LabSkillDepositionConversationExtra } from '@/common/chat/labSkillDeposition';
+import type { MedicalEvidenceConversationExtra } from '@/common/chat/medicalEvidence';
+import type { ScienceConversationExtra } from '@/common/chat/science';
+import type { ComputeConfig, ComputeConversationExtra } from '@/common/types/compute';
 import { storage } from '@office-ai/platform';
 
 // 系统配置存储
@@ -82,6 +86,9 @@ export interface IConfigStorageRefer {
     switch?: boolean;
   };
   'tools.medicalEvidence'?: MedicalEvidenceConfig;
+  'tools.researchEvidence'?: ResearchEvidenceConfig;
+  'tools.scienceArtifact'?: ScienceArtifactConfig;
+  'tools.compute'?: ComputeConfig;
   'tools.speechToText'?: SpeechToTextConfig;
   // 是否在粘贴文件到工作区时询问确认（true = 不再询问）
   'workspace.pasteConfirm'?: boolean;
@@ -177,7 +184,7 @@ export interface IConfigStorageRefer {
   'pet.enabled'?: boolean;
   // Desktop Pet: size in pixels (200, 280, or 360)
   'pet.size'?: number;
-  // Desktop Pet: visual style. DeepScientist is the default brand companion.
+  // Desktop Pet: visual style. OpenScience is the default brand companion.
   'pet.style'?: 'deepscientist' | 'classic' | 'paperfold' | 'observatory';
   // Desktop Pet: behavior profile for idle cadence and eye-follow responsiveness
   'pet.personality'?: 'calm' | 'balanced' | 'lively';
@@ -324,6 +331,16 @@ export type TChatConversation =
           cron_job_id?: string;
           /** Persistent Loop Goal state for auto-continuation. */
           loop_goal?: LoopGoalState;
+          /** Locale captured when the conversation was created, used by mode continuations. */
+          assistant_locale?: string;
+          /** Medical Evidence Mode metadata and rendering contract. */
+          medical_evidence?: MedicalEvidenceConversationExtra;
+          /** Science Mode metadata and artifact rendering contract. */
+          science?: ScienceConversationExtra;
+          /** Selected compute hosts and prompt context snapshot. */
+          compute?: ComputeConversationExtra;
+          /** Lab Skill deposition mode metadata and rendering contract. */
+          lab_skill_deposition?: LabSkillDepositionConversationExtra;
         }
       >,
       'model'
@@ -479,8 +496,7 @@ export type TChatConversation =
         }
       >,
       'model'
-    >
-  ;
+    >;
 
 export type IChatConversationRefer = {
   'chat.history': TChatConversation[];
@@ -575,9 +591,41 @@ export interface MedicalEvidenceConfig {
   enabled?: boolean;
   paperclipApiKey?: string;
   paperclipBaseUrl?: string;
-  defaultSources?: Array<'pmc' | 'abstracts' | 'fda' | 'trials' | 'trials/us' | 'clinicaltrials'>;
+  defaultSources?: Array<
+    | 'pmc'
+    | 'abstracts'
+    | 'abstracts_only'
+    | 'biorxiv'
+    | 'medrxiv'
+    | 'arxiv'
+    | 'fda'
+    | 'fda/jp'
+    | 'fda/eu'
+    | 'trials'
+    | 'trials/us'
+    | 'trials/cn'
+    | 'trials/jp'
+    | 'trials/eu'
+    | 'clinicaltrials'
+  >;
   strictAnchors?: boolean;
   timeoutMs?: number;
+}
+
+export interface ResearchEvidenceConfig {
+  enabled?: boolean;
+  paperclipApiKey?: string;
+  paperclipBaseUrl?: string;
+  defaultSources?: string[];
+  timeoutMs?: number;
+}
+
+export interface ScienceArtifactConfig {
+  enabled?: boolean;
+  strictProvenance?: boolean;
+  writeProjectManifest?: boolean;
+  defaultSkillIds?: string[];
+  allowedDatabaseHosts?: string[];
 }
 
 // MCP Server Configuration Types
@@ -643,12 +691,30 @@ export interface IConversationMcpStatus {
 
 /** Stable ID for the built-in image generation MCP server */
 export const BUILTIN_IMAGE_GEN_ID = 'builtin-image-gen';
-export const BUILTIN_IMAGE_GEN_NAME = 'deeporganiser-image-generation';
-export const BUILTIN_IMAGE_GEN_LEGACY_NAMES = ['DeepOrganiser Image Generation', BUILTIN_IMAGE_GEN_ID] as const;
+export const BUILTIN_IMAGE_GEN_NAME = 'openscience-image-generation';
+export const BUILTIN_IMAGE_GEN_LEGACY_NAMES = [
+  'DeepOrganiser Image Generation',
+  BUILTIN_IMAGE_GEN_ID,
+  'deeporganiser-image-generation',
+] as const;
 export const BUILTIN_LARK_PROJECT_AGENT_ID = 'builtin-lark-project-agent';
-export const BUILTIN_LARK_PROJECT_AGENT_NAME = 'deeporganiser-lark-project-agent';
+export const BUILTIN_LARK_PROJECT_AGENT_NAME = 'openscience-lark-project-agent';
+export const BUILTIN_LARK_PROJECT_AGENT_LEGACY_NAMES = ['deeporganiser-lark-project-agent'] as const;
 export const BUILTIN_MEDICAL_EVIDENCE_ID = 'builtin-medical-evidence';
-export const BUILTIN_MEDICAL_EVIDENCE_NAME = 'deeporganiser-medical-evidence';
+export const BUILTIN_MEDICAL_EVIDENCE_NAME = 'openscience-medical-evidence';
+export const BUILTIN_MEDICAL_EVIDENCE_LEGACY_NAMES = ['deeporganiser-medical-evidence'] as const;
+export const BUILTIN_RESEARCH_EVIDENCE_ID = 'builtin-research-evidence';
+export const BUILTIN_RESEARCH_EVIDENCE_NAME = 'openscience-research-evidence';
+export const BUILTIN_RESEARCH_EVIDENCE_LEGACY_NAMES = ['deeporganiser-research-evidence'] as const;
+export const BUILTIN_SCIENCE_ARTIFACT_ID = 'builtin-science-artifact';
+export const BUILTIN_SCIENCE_ARTIFACT_NAME = 'openscience-science-artifact';
+export const BUILTIN_SCIENCE_ARTIFACT_LEGACY_NAMES = ['deeporganiser-science-artifact'] as const;
+export const BUILTIN_LAB_SKILL_ID = 'builtin-lab-skill';
+export const BUILTIN_LAB_SKILL_NAME = 'openscience-lab-skill';
+export const BUILTIN_LAB_SKILL_LEGACY_NAMES = ['deeporganiser-lab-skill'] as const;
+export const BUILTIN_USER_INPUT_ID = 'builtin-user-input';
+export const BUILTIN_USER_INPUT_NAME = 'openscience-user-input';
+export const BUILTIN_USER_INPUT_LEGACY_NAMES = ['deeporganiser-user-input'] as const;
 
 export interface IMcpTool {
   name: string;

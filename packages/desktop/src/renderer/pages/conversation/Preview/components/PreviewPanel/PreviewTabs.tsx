@@ -6,7 +6,7 @@
 
 import { iconColors } from '@/renderer/styles/colors';
 import { Close } from '@icon-park/react';
-import { IconShrink } from '@arco-design/web-react/icon';
+import { IconFullscreen, IconFullscreenExit, IconShrink } from '@arco-design/web-react/icon';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TabFadeState } from '../../hooks/useTabOverflow';
@@ -86,6 +86,9 @@ interface PreviewTabsProps {
    * Close preview panel callback
    */
   onClosePanel?: () => void;
+  previewLayoutMode?: 'split' | 'fullscreen';
+  onPreviewLayoutModeChange?: (mode: 'split' | 'fullscreen') => void;
+  onRequestHalfPanel?: () => void;
 }
 
 /**
@@ -107,6 +110,9 @@ const PreviewTabs: React.FC<PreviewTabsProps> = ({
   onCloseTab,
   onContextMenu,
   onClosePanel,
+  previewLayoutMode = 'split',
+  onPreviewLayoutModeChange,
+  onRequestHalfPanel,
 }) => {
   const { t } = useTranslation();
   const { left: showLeftFade, right: showRightFade } = tabFadeState;
@@ -151,16 +157,51 @@ const PreviewTabs: React.FC<PreviewTabsProps> = ({
           )}
         </div>
 
-        {/* 收起面板按钮 / Collapse panel button */}
-        {onClosePanel && (
-          <div className='flex items-center h-full px-10px flex-shrink-0 rounded-tr-[16px]'>
+        {(onRequestHalfPanel || onPreviewLayoutModeChange || onClosePanel) && (
+          <div className='flex items-center h-full px-8px gap-4px flex-shrink-0 rounded-tr-[16px]'>
+            {onRequestHalfPanel ? (
+              <button
+                type='button'
+                className='preview-tabs__iconButton'
+                onClick={onRequestHalfPanel}
+                title={t('preview.halfPanel', { defaultValue: 'Half panel' })}
+                aria-label={t('preview.halfPanel', { defaultValue: 'Half panel' })}
+              >
+                <span className='preview-tabs__halfGlyph' aria-hidden='true' />
+              </button>
+            ) : null}
+            {onPreviewLayoutModeChange ? (
+              <button
+                type='button'
+                className='preview-tabs__iconButton'
+                onClick={() => onPreviewLayoutModeChange(previewLayoutMode === 'fullscreen' ? 'split' : 'fullscreen')}
+                title={
+                  previewLayoutMode === 'fullscreen'
+                    ? t('preview.exitFullscreen', { defaultValue: 'Exit fullscreen' })
+                    : t('preview.fullscreen', { defaultValue: 'Fullscreen' })
+                }
+                aria-label={
+                  previewLayoutMode === 'fullscreen'
+                    ? t('preview.exitFullscreen', { defaultValue: 'Exit fullscreen' })
+                    : t('preview.fullscreen', { defaultValue: 'Fullscreen' })
+                }
+              >
+                {previewLayoutMode === 'fullscreen' ? (
+                  <IconFullscreenExit style={{ fontSize: 14, color: iconColors.secondary }} />
+                ) : (
+                  <IconFullscreen style={{ fontSize: 14, color: iconColors.secondary }} />
+                )}
+              </button>
+            ) : null}
+            {onClosePanel ? (
             <div
-              className='flex items-center justify-center w-20px h-20px rd-4px cursor-pointer hover:bg-bg-3 transition-colors'
+              className='preview-tabs__iconButton'
               onClick={onClosePanel}
               title={t('preview.collapsePanel')}
             >
               <IconShrink style={{ fontSize: 14, color: iconColors.secondary }} />
             </div>
+            ) : null}
           </div>
         )}
       </div>

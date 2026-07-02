@@ -15,6 +15,13 @@ import { initThemeBridge } from './themeBridge';
 import { initLarkAutomationBridge } from './larkAutomationBridge';
 import { initLarkProjectAgentBridge } from './larkProjectAgentBridge';
 import { initNativeWebPanelBridge } from './nativeWebPanelBridge';
+import { initCodexMemoryBridge } from './codexMemoryBridge';
+import { initUserInputBridge } from './userInputBridge';
+import { initMedicalEvidenceReportBridge } from './medicalEvidenceReportBridge';
+import { initMedicalEvidenceSettingsBridge } from './medicalEvidenceSettingsBridge';
+import { initScienceArtifactArchiveBridge } from './scienceArtifactArchiveBridge';
+import { initScienceLatexBridge } from './scienceLatexBridge';
+import { initComputeHostsBridge } from './computeHostsBridge';
 
 export type BridgeDependencies = Record<string, never>;
 
@@ -30,6 +37,13 @@ export function initAllBridges(_deps: BridgeDependencies = {}): void {
   initLarkProjectAgentBridge();
   initLarkAutomationBridge();
   initNativeWebPanelBridge();
+  initCodexMemoryBridge();
+  initMedicalEvidenceReportBridge();
+  initMedicalEvidenceSettingsBridge();
+  initComputeHostsBridge();
+  initScienceArtifactArchiveBridge();
+  initScienceLatexBridge();
+  initUserInputBridge();
 }
 
 export {
@@ -44,6 +58,13 @@ export {
   initLarkAutomationBridge,
   initLarkProjectAgentBridge,
   initNativeWebPanelBridge,
+  initCodexMemoryBridge,
+  initMedicalEvidenceReportBridge,
+  initMedicalEvidenceSettingsBridge,
+  initComputeHostsBridge,
+  initScienceArtifactArchiveBridge,
+  initScienceLatexBridge,
+  initUserInputBridge,
 };
 export { registerWindowMaximizeListeners } from './windowControlsBridge';
 export const disposeAllTeamSessions = (): Promise<void> => Promise.resolve();

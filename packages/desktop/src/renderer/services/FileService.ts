@@ -170,8 +170,11 @@ export const textExts = [
   '.config',
 ];
 
+/** 支持的科学结构文件扩展名 */
+export const molecularStructureExts = ['.pdb', '.ent', '.cif', '.mmcif', '.pqr', '.sdf', '.mol', '.mol2', '.xyz'];
+
 /** 所有支持的文件扩展名（预先设计，当前实际接受所有文件类型） */
-export const allSupportedExts = [...imageExts, ...documentExts, ...textExts];
+export const allSupportedExts = [...imageExts, ...documentExts, ...textExts, ...molecularStructureExts];
 
 // 文件元数据接口
 export interface FileMetadata {

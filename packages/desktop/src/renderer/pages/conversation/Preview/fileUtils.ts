@@ -21,6 +21,9 @@ export const FILE_EXTENSION_MAP: Record<PreviewContentType, readonly string[]> =
   code: [], // code 作为默认类型，不需要显式映射 / code is the default type, no explicit mapping needed
   diff: ['diff', 'patch'],
   url: [], // url 类型用于网页预览，无扩展名映射 / url type for web preview, no extension mapping
+  science_report: [], // Science report 是结构化预览，不来自文件扩展名 / Structured Science report preview
+  science_files: [], // Science files 是结构化项目文件集合，不来自文件扩展名 / Structured project file collection
+  molecular_structure: ['pdb', 'ent', 'cif', 'mmcif', 'pqr', 'sdf', 'mol', 'mol2', 'xyz'],
 };
 
 /**
