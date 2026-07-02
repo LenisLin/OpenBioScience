@@ -1,171 +1,638 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DeepOrganiser 下载中心</title>
-    <link rel="icon" href="deeporganiser-logo.svg?v=20260629-icons" />
-    <link rel="stylesheet" href="styles.css?v=20260629-icons" />
+    <title>OpenScience Download</title>
+    <meta
+      name="description"
+      content="Download OpenScience desktop app. Start research work in natural language and turn every result into traceable, reproducible, reviewable research artifacts."
+    />
+    <link rel="icon" type="image/svg+xml" href="openscience-logo.svg?v=20260701-openscience" />
+    <link rel="icon" type="image/png" href="openscience-logo.png?v=20260701-openscience" />
+    <link
+      rel="preload"
+      as="image"
+      href="assets/generated/research-workspace-hero-4k-web.webp"
+      imagesrcset="assets/generated/research-workspace-hero-4k-web.webp 1800w, assets/generated/research-workspace-hero-4k.webp 3840w"
+      imagesizes="100vw"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260702-icons1" />
   </head>
   <body>
-    <div class="ambient-grid" aria-hidden="true"></div>
-    <main class="page-shell">
-      <nav class="topbar" aria-label="DeepOrganiser">
-        <a class="brand-lockup" href="./">
-          <img class="brand-lockup__mark" src="deeporganiser-logo.svg?v=20260629-icons" alt="" />
-          <span class="brand-lockup__text">
-            <strong>DeepOrganiser</strong>
-            <small>科研智治</small>
-          </span>
-        </a>
-        <div class="nav-links">
-          <a href="#downloads">
-            <img class="nav-icon" src="icons/generated/origin-nav-download.png?v=20260629-icons" alt="" />
-            <span>下载</span>
+    <div class="page-ambient" aria-hidden="true">
+      <div class="ambient-sweep ambient-sweep--one"></div>
+      <div class="ambient-sweep ambient-sweep--two"></div>
+      <div class="evidence-stream evidence-stream--one"></div>
+      <div class="evidence-stream evidence-stream--two"></div>
+    </div>
+
+    <main class="site-shell">
+      <nav class="topbar" aria-label="OpenScience">
+        <div class="topbar-left">
+          <a class="brand-lockup" href="./" aria-label="OpenScience">
+            <img class="brand-lockup__wordmark" src="openscience-wordmark.png?v=20260701-openscience" alt="OpenScience" />
           </a>
-          <a href="#workflow">
-            <img class="nav-icon" src="icons/generated/origin-nav-workspace.png?v=20260629-icons" alt="" />
-            <span>工作台</span>
-          </a>
-          <a href="api/status">
-            <img class="nav-icon" src="icons/generated/origin-nav-update.png?v=20260629-icons" alt="" />
-            <span>更新源</span>
-          </a>
+          <div class="source-menu" id="sourceMenu">
+            <button class="source-button" id="sourceButton" type="button" aria-label="Open source works" aria-expanded="false" aria-controls="sourcePanel">
+              <img class="source-button__icon" src="icons/openscience-site/github-star.png" alt="" width="24" height="24" decoding="async" />
+              <span class="source-button__stars">10K</span>
+            </button>
+            <div class="source-panel" id="sourcePanel" hidden>
+              <div class="source-work-list" id="sourceWorkList"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="nav-cluster" aria-label="Page sections">
+          <span class="nav-glider" id="navGlider" aria-hidden="true"></span>
+          <a class="nav-link is-active" href="#download" data-nav-link data-i18n="nav.download">Download</a>
+          <a class="nav-link" href="#evidence" data-nav-link data-i18n="nav.evidence">Evidence</a>
+          <a class="nav-link" href="#projects" data-nav-link data-i18n="nav.projects">Projects</a>
+        </div>
+
+        <div class="topbar-actions">
+          <label class="language-select" aria-label="Language">
+            <img class="language-select__icon" src="icons/openscience-site/language-globe.png" alt="" width="22" height="22" decoding="async" />
+            <select id="languageSelect" aria-label="Language">
+              <option value="en">EN</option>
+              <option value="zh-CN">中文</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
+              <option value="es">ES</option>
+              <option value="ar">AR</option>
+            </select>
+          </label>
         </div>
       </nav>
 
-      <section class="hero">
-        <div class="hero-copy">
-          <div class="release-pill">
-            <img class="pill-icon" src="icons/generated/origin-version-status.png?v=20260629-icons" alt="" />
-            <span id="latestVersion">正在读取版本</span>
+      <section class="hero-section" id="download" aria-labelledby="heroTitle">
+        <div class="hero-image-wash" aria-hidden="true">
+          <picture>
+            <source
+              type="image/webp"
+              srcset="assets/generated/research-workspace-hero-4k-web.webp 1800w, assets/generated/research-workspace-hero-4k.webp 3840w"
+              sizes="100vw"
+            />
+            <img
+              src="assets/generated/research-workspace-hero-4k-web.png"
+              alt=""
+              width="1800"
+              height="1012"
+              decoding="async"
+              fetchpriority="high"
+            />
+          </picture>
+        </div>
+        <div class="hero-copy" data-reveal>
+          <div class="hero-kicker-row" aria-label="OpenScience Desktop">
+            <span data-i18n="hero.kickerLeft">Natural language research</span>
+            <strong data-i18n="hero.kicker">OPENSCIENCE DESKTOP</strong>
+            <span data-i18n="hero.kickerRight">Reproducible artifacts</span>
           </div>
-          <h1>把项目、任务和协作关系整理成可推进的工作台</h1>
-          <p>
-            DeepOrganiser 面向科研智治与团队项目，把桌面会话、协作任务、文档与流程放在一起。下载桌面端后，应用会持续连接此更新源并提示升级。
-          </p>
+          <h1 class="hero-title" id="heroTitle">
+            <img class="hero-title__wordmark hero-title__wordmark--lead" src="openscience-wordmark.png?v=20260701-openscience" alt="OpenScience" />
+            <span data-i18n="hero.titleA">Your AI research workspace for evidence-backed science</span>
+          </h1>
+
           <div class="hero-actions">
-            <a class="primary-button magnetic" id="primaryDownload" href="#downloads">
-              <img class="button-icon button-icon--light" src="icons/generated/origin-primary-download.png?v=20260629-icons" alt="" />
-              <span>下载最新版本</span>
+            <a class="primary-download" id="primaryDownload" href="#downloads">
+              <img class="button-icon" src="icons/openscience-site/download-macos.png" alt="" width="24" height="24" decoding="async" />
+              <span id="primaryDownloadLabel" data-i18n="hero.primary">Download OpenScience</span>
             </a>
-            <a class="secondary-button" href="api/status">
-              <img class="button-icon" src="icons/generated/origin-nav-update.png?v=20260629-icons" alt="" />
-              <span>查看更新状态</span>
+            <a class="secondary-action" href="#projects">
+              <span data-i18n="hero.secondary">View research project examples</span>
+              <img class="button-icon button-icon--trailing" src="icons/openscience-site/external-link.png" alt="" width="22" height="22" decoding="async" />
             </a>
           </div>
-          <div class="meta-row">
-            <span>
-              <img class="meta-icon" src="icons/generated/origin-auto-update.png?v=20260629-icons" alt="" />
-              <em id="updatedAt">检查更新源中</em>
-            </span>
-            <span>
-              <img class="meta-icon" src="icons/generated/origin-update-url.png?v=20260629-icons" alt="" />
-              <em>自动更新地址：<strong id="baseUrl">https://deepscientist.cc/DeepOrganiser</strong></em>
-            </span>
-          </div>
+
+          <div class="hero-meta-row">
+              <span id="detectedPlatform" data-i18n="status.detecting">正在识别系统</span>
+              <span id="updatedAt" data-i18n="status.checking">检查更新源中</span>
+            </div>
         </div>
 
-        <div class="product-stage product-stage--globe" aria-label="DeepOrganiser 协作网络">
-          <div class="download-globe" id="downloadGlobe">
-            <div class="download-globe__halo download-globe__halo--inner" aria-hidden="true"></div>
-            <div class="download-globe__halo download-globe__halo--outer" aria-hidden="true"></div>
-            <canvas id="downloadGlobeCanvas" class="download-globe__canvas"></canvas>
+        <div class="hero-preview" id="preview" data-reveal>
+          <div class="preview-glow" aria-hidden="true"></div>
+          <div class="floating-status floating-status--data">
+            <span class="status-dot status-dot--running"></span>
+            <span id="floatStatusA">正在算数据...</span>
           </div>
-          <div class="floating-panel panel-sync">
-            <img src="icons/generated/origin-collab-project.png?v=20260629-icons" alt="" />
-            <div>
-              <strong>协作项目</strong>
-              <small>任务清单、联系人和进展同步展示</small>
+          <div class="floating-status floating-status--report">
+            <span class="status-dot status-dot--writing"></span>
+            <span id="floatStatusB">正在写报告...</span>
+          </div>
+          <div class="os-main-preview" aria-label="OpenScience new conversation page preview">
+            <div class="os-main-preview__chrome" aria-hidden="true">
+              <span class="chrome-dot chrome-dot--red"></span>
+              <span class="chrome-dot chrome-dot--yellow"></span>
+              <span class="chrome-dot chrome-dot--green"></span>
+              <span class="chrome-nav">‹</span>
+              <span class="chrome-nav">›</span>
+              <strong>OpenScience</strong>
             </div>
-          </div>
-          <div class="floating-panel panel-update">
-            <img src="icons/generated/origin-auto-update.png?v=20260629-icons" alt="" />
-            <div>
-              <strong>自动更新</strong>
-              <small>按平台读取最新安装包</small>
+
+            <div class="os-main-preview__window">
+              <aside class="os-main-preview__sidebar">
+                <img src="openscience-wordmark.png?v=20260701-openscience" alt="OpenScience" />
+                <nav aria-label="Preview navigation">
+                  <span class="is-active" data-i18n="homePreview.navNew">新会话</span>
+                  <span data-i18n="homePreview.navSearch">搜索</span>
+                  <span data-i18n="homePreview.navSchedule">定时任务</span>
+                </nav>
+                <div class="os-main-preview__sidebar-group">
+                  <em data-i18n="homePreview.groupProjects">科研项目</em>
+                  <span>Artifact Review</span>
+                  <span>Lab Data Sprint</span>
+                </div>
+                <div class="os-main-preview__sidebar-group">
+                  <em data-i18n="homePreview.groupChats">最近会话</em>
+                  <span data-i18n="homePreview.chatA">论文图表复现</span>
+                  <span data-i18n="homePreview.chatB">实验报告整理</span>
+                </div>
+              </aside>
+
+              <section class="os-main-preview__workspace">
+                <p class="os-main-preview__eyebrow" data-i18n="homePreview.eyebrow">NEW RESEARCH SESSION</p>
+                <h2 data-i18n="homePreview.title">用自然语言启动科研工作</h2>
+                <p class="os-main-preview__subtitle" data-i18n="homePreview.subtitle">
+                  新会话页是第一入口：把问题、数据、文件和项目上下文交给 OpenScience，后续自动沉淀为可追溯 artifact。
+                </p>
+
+                <div class="os-main-preview__agent-strip" aria-hidden="true">
+                  <span class="agent-pill is-active">OpenScience</span>
+                  <span class="agent-spark">✦</span>
+                  <span class="agent-pill">Evidence</span>
+                  <span class="agent-pill">Analysis</span>
+                  <span class="agent-pill">Review</span>
+                  <span class="agent-plus">+</span>
+                </div>
+
+                <div class="os-main-preview__prompt">
+                  <span data-i18n="homePreview.promptLabel">自然语言任务</span>
+                  <p data-i18n="homePreview.prompt">分析这批实验数据，生成一份可以复现、可以审查、可以继续迭代的研究报告。</p>
+                  <div class="os-main-preview__prompt-actions">
+                    <button type="button">+</button>
+                    <small data-i18n="homePreview.projectHint">Work in a project</small>
+                    <strong data-i18n="homePreview.send">启动</strong>
+                  </div>
+                </div>
+
+                <div class="os-main-preview__cards" aria-label="Preview artifact cards">
+                  <article>
+                    <img class="os-main-preview__card-icon" src="icons/openscience-site/local-data.png" alt="" loading="lazy" decoding="async" />
+                    <strong data-i18n="homePreview.artifactA">实验数据</strong>
+                    <span>dataset.csv</span>
+                  </article>
+                  <article>
+                    <img class="os-main-preview__card-icon" src="icons/openscience-site/code-run.png" alt="" loading="lazy" decoding="async" />
+                    <strong data-i18n="homePreview.artifactB">分析代码</strong>
+                    <span>analysis.py</span>
+                  </article>
+                  <article>
+                    <img class="os-main-preview__card-icon" src="icons/openscience-site/medical-evidence-report.png" alt="" loading="lazy" decoding="async" />
+                    <strong data-i18n="homePreview.artifactC">研究报告</strong>
+                    <span>report.md</span>
+                  </article>
+                </div>
+              </section>
+            </div>
+
+            <div class="os-main-preview__trace">
+              <span data-i18n="homePreview.traceA">本地执行</span>
+              <span data-i18n="homePreview.traceB">Artifact 留痕</span>
+              <span data-i18n="homePreview.traceC">项目继续推进</span>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="download-section" id="downloads">
-        <div class="section-heading">
-          <div>
-            <img class="section-heading__icon" src="icons/generated/origin-nav-download.png?v=20260629-icons" alt="" />
-            <span class="eyebrow">Download</span>
-            <h2>选择你的系统</h2>
-          </div>
-          <p>如果还没有正式发布包，此处会保持等待状态；发布后会优先展示推荐安装包。</p>
+      <section class="evidence-metrics-section" id="evidence" aria-labelledby="evidenceMetricsTitle">
+        <p class="section-kicker" data-reveal data-i18n="metrics.kicker">EVIDENCE COVERAGE</p>
+        <div class="evidence-metrics-head" data-reveal>
+          <h2 id="evidenceMetricsTitle" data-i18n="metrics.title">Start with the evidence base researchers already trust.</h2>
+          <p data-i18n="metrics.text">
+            Search sources, open references, cite passages, and keep each claim connected to the material that supports it.
+          </p>
         </div>
-        <div class="download-grid">
-          <article class="download-card" data-platform="macOS">
-            <div class="card-top">
-              <img src="icons/generated/origin-platform-macos.png?v=20260629-icons" alt="" />
-              <span>macOS</span>
-            </div>
-            <p>适合 Apple Silicon 与 Intel Mac，推荐使用 DMG 安装。</p>
-            <div class="asset-list" id="macOSAssets"><span class="empty">等待发布包上传</span></div>
+        <div class="hero-metrics evidence-metrics" aria-label="OpenScience evidence coverage" data-reveal>
+          <article>
+            <img class="metric-icon" src="icons/openscience-site/evidence-papers.png" alt="" loading="lazy" decoding="async" />
+            <strong>11M+</strong>
+            <span data-i18n="metrics.papers">papers</span>
+            <em data-i18n="metrics.caption">searchable, readable, citable, traceable</em>
           </article>
-          <article class="download-card" data-platform="Windows">
-            <div class="card-top">
-              <img src="icons/generated/origin-platform-windows.png?v=20260629-icons" alt="" />
-              <span>Windows</span>
-            </div>
-            <p>支持 x64 与 ARM64，推荐使用安装器完成桌面集成。</p>
-            <div class="asset-list" id="WindowsAssets"><span class="empty">等待发布包上传</span></div>
+          <article>
+            <img class="metric-icon" src="icons/openscience-site/evidence-regulatory.png" alt="" loading="lazy" decoding="async" />
+            <strong>225K+</strong>
+            <span data-i18n="metrics.regulatory">regulatory documents</span>
+            <em data-i18n="metrics.caption">searchable, readable, citable, traceable</em>
           </article>
-          <article class="download-card" data-platform="Linux">
-            <div class="card-top">
-              <img src="icons/generated/origin-platform-linux.png?v=20260629-icons" alt="" />
-              <span>Linux</span>
-            </div>
-            <p>适合工作站和服务器环境，优先展示 DEB/RPM 包。</p>
-            <div class="asset-list" id="LinuxAssets"><span class="empty">等待发布包上传</span></div>
+          <article>
+            <img class="metric-icon" src="icons/openscience-site/evidence-trials.png" alt="" loading="lazy" decoding="async" />
+            <strong>1M+</strong>
+            <span data-i18n="metrics.trials">clinical trials</span>
+            <em data-i18n="metrics.caption">searchable, readable, citable, traceable</em>
+          </article>
+          <article>
+            <img class="metric-icon" src="icons/openscience-site/evidence-abstracts.png" alt="" loading="lazy" decoding="async" />
+            <strong>150M+</strong>
+            <span data-i18n="metrics.abstracts">research abstracts</span>
+            <em data-i18n="metrics.caption">searchable, readable, citable, traceable</em>
+          </article>
+        </div>
+        <div class="evidence-art-media spotlight-surface" data-reveal data-spotlight-card aria-hidden="true">
+          <picture>
+            <source
+              type="image/webp"
+              srcset="assets/generated/evidence-artifact-field-4k-web.webp 1800w, assets/generated/evidence-artifact-field-4k.webp 3840w"
+              sizes="min(1320px, 92vw)"
+            />
+            <img
+              src="assets/generated/evidence-artifact-field-4k-web.png"
+              alt=""
+              width="1800"
+              height="1012"
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
+        </div>
+      </section>
+
+      <section class="science-statement" aria-labelledby="statementTitle">
+        <p class="section-kicker" data-reveal data-i18n="story.kicker">EVIDENCE-BACKED SCIENCE</p>
+        <h2 id="statementTitle" data-reveal data-split-reveal data-i18n="story.title">OpenScience turns AI conversations into research artifacts you can reproduce, review, and defend.</h2>
+        <p data-reveal data-i18n="story.subtitle">Not a single answer. A durable research record: evidence, code, figures, notebooks, manuscripts, and every step that produced them.</p>
+      </section>
+
+      <section class="science-mode-spectrum" aria-labelledby="scienceModeSpectrumTitle">
+        <div class="science-mode-spectrum__copy" data-reveal>
+          <p class="section-kicker" data-i18n="scienceMode.kicker">SCIENCE MODE</p>
+          <h2 id="scienceModeSpectrumTitle" data-split-reveal data-i18n="scienceMode.title">One workspace for all sciences: from molecules to manuscripts, from genomes to causal inference.</h2>
+          <p data-i18n="scienceMode.subtitle">10+ research domains and 350+ default skills across life sciences, drug discovery, engineering computation, data science, and social research.</p>
+          <div class="science-mode-spectrum__stats" aria-label="Science mode coverage">
+            <span data-i18n="scienceMode.statA">10+ domains</span>
+            <span data-i18n="scienceMode.statB">350+ skills</span>
+            <span data-i18n="scienceMode.statC">reproducible artifacts</span>
+          </div>
+        </div>
+        <div class="science-mode-spectrum__visual spotlight-surface" data-reveal data-spotlight-card aria-label="OpenScience interdisciplinary coverage">
+          <article class="science-mode-card">
+            <img src="icons/openscience-site/scientific-research-mode.png" alt="" loading="lazy" decoding="async" />
+            <strong data-i18n="scienceMode.life.title">Life sciences</strong>
+            <span data-i18n="scienceMode.life.text">Genomics · single-cell · multi-omics</span>
+          </article>
+          <article class="science-mode-card">
+            <img src="icons/openscience-site/medical-evidence-mode.png" alt="" loading="lazy" decoding="async" />
+            <strong data-i18n="scienceMode.drug.title">Chemistry & drug discovery</strong>
+            <span data-i18n="scienceMode.drug.text">Molecules · proteins · evidence</span>
+          </article>
+          <article class="science-mode-card">
+            <img src="icons/openscience-site/code-run.png" alt="" loading="lazy" decoding="async" />
+            <strong data-i18n="scienceMode.engineering.title">Engineering computation</strong>
+            <span data-i18n="scienceMode.engineering.text">Materials · physics · simulations</span>
+          </article>
+          <article class="science-mode-card">
+            <img src="icons/openscience-site/data-analysis-project.png" alt="" loading="lazy" decoding="async" />
+            <strong data-i18n="scienceMode.data.title">Data science</strong>
+            <span data-i18n="scienceMode.data.text">Statistics · econometrics · causal inference</span>
+          </article>
+          <article class="science-mode-card">
+            <img src="icons/openscience-site/project-record.png" alt="" loading="lazy" decoding="async" />
+            <strong data-i18n="scienceMode.social.title">Policy & social research</strong>
+            <span data-i18n="scienceMode.social.text">Surveys · qualitative study · reports</span>
+          </article>
+          <article class="science-mode-card">
+            <img src="icons/openscience-site/artifact-history.png" alt="" loading="lazy" decoding="async" />
+            <strong data-i18n="scienceMode.artifact.title">Artifact record</strong>
+            <span data-i18n="scienceMode.artifact.text">Run · trace · reproduce</span>
           </article>
         </div>
       </section>
 
-      <section class="workflow-section" id="workflow">
-        <div class="section-heading">
-          <div>
-            <img class="section-heading__icon" src="icons/generated/origin-nav-workspace.png?v=20260629-icons" alt="" />
-            <span class="eyebrow">Workspace</span>
-            <h2>安装后得到一个干净的项目入口</h2>
-          </div>
-          <p>桌面端负责本地运行、协作绑定、任务整理与版本更新，尽量减少用户在不同工具之间来回切换。</p>
+      <section class="capability-marquee-section" aria-labelledby="capabilityMarqueeTitle">
+        <div class="capability-marquee-head" data-reveal>
+          <p class="section-kicker" data-i18n="motion.kicker">WORKSPACE MOTION</p>
+          <h2 id="capabilityMarqueeTitle" data-split-reveal data-i18n="motion.title">Evidence, analysis, and artifacts move together.</h2>
+          <p data-i18n="motion.subtitle">A research request becomes a living project, not a loose chat transcript.</p>
         </div>
-        <div class="workflow-grid">
-          <article>
-            <img class="workflow-icon" src="icons/generated/origin-workflow-bind.png?v=20260629-icons" alt="" />
-            <h3>绑定协作空间</h3>
-            <p>登录并绑定后，项目任务、清单、评论和联系人会汇总到同一入口。</p>
+        <div class="capability-marquee" data-reveal aria-label="OpenScience capability stream">
+          <div class="capability-marquee__row" id="capabilityRowA"></div>
+          <div class="capability-marquee__row capability-marquee__row--reverse" id="capabilityRowB"></div>
+        </div>
+      </section>
+
+      <section class="artifact-flow-section evidence-report-section" aria-labelledby="artifactFlowTitle">
+        <div class="artifact-flow-copy" data-reveal>
+          <p class="section-kicker" data-i18n="flow.kicker">RESEARCH FLOW</p>
+          <h2 id="artifactFlowTitle" data-split-reveal data-i18n="flow.title">A report you can scroll, inspect, and cite.</h2>
+          <p data-i18n="flow.subtitle">Ask a question. OpenScience returns an evidence-backed report with claims, citations, and review notes in one place.</p>
+          <div class="flow-keywords" aria-label="OpenScience flow keywords">
+            <span data-i18n="flow.keywordA">Answer</span>
+            <span data-i18n="flow.keywordB">Evidence</span>
+            <span data-i18n="flow.keywordC">Citations</span>
+            <span data-i18n="flow.keywordD">Review</span>
+          </div>
+        </div>
+        <div class="artifact-flow-visual" data-reveal>
+          <div class="evidence-report-demo spotlight-surface" data-spotlight-card aria-label="Medical evidence report preview">
+            <div class="evidence-report-demo__chrome">
+              <span class="chrome-dot chrome-dot--red"></span>
+              <span class="chrome-dot chrome-dot--yellow"></span>
+              <span class="chrome-dot chrome-dot--green"></span>
+              <strong data-i18n="report.chrome">Medical evidence report</strong>
+              <em data-i18n="report.synced">Evidence synced</em>
+            </div>
+            <div class="evidence-report-demo__layout">
+              <aside class="evidence-report-demo__rail">
+                <strong data-i18n="report.mode">Medical Evidence</strong>
+                <span data-i18n="report.railA">Answer</span>
+                <span data-i18n="report.railB">PICO</span>
+                <span data-i18n="report.railC">Evidence</span>
+                <span data-i18n="report.railD">Review</span>
+              </aside>
+              <div class="evidence-report-demo__scroll">
+                <article class="evidence-report-card">
+                  <div class="report-card-header">
+                    <span><img src="icons/openscience-site/medical-evidence-report.png" alt="" loading="lazy" decoding="async" /><em data-i18n="report.badge">Evidence mode</em></span>
+                    <em>14m 09s</em>
+                  </div>
+                  <h3 data-i18n="report.title">Anaphylaxis: epinephrine, second-line therapy, and observation time</h3>
+                  <p class="report-lead" data-i18n="report.lead">First-line action: give epinephrine promptly. Do not wait for antihistamines or steroids to work.</p>
+                  <div class="report-evidence-tags">
+                    <span>[E1]</span>
+                    <span>[E2]</span>
+                    <span>[E3]</span>
+                    <span>[E4]</span>
+                  </div>
+                  <div class="report-block">
+                    <strong data-i18n="report.sectionA">Key treatment path</strong>
+                    <ul>
+                      <li data-i18n="report.pointA">Airway, breathing, circulation, oxygen, IV access, and fluids are handled in parallel.</li>
+                      <li data-i18n="report.pointB">Antihistamines and steroids are supportive, not substitutes for epinephrine.</li>
+                      <li data-i18n="report.pointC">Observation time depends on severity, comorbidities, and recurrence risk.</li>
+                    </ul>
+                  </div>
+                  <div class="report-block report-block--muted">
+                    <strong data-i18n="report.sectionB">Evidence notes</strong>
+                    <p data-i18n="report.notes">The conclusion keeps dosage and workflow boundaries explicit, so clinicians can verify sources before use.</p>
+                  </div>
+                  <div class="report-source-grid">
+                    <article>
+                      <b>Guideline</b>
+                      <span>first-line treatment</span>
+                    </article>
+                    <article>
+                      <b>Review</b>
+                      <span>risk stratification</span>
+                    </article>
+                    <article>
+                      <b>Label</b>
+                      <span>route and precautions</span>
+                    </article>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="research-stack" aria-labelledby="researchStackTitle">
+        <h2 class="visually-hidden" id="researchStackTitle">OpenScience research workflow</h2>
+        <article class="research-panel research-panel--evidence" aria-labelledby="systemEvidenceTitle">
+          <div class="research-panel__copy" data-reveal>
+            <span><img src="icons/openscience-site/source-search.png" alt="" loading="lazy" decoding="async" />01</span>
+            <h2 id="systemEvidenceTitle" data-split-reveal data-i18n="systems.evidence.title">Search evidence, then run the analysis.</h2>
+            <p data-i18n="systems.evidence.text">OpenScience connects source passages, local files, code execution, and figure output inside one project.</p>
+            <div class="feature-keywords" data-keywords="systems.evidence.keywords" aria-label="Feature keywords"></div>
+          </div>
+          <div class="research-panel__visual" data-reveal>
+            <div class="system-window system-window--analysis spotlight-surface" data-spotlight-card>
+              <div class="visual-toolbar"><b>Evidence → Analysis</b><span>11M+ papers · local code</span></div>
+              <div class="system-analysis-grid">
+                <div class="system-evidence-card">
+                  <img class="system-card-icon" src="icons/openscience-site/source-search.png" alt="" loading="lazy" decoding="async" />
+                  <em>Query</em>
+                  <strong>cross-species single-cell RNA-seq integration</strong>
+                  <span>Sources opened · key passages attached · claim anchors saved</span>
+                </div>
+                <div class="system-code-card">
+                  <img class="system-card-icon" src="icons/openscience-site/code-run.png" alt="" loading="lazy" decoding="async" />
+                  <b>Notebook</b>
+                  <code>load matrix → fit model → export figure</code>
+                  <div class="mini-chart"><span></span><span></span><span></span><span></span><span></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="research-panel research-panel--memory" aria-labelledby="systemMemoryTitle">
+          <div class="research-panel__copy" data-reveal>
+            <span><img src="icons/openscience-site/artifact-history.png" alt="" loading="lazy" decoding="async" />02</span>
+            <h2 id="systemMemoryTitle" data-split-reveal data-i18n="systems.memory.title">Keep the project record, not just the answer.</h2>
+            <p data-i18n="systems.memory.text">Data, evidence, code, figures, notes, and manuscript drafts stay together so the project can continue later.</p>
+            <div class="feature-keywords" data-keywords="systems.memory.keywords" aria-label="Feature keywords"></div>
+          </div>
+          <div class="research-panel__visual" data-reveal>
+            <div class="system-window system-window--project spotlight-surface" data-spotlight-card>
+              <div class="visual-toolbar"><b>Research project</b><span>artifact history</span></div>
+              <div class="system-project-board">
+                <article><img class="system-project-icon" src="icons/openscience-site/local-data.png" alt="" loading="lazy" decoding="async" /><span>data</span><strong>experiment_matrix.csv</strong><em>versioned</em></article>
+                <article><img class="system-project-icon" src="icons/openscience-site/code-run.png" alt="" loading="lazy" decoding="async" /><span>code</span><strong>analysis.py · commit 48c2</strong><em>re-runnable</em></article>
+                <article><img class="system-project-icon" src="icons/openscience-site/figure-output.png" alt="" loading="lazy" decoding="async" /><span>figure</span><strong>figure_3.svg · v4</strong><em>publication-ready</em></article>
+                <article><img class="system-project-icon" src="icons/openscience-site/literature-synthesis.png" alt="" loading="lazy" decoding="async" /><span>draft</span><strong>methods_section.md</strong><em>reviewable</em></article>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="research-panel research-panel--review" aria-labelledby="systemReviewTitle">
+          <div class="research-panel__copy" data-reveal>
+            <span><img src="icons/openscience-site/review-check.png" alt="" loading="lazy" decoding="async" />03</span>
+            <h2 id="systemReviewTitle" data-split-reveal data-i18n="systems.review.title">Review the claim before it ships.</h2>
+            <p data-i18n="systems.review.text">Citations, numbers, figure steps, and conclusion boundaries remain visible for inspection and defense.</p>
+            <div class="feature-keywords" data-keywords="systems.review.keywords" aria-label="Feature keywords"></div>
+          </div>
+          <div class="research-panel__visual" data-reveal>
+            <div class="system-window system-window--review spotlight-surface" data-spotlight-card>
+              <div class="visual-toolbar"><b>Review check</b><span>ready for handoff</span></div>
+              <div class="system-review-list">
+                <article><img class="system-review-icon" src="icons/openscience-site/citation-anchor.png" alt="" loading="lazy" decoding="async" /><strong>References checked</strong><span>source paragraph attached</span></article>
+                <article><img class="system-review-icon" src="icons/openscience-site/review-check.png" alt="" loading="lazy" decoding="async" /><strong>Numbers traced</strong><span>table cell and code run linked</span></article>
+                <article><img class="system-review-icon" src="icons/openscience-site/claim-boundary.png" alt="" loading="lazy" decoding="async" /><strong>Claim boundary</strong><span>limitations preserved in manuscript</span></article>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="mode-showcase-section" aria-labelledby="modeShowcaseTitle">
+        <div class="section-heading" data-reveal>
+          <p class="section-kicker" data-i18n="modes.kicker">RESEARCH MODES</p>
+          <h2 id="modeShowcaseTitle" data-split-reveal data-i18n="modes.title">Choose a mode. Get a project.</h2>
+          <p data-i18n="modes.subtitle">Each mode is a shortcut into the same artifact-first workspace.</p>
+        </div>
+        <div class="mode-workbench spotlight-surface" data-reveal data-spotlight-card>
+          <div class="mode-tabs" role="list" aria-label="OpenScience modes">
+            <span class="is-active" data-i18n="modes.science.title">Scientific research</span>
+            <span data-i18n="modes.medical.title">Medical evidence</span>
+            <span data-i18n="modes.goal.title">Goal mode</span>
+            <span data-i18n="modes.knowledge.title">Knowledge deposition</span>
+          </div>
+          <div class="mode-workbench__body">
+            <div class="mode-workbench__copy">
+              <article>
+                <img class="mode-inline-icon" src="icons/openscience-site/scientific-research-mode.png" alt="" loading="lazy" decoding="async" />
+                <strong data-i18n="modes.science.title">Scientific research</strong>
+                <p data-i18n="modes.science.text">Evidence, data, code, figures, manuscript.</p>
+              </article>
+              <article>
+                <img class="mode-inline-icon" src="icons/openscience-site/medical-evidence-mode.png" alt="" loading="lazy" decoding="async" />
+                <strong data-i18n="modes.medical.title">Medical evidence</strong>
+                <p data-i18n="modes.medical.text">PICO, grading, citations, caution.</p>
+              </article>
+              <article>
+                <img class="mode-inline-icon" src="icons/openscience-site/goal-mode.png" alt="" loading="lazy" decoding="async" />
+                <strong data-i18n="modes.goal.title">Goal mode</strong>
+                <p data-i18n="modes.goal.text">Plan, checkpoints, progress, continuation.</p>
+              </article>
+              <article>
+                <img class="mode-inline-icon" src="icons/openscience-site/knowledge-deposition-mode.png" alt="" loading="lazy" decoding="async" />
+                <strong data-i18n="modes.knowledge.title">Knowledge deposition</strong>
+                <p data-i18n="modes.knowledge.text">SOPs, methods, reusable skills.</p>
+              </article>
+            </div>
+            <div class="mode-workbench__screen">
+              <div class="mode-screen-toolbar">
+                <strong>OpenScience Project</strong>
+                <span data-i18n="modes.screenStatus">artifact-first workspace</span>
+              </div>
+              <div class="mode-screen-grid">
+                <article>
+                  <span data-i18n="modes.screenA">Evidence</span>
+                  <b>42</b>
+                  <em>sources</em>
+                </article>
+                <article>
+                  <span data-i18n="modes.screenB">Analysis</span>
+                  <b>6</b>
+                  <em>runs</em>
+                </article>
+                <article>
+                  <span data-i18n="modes.screenC">Artifacts</span>
+                  <b>9</b>
+                  <em>files</em>
+                </article>
+              </div>
+              <div class="mode-screen-list">
+                <span><b></b><em data-i18n="modes.screenItemA">claim linked to source paragraph</em></span>
+                <span><b></b><em data-i18n="modes.screenItemB">figure linked to code and data</em></span>
+                <span><b></b><em data-i18n="modes.screenItemC">report ready for review</em></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="project-examples" id="projects" aria-labelledby="projectsTitle">
+        <div class="section-heading" data-reveal>
+          <p class="section-kicker" data-i18n="projects.kicker">PROJECT EXAMPLES</p>
+          <h2 id="projectsTitle" data-i18n="projects.title">Search evidence. Run analysis. Ship reproducible science.</h2>
+          <p data-i18n="projects.subtitle">From evidence to code, from figures to manuscripts, the whole project stays traceable.</p>
+        </div>
+        <div class="example-grid">
+          <article data-reveal>
+            <img class="example-icon" src="icons/openscience-site/literature-synthesis.png" alt="" loading="lazy" decoding="async" />
+            <strong>Evidence review</strong>
+            <p>Search sources, bind citations, draft the review.</p>
           </article>
-          <article>
-            <img class="workflow-icon" src="icons/generated/origin-workflow-organize.png?v=20260629-icons" alt="" />
-            <h3>组织项目推进</h3>
-            <p>按项目清单展开任务与负责人会话，支持后续接入自动化 SOP。</p>
+          <article data-reveal>
+            <img class="example-icon" src="icons/openscience-site/data-analysis-project.png" alt="" loading="lazy" decoding="async" />
+            <strong>Local analysis</strong>
+            <p>Run code, make figures, keep the trail.</p>
           </article>
-          <article>
-            <img class="workflow-icon" src="icons/generated/origin-workflow-update.png?v=20260629-icons" alt="" />
-            <h3>保持持续更新</h3>
-            <p>客户端读取此服务器的 metadata，下载匹配系统的最新包并完成安装。</p>
+          <article data-reveal>
+            <img class="example-icon" src="icons/openscience-site/reviewer-response.png" alt="" loading="lazy" decoding="async" />
+            <strong>Manuscript revision</strong>
+            <p>Track claims, corrections, figures, and decisions.</p>
           </article>
         </div>
       </section>
 
-      <section class="status-section">
-        <div class="section-heading">
-          <div>
-            <img class="section-heading__icon" src="icons/generated/origin-channel-feed.png?v=20260629-icons" alt="" />
-            <span class="eyebrow">Update Feed</span>
-            <h2>更新通道</h2>
-          </div>
-          <p>每个平台会读取对应 metadata 文件；灰色表示还没有上传该平台的正式发布信息。</p>
+      <section class="platform-section" id="downloads" aria-labelledby="downloadsTitle">
+        <div class="section-heading" data-reveal>
+          <p class="section-kicker" data-i18n="downloads.kicker">DOWNLOAD</p>
+          <h2 id="downloadsTitle" data-i18n="downloads.title">Install where your research happens</h2>
+          <p data-i18n="downloads.subtitle">Choose your system. The desktop app checks for updates automatically.</p>
+        </div>
+        <div class="platform-grid">
+          <article class="platform-card platform-card--mac spotlight-surface" data-platform="macOS" data-reveal data-spotlight-card>
+            <div class="platform-card__top">
+              <span class="platform-icon"><img src="icons/openscience-site/download-macos.png" alt="" loading="lazy" decoding="async" /></span>
+              <div>
+                <h3>macOS</h3>
+                <p data-i18n="downloads.mac">Apple Silicon 与 Intel Mac</p>
+              </div>
+            </div>
+            <div class="asset-list" id="macOSAssets"><span class="empty" data-i18n="downloads.pending">等待发布包上传</span></div>
+          </article>
+          <article class="platform-card platform-card--win spotlight-surface" data-platform="Windows" data-reveal data-spotlight-card>
+            <div class="platform-card__top">
+              <span class="platform-icon"><img src="icons/openscience-site/download-windows.png" alt="" loading="lazy" decoding="async" /></span>
+              <div>
+                <h3>Windows</h3>
+                <p data-i18n="downloads.windows">x64 与 ARM64 安装包</p>
+              </div>
+            </div>
+            <div class="asset-list" id="WindowsAssets"><span class="empty" data-i18n="downloads.pending">等待发布包上传</span></div>
+          </article>
+          <article class="platform-card platform-card--linux spotlight-surface" data-platform="Linux" data-reveal data-spotlight-card>
+            <div class="platform-card__top">
+              <span class="platform-icon"><img src="icons/openscience-site/download-linux.png" alt="" loading="lazy" decoding="async" /></span>
+              <div>
+                <h3>Linux</h3>
+                <p data-i18n="downloads.linux">DEB / RPM / AppImage</p>
+              </div>
+            </div>
+            <div class="asset-list" id="LinuxAssets"><span class="empty" data-i18n="downloads.pending">等待发布包上传</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="faq-section" aria-labelledby="faqTitle">
+        <div class="section-heading" data-reveal>
+          <p class="section-kicker">FAQ</p>
+          <h2 id="faqTitle">Questions researchers ask first</h2>
+        </div>
+        <div class="faq-list" data-reveal>
+          <details open>
+            <summary>Is OpenScience a new model?</summary>
+            <p>No. It is a desktop research workspace around your model, files, tools, and artifacts.</p>
+          </details>
+          <details>
+            <summary>Can it work with the files I already have?</summary>
+            <p>Yes. It reads project files, runs analysis, and links outputs to code and data.</p>
+          </details>
+          <details>
+            <summary>What does traceable mean?</summary>
+            <p>Results keep the evidence, code, environment notes, and edits that produced them.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="updates-section" id="updates" aria-labelledby="updatesTitle">
+        <div class="section-heading" data-reveal>
+          <p class="section-kicker" data-i18n="channels.kicker">UPDATE FEED</p>
+          <h2 id="updatesTitle" data-i18n="channels.title">自动更新源</h2>
+          <p data-i18n="channels.subtitle">这些 metadata 供客户端自动检查版本；绿色表示该平台已有可用更新源。</p>
         </div>
         <div class="channel-list" id="channelList"></div>
       </section>
     </main>
-    <script src="app.js?v=20260629-icons"></script>
+
+    <script src="app.js?v=20260702-icons1"></script>
   </body>
 </html>

@@ -1,10 +1,10 @@
 appId: cc.deepscientist.deeporganiser
-productName: DeepOrganiser
-executableName: DeepOrganiser
-copyright: Copyright © 2026 DeepOrganiser
+productName: OpenScience
+executableName: OpenScience
+copyright: Copyright © 2026 OpenScience
 
 protocols:
-  - name: DeepOrganiser Protocol
+  - name: OpenScience Protocol
     schemes:
       - deeporganiser
 
@@ -109,11 +109,13 @@ extraResources:
     to: .
   - from: resources/app.png
     to: app.png
-  # DeepOrganiser Core binary (pre-compiled per platform/arch, ships its own managed runtime)
+  # OpenScience Core binary (pre-compiled per platform/arch, ships its own managed runtime)
   - from: resources/bundled-deeporganiser-core
     to: bundled-deeporganiser-core
   - from: resources/hub
     to: hub
+  - from: resources/skills
+    to: skills
 win:
   target:
     - nsis
@@ -172,13 +174,13 @@ linux:
   icon: resources/app.png
   artifactName: ${productName}-${version}-${os}-${arch}.${ext}
   category: Utility
-  maintainer: DeepOrganiser
+  maintainer: OpenScience
   vendor: ResearAI
   synopsis: ${description}
   description: ${description}
   desktop:
     entry:
-      Name: DeepOrganiser
+      Name: OpenScience
       Comment: ${description}
       Icon: deeporganiser
       Categories: Office;Utility;
@@ -208,6 +210,12 @@ asarUnpack:
   - '**/node_modules/tree-sitter-bash/**/*'
   # Builtin MCP server scripts must be unpacked so external node processes can execute them
   - 'out/main/builtin-mcp-image-gen.js'
+  - 'out/main/builtin-mcp-lark-project-agent.js'
+  - 'out/main/builtin-mcp-medical-evidence.js'
+  - 'out/main/builtin-mcp-research-evidence.js'
+  - 'out/main/builtin-mcp-science-artifact.js'
+  - 'out/main/builtin-mcp-lab-skill.js'
+  - 'out/main/builtin-mcp-user-input.js'
   - 'out/main/team-mcp-stdio.js'
   - 'out/main/team-guide-mcp-stdio.js'
 
@@ -222,6 +230,6 @@ electronDownload:
 publish:
   provider: github
   owner: ResearAI
-  repo: DeepOrganiser
+  repo: OpenScience
   publishAutoUpdate: true
   releaseType: release

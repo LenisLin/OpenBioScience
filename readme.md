@@ -1,733 +1,304 @@
+<h1 align="center">OpenScience</h1>
+
 <p align="center">
-  <img src="./resources/deepscientist-banner.png" alt="DeepOrganiser - Local-first autonomous research studio" width="100%">
+  <strong>The open-source Science Mode workspace for rigorous, reproducible research.</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/ResearAI/DeepOrganiser?style=flat-square&color=32CD32" alt="Version">
-  &nbsp;
-  <img src="https://img.shields.io/badge/license-Apache--2.0-32CD32?style=flat-square&logo=apache&logoColor=white" alt="License">
-  &nbsp;
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-6C757D?style=flat-square&logo=linux&logoColor=white" alt="Platform">
+  Start a research project, search evidence, run analysis, generate artifacts, and keep every scientific result traceable in your own workspace.
 </p>
 
 <p align="center">
-  <a href="https://trendshift.io/repositories/15423" target="_blank">
-    <img src="https://trendshift.io/api/badge/repositories/15423" alt="GitHub Trending" height="80">
-  </a>
-</p>
-
----
-
-<p align="center">
-  <strong>A free, open-source, Cowork app with AI Agents</strong><br>
-  <em>Built-in Agent | Zero Setup | Any API Key | Multi-Agents | Remote Access | Cross-Platform | 24/7 Automation</em>
+  <img src="./resources/readme/website-openscience-hero.png" alt="OpenScience — AI research workspace for evidence-backed science" width="100%" />
 </p>
 
 <p align="center">
-  <a href="https://github.com/ResearAI/DeepOrganiser/releases">
-    <img src="https://img.shields.io/badge/⬇️%20Download%20Now-Latest%20Release-32CD32?style=for-the-badge&logo=github&logoColor=white" alt="Download Latest Release" height="50">
-  </a>
+  <a href="https://deepscientist.cc/openscience/">Website</a> ·
+  <a href="https://github.com/ResearAI/OpenScience/releases">Download</a> ·
+  <a href="./docs/specs/science-mode-architecture.zh-CN.md">Science Mode Plan</a> ·
+  <a href="https://github.com/ResearAI/OpenScience/discussions">Discussions</a>
 </p>
 
 <p align="center">
-  <strong>English</strong> | <a href="./docs/readme/readme_ch.md">简体中文</a> | <a href="./docs/readme/readme_tw.md">繁體中文</a> | <a href="./docs/readme/readme_jp.md">日本語</a> | <a href="./docs/readme/readme_ko.md">한국어</a> | <a href="./docs/readme/readme_es.md">Español</a> | <a href="./docs/readme/readme_pt.md">Português</a> | <a href="./docs/readme/readme_tr.md">Türkçe</a> | <a href="./docs/readme/readme_ru.md">Русский</a> | <a href="./docs/readme/readme_uk.md">Українська</a> | <a href="https://deepscientist.cc" target="_blank">Official Website</a>
+  <a href="https://github.com/ResearAI/OpenScience/releases"><img alt="release" src="https://img.shields.io/github/v/release/ResearAI/OpenScience?style=flat&color=2f6f6b&label=release&include_prereleases&display_name=tag" /></a>
+  <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-AGPL--3.0--only-2f6f6b.svg?style=flat" /></a>
+  <img alt="desktop" src="https://img.shields.io/badge/desktop-macOS%20%7C%20Windows%20%7C%20Linux-5b6870?style=flat" />
+  <img alt="local first" src="https://img.shields.io/badge/project-local%20first-6c8f7d?style=flat" />
+  <img alt="science mode" src="https://img.shields.io/badge/mode-Science%20%2B%20Medical%20Evidence-c59b2d?style=flat" />
 </p>
 
 <p align="center">
-  <strong>💬 Community:</strong> <a href="https://discord.gg/2QAwJn7Egx" target="_blank">Discord (English)</a> | <a href="./resources/wx-12.png" target="_blank">微信 (中文群)</a> | <a href="https://github.com/ResearAI/DeepOrganiser" target="_blank">GitHub</a>
+  <b>English</b> · <a href="./docs/readme/readme_ch.md">简体中文</a> · <a href="./docs/readme/readme_tw.md">繁體中文</a> · <a href="./docs/readme/readme_jp.md">日本語</a> · <a href="./docs/readme/readme_ko.md">한국어</a> · <a href="./docs/readme/readme_es.md">Español</a> · <a href="./docs/readme/readme_pt.md">Português</a> · <a href="./docs/readme/readme_tr.md">Türkçe</a> · <a href="./docs/readme/readme_ru.md">Русский</a> · <a href="./docs/readme/readme_uk.md">Українська</a>
 </p>
 
 ---
 
-## 📋 Quick Navigation
+## What is OpenScience
 
-<p align="center">
+**Search evidence. Run analysis. Ship reproducible science.** OpenScience is a local-first AI research workspace inspired by the Claude Science product direction, built as an open-source desktop app. It is not another chat box. It is a place where a scientist can open a research project, ask a question, search evidence, run code, inspect files, revise outputs, and export the work with a source trail.
 
-[Cowork in Action](#-cowork-in-action) ·
-[Why Choose DeepOrganiser?](#-why-choose-deepscientist-pro-over-claude-cowork) ·
-[Quick Start](#-quick-start) ·
-[Community](#-community--support)
+It combines **Science Mode** for general research with a stricter **Medical Evidence Mode** for clinical and biomedical questions. The evidence layer is designed to search and analyze **11M+ papers**, **225K+ drug and device documents**, **1M+ clinical trials**, and **150M+ research abstracts**, while also keeping local files, code runs, figures, tables, notebooks, and reviewer notes connected to the final artifact.
 
-</p>
+> Not a single answer. A durable research record: evidence, code, figures, notebooks, manuscripts, and every step needed to reproduce, review, and defend the result.
 
----
-
-## Cowork — AI Agents That Work Alongside You
-
-**DeepOrganiser is more than a chat client.** It's a Cowork platform where AI agents work alongside you on your computer — reading files, writing code, browsing the web, and automating tasks. You see everything the agent does, and you're always in control.
-
-|                                 | Traditional AI Chat Clients | **DeepOrganiser (Cowork)**                                                                                          |
-| :------------------------------ | :-------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
-| AI can operate on your files    | Limited or No               | **Yes — built-in agent with full file access**                                                                          |
-| AI can execute multi-step tasks | Limited                     | **Yes — autonomous with your approval**                                                                                 |
-| Remote access from phone        | Rarely                      | **WebUI + Telegram / Lark / DingTalk / WeChat**                                                                         |
-| Scheduled automation            | No                          | **Cron — 24/7 unattended**                                                                                              |
-| Multiple AI Agents at once      | No                          | **Claude Code, Codex, Qwen Code, Hermes Agent, Snow CLI, Cursor Agent and 13+ more — auto-detected, unified interface** |
-| Price                           | Free / Paid                 | **Free & Open Source**                                                                                                  |
-
-<p align="center">
-  <img src="./resources/offica-ai BANNER-function.png" alt="DeepOrganiser Cowork Platform" width="800">
-</p>
+| Core idea | What the user gets |
+|---|---|
+| Research projects, not loose chats | A folder-backed workspace for sources, data, scripts, outputs, comments, and exports |
+| Evidence first | Claims can point back to papers, trials, regulatory documents, datasets, code, or generated results |
+| Run the analysis | Python, R, shell, notebooks, and existing project pipelines stay inside the same workflow |
+| Artifacts with provenance | Figures, tables, reports, manuscripts, and notebooks keep code, inputs, logs, and review notes attached |
+| Local-first by default | Files stay close to the laptop, lab machine, workstation, or approved infrastructure |
 
 ---
 
-## Built-in Agent — Install & Go, Zero Configuration
+## Product tour
 
-DeepOrganiser ships with a complete AI agent engine. Unlike tools that require you to install CLI agents separately, **DeepOrganiser works the moment you install it**.
+A quick look at the OpenScience experience: start from **Research Projects**, move into a **Science Artifact** view, use **Medical Evidence Mode** when evidence discipline matters, and scale toward local or remote compute without leaving the project.
 
-- **No CLI tools to install** — the agent engine is built in
-- **No complex setup** — paste any API key to get started
-- **Full agent capabilities** — file read/write, web search, image generation, MCP (Model Context Protocol) tools
-- **Ready-to-use assistants** — 21 built-in professional assistants (Cowork, PPT Creator, Word Creator, Word Form Creator, Excel Creator, Morph PPT, Morph PPT 3D, Pitch Deck Creator, Dashboard Creator, Academic Paper Writer, Financial Model Creator, and more) ready to use immediately
-
-<p align="center">
-  <img src="./resources/homepage.png" alt="Built-in Agents" width="800">
-</p>
-
-### **Office assistants — PPT, Word & Excel**
-
-These tracks match what the app actually ships: **Morph PPT** presets and the **`pptx` / `docx` / `xlsx` skills** (see `assistant/` presets and `skills/` in the repo). Want document/table output? DeepOrganiser’s built-in **[OfficeCLI](https://github.com/iOfficeAI/OfficeCLI)** helps PPT (Morph), Word (`.docx`), and Excel (`.xlsx/.xlsm/.csv`) go from request to deliverable faster and more reliably.
-The three assistant types map to file workflows, and the final outputs are directly editable and reusable.
-
-#### **PPT assistant**
-
-> **Output:** editable Morph PPT (`.pptx`)
-> Morph-animated slide-to-slide transitions with coherent story pacing; powered by [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI).
+### Core pages
 
 <table>
-  <tr>
-    <td align="center" width="50%">
-      <img src="./resources/morph-ppt-balanced.gif" alt="Morph PPT — slide-to-slide transitions (OfficeCLI)" width="390">
-    </td>
-    <td align="center" width="50%">
-      <img src="./resources/readme-demo-assistant-ppt.gif" alt="PPT assistant — screen recording" width="390">
-    </td>
-  </tr>
+<tr>
+<td valign="top">
+<img src="./resources/readme/product-home.png" alt="OpenScience home and research project entry" /><br/>
+<sub><b>Research projects</b> — start from a study, dataset, figure, manuscript, or clinical question. Recent projects show the state of evidence, artifacts, compute, and writing.</sub>
+</td>
+</tr>
 </table>
 
-#### **Word assistant**
-
-> **Output:** editable Word (`.docx`)
-> Paper/thesis writing and production-ready document editing via the `docx` skill; powered by [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI).
-
 <table>
-  <tr>
-    <td align="center" width="50%">
-      <img src="./resources/readme-demo-generate-academic-paper.gif" alt="Generate academic paper demo" width="390">
-    </td>
-    <td align="center" width="50%">
-      <img src="./resources/readme-demo-assistant-write-paper.gif" alt="Paper writing assistant demo" width="390">
-    </td>
-  </tr>
+<tr>
+<td width="50%" valign="top">
+<img src="./resources/readme/product-artifact.png" alt="OpenScience science artifact preview with provenance" /><br/>
+<sub><b>Science artifacts</b> — the preview panel becomes a research output workspace: open the figure, inspect code, see inputs, check logs, review provenance, and export.</sub>
+</td>
+<td width="50%" valign="top">
+<img src="./resources/readme/product-evidence.png" alt="OpenScience medical evidence mode report" /><br/>
+<sub><b>Medical Evidence Mode</b> — clinical and biomedical questions become structured evidence reports with source labels, study strength, regulatory context, conflicts, and conclusions.</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="./resources/readme/product-compute.png" alt="OpenScience compute and database workflow" /><br/>
+<sub><b>Compute and data</b> — keep laptop runs, SSH machines, Slurm jobs, GPU sweeps, project files, and scientific databases attached to the research trail.</sub>
+</td>
+<td width="50%" valign="top">
+<img src="./resources/preview.gif" alt="OpenScience native preview panel" /><br/>
+<sub><b>Native previews</b> — open PDFs, CSVs, images, Markdown, code, diffs, Office files, and generated outputs without leaving the workspace.</sub>
+</td>
+</tr>
 </table>
 
-#### **Excel assistant**
+### Artifact studio — many scientific outputs in one project
 
-> **Output:** usable Excel (`.xlsx/.xlsm/.csv`)
-> Generate/refresh spreadsheets with `xlsx` for analysis, auto-formatting, and charts; powered by [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI).
+Inside a research project, the same conversation can produce multiple artifact types:
 
 <table>
-  <tr>
-    <td align="center" width="50%">
-      <img src="./resources/readme-demo-generate-excel.gif" alt="Excel generation demo" width="390">
-    </td>
-    <td align="center" width="50%">
-      <img src="./resources/readme-demo-assistant-excel.gif" alt="Excel assistant demo" width="390">
-    </td>
-  </tr>
+<tr>
+<td width="50%" valign="top">
+<img src="./resources/readme/science-output-workspace.png" alt="OpenScience science output workspace" /><br/>
+<sub><b>Figures and tables</b> — regenerate plots from code, keep input files attached, and export PNG, SVG, PDF, CSV, XLSX, or Markdown.</sub>
+</td>
+<td width="50%" valign="top">
+<img src="./resources/readme/medical-evidence-report.png" alt="OpenScience evidence report" /><br/>
+<sub><b>Evidence reports</b> — connect findings to readable source labels, study design, confidence, conflicts, limitations, and final recommendations.</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="./resources/file_generation_preview.png" alt="OpenScience file generation preview" /><br/>
+<sub><b>Manuscripts and documents</b> — export Markdown, Word, PDF, LaTeX-oriented drafts, notebooks, spreadsheets, and presentation-ready materials.</sub>
+</td>
+<td width="50%" valign="top">
+<img src="./resources/readme/research-protocol-panel.png" alt="OpenScience research protocol panel" /><br/>
+<sub><b>Reusable research routines</b> — keep repeatable protocols for literature review, evidence review, data analysis, figure polish, reviewer checks, and manuscript drafting.</sub>
+</td>
+</tr>
 </table>
 
 ---
 
-## Multi-Agent Mode — Already Have CLI Agents? Bring Them In
+## Evidence Engine
 
-If you already use Claude Code, Codex, Hermes Agent, or OpenClaw, DeepOrganiser auto-detects them and lets you Cowork with all of them — alongside the built-in agent.
-
-**Supported Agents:** Built-in Agent (zero setup) • Claude Code • Codex • Qwen Code • Goose AI • OpenClaw • Augment Code • CodeBuddy • Kimi CLI • OpenCode • Factory Droid • GitHub Copilot • Qoder CLI • Mistral Vibe • Nanobot • Codex (codex, the Rust-based backend service shipped with DeepOrganiser) • Snow CLI • Hermes Agent • Cursor Agent and more
+OpenScience's evidence story is simple: a result should never be just text. It should point to the material behind it.
 
 <p align="center">
-  <img src="./resources/multi-agent支持openclaw.gif" alt="Multi-Agent Cowork" width="800">
+  <img src="./resources/readme/website-evidence-artifact-field.png" alt="OpenScience evidence and artifact field" width="100%" />
 </p>
 
-- **Auto Detection** — automatically recognizes installed CLI tools
-- **Unified Interface** — one Cowork platform for all your AI agents
-- **Parallel Sessions** — run multiple agents simultaneously with independent context
-- **MCP Unified Management** — configure MCP (Model Context Protocol) tools once, automatically sync to all agents — no need to configure each agent separately
-- **YOLO Mode** (auto-approve all agent actions without manual confirmation) / **Full-Auto Mode** — one click to bypass permission prompts; all agents support full-auto mode for unattended execution
+| Search and analyze | Designed for |
+|---|---|
+| **11M+ papers** | literature review, methods comparison, citation-backed writing |
+| **225K+ drug and device documents** | labels, safety context, indications, guidance, regulatory review |
+| **1M+ clinical trials** | interventions, outcomes, enrollment, status, comparators, eligibility |
+| **150M+ abstracts** | fast discovery before deep reading |
+| **Local files and generated outputs** | PDFs, datasets, scripts, figures, notebooks, logs, reports, comments |
 
-### Team Mode — Coordinated Multi-Agent Collaboration
-
-Run multiple AI agents as an organized team: a **Leader** agent receives your instructions, breaks them into subtasks, and delegates to **Teammate** agents via a built-in Team MCP Server. Teammates execute in parallel, share results through an async mailbox, and write to a shared task board.
-
-<p align="center">
-  <img src="./resources/DeepOrganiser_team.gif" alt="Team Mode overview" width="800">
-</p>
-
-- **Parallel multi-agent execution** — Leader breaks tasks into subtasks and delegates to Teammate agents running in parallel; each Teammate uses its own model via ACP (Agent Communication Protocol, DeepOrganiser's multi-agent coordination layer), Gemini, or Codex
-- **Leader orchestration** — Leader assigns, tracks, and aggregates results; supported backends include Claude Code, Codex, Hermes Agent, Gemini, Snow CLI, and Codex
-- **Team-isolated workspace** — all agents share the same folder; each has its own permission dialog with sidebar badge for pending approvals
-
-<details>
-<summary><strong>🔍 View Team Mode Details ▶️</strong></summary>
-
-<br>
-
-- **Shared Workspace** — all agents read/write the same folder; the file panel stays visible throughout
-- **Supported backends** — Claude Code, Codex, Gemini, Snow CLI, Codex (codex); other ACP backends with `mcpCapabilities.stdio` are auto-supported
-- **Dynamic scaling** — add or remove Teammates while the team is running; silent agents auto-escalate to failed with one-click removal
-- **Granular permissions** — each agent has its own permission confirmation dialog; sidebar badge shows pending approvals
-- **File sharing** — Leader can pass file attachments to Teammates
-
-</details>
+| Source label | Can point to |
+|---|---|
+| `E1`, `E2`, `E3` | papers, trials, regulatory records, guidelines, abstracts, uploaded PDFs |
+| `D1`, `D2`, `D3` | datasets, CSV rows, local files, exported tables, intermediate artifacts |
+| `C1`, `C2`, `C3` | scripts, notebook cells, shell commands, model outputs, run logs |
+| `R1`, `R2`, `R3` | reviewer notes, human comments, uncertainty checks, unresolved risks |
 
 ---
 
-## Any API Key, Full Cowork Agent Power
+## Scientific Artifacts
 
-Other AI apps give you a chatbox with your API key. **DeepOrganiser gives you a full Cowork agent.**
+Claude Science made one product point very clear: scientific AI becomes useful when the output and its history stay together. OpenScience builds around the same artifact-first loop.
 
-| Your API Key               | What You Get                                |
-| :------------------------- | :------------------------------------------ |
-| Gemini API Key             | Gemini-powered Cowork Agent                 |
-| OpenAI API Key             | GPT-powered Cowork Agent                    |
-| Anthropic API Key          | Claude-powered Cowork Agent                 |
-| AWS Bedrock credentials    | Bedrock-powered Agent via Codex (codex) |
-| Ollama / LM Studio (local) | Local model Cowork Agent                    |
-| NewAPI Gateway             | Unified access to 20+ models                |
+| Artifact | What stays attached | Export target |
+|---|---|---|
+| Figure | plotting code, input data, source labels, comments, review status | PNG, SVG, PDF |
+| Table | source rows, filters, transformations, evidence labels | CSV, XLSX, Markdown |
+| Notebook | cells, variables, generated files, environment notes | IPYNB, HTML, PDF |
+| Evidence report | findings, citations, study strength, conflicts, limitations | Markdown, PDF, Word |
+| Manuscript | sections, citations, figures, tables, build notes | Markdown, LaTeX, DOCX, PDF |
+| Project record | sources, commands, outputs, versions, reviewer notes | local folder or archive |
 
-Same agent capabilities — file read/write, web search, image generation, tool use — regardless of which model powers it. DeepOrganiser supports **30+ AI platforms** including cloud services and local deployments.
-
-<p align="center">
-  <img src="./resources/llm_newapi.png" alt="Multi-Model Support" width="800">
-</p>
-
-<details>
-<summary><strong>🔍 View All 30+ Supported Platforms ▶️</strong></summary>
-
-<br>
-
-**Comprehensive Platform Support:**
-
-- **Official Platforms** — Gemini, Gemini (Vertex AI), Anthropic (Claude), OpenAI
-- **Cloud Providers** — AWS Bedrock, New API (unified AI model gateway)
-- **Chinese Platforms** — Dashscope (Qwen), Dashscope Coding Plan, Zhipu, Moonshot (Kimi), Qianfan (Baidu), Hunyuan (Tencent), Lingyi, ModelScope, InfiniAI, Ctyun, StepFun, SiliconFlow-CN, PPIO
-- **International Platforms** — DeepSeek, MiniMax, Novita, OpenRouter, SiliconFlow, xAI, Ark (Volcengine), Poe
-- **Local Models** — Ollama, LM Studio (via Custom platform with local API endpoint)
-
-DeepOrganiser also supports [NewAPI](https://github.com/QuantumNous/new-api) gateway service — a unified AI model hub that aggregates and distributes various LLMs. Flexibly switch between different models in the same interface to meet various task requirements.
-
-</details>
+| Natural-language revision | What should happen |
+|---|---|
+| "Circle this label and make it readable" | Send the selected region and comment back to the agent, revise plotting code, regenerate the figure |
+| "Where did this number come from?" | Open the source label, table row, notebook cell, command log, or reviewer note behind it |
+| "Make this publication-ready" | Update the code or manuscript source, not only the rendered image |
+| "Export for collaborators" | Keep the artifact plus evidence trail together, then export the deliverable |
 
 ---
 
-## Extensible Assistants & Skills
+## Platform Compatibility
 
-_Extensible assistant system with 21 built-in professional assistants and a three-tier skill system. Create and manage your own assistants and skills._
+OpenScience is an app around models, coding agents, local files, evidence workflows, and research outputs. Bring the tools you already use.
 
-- **Create Custom Assistants** — Define your own assistants with custom rules and capabilities
-- **Three-tier Skills** — Builtin skills (shipped with DeepOrganiser), custom skills (your own), and Extension skills (contributed by third-party extensions); enable/disable per conversation with the skill indicator
-- **Per-conversation Control** — A skill indicator in the chat header shows active skills for the current conversation; search and exclude skills as needed
+| Layer | Supported or planned direction |
+|---|---|
+| Desktop | macOS, Windows, Linux |
+| Models | OpenAI, Anthropic, Gemini, Bedrock, Ollama, LM Studio, local and OpenAI-compatible endpoints |
+| Coding agents | Built-in assistant, Claude Code, Codex, Qwen Code, Kimi, OpenCode, Cursor, Hermes, and similar local CLIs |
+| Files | PDF, CSV, TSV, images, Markdown, LaTeX-oriented projects, notebooks, Word, Excel, PowerPoint |
+| Scientific preview | Figures, tables, PDFs, manuscripts today; molecules, proteins, genome tracks, alignments, and structures as Science Mode grows |
+| Compute | Local laptop today; SSH, Slurm, cloud VM, GPU job tracking, and persistent Python/R kernels as the compute layer matures |
 
 <p align="center">
-  <img src="./resources/assitants.png" alt="AI Assistants & Skills Ecosystem" width="800">
+  <img src="./resources/multi-agent支持openclaw.gif" alt="OpenScience multi-agent desktop workflow" width="100%" />
 </p>
-
-DeepOrganiser supports three skill layers: **built-in** skills (shipped with the app), **custom** skills (user-defined), and **extension** skills (loaded from the Extension SDK).
-
-<details>
-<summary><strong>🔍 View Assistant Details and Custom Skills ▶️</strong></summary>
-
-<br>
-
-DeepOrganiser includes **21 professional assistants** with predefined capabilities, extendable through custom skills:
-
-- **🤝 Cowork** — Autonomous task execution (file operations, document processing, workflow planning)
-- **📊 PPT Creator / Morph PPT / Morph PPT 3D** — Generate and animate PPTX presentations with Morph transitions
-- **📐 Pitch Deck Creator** — Investor-ready pitch deck generation
-- **📊 Dashboard Creator** — Data dashboard generation
-- **📝 Word Creator** — Production-ready Word (`.docx`) document generation
-- **📋 Word Form Creator** — Structured Word form / contract template generation
-- **📗 Excel Creator** — Spreadsheet generation with analysis, charts, and auto-formatting
-- **🎓 Academic Paper Writer** — Structured academic paper writing
-- **💰 Financial Model Creator** — Financial models and projections
-- **🎮 3D Game** — Single-file 3D game generation
-- **🎨 UI/UX Pro Max** — Professional UI/UX design (57 styles, 95 color palettes)
-- **📋 Planning with Files** — File-based planning for complex tasks (Manus-style persistent markdown planning)
-- **🧭 HUMAN 3.0 Coach** — Personal development coach
-- **📣 Social Job Publisher** — Job posting and publishing
-- **🦞 moltbook** — Zero-deployment AI agent social networking
-- **📈 Beautiful Mermaid** — Flowcharts, sequence diagrams, and more
-- **🔧 OpenClaw Setup** — Setup and configuration assistant for OpenClaw integration
-- **📖 Story Roleplay** — Immersive story roleplay with character cards and world info (SillyTavern compatible)
-
-**Custom Skills**: Create skills in the `skills/` directory, enable/disable skills for assistants to extend AI capabilities. Skills come from three sources: builtin (shipped with DeepOrganiser), custom (your own), and Extension (contributed via the Extension SDK). Built-in skills include `pptx`, `docx`, `pdf`, `xlsx`, `mermaid`, and more.
-
-> 💡 Each assistant is defined by a markdown file. Check the `assistant/` directory for examples.
-
-</details>
 
 ---
 
-## Cowork from Anywhere
+## Why OpenScience
 
-_Your 24/7 AI assistant — access DeepOrganiser from any device, anywhere._
+> Claude Science shows where scientific AI is going: not only answering questions, but running analyses, searching databases, producing artifacts, and preserving provenance. OpenScience takes that direction into an open-source, local-first desktop workspace.
 
-- **WebUI Mode** — access via browser from phone, tablet, or any computer. Supports LAN, cross-network, and server deployment. QR code or password login.
-
-- **Chat Platform Integration**
-  - **Telegram** — Cowork with your AI agent directly from Telegram
-  - **Lark (Feishu)** — Cowork through Feishu bots for enterprise collaboration
-  - **DingTalk** — AI Card streaming with automatic fallback
-  - **WeChat** — Personal WeChat account integration
-  - **WeCom (企业微信)**, **Slack**, **Discord** and more platforms coming soon
-
-> **Setup:** DeepOrganiser Settings → WebUI Settings → Channel, configure the Bot Token.
-
-<p align="center">
-  <img src="./resources/webui-remote.gif" alt="WebUI remote access demo" width="800">
-</p>
-
-<p align="center"><em>Remote control &amp; monitor your agent — Claude, Gemini, Codex. Use from browser or phone, same as Claude Code remote.</em></p>
-
-> [Remote Internet Access Tutorial](https://github.com/ResearAI/DeepOrganiser/wiki/Remote-Internet-Access-Guide-Chinese)
-
-## ✨ Cowork in Action
-
-### **Scheduled Tasks — Cowork on Autopilot**
-
-_Set it up once, the AI agent runs automatically on schedule — truly 24/7 unattended operation._
-
-- **Natural Language** — tell the agent what to do, just like chatting
-- **Three scheduling modes** — standard cron expression (with timezone), fixed interval (every N minutes/hours), or one-time trigger
-- **AI-created tasks** — agents can autonomously create scheduled tasks during a conversation
-- **Use Cases:** scheduled data aggregation, report generation, file organization, reminders
-
-<p align="center">
-  <img src="./resources/alart-task.png" alt="Scheduled Tasks" width="800">
-</p>
-
-<details>
-<summary><strong>🔍 View Scheduled Task Details ▶️</strong></summary>
-
-<br>
-
-**Scheduling modes:**
-
-- `Cron expression` — standard 5-field cron with timezone support (e.g. `0 9 * * 1`, `Asia/Shanghai`)
-- `Every N minutes/hours` — fixed interval, e.g. run every 30 minutes
-- `One-time` — trigger once at a specified datetime, then auto-disable
-
-**Execution modes:**
-
-- `Continue in existing conversation` — appends to the bound conversation so the AI retains full context history
-- `Create new conversation each time` — opens a fresh session on each trigger, ideal for independent periodic reports
-
-**Other capabilities:**
-
-- **Conversation-Bound** — Each scheduled task is bound to a conversation, maintaining context and history
-- **Automatic Execution** — Tasks run automatically at scheduled times, sending messages to the conversation
-- **Easy Management** — Create, modify, enable/disable, delete, and view scheduled tasks anytime
-- **Keep-awake** — DeepOrganiser automatically prevents system sleep while tasks are active, and detects missed triggers after wake
-- **Advanced config** — each task can have its own model, workspace directory, and reasoning effort settings
-
-**Real-World Examples:**
-
-- Daily weather report generation
-- Weekly sales data aggregation
-- Monthly backup file organization
-- Custom reminder notifications
-
-</details>
+| | General AI chat | Claude Science | **OpenScience** |
+|---|---|---|---|
+| Open source | No | No | **Yes, AGPL-3.0-only** |
+| Local project folder | Sometimes | Yes | **Yes, local-first** |
+| Evidence-labeled medical reports | Usually manual | General science review | **First-class Medical Evidence Mode** |
+| Run code and inspect files | Tool-dependent | Yes | **Yes, through local coding workflows** |
+| Artifacts with provenance | Rare | Yes | **Designed around artifact history** |
+| Model choice | Often fixed | Anthropic models | **Multi-provider and local endpoint support** |
+| Existing lab workflows | Manual glue | Connectors and compute | **Designed for local scripts, project folders, and future remote compute** |
 
 ---
 
-### **Preview Panel — Instantly View AI-Generated Results**
+## Quick start
 
-_10+ formats: PDF, Word, Excel, PPT, code, Markdown, images, HTML, Diff — view everything without switching apps._
+### Download the desktop app
 
-- **Instant Preview** — after the agent generates files, view results immediately without switching apps
-- **Real-time Tracking + Editable** — automatically tracks file changes; supports live editing of Markdown, code, HTML
-- **Multi-Tab Support** — open multiple files simultaneously, each in its own tab
-- **Version History** — view and restore historical versions of files (Git-based)
+The fastest path is the packaged app from [GitHub Releases](https://github.com/ResearAI/OpenScience/releases). OpenScience is designed as a desktop research workspace: create a research project, choose Science Mode or Medical Evidence Mode, and begin from your files.
 
-<p align="center">
-  <img src="./resources/preview.gif" alt="Preview Panel" width="800">
-</p>
-
-<details>
-<summary><strong>🔍 View Complete Format List ▶️</strong></summary>
-
-<br>
-
-**Supported Preview Formats:**
-
-- **Documents** — PDF, Word (`.doc`, `.docx`, `.odt`), Excel (`.xls`, `.xlsx`, `.ods`, `.csv`), PowerPoint (`.ppt`, `.pptx`, `.odp`)
-- **Code** — JavaScript, TypeScript, Python, Java, Go, Rust, C/C++, CSS, JSON, XML, YAML, Shell scripts, and 30+ programming languages
-- **Markup** — Markdown (`.md`, `.markdown`), HTML (`.html`, `.htm`)
-- **Images** — PNG, JPG, JPEG, GIF, SVG, WebP, BMP, ICO, TIFF, AVIF
-- **Other** — Diff files (`.diff`, `.patch`)
-
-</details>
-
----
-
-### **Smart File Management — Automated File Operations**
-
-_Batch renaming, automatic organization, smart classification, file merging — the Cowork agent handles it for you._
-
-<p align="center">
-  <img src="./resources/deepscientist-sort-file.gif" alt="Smart File Management" width="800">
-</p>
-
-<details>
-<summary><strong>🔍 View File Management Features Details ▶️</strong></summary>
-
-<br>
-
-- **Auto Organize** — Intelligently identify content and auto-classify, keeping folders tidy
-- **Efficient Batch** — One-click rename, merge files, say goodbye to tedious manual tasks
-- **Automated Execution** — AI agents can independently execute file operations, read/write files, and complete tasks automatically
-
-**Use Cases:**
-
-- Organize messy download folders by file type
-- Batch rename photos with meaningful names
-- Merge multiple documents into one
-- Auto-classify files by content
-
-</details>
-
----
-
-### **Excel Data Processing — AI-Powered Analysis**
-
-_Deeply analyze Excel data, automatically beautify reports, and generate insights — all powered by AI agents._
-
-<p align="center">
-  <img src="./resources/generate_xlsx.gif" alt="Excel Processing" width="800">
-</p>
-
-<details>
-<summary><strong>🔍 View Excel Processing Features ▶️</strong></summary>
-
-<br>
-
-- **Smart Analysis** — AI analyzes data patterns and generates insights
-- **Auto Formatting** — Automatically beautify Excel reports with professional styling
-- **Data Transformation** — Convert, merge, and restructure data with natural language commands
-- **Report Generation** — Create comprehensive reports from raw data
-
-**Use Cases:**
-
-- Analyze sales data and generate monthly reports
-- Clean and format messy Excel files
-- Merge multiple spreadsheets intelligently
-- Create data visualizations and charts
-
-</details>
-
----
-
-### **AI Image Generation & Editing**
-
-_Intelligent image generation, editing, and recognition, powered by Gemini_
-
-<p align="center">
-  <img src="./resources/Image_Generation.gif" alt="AI Image Generation" width="800">
-</p>
-
-<details>
-<summary><strong>🔍 View Image Generation Features ▶️</strong></summary>
-
-<br>
-
-- **Text-to-Image** — Generate images from natural language descriptions
-- **Image Editing** — Modify and enhance existing images
-- **Image Recognition** — Analyze and describe image content
-- **Batch Processing** — Generate multiple images at once
-
-</details>
-
-> [Image generation model configuration guide](https://github.com/ResearAI/DeepOrganiser/wiki/DeepOrganiser-Image-Generation-Tool-Model-Configuration-Guide)
-
----
-
-### **Document Generation — PPT, Word, Markdown**
-
-_Automatically generate professional documents — presentations, reports, and more — with AI agents._
-
-<p align="center">
-  <img src="./resources/file_generation_preview.png" alt="Document Generation" width="800">
-</p>
-
-<details>
-<summary><strong>🔍 View Document Generation Features ▶️</strong></summary>
-
-<br>
-
-- **PPTX Generator** — Create professional presentations from outlines or topics
-- **Word Documents** — Generate formatted Word documents with proper structure
-- **Markdown Files** — Create and format Markdown documents for documentation
-- **PDF Conversion** — Convert between various document formats
-
-**Use Cases:**
-
-- Generate quarterly business presentations
-- Create technical documentation
-- Convert PDF to editable formats
-- Auto-format research papers
-
-</details>
-
-### **Personalized Interface Customization**
-
-_Customize with your own CSS code, make your interface match your preferences_
-
-<p align="center">
-  <img src="./resources/css with skin.gif" alt="CSS Customization" width="800">
-</p>
-
-- ✅ **Fully Customizable** — Freely customize interface colors, styles, layout through CSS code, create your exclusive experience
-
----
-
-### **Multi-Task Parallel Processing**
-
-_Open multiple conversations, tasks don't get mixed up, independent memory, double efficiency_
-
-<p align="center">
-  <img src="./resources/multichat-side-by-side.gif" alt="Multi-Task Parallel" width="800">
-</p>
-
-- ✅ **Independent Context** — Each conversation maintains its own context and history
-- ✅ **Parallel Execution** — Run multiple tasks simultaneously without interference
-- ✅ **Smart Management** — Easy switching between conversations with visual indicators
-
----
-
-## 🤔 Why Choose DeepOrganiser Over Claude Cowork?
-
-<details>
-<summary><strong>Click to see detailed comparison</strong></summary>
-
-<br>
-
-DeepOrganiser is a **free and open-source Multi-AI Agent Desktop**. Compared to Claude Cowork which only runs on macOS and is locked to Claude, DeepOrganiser is its full-model, cross-platform enhanced version.
-
-| Dimension     | Claude Cowork | DeepOrganiser                                         |
-| :------------ | :------------ | :-------------------------------------------------------- |
-| OS            | macOS Only    | macOS / Windows / Linux                                   |
-| Model Support | Claude Only   | Gemini, Claude, DeepSeek, OpenAI, Ollama, ...             |
-| Interaction   | Desktop GUI   | Desktop GUI + WebUI + Telegram / Lark / DingTalk / WeChat |
-| Automation    | Manual only   | Cron scheduled tasks — 24/7 unattended                    |
-| Cost          | $100/month    | Free & Open Source                                        |
-
-Deep AI Office Scenario Support:
-
-- **File Management**: Intelligently organize local folders and batch rename with one click.
-- **Data Processing**: Deeply analyze and automatically beautify Excel reports.
-- **Document Generation**: Automatically write and format PPT, Word, and Markdown documents.
-- **Instant Preview**: Built-in 10+ format preview panels, AI collaboration results instantly visible.
-
-</details>
-
----
-
-## Quick Q&A
-
-<details>
-<summary><strong>Q: Do I need to install Gemini CLI or Claude Code first?</strong></summary>
-A: <strong>No.</strong> DeepOrganiser has a built-in AI agent that works immediately after installation. Just enter any API key to get started. If you also have CLI tools like Claude Code or Gemini CLI installed, DeepOrganiser will auto-detect and integrate them for even more capabilities.
-</details>
-
-<details>
-<summary><strong>Q: What can I do with DeepOrganiser?</strong></summary>
-A: DeepOrganiser is your <strong>private Cowork workspace</strong>. The built-in agent can batch organize folders, process Excel data, generate documents, search the web, and generate images. With Multi-Agent Mode, you can also leverage Claude Code, Codex, and other powerful CLI agents through the same interface.
-</details>
-
-<details>
-<summary><strong>Q: Is it free?</strong></summary>
-A: DeepOrganiser is completely free and open source. You only pay for the API usage of whichever provider you choose, and you can use API keys from any provider you prefer.
-</details>
-
-<details>
-<summary><strong>Q: Can I run DeepOrganiser on a server (headless)?</strong></summary>
-A: Yes — DeepOrganiser WebUI mode runs as a standalone HTTP server. See the WebUI section above for setup instructions.
-</details>
-
-<details>
-<summary><strong>Q: Is my data secure?</strong></summary>
-A: All data is stored locally in a SQLite database. Nothing is uploaded to any server.
-</details>
-
----
-
-## See How People Use DeepOrganiser
-
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=vWxE6VO9TKo" target="_blank">
-    <img src="https://img.youtube.com/vi/vWxE6VO9TKo/maxresdefault.jpg" alt="Hermes + Aion UI is Insane (FREE)!" width="400">
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://www.youtube.com/watch?v=RgSLdOhICZw" target="_blank">
-    <img src="https://img.youtube.com/vi/RgSLdOhICZw/maxresdefault.jpg" alt="OpenClaw + Aion UI is Insane (FREE!)" width="400">
-  </a>
-</p>
-<p align="center">
-  <em>Julian Goldie SEO — Hermes + Aion UI is Insane (FREE!) · 27K views</em> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>Julian Goldie SEO — OpenClaw + Aion UI is Insane (FREE!) · 11K views</em>
-</p>
-
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=yUU5E-U5B3M" target="_blank">
-    <img src="https://img.youtube.com/vi/yUU5E-U5B3M/maxresdefault.jpg" alt="WorldofAI Review" width="400">
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://www.youtube.com/watch?v=enQnkKfth10" target="_blank">
-    <img src="https://img.youtube.com/vi/enQnkKfth10/maxresdefault.jpg" alt="Julian Goldie SEO Review" width="400">
-  </a>
-</p>
-<p align="center">
-  <em>WorldofAI (200K subscribers)</em> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>Julian Goldie SEO (384K subscribers)</em>
-</p>
-
-### Community Articles
-
-- [Open-source free Cowork, full model integration + autonomous file operations](https://mp.weixin.qq.com/s/F3f-CCsVPaK3lK00jXhOOg) — Open Source AI Project Landing
-- [Making ordinary people use Claude Code like an APP](https://mp.weixin.qq.com/s/TsMojSbkUUFvsd-HQCazZg) — Lazy Cat Loves Fishing
-- [5500 Stars: How Open Source Breaks Anthropic's AI Tool Moat](https://mp.weixin.qq.com/s/saEk49cYV6MqBgw19Lw6Gw) — AI Silicon Moment
-
-> **Made a video about DeepOrganiser?** [Let us know on X](https://x.com/DeepOrganiser) and we'll feature it here!
-
----
-
-## 🚀 Quick Start
-
-### System Requirements
-
-- **macOS**: 10.15 or higher
-- **Windows**: Windows 10 or higher
-- **Linux**: Ubuntu 18.04+ / Debian 10+ / Fedora 32+
-- **Memory**: 4GB+ recommended
-- **Storage**: 500MB+ available space
-
-### Install
-
-<p>
-  <a href="https://github.com/ResearAI/DeepOrganiser/releases">
-    <img src="https://img.shields.io/badge/Download-Latest%20Release-32CD32?style=for-the-badge&logo=github&logoColor=white" alt="Download Latest Release" height="50">
-  </a>
-</p>
-
-Click the button above to go to the Releases page and download the installer for your platform (macOS / Windows / Linux).
+### Run from source
 
 ```bash
-# Alternatively, macOS via Homebrew
-brew install --cask deepscientist-pro
+git clone https://github.com/ResearAI/OpenScience.git
+cd OpenScience
+bun install
+bun run dev
 ```
 
-### Get Started in 3 Steps
+### A full workflow — from question to artifact
 
-1. **Install** DeepOrganiser
-2. **Enter** any API key to get started
-3. **Start Coworking** — the built-in AI agent is ready to go
+`project → question → evidence → analysis → artifact → review → export`
 
-### 📖 Detailed Guides
-
-<details>
-<summary><strong>📖 Expand to View Complete Usage Guide</strong></summary>
-
-<br>
-
-**🚀 Quick Start**
-
-- [📖 Complete Installation Guide](https://github.com/ResearAI/DeepOrganiser/wiki/Getting-Started) — Detailed steps from download to configuration
-- [⚙️ LLM Configuration Guide](https://github.com/ResearAI/DeepOrganiser/wiki/LLM-Configuration) — Multi-platform AI model configuration
-- [🤖 Multi-Agent Mode Setup](https://github.com/ResearAI/DeepOrganiser/wiki/ACP-Setup) — Integrate terminal AI agents
-- [🔌 MCP Tool Configuration](https://github.com/ResearAI/DeepOrganiser/wiki/MCP-Configuration-Guide) — Model Context Protocol server setup
-- [🌐 WebUI Configuration Guide](https://github.com/ResearAI/DeepOrganiser/wiki/WebUI-Configuration-Guide) — Complete WebUI setup and configuration tutorial
-
-**🎯 Use Cases**
-
-- [📁 File Management](https://github.com/ResearAI/DeepOrganiser/wiki/file-management) — Smart file organization
-- [📊 Excel Processing](https://github.com/ResearAI/DeepOrganiser/wiki/excel-processing) — AI-driven data processing
-- [🎨 Image Generation](https://github.com/ResearAI/DeepOrganiser/wiki/DeepOrganiser-Image-Generation-Tool-Model-Configuration-Guide) — AI image creation
-- [📚 More Use Cases](https://github.com/ResearAI/DeepOrganiser/wiki/Use-Cases-Overview)
-
-**❓ Support & Help**
-
-- [❓ FAQ](https://github.com/ResearAI/DeepOrganiser/wiki/FAQ) — Questions and troubleshooting
-- [🔧 Configuration & Usage Tutorials](https://github.com/ResearAI/DeepOrganiser/wiki/Configuration-Guides) — Complete configuration documentation
-
-</details>
+1. Create or reopen a research project.
+2. Ask a scientific, clinical, computational, or writing question.
+3. Search evidence and attach readable source labels.
+4. Run Python, R, shell, notebooks, or existing project scripts.
+5. Open the generated figure, table, report, notebook, or manuscript in the preview panel.
+6. Revise by natural language, comments, or file edits.
+7. Export the artifact with its source trail.
 
 ---
 
-## 💬 Community & Support
-
-**Your ideas matter!** We value every suggestion and feedback.
+## Example outcomes
 
 <p align="center">
-  <a href="https://x.com/DeepOrganiser" target="_blank">
-    <img src="./resources/contactus-x.png" alt="Contact Us on X" width="600">
-  </a>
+  <img src="./resources/readme/website-openscience-projects.png" alt="OpenScience project examples: literature synthesis, data analysis, reviewer response" width="100%" />
 </p>
 
-- [GitHub Discussions](https://github.com/ResearAI/DeepOrganiser/discussions) — share ideas and exchange tips
-- [Report Issues](https://github.com/ResearAI/DeepOrganiser/issues) — bugs and feature requests
-- [Release Updates](https://github.com/ResearAI/DeepOrganiser/releases) — get the latest version
-- [Discord Community](https://discord.gg/2QAwJn7Egx) — English community
-- [WeChat Group](./resources/wx-12.png) — Chinese community
+| You start with | OpenScience should help produce |
+|---|---|
+| "Compare these single-cell integration methods on my dataset" | notebook, benchmark table, UMAP panels, method notes, rerunnable commands |
+| "Is this treatment claim supported?" | evidence report with papers, trials, regulatory context, conflicts, confidence notes |
+| "Make this figure publication-ready" | regenerated figure, plotting script, input table, style notes, export files |
+| "Turn this analysis into a manuscript section" | Markdown or LaTeX-oriented text with citations, figures, limitations, source labels |
+| "Review this result before I share it" | checklist of numbers, claims, sources, code-output consistency, and unresolved risks |
 
-### Contributing
+---
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
+## Roadmap
 
-1. Fork this project
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+| Area | Status |
+|---|---|
+| Desktop app and local preview system | Available |
+| Multi-model and coding-agent support | Available |
+| Medical Evidence Mode | Available and improving |
+| Science Mode project entry | In progress |
+| Artifact preview with provenance tabs | In progress |
+| Figure annotation and code-level regeneration | In progress |
+| Notebook, PDF, manuscript, and document export polish | In progress |
+| Molecule, protein, genome track, alignment, social-science model/codebook/map, and structure viewers | Planned |
+| SSH, Slurm, cloud VM, GPU job tracking, persistent Python/R kernels | Planned |
+| Background reviewer checks for citations, numbers, figures, and code-output match | Planned |
 
-### Development Setup
+---
 
-Tech stack: Electron · Vite · React · Bun
+## Community
 
-```bash
-bun install        # install dependencies
-bun run dev        # start dev server
-bun run test       # run unit tests
-```
+OpenScience is for researchers, clinicians, students, engineers, and builders who want scientific AI to be inspectable rather than mysterious.
+
+| You are | OpenScience should help you |
+|---|---|
+| Researcher | Move from question to evidence, analysis, figure, and draft |
+| Clinician or reviewer | Separate strong evidence from weak or conflicting evidence |
+| Student | Learn how a result was produced, not just what the answer is |
+| Data scientist | Keep code, files, figures, and reports in one place |
+| Lab lead | Reuse good workflows and review source trails |
+
+Use [Discussions](https://github.com/ResearAI/OpenScience/discussions) for ideas, workflows, feature requests, and research examples.
+
+---
+
+## References & lineage
+
+| Reference | What OpenScience learns from it |
+|---|---|
+| [Claude Science](https://claude.com/product/claude-science) | Research projects, scientific artifacts, native scientific previews, compute integration, domain tools, and reviewer checks |
+| [OpenScience download page](https://deepscientist.cc/openscience/) | Public-facing wording and visual rhythm: natural-language research, reproducible artifacts, evidence coverage, and desktop download |
+| [nexu-io/open-design](https://github.com/nexu-io/open-design) | README structure, visual storytelling, product-tour layout, and open-source launch style |
+| [AionUi](https://github.com/iOfficeAI/AionUi) | The original open-source desktop AI assistant foundation that this fork builds on |
+| [DeepScientist](https://github.com/ResearAI/DeepScientist) | Research workflows, evidence-first thinking, scientific writing, and analysis routines |
+| [K-Dense scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) | A broad MIT-licensed scientific skill corpus for database lookup, bio/chem workflows, scientific Python packages, writing, and lab integrations |
+| [Auto-Empirical Research Skills](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills) | CC BY-SA 4.0 empirical-research skill corpus for econometrics, causal inference, replication, citation checks, survey/codebook work, qualitative analysis, and social-science paper workflows |
+| [README visual source](./resources/readme/source/open-design-style-readme.html) | Deterministic, readable product images rendered for this README |
+| [Download page source](./server/DeepOrganiserServer/public/index.html) | Landing-page screenshots and OpenScience website assets used in README visuals |
+| Open scientific software | Results should be inspectable, rerunnable, and reusable |
 
 ---
 
 ## License
 
-This project is licensed under [Apache-2.0](LICENSE).
+This project is a modified work based on [AionUi](https://github.com/iOfficeAI/AionUi), originally licensed under Apache-2.0.
 
----
+Starting from this OpenScience fork/distribution, OpenScience is licensed under [AGPL-3.0-only](./LICENSE), except for third-party components and files that carry their own license notices. Original Apache-2.0 copyright, license, and attribution notices are preserved in [LICENSES/Apache-2.0.txt](./LICENSES/Apache-2.0.txt), [NOTICE](./NOTICE), and [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
 
-## Contributors
-
-<p align="center">
-  <a href="https://github.com/ResearAI/DeepOrganiser/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=ResearAI/DeepOrganiser&max=100" alt="Contributors" />
-  </a>
-</p>
-
-## Star History
-
-<p align="center">
-  <a href="https://www.star-history.com/#ResearAI/DeepOrganiser&Date" target="_blank">
-    <img src="https://api.star-history.com/svg?repos=ResearAI/DeepOrganiser&type=Date" alt="Star History" width="600">
-  </a>
-</p>
-
-<div align="center">
-
-**If you like it, give us a star**
-
-[Report Bug](https://github.com/ResearAI/DeepOrganiser/issues) · [Request Feature](https://github.com/ResearAI/DeepOrganiser/issues)
-
-</div>
-
-<sub><a href="https://linux.do/">LINUX DO - A New Ideal Community</a></sub>
+Commercial licenses are available for organizations that want to use OpenScience without AGPL obligations. AionUi, iOfficeAI, Anthropic, and upstream contributors do not endorse this fork unless expressly stated.

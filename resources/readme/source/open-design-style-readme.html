@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenScience README Product Images</title>
+  <style>
+    :root {
+      --ink: #171717;
+      --muted: #74746f;
+      --line: #e7e4dc;
+      --line-strong: #d4cfc4;
+      --paper: #fbfaf6;
+      --cream: #f3efe7;
+      --teal: #2f6f6b;
+      --teal-soft: #dcebe8;
+      --gold: #c59b2d;
+      --gold-soft: #f2e6c4;
+      --red: #c75a45;
+      --red-soft: #f5ddd8;
+      --blue: #536f82;
+      --blue-soft: #e0e9ee;
+      --shadow: 0 18px 50px rgba(17, 17, 17, 0.13);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #111;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+    }
+
+    .stage {
+      display: grid;
+      gap: 48px;
+      padding: 48px;
+    }
+
+    .hero {
+      width: 1998px;
+      height: 1020px;
+      position: relative;
+      overflow: hidden;
+      background: #050504;
+      color: white;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.92;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,.66), rgba(0,0,0,.18) 58%, rgba(0,0,0,.62)),
+        linear-gradient(180deg, rgba(0,0,0,.1), rgba(0,0,0,.68));
+    }
+
+    .hero-mark {
+      position: absolute;
+      z-index: 2;
+      left: 50%;
+      top: 86px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 30px;
+      font-weight: 760;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      border: 3px solid rgba(255,255,255,.72);
+      display: grid;
+      place-items: center;
+      background: rgba(0,0,0,.32);
+      box-shadow: 0 0 30px rgba(47,111,107,.32);
+    }
+
+    .hero-logo::before {
+      content: "";
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      border: 4px solid white;
+      border-left-color: var(--teal);
+      transform: rotate(32deg);
+    }
+
+    .hero-title {
+      position: absolute;
+      z-index: 2;
+      left: 150px;
+      top: 260px;
+      max-width: 1180px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 156px;
+      line-height: .9;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+      text-shadow: 0 10px 40px rgba(0,0,0,.5);
+    }
+
+    .hero-subtitle {
+      position: absolute;
+      z-index: 2;
+      left: 156px;
+      top: 500px;
+      max-width: 1040px;
+      color: rgba(255,255,255,.82);
+      font-size: 32px;
+      line-height: 1.3;
+      font-weight: 520;
+    }
+
+    .stat {
+      position: absolute;
+      z-index: 2;
+      width: 330px;
+      min-height: 126px;
+      padding: 24px 26px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.38);
+      background: rgba(16, 16, 14, .56);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 20px 70px rgba(0,0,0,.28);
+      overflow: hidden;
+    }
+
+    .stat::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 78px;
+      height: 78px;
+      background: var(--teal);
+      opacity: .96;
+      clip-path: polygon(0 0, 100% 0, 0 100%);
+    }
+
+    .stat.gold::before { background: var(--gold); }
+    .stat.red::before { background: var(--red); }
+    .stat.blue::before { background: #2b6c91; }
+
+    .stat-number {
+      font-size: 60px;
+      line-height: .9;
+      font-weight: 860;
+      letter-spacing: -0.04em;
+      margin-bottom: 12px;
+      color: white;
+    }
+
+    .stat-label {
+      font-size: 24px;
+      font-weight: 780;
+      color: rgba(255,255,255,.94);
+    }
+
+    .stat-note {
+      margin-top: 7px;
+      font-size: 15px;
+      color: rgba(255,255,255,.68);
+      font-weight: 620;
+    }
+
+    .s1 { left: 170px; bottom: 92px; }
+    .s2 { left: 620px; bottom: 194px; }
+    .s3 { left: 1060px; bottom: 88px; }
+    .s4 { right: 170px; bottom: 182px; }
+
+    .shot {
+      width: 2000px;
+      height: 1350px;
+      background: #000;
+      padding: 28px;
+      overflow: hidden;
+    }
+
+    .app {
+      width: 100%;
+      height: 100%;
+      border-radius: 26px;
+      background: var(--paper);
+      overflow: hidden;
+      box-shadow: 0 28px 90px rgba(0,0,0,.32);
+    }
+
+    .topbar {
+      height: 56px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 24px;
+      background: rgba(255,255,255,.8);
+      color: #777772;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .traffic {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: #ff6157;
+    }
+    .traffic.yellow { background: #ffc12f; }
+    .traffic.green { background: #28c840; }
+    .tab {
+      height: 40px;
+      min-width: 178px;
+      padding: 0 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      background: #f3f5f5;
+      border-radius: 10px;
+      color: #3c3c39;
+    }
+
+    .side {
+      width: 92px;
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 0;
+      gap: 26px;
+    }
+
+    .side-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 13px;
+      border: 2px solid #dedbd4;
+      display: grid;
+      place-items: center;
+      color: #777772;
+      font-size: 24px;
+      font-weight: 900;
+    }
+    .side-icon.active {
+      color: var(--teal);
+      border-color: var(--teal);
+      background: var(--teal-soft);
+    }
+
+    .home-body {
+      height: calc(100% - 56px);
+      display: grid;
+      grid-template-columns: 92px 1fr;
+    }
+
+    .home-main {
+      padding: 112px 96px 58px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .product-mark {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 26px;
+      font-weight: 780;
+      margin-bottom: 32px;
+    }
+
+    .small-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      background: var(--teal);
+      box-shadow: 0 0 0 7px var(--teal-soft);
+    }
+
+    .question {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 58px;
+      line-height: 1.05;
+      font-weight: 770;
+      letter-spacing: -0.02em;
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .hint {
+      font-size: 26px;
+      color: #8a8780;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .composer {
+      width: 1060px;
+      height: 270px;
+      border: 2px solid #e2e4e4;
+      background: white;
+      border-radius: 22px;
+      box-shadow: 0 6px 22px rgba(0,0,0,.06);
+      padding: 34px;
+      color: #aaa7a0;
+      font-size: 26px;
+      position: relative;
+    }
+    .composer::after {
+      content: "↑";
+      position: absolute;
+      right: 30px;
+      bottom: 30px;
+      width: 58px;
+      height: 58px;
+      border-radius: 999px;
+      background: #f1f2f2;
+      color: #b6b4ae;
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+      font-weight: 800;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .chip {
+      height: 50px;
+      padding: 0 24px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #5f5d57;
+      font-size: 20px;
+      font-weight: 760;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+
+    .recent {
+      width: 100%;
+      margin-top: auto;
+    }
+    .recent h3 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 34px;
+      margin: 0 0 22px;
+    }
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+    }
+    .project-card {
+      height: 260px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: white;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(0,0,0,.05);
+    }
+    .thumb {
+      height: 138px;
+      background:
+        radial-gradient(circle at 34% 48%, rgba(47,111,107,.35), transparent 28%),
+        radial-gradient(circle at 70% 34%, rgba(197,155,45,.3), transparent 28%),
+        #eef2ed;
+      display: grid;
+      place-items: center;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 42px;
+      color: var(--teal);
+    }
+    .project-card:nth-child(2) .thumb { background: #f2e9d8; color: var(--gold); }
+    .project-card:nth-child(3) .thumb { background: #e6eef1; color: var(--blue); }
+    .project-card:nth-child(4) .thumb { background: #f4e4df; color: var(--red); }
+    .project-card:nth-child(5) .thumb { background: #f5f3ee; color: #1d1d1b; }
+    .project-meta { padding: 14px 18px; }
+    .tag {
+      display: inline-flex;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--teal-soft);
+      color: var(--teal);
+      font-weight: 780;
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+    .project-title {
+      font-size: 19px;
+      font-weight: 760;
+      color: #2a2a27;
+      margin-bottom: 8px;
+    }
+    .done {
+      color: #3a9b66;
+      font-size: 16px;
+      font-weight: 780;
+    }
+
+    .studio-body {
+      height: calc(100% - 56px);
+      display: grid;
+      grid-template-columns: 560px 1fr;
+    }
+    .chat {
+      border-right: 1px solid var(--line);
+      background: #fcfbf8;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-head {
+      height: 70px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 28px;
+      font-size: 23px;
+      font-weight: 800;
+    }
+    .chat-content {
+      padding: 28px;
+      display: grid;
+      gap: 18px;
+    }
+    .bubble {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+      font-size: 20px;
+      line-height: 1.42;
+      color: #3d3d39;
+    }
+    .bubble.agent {
+      background: #f1f6f4;
+      border-color: #d6e7e2;
+    }
+    .files {
+      border: 1px solid #dce3e3;
+      border-radius: 18px;
+      background: #eff4f5;
+      padding: 20px;
+      margin-top: 10px;
+    }
+    .files h4 {
+      margin: 0 0 14px;
+      font-size: 17px;
+      color: #777772;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .file-row {
+      height: 48px;
+      background: white;
+      border: 1px solid #dce3e3;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      font-size: 17px;
+      margin-bottom: 10px;
+    }
+    .preview {
+      min-width: 0;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+    }
+    .preview-tabs {
+      height: 68px;
+      border-bottom: 1px solid var(--line);
+      background: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 28px;
+    }
+    .preview-tab {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 18px;
+      background: #f5f6f6;
+      color: #494945;
+      font-size: 18px;
+      font-weight: 760;
+    }
+    .preview-tab.active {
+      background: var(--teal);
+      color: white;
+      border-color: var(--teal);
+    }
+    .canvas {
+      flex: 1;
+      padding: 52px 70px;
+      overflow: hidden;
+    }
+    .artifact-page {
+      width: 100%;
+      height: 100%;
+      background: var(--paper);
+      border: 1px solid #ded8cd;
+      box-shadow: 0 14px 42px rgba(0,0,0,.1);
+      padding: 48px;
+      display: grid;
+      gap: 24px;
+    }
+    .paper-title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 58px;
+      line-height: 1.04;
+      color: var(--ink);
+      margin: 0 0 14px;
+    }
+    .paper-sub {
+      color: #676761;
+      font-size: 23px;
+      line-height: 1.35;
+      max-width: 900px;
+    }
+    .artifact-grid {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 24px;
+    }
+    .chart {
+      min-height: 360px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background:
+        linear-gradient(to right, rgba(220,216,207,.8) 1px, transparent 1px) 0 0/54px 54px,
+        linear-gradient(to bottom, rgba(220,216,207,.8) 1px, transparent 1px) 0 0/54px 54px,
+        white;
+      position: relative;
+      overflow: hidden;
+    }
+    .chart svg { position: absolute; inset: 36px; width: calc(100% - 72px); height: calc(100% - 72px); }
+    .evidence-list {
+      display: grid;
+      gap: 12px;
+    }
+    .evidence {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: white;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 17px;
+    }
+    .evidence b { color: var(--teal); }
+    .status {
+      border-radius: 999px;
+      padding: 6px 11px;
+      font-size: 14px;
+      font-weight: 780;
+      color: #1d4f4a;
+      background: var(--teal-soft);
+      white-space: nowrap;
+    }
+    .status.gold { color: #665011; background: var(--gold-soft); }
+    .status.red { color: #8a3124; background: var(--red-soft); }
+    .status.blue { color: #2e5267; background: var(--blue-soft); }
+    .report-table {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: white;
+    }
+    .report-row {
+      min-height: 58px;
+      display: grid;
+      grid-template-columns: .78fr 1.42fr .8fr;
+      border-bottom: 1px solid var(--line);
+      align-items: center;
+      font-size: 18px;
+    }
+    .report-row:last-child { border-bottom: 0; }
+    .report-row > div { padding: 14px 18px; }
+    .report-head {
+      background: #eee8dc;
+      font-weight: 820;
+    }
+    .compute-grid {
+      display: grid;
+      grid-template-columns: .95fr .8fr .95fr;
+      gap: 22px;
+      align-items: stretch;
+      margin-top: 8px;
+    }
+    .stack {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: white;
+      padding: 24px;
+    }
+    .stack h3 {
+      margin: 0 0 16px;
+      font-size: 26px;
+    }
+    .stack-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 54px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0 14px;
+      font-size: 18px;
+      font-weight: 760;
+      margin-bottom: 10px;
+    }
+    .terminal {
+      background: #202724;
+      color: #d6e8e2;
+      border-radius: 16px;
+      padding: 24px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 20px;
+      line-height: 1.6;
+      box-shadow: 0 16px 42px rgba(0,0,0,.18);
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <section class="shot" data-name="product-home">
+      <div class="app">
+        <div class="topbar"><span class="traffic"></span><span class="traffic yellow"></span><span class="traffic green"></span><span class="tab">Projects</span><span class="tab">Home</span><span style="margin-left:auto;">Science Mode · Local-first</span></div>
+        <div class="home-body">
+          <aside class="side"><div class="side-icon active">◇</div><div class="side-icon">＋</div><div class="side-icon">⌂</div><div class="side-icon">□</div><div class="side-icon">↗</div></aside>
+          <section class="home-main">
+            <div class="product-mark"><span class="small-logo"></span>OpenScience</div>
+            <div class="question">What do you want to research?</div>
+            <div class="hint">Start a research project, ask a question, and keep the evidence trail.</div>
+            <div class="composer">Describe a literature review, data analysis, figure, manuscript, or clinical evidence question...</div>
+            <div class="chips">
+              <span class="chip">Literature review</span><span class="chip">Data analysis</span><span class="chip">Medical evidence</span><span class="chip">Figure artifact</span><span class="chip">Manuscript</span><span class="chip">Notebook</span>
+            </div>
+            <div class="recent">
+              <h3>Recent research projects</h3>
+              <div class="project-grid">
+                <div class="project-card"><div class="thumb">E1</div><div class="project-meta"><div class="tag">Evidence</div><div class="project-title">Cross-species scRNA</div><div class="done">Completed · 2h ago</div></div></div>
+                <div class="project-card"><div class="thumb">Fig</div><div class="project-meta"><div class="tag">Artifact</div><div class="project-title">Protein binding figure</div><div class="done">Completed · 1d ago</div></div></div>
+                <div class="project-card"><div class="thumb">RCT</div><div class="project-meta"><div class="tag">Medical</div><div class="project-title">Treatment evidence</div><div class="done">Reviewed · 1d ago</div></div></div>
+                <div class="project-card"><div class="thumb">GPU</div><div class="project-meta"><div class="tag">Compute</div><div class="project-title">Model sweep</div><div class="done">Running · 34m</div></div></div>
+                <div class="project-card"><div class="thumb">MS</div><div class="project-meta"><div class="tag">Manuscript</div><div class="project-title">Methods draft</div><div class="done">Exported · 3d ago</div></div></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="shot" data-name="product-artifact">
+      <div class="app">
+        <div class="topbar"><span class="traffic"></span><span class="traffic yellow"></span><span class="traffic green"></span><span class="tab">Science Artifact</span><span style="margin-left:auto;">Preview · Code · Run log · Environment · Review</span></div>
+        <div class="studio-body">
+          <aside class="chat">
+            <div class="chat-head">Figure artifact</div>
+            <div class="chat-content">
+              <div class="bubble">Regenerate the protein binding figure with clearer labels and export it as SVG and PDF.</div>
+              <div class="bubble agent">I reran the plotting script, linked inputs to D2, and attached reviewer status to the new artifact.</div>
+              <div class="files"><h4>Files from this turn</h4><div class="file-row"><span>figure_2_binding_sites.svg</span><b>Open</b></div><div class="file-row"><span>figure_2_binding_sites.pdf</span><b>Open</b></div><div class="file-row"><span>figure_2.py</span><b>Open</b></div></div>
+            </div>
+          </aside>
+          <section class="preview">
+            <div class="preview-tabs"><span class="preview-tab active">Preview</span><span class="preview-tab">Code</span><span class="preview-tab">Run log</span><span class="preview-tab">Environment</span><span class="preview-tab">Review</span></div>
+            <div class="canvas">
+              <div class="artifact-page">
+                <div><h2 class="paper-title">Artifact with provenance</h2><p class="paper-sub">The figure, source table, code, environment, messages, and review notes stay attached to the output.</p></div>
+                <div class="artifact-grid">
+                  <div class="chart"><svg viewBox="0 0 600 340"><path d="M20 255 C90 190 145 210 210 138 S342 68 420 124 S528 208 580 72" fill="none" stroke="#2f6f6b" stroke-width="9"/><path d="M20 286 C108 252 180 258 260 220 S405 178 580 188" fill="none" stroke="#c59b2d" stroke-width="7"/><g fill="#2f6f6b"><circle cx="78" cy="218" r="9"/><circle cx="208" cy="138" r="9"/><circle cx="420" cy="124" r="9"/><circle cx="580" cy="72" r="9"/></g></svg></div>
+                  <div class="evidence-list"><div class="evidence"><span><b>E1</b> PDB record</span><span class="status">opened</span></div><div class="evidence"><span><b>D2</b> input table</span><span class="status blue">dataset</span></div><div class="evidence"><span><b>C3</b> figure script</span><span class="status gold">rerun</span></div><div class="evidence"><span><b>R4</b> reviewer note</span><span class="status">passed</span></div></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="shot" data-name="product-evidence">
+      <div class="app">
+        <div class="topbar"><span class="traffic"></span><span class="traffic yellow"></span><span class="traffic green"></span><span class="tab">Medical Evidence</span><span style="margin-left:auto;">PICO · Sources · Conflicts · Export</span></div>
+        <div class="studio-body">
+          <aside class="chat">
+            <div class="chat-head">Evidence mode</div>
+            <div class="chat-content">
+              <div class="bubble">Is this treatment claim supported? Use trials, papers, and drug/device documents.</div>
+              <div class="bubble agent">I separated the PICO question, found conflicting endpoints, and marked population caveats before writing the bottom line.</div>
+              <div class="files"><h4>Evidence basket</h4><div class="file-row"><span>E1 guideline</span><b>Open</b></div><div class="file-row"><span>E2 randomized trial</span><b>Open</b></div><div class="file-row"><span>E4 drug label</span><b>Open</b></div></div>
+            </div>
+          </aside>
+          <section class="preview">
+            <div class="preview-tabs"><span class="preview-tab active">Report</span><span class="preview-tab">Sources</span><span class="preview-tab">Review</span><span class="preview-tab">Export</span></div>
+            <div class="canvas">
+              <div class="artifact-page">
+                <div><h2 class="paper-title">Clinical answers that show their work</h2><p class="paper-sub">Source labels, evidence strength, conflicts, safety caveats, and final conclusions are visible in the same report.</p></div>
+                <div class="report-table">
+                  <div class="report-row report-head"><div>Claim</div><div>Evidence</div><div>Status</div></div>
+                  <div class="report-row"><div>Benefit</div><div>E1 and E2 support the main direction</div><div><span class="status">supported</span></div></div>
+                  <div class="report-row"><div>Safety</div><div>E4 adds population caveats</div><div><span class="status gold">qualified</span></div></div>
+                  <div class="report-row"><div>Conflict</div><div>E2 and E3 use different endpoints</div><div><span class="status red">inspect</span></div></div>
+                  <div class="report-row"><div>Export</div><div>Markdown, PDF, Word report</div><div><span class="status blue">ready</span></div></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="shot" data-name="product-compute">
+      <div class="app">
+        <div class="topbar"><span class="traffic"></span><span class="traffic yellow"></span><span class="traffic green"></span><span class="tab">Compute</span><span style="margin-left:auto;">Local · SSH · Slurm · GPU</span></div>
+        <div class="studio-body">
+          <aside class="chat">
+            <div class="chat-head">Run analysis</div>
+            <div class="chat-content">
+              <div class="bubble">Run the benchmark locally first, then prepare the same job for Slurm.</div>
+              <div class="bubble agent">I saved the command, environment, output files, and planned remote job metadata inside the research project.</div>
+              <div class="files"><h4>Outputs</h4><div class="file-row"><span>benchmark.ipynb</span><b>Open</b></div><div class="file-row"><span>summary.csv</span><b>Open</b></div><div class="file-row"><span>figure_3.pdf</span><b>Open</b></div></div>
+            </div>
+          </aside>
+          <section class="preview">
+            <div class="preview-tabs"><span class="preview-tab active">Workspace</span><span class="preview-tab">Jobs</span><span class="preview-tab">Environment</span><span class="preview-tab">Artifacts</span></div>
+            <div class="canvas">
+              <div class="artifact-page">
+                <div><h2 class="paper-title">Use sources and your compute</h2><p class="paper-sub">The same research project can search evidence, run local analysis, track remote jobs, and return artifacts.</p></div>
+                <div class="compute-grid">
+                  <div class="stack"><h3>Scientific sources</h3><div class="stack-row">11M+ papers <span class="status">papers</span></div><div class="stack-row">1M+ clinical trials <span class="status gold">trials</span></div><div class="stack-row">225K+ regulatory docs <span class="status red">docs</span></div></div>
+                  <div class="terminal">$ openscience run analysis<br/>read: E1 E2 D3<br/>execute: python / R / shell<br/>write: figure + notebook</div>
+                  <div class="stack"><h3>Compute targets</h3><div class="stack-row">Local laptop <span class="status">now</span></div><div class="stack-row">Linux box / SSH <span class="status blue">planned</span></div><div class="stack-row">Slurm / GPU workers <span class="status gold">planned</span></div></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

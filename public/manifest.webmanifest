@@ -1,7 +1,7 @@
 {
-  "name": "DeepOrganiser",
-  "short_name": "DeepOrganiser",
-  "description": "DeepOrganiser WebUI for mobile and desktop browsers.",
+  "name": "OpenScience",
+  "short_name": "OpenScience",
+  "description": "OpenScience WebUI for mobile and desktop browsers.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
