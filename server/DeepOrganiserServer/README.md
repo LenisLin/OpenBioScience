@@ -10,12 +10,12 @@ Static download page and auto-update feed for OpenScience desktop builds.
 
 The service listens on `127.0.0.1:34424` by default. The public update and
 download entry is expected to be reverse-proxied at
-`https://deepscientist.cc/openscience`.
+`https://openscience.cc`.
 
 Useful environment variables:
 
 ```bash
-DEEPORGANISER_BASE_URL=https://deepscientist.cc/openscience
+DEEPORGANISER_BASE_URL=https://openscience.cc
 DEEPORGANISER_GITHUB_REPO=ResearAI/OpenScience
 DEEPORGANISER_GITHUB_TOKEN=ghp_xxx              # optional, useful for private repos or higher rate limits
 DEEPORGANISER_ENABLE_GITHUB_SYNC=1

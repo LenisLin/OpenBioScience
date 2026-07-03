@@ -34,7 +34,7 @@ describe('CdnGenericProvider', () => {
     const provider = new CdnGenericProvider(
       {
         provider: 'custom',
-        url: 'https://deepscientist.cc/DeepOrganiser',
+        url: 'https://openscience.cc',
       },
       {} as AppUpdater,
       makeRuntimeOptions()
@@ -54,7 +54,7 @@ describe('CdnGenericProvider', () => {
     } satisfies UpdateInfo);
 
     expect(files[0]?.url.href).toBe(
-      'https://deepscientist.cc/DeepOrganiser/2.1.14/DeepOrganiser-2.1.14-mac-arm64.dmg'
+      'https://openscience.cc/2.1.14/DeepOrganiser-2.1.14-mac-arm64.dmg'
     );
   });
 });

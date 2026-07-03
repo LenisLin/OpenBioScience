@@ -13,11 +13,15 @@
     <link
       rel="preload"
       as="image"
-      href="assets/generated/research-workspace-hero-4k-web.webp"
-      imagesrcset="assets/generated/research-workspace-hero-4k-web.webp 1800w, assets/generated/research-workspace-hero-4k.webp 3840w"
-      imagesizes="100vw"
+      href="assets/generated/research-cinema-5s-poster.jpg"
     />
-    <link rel="stylesheet" href="styles.css?v=20260702-icons1" />
+    <link
+      rel="preload"
+      as="video"
+      href="assets/generated/research-cinema-5s.mp4"
+      type="video/mp4"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260703-showcase1" />
   </head>
   <body>
     <div class="page-ambient" aria-hidden="true">
@@ -47,6 +51,7 @@
         <div class="nav-cluster" aria-label="Page sections">
           <span class="nav-glider" id="navGlider" aria-hidden="true"></span>
           <a class="nav-link is-active" href="#download" data-nav-link data-i18n="nav.download">Download</a>
+          <a class="nav-link" href="#videos" data-nav-link data-i18n="nav.videos">Videos</a>
           <a class="nav-link" href="#evidence" data-nav-link data-i18n="nav.evidence">Evidence</a>
           <a class="nav-link" href="#projects" data-nav-link data-i18n="nav.projects">Projects</a>
         </div>
@@ -67,22 +72,26 @@
       </nav>
 
       <section class="hero-section" id="download" aria-labelledby="heroTitle">
-        <div class="hero-image-wash" aria-hidden="true">
-          <picture>
-            <source
-              type="image/webp"
-              srcset="assets/generated/research-workspace-hero-4k-web.webp 1800w, assets/generated/research-workspace-hero-4k.webp 3840w"
-              sizes="100vw"
-            />
-            <img
-              src="assets/generated/research-workspace-hero-4k-web.png"
-              alt=""
-              width="1800"
-              height="1012"
-              decoding="async"
-              fetchpriority="high"
-            />
-          </picture>
+        <div class="hero-image-wash" id="heroMotionLayer" aria-hidden="true">
+          <video
+            class="hero-motion-video"
+            src="assets/generated/research-cinema-5s.mp4?v=20260703-cinema3"
+            poster="assets/generated/research-cinema-5s-poster.jpg"
+            muted
+            playsinline
+            preload="metadata"
+          ></video>
+        </div>
+        <div class="hero-cinema-bridge" id="heroCinemaBridge" aria-hidden="true">
+          <video
+            id="heroCinemaPreview"
+            class="hero-cinema-video"
+            src="assets/generated/research-cinema-5s.mp4?v=20260703-cinema3"
+            poster="assets/generated/research-cinema-5s-poster.jpg"
+            muted
+            playsinline
+            preload="metadata"
+          ></video>
         </div>
         <div class="hero-copy" data-reveal>
           <div class="hero-kicker-row" aria-label="OpenScience Desktop">
@@ -136,64 +145,130 @@
               <aside class="os-main-preview__sidebar">
                 <img src="openscience-wordmark.png?v=20260701-openscience" alt="OpenScience" />
                 <nav aria-label="Preview navigation">
-                  <span class="is-active" data-i18n="homePreview.navNew">新会话</span>
+                  <span class="is-active" data-preview-nav="new" data-i18n="homePreview.navNew">新会话</span>
                   <span data-i18n="homePreview.navSearch">搜索</span>
                   <span data-i18n="homePreview.navSchedule">定时任务</span>
                 </nav>
-                <div class="os-main-preview__sidebar-group">
-                  <em data-i18n="homePreview.groupProjects">科研项目</em>
-                  <span>Artifact Review</span>
-                  <span>Lab Data Sprint</span>
+                <div class="os-main-preview__sidebar-group os-main-preview__sidebar-group--collapsed">
+                  <em data-i18n="homePreview.collaboration">协作功能</em>
+                  <div class="os-main-preview__collapsed-items" aria-hidden="true">
+                    <span data-i18n="homePreview.navMessages">消息页面</span>
+                    <span data-i18n="homePreview.navCalendar">日历页面</span>
+                    <span data-i18n="homePreview.navDocs">云文档</span>
+                    <span data-i18n="homePreview.navTasks">任务页面</span>
+                  </div>
                 </div>
                 <div class="os-main-preview__sidebar-group">
-                  <em data-i18n="homePreview.groupChats">最近会话</em>
-                  <span data-i18n="homePreview.chatA">论文图表复现</span>
-                  <span data-i18n="homePreview.chatB">实验报告整理</span>
+                  <em data-i18n="homePreview.groupProjects">科研项目</em>
+                  <span data-preview-nav="taskA" data-i18n="homePreview.projectA">过敏性休克循证</span>
+                  <span data-preview-nav="taskB" data-i18n="homePreview.projectB">肾上腺素观察方案</span>
                 </div>
               </aside>
 
-              <section class="os-main-preview__workspace">
-                <p class="os-main-preview__eyebrow" data-i18n="homePreview.eyebrow">NEW RESEARCH SESSION</p>
-                <h2 data-i18n="homePreview.title">用自然语言启动科研工作</h2>
-                <p class="os-main-preview__subtitle" data-i18n="homePreview.subtitle">
-                  新会话页是第一入口：把问题、数据、文件和项目上下文交给 OpenScience，后续自动沉淀为可追溯 artifact。
-                </p>
+              <section class="os-main-preview__workspace os-main-preview__workspace--switchable" data-preview-root>
+                <div class="os-preview-stage">
+                  <article class="os-preview-panel os-preview-panel--new is-active" data-preview-panel="new">
+                    <p class="os-main-preview__eyebrow" data-i18n="homePreview.eyebrow">NEW RESEARCH SESSION</p>
+                    <h2 data-i18n="homePreview.title">用自然语言启动科研工作</h2>
+                    <p class="os-main-preview__subtitle" data-i18n="homePreview.subtitle">
+                      新会话页是第一入口：把问题、数据、文件和项目上下文交给 OpenScience，后续自动沉淀为可追溯 artifact。
+                    </p>
 
-                <div class="os-main-preview__agent-strip" aria-hidden="true">
-                  <span class="agent-pill is-active">OpenScience</span>
-                  <span class="agent-spark">✦</span>
-                  <span class="agent-pill">Evidence</span>
-                  <span class="agent-pill">Analysis</span>
-                  <span class="agent-pill">Review</span>
-                  <span class="agent-plus">+</span>
+                    <div class="os-main-preview__agent-strip" aria-hidden="true">
+                      <span class="agent-pill is-active">OpenScience</span>
+                      <span class="agent-spark">✦</span>
+                      <span class="agent-pill">Evidence</span>
+                      <span class="agent-pill">Analysis</span>
+                      <span class="agent-pill">Review</span>
+                      <span class="agent-plus">+</span>
+                    </div>
+
+                    <div class="os-main-preview__prompt">
+                      <span data-i18n="homePreview.promptLabel">自然语言任务</span>
+                      <p data-i18n="homePreview.prompt">分析这批实验数据，生成一份可以复现、可以审查、可以继续迭代的研究报告。</p>
+                      <div class="os-main-preview__prompt-actions">
+                        <button type="button">+</button>
+                        <small data-i18n="homePreview.projectHint">Work in a project</small>
+                        <strong data-i18n="homePreview.send">启动</strong>
+                      </div>
+                    </div>
+
+                    <div class="os-main-preview__cards" aria-label="Preview artifact cards">
+                      <article>
+                        <img class="os-main-preview__card-icon" src="icons/openscience-site/local-data.png" alt="" loading="lazy" decoding="async" />
+                        <strong data-i18n="homePreview.artifactA">实验数据</strong>
+                        <span>dataset.csv</span>
+                      </article>
+                      <article>
+                        <img class="os-main-preview__card-icon" src="icons/openscience-site/code-run.png" alt="" loading="lazy" decoding="async" />
+                        <strong data-i18n="homePreview.artifactB">分析代码</strong>
+                        <span>analysis.py</span>
+                      </article>
+                      <article>
+                        <img class="os-main-preview__card-icon" src="icons/openscience-site/medical-evidence-report.png" alt="" loading="lazy" decoding="async" />
+                        <strong data-i18n="homePreview.artifactC">研究报告</strong>
+                        <span>report.md</span>
+                      </article>
+                    </div>
+                  </article>
+
+                  <article class="os-preview-panel os-preview-panel--task" data-preview-panel="taskA" hidden>
+                    <div class="os-medical-task">
+                      <header>
+                        <span>
+                          <img src="icons/openscience-site/medical-evidence-mode.png" alt="" loading="lazy" decoding="async" />
+                          <b data-i18n="homePreview.taskABadge">医学循证模式</b>
+                        </span>
+                        <em data-i18n="homePreview.taskAStatus">证据已整理</em>
+                      </header>
+                      <h2 data-i18n="homePreview.taskATitle">过敏性休克：肾上腺素、二线治疗与观察时间</h2>
+                      <p data-i18n="homePreview.taskAText">OpenScience 把问题拆成可核查结论，引用指南、药品标签和临床证据，并保留每条结论的来源。</p>
+                      <div class="os-medical-finding-grid">
+                        <section>
+                          <strong data-i18n="homePreview.taskAFindingA">立即处理</strong>
+                          <p data-i18n="homePreview.taskAFindingAText">疑似或确诊时优先肌注肾上腺素。</p>
+                          <small>[E1] [E2] [E3]</small>
+                        </section>
+                        <section>
+                          <strong data-i18n="homePreview.taskAFindingB">二线治疗</strong>
+                          <p data-i18n="homePreview.taskAFindingBText">抗组胺药和激素不能延误急救。</p>
+                          <small>[E1] [E2]</small>
+                        </section>
+                        <section>
+                          <strong data-i18n="homePreview.taskAFindingC">观察时间</strong>
+                          <p data-i18n="homePreview.taskAFindingCText">按严重程度、复发风险和气道风险分层。</p>
+                          <small>[E2] [E4]</small>
+                        </section>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="os-preview-panel os-preview-panel--task" data-preview-panel="taskB" hidden>
+                    <div class="os-medical-task os-medical-task--calm">
+                      <header>
+                        <span>
+                          <img src="icons/openscience-site/review-check.png" alt="" loading="lazy" decoding="async" />
+                          <b data-i18n="homePreview.taskBBadge">方案复核</b>
+                        </span>
+                        <em data-i18n="homePreview.taskBStatus">等待人工确认</em>
+                      </header>
+                      <h2 data-i18n="homePreview.taskBTitle">肾上腺素给药、随访和出院说明</h2>
+                      <p data-i18n="homePreview.taskBText">系统把剂量、禁忌、复发风险和出院教育放进同一份可复查记录，便于后续修改或交给团队。</p>
+                      <div class="os-medical-timeline">
+                        <span data-i18n="homePreview.taskBStepA">识别风险人群</span>
+                        <span data-i18n="homePreview.taskBStepB">核对剂量和途径</span>
+                        <span data-i18n="homePreview.taskBStepC">生成随访清单</span>
+                      </div>
+                      <div class="os-medical-note">
+                        <strong data-i18n="homePreview.taskBNoteTitle">Review note</strong>
+                        <p data-i18n="homePreview.taskBNoteText">每个建议都能回到对应来源，方便医生、研究者或合作者继续审查。</p>
+                      </div>
+                    </div>
+                  </article>
                 </div>
-
-                <div class="os-main-preview__prompt">
-                  <span data-i18n="homePreview.promptLabel">自然语言任务</span>
-                  <p data-i18n="homePreview.prompt">分析这批实验数据，生成一份可以复现、可以审查、可以继续迭代的研究报告。</p>
-                  <div class="os-main-preview__prompt-actions">
-                    <button type="button">+</button>
-                    <small data-i18n="homePreview.projectHint">Work in a project</small>
-                    <strong data-i18n="homePreview.send">启动</strong>
-                  </div>
-                </div>
-
-                <div class="os-main-preview__cards" aria-label="Preview artifact cards">
-                  <article>
-                    <img class="os-main-preview__card-icon" src="icons/openscience-site/local-data.png" alt="" loading="lazy" decoding="async" />
-                    <strong data-i18n="homePreview.artifactA">实验数据</strong>
-                    <span>dataset.csv</span>
-                  </article>
-                  <article>
-                    <img class="os-main-preview__card-icon" src="icons/openscience-site/code-run.png" alt="" loading="lazy" decoding="async" />
-                    <strong data-i18n="homePreview.artifactB">分析代码</strong>
-                    <span>analysis.py</span>
-                  </article>
-                  <article>
-                    <img class="os-main-preview__card-icon" src="icons/openscience-site/medical-evidence-report.png" alt="" loading="lazy" decoding="async" />
-                    <strong data-i18n="homePreview.artifactC">研究报告</strong>
-                    <span>report.md</span>
-                  </article>
+                <div class="os-preview-cursor" aria-hidden="true">
+                  <span class="os-preview-cursor__arrow"></span>
+                  <span class="os-preview-cursor__ripple"></span>
                 </div>
               </section>
             </div>
@@ -202,6 +277,62 @@
               <span data-i18n="homePreview.traceA">本地执行</span>
               <span data-i18n="homePreview.traceB">Artifact 留痕</span>
               <span data-i18n="homePreview.traceC">项目继续推进</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="video-showcase scroll-cinema" id="videos" aria-labelledby="videosTitle">
+        <div class="section-heading cinema-heading" data-reveal>
+          <p class="section-kicker" data-i18n="videos.kicker">VIDEOS</p>
+          <h2 id="videosTitle" data-i18n="videos.title">See OpenScience in motion</h2>
+          <p data-i18n="videos.subtitle">A short scroll-controlled view of how research material becomes an inspectable workspace.</p>
+        </div>
+        <div class="cinema-sticky">
+          <div class="cinema-stage spotlight-surface" data-spotlight-card>
+            <video
+              id="researchCinema"
+              class="cinema-video"
+              src="assets/generated/research-cinema-5s.mp4?v=20260703-cinema3"
+              poster="assets/generated/research-cinema-5s-poster.jpg"
+              muted
+              playsinline
+              preload="auto"
+              aria-label="OpenScience research workspace cinematic video"
+            ></video>
+            <div class="cinema-poster" aria-hidden="true"></div>
+            <div class="cinema-scrim" aria-hidden="true"></div>
+
+            <div class="cinema-copy cinema-copy--left" data-cinema-step data-start="0.02" data-end="0.32">
+              <span data-i18n="cinema.stepA.kicker">LOCAL RESEARCH</span>
+              <h2 data-i18n="cinema.stepA.title">Install it where your data lives.</h2>
+              <p data-i18n="cinema.stepA.text">Read files, run analyses, and keep the work on your own computer.</p>
+            </div>
+
+            <div class="cinema-copy cinema-copy--right" data-cinema-step data-start="0.24" data-end="0.55">
+              <span data-i18n="cinema.stepB.kicker">OPEN AND FREE</span>
+              <h2 data-i18n="cinema.stepB.title">Free for researchers everywhere.</h2>
+              <p data-i18n="cinema.stepB.text">Use your own models, keep your own files, and start from a desktop workspace.</p>
+            </div>
+
+            <div class="cinema-copy cinema-copy--left cinema-copy--lower" data-cinema-step data-start="0.48" data-end="0.78">
+              <span data-i18n="cinema.stepC.kicker">SCIENCE MODE</span>
+              <h2 data-i18n="cinema.stepC.title">Built for many sciences.</h2>
+              <p data-i18n="cinema.stepC.text">350+ research skills cover life science, chemistry, engineering, data science, and causal inference.</p>
+            </div>
+
+            <div class="cinema-copy cinema-copy--right cinema-copy--final" data-cinema-step="final" data-start="0.72" data-end="1">
+              <span data-i18n="cinema.stepD.kicker">REPRODUCIBLE OUTPUT</span>
+              <h2 data-i18n="cinema.stepD.title">Results your team can inspect.</h2>
+              <p data-i18n="cinema.stepD.text">Reports, figures, notebooks, and manuscripts keep the evidence and decisions behind them.</p>
+            </div>
+
+            <div class="cinema-progress" aria-hidden="true">
+              <span id="cinemaProgress"></span>
+            </div>
+            <div class="cinema-frame-meta" aria-hidden="true">
+              <span>OpenScience Research Workspace</span>
+              <span>00:05</span>
             </div>
           </div>
         </div>
@@ -649,6 +780,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260702-icons1"></script>
+    <script src="app.js?v=20260703-showcase1"></script>
   </body>
 </html>

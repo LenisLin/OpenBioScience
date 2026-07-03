@@ -781,7 +781,11 @@ const fallbackBlocks = (run: ScienceRunState): ScienceReportBlock[] => {
     ];
   }
   if (artifacts.length) {
-    return artifacts.map((artifact) => ({ type: 'artifact_ref', artifactId: artifact.id }));
+    return artifacts.map((artifact) =>
+      ['figure', 'html', 'pdf', 'latex', 'table', 'regression_table', 'notebook'].includes(artifact.type)
+        ? ({ type: 'artifact_embed', artifactId: artifact.id } satisfies ScienceReportBlock)
+        : ({ type: 'artifact_ref', artifactId: artifact.id } satisfies ScienceReportBlock)
+    );
   }
   return [{ type: 'paragraph', text: run.summary || 'Science artifact run is being assembled.' }];
 };

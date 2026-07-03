@@ -7,6 +7,7 @@
 import type { IMessagePermission } from '@/common/chat/chatLib';
 import { ipcBridge } from '@/common';
 import { Button, Card, Radio, Typography } from '@arco-design/web-react';
+import { ToolConfirmationOutcome } from '@renderer/utils/common';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -39,7 +40,10 @@ const MessagePermission: React.FC<MessagePermissionProps> = React.memo(({ messag
 
     setIsResponding(true);
     try {
-      const always_allow = selected === 'proceed_always';
+      const always_allow =
+        selected === ToolConfirmationOutcome.ProceedAlways ||
+        selected === ToolConfirmationOutcome.ProceedAlwaysTool ||
+        selected === ToolConfirmationOutcome.ProceedAlwaysServer;
       await ipcBridge.conversation.confirmation.confirm.invoke({
         conversation_id: message.conversation_id,
         call_id,

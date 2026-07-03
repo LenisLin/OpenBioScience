@@ -230,10 +230,10 @@ describe('MarkdownViewer', () => {
   });
 
   it('keeps remote links as browser anchors', () => {
-    render(<MarkdownViewer content='[docs](https://deepscientist.cc/docs)' />);
+    render(<MarkdownViewer content='[docs](https://openscience.cc/docs)' />);
 
     const link = screen.getByRole('link', { name: 'docs' });
-    expect(link).toHaveAttribute('href', 'https://deepscientist.cc/docs');
+    expect(link).toHaveAttribute('href', 'https://openscience.cc/docs');
   });
 
   it('continues rendering local image markdown inline', async () => {

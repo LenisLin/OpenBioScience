@@ -13,7 +13,11 @@ import {
   isOfficeFile,
   FILE_EXTENSION_MAP,
 } from '@/renderer/pages/conversation/Preview/fileUtils';
-import { buildPdfSrc } from '@/renderer/pages/conversation/Preview/previewUrls';
+import {
+  buildLocalFileDirectorySrc,
+  buildLocalFileSrc,
+  buildPdfSrc,
+} from '@/renderer/pages/conversation/Preview/previewUrls';
 
 describe('fileUtils', () => {
   describe('getFileExtension', () => {
@@ -149,6 +153,26 @@ describe('fileUtils', () => {
 });
 
 describe('previewUrls', () => {
+  describe('buildLocalFileSrc', () => {
+    it('builds valid file:/// URI for POSIX paths', () => {
+      expect(buildLocalFileSrc('/path/with spaces/doc.html')).toBe('file:///path/with%20spaces/doc.html');
+    });
+
+    it('builds valid file:/// URI for Windows paths', () => {
+      expect(buildLocalFileSrc('C:\\Users\\me\\doc.html')).toBe('file:///C:/Users/me/doc.html');
+    });
+  });
+
+  describe('buildLocalFileDirectorySrc', () => {
+    it('builds a trailing-slash base URI for relative HTML assets', () => {
+      expect(buildLocalFileDirectorySrc('/path/with spaces/index.html')).toBe('file:///path/with%20spaces/');
+    });
+
+    it('builds a trailing-slash base URI for Windows HTML assets', () => {
+      expect(buildLocalFileDirectorySrc('C:\\Users\\me\\index.html')).toBe('file:///C:/Users/me/');
+    });
+  });
+
   describe('buildPdfSrc', () => {
     it('builds file:// URI from file_path', () => {
       const result = buildPdfSrc('/path/to/doc.pdf');

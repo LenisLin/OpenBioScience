@@ -6,6 +6,7 @@
 
 import FilePreview from '@/renderer/components/media/FilePreview';
 import UploadProgressBar from '@/renderer/components/media/UploadProgressBar';
+import CollaborationIcon from '@/renderer/components/icons/CollaborationIcon';
 import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
 import { useCompositionInput } from '@/renderer/hooks/chat/useCompositionInput';
 import { Input } from '@arco-design/web-react';
@@ -54,6 +55,10 @@ type GuidInputCardProps = {
   workspaceLabels?: React.ComponentProps<typeof GuidWorkspaceFootnote>['labels'];
   contextBadge?: React.ReactNode;
   contextLeading?: React.ReactNode;
+  collaborationLabel?: string;
+  collaborationButtonLabel?: string;
+  isCollaborationContextActive?: boolean;
+  onToggleCollaborationContext?: () => void;
 };
 
 const GuidInputCard: React.FC<GuidInputCardProps> = ({
@@ -86,6 +91,10 @@ const GuidInputCard: React.FC<GuidInputCardProps> = ({
   workspaceLabels,
   contextBadge,
   contextLeading,
+  collaborationLabel,
+  collaborationButtonLabel = '多人协作项目',
+  isCollaborationContextActive = false,
+  onToggleCollaborationContext,
 }) => {
   const layout = useLayoutContext();
   const isMobile = layout?.isMobile ?? false;
@@ -115,6 +124,15 @@ const GuidInputCard: React.FC<GuidInputCardProps> = ({
       labels={workspaceLabels}
     />
   );
+  const hasCollaborationButton = Boolean(onToggleCollaborationContext);
+  const hasContextLeading = Boolean(contextLeading);
+  const contextRowClassName = [
+    styles.guidContextRow,
+    contextBadge || contextLeading ? styles.guidContextRowWithBadge : '',
+    !hasCollaborationButton && !hasContextLeading ? styles.guidContextRowSingle : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div
@@ -178,8 +196,21 @@ const GuidInputCard: React.FC<GuidInputCardProps> = ({
         <UploadProgressBar source='sendbox' />
         {actionRow}
       </div>
-      <div className={`${styles.guidContextRow} ${contextBadge || contextLeading ? styles.guidContextRowWithBadge : ''}`}>
+      <div className={contextRowClassName}>
         {contextBadge ? <div className={styles.guidContextBadgeSlot}>{contextBadge}</div> : null}
+        {hasCollaborationButton ? (
+          <button
+            type='button'
+            className={`${styles.collaborationEmptyBtn} ${
+              isCollaborationContextActive ? styles.collaborationEmptyBtnActive : ''
+            }`}
+            onClick={onToggleCollaborationContext}
+          >
+            <CollaborationIcon name='project' size={16} visualScale={1.22} />
+            <span>{collaborationButtonLabel}</span>
+            {collaborationLabel ? <span className={styles.collaborationContextName}>{collaborationLabel}</span> : null}
+          </button>
+        ) : null}
         {contextLeading ? <div className={styles.guidContextLeadingSlot}>{contextLeading}</div> : null}
         {workspaceNode}
       </div>

@@ -20,7 +20,7 @@ contextBridge.exposeInMainWorld('petConfirmAPI', {
   onThemeChange: (callback: (theme: Theme) => void) => {
     ipcRenderer.on('pet:confirm-theme', (_event, theme) => callback(theme));
   },
-  respond: (data: { conversation_id: string; msg_id: string; call_id: string; data: any }) => {
+  respond: (data: { conversation_id: string; msg_id: string; call_id: string; data: any; always_allow?: boolean }) => {
     ipcRenderer.send('pet:confirm-respond', data);
   },
   dragStart: () => {

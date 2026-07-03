@@ -8,6 +8,7 @@ import { ipcBridge } from '@/common';
 import { useTypingAnimation } from '@/renderer/hooks/chat/useTypingAnimation';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useScrollSyncTarget } from '../../hooks/useScrollSyncHelpers';
+import { buildLocalFileDirectorySrc, buildLocalFileSrc } from '../../previewUrls';
 import { generateInspectScript } from './htmlInspectScript';
 
 /** 选中元素的数据结构 / Selected element data structure */
@@ -339,7 +340,7 @@ const HTMLRenderer: React.FC<HTMLRendererProps> = ({
     // 如果有文件路径且内容未被编辑，直接用 file:// URL 加载，避免 data: URL 的 opaque origin 限制
     // If file path exists and content is clean, load via file:// to avoid data: URL opaque origin limits
     if (shouldLoadFromFile && file_path) {
-      return `file://${file_path}`;
+      return buildLocalFileSrc(file_path);
     }
 
     // 否则使用 data URL（适用于动态生成的 HTML 或没有外部资源的情况）
@@ -348,8 +349,7 @@ const HTMLRenderer: React.FC<HTMLRendererProps> = ({
 
     // 注入 base 标签支持相对路径 / Inject base tag for relative paths
     if (file_path) {
-      const fileDir = file_path.substring(0, file_path.lastIndexOf('/') + 1);
-      const base_url = `file://${fileDir}`;
+      const base_url = buildLocalFileDirectorySrc(file_path);
 
       // 检查是否已有 base 标签 / Check if base tag exists
       if (!html.match(/<base\s+href=/i)) {

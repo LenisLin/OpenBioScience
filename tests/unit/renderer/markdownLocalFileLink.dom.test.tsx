@@ -191,16 +191,16 @@ describe('MarkdownView local file links', () => {
   });
 
   it('keeps ordinary http links as browser anchors', () => {
-    render(<MarkdownView>{'[docs](https://deepscientist.cc/docs)'}</MarkdownView>);
+    render(<MarkdownView>{'[docs](https://openscience.cc/docs)'}</MarkdownView>);
 
     const link = screen.getByRole('link', { name: 'docs' });
-    expect(link).toHaveAttribute('href', 'https://deepscientist.cc/docs');
+    expect(link).toHaveAttribute('href', 'https://openscience.cc/docs');
   });
 
   it('keeps http hash links as browser anchors', () => {
-    render(<MarkdownView>{'[docs](https://deepscientist.cc/docs#L10)'}</MarkdownView>);
+    render(<MarkdownView>{'[docs](https://openscience.cc/docs#L10)'}</MarkdownView>);
 
     const link = screen.getByRole('link', { name: 'docs' });
-    expect(link).toHaveAttribute('href', 'https://deepscientist.cc/docs#L10');
+    expect(link).toHaveAttribute('href', 'https://openscience.cc/docs#L10');
   });
 });

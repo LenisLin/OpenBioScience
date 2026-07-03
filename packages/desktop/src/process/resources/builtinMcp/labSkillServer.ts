@@ -116,6 +116,75 @@ const sessionDir = (state: Pick<LabSkillSessionState, 'projectRoot' | 'sessionId
 const sessionFile = (state: Pick<LabSkillSessionState, 'projectRoot' | 'sessionId'>): string =>
   path.join(sessionDir(state), 'session.json');
 
+const SUBSTANTIVE_SOURCE_TYPES = new Set<LabSkillEvidenceItem['sourceType']>([
+  'conversation',
+  'artifact',
+  'file',
+  'protocol',
+  'paper',
+  'code',
+  'review',
+]);
+
+const PLACEHOLDER_CLAIM_TEXTS = new Set(['未命名规则', 'unnamed rule', 'placeholder rule']);
+
+const isSubstantiveSource = (source: LabSkillEvidenceItem): boolean =>
+  SUBSTANTIVE_SOURCE_TYPES.has(source.sourceType) && source.status !== 'ignored' && source.status !== 'blocked';
+
+const hasSubstantiveSource = (state: LabSkillSessionState): boolean => state.sources.some(isSubstantiveSource);
+
+const isPlaceholderClaim = (claim: LabSkillClaim): boolean =>
+  !claim.text.trim() || PLACEHOLDER_CLAIM_TEXTS.has(claim.text.trim().toLowerCase());
+
+const hasSupportedClaim = (state: LabSkillSessionState): boolean => {
+  const sourceIds = new Set(state.sources.filter(isSubstantiveSource).map((source) => source.id));
+  return state.claims.some(
+    (claim) =>
+      !isPlaceholderClaim(claim) &&
+      claim.status !== 'blocked' &&
+      claim.status !== 'conflict' &&
+      claim.evidenceIds.some((sourceId) => sourceIds.has(sourceId))
+  );
+};
+
+const derivedValidationFindings = (state: LabSkillSessionState): LabSkillValidationFinding[] => {
+  const findings: LabSkillValidationFinding[] = [];
+  if (!hasSubstantiveSource(state)) {
+    findings.push({
+      id: 'auto-missing-substantive-source',
+      severity: 'blocking',
+      title: '缺少可沉淀的实质来源',
+      detail:
+        '沉淀报告至少需要一个 conversation、artifact、文件、代码、论文或 review 来源。仅有用户指示、手工备注或空 transcript 不能启用。',
+      target: 'sources',
+    });
+  }
+  if (!state.claims.length || state.claims.every(isPlaceholderClaim)) {
+    findings.push({
+      id: 'auto-missing-supported-rule',
+      severity: 'blocking',
+      title: '缺少可启用的 SOP 规则',
+      detail: '不能把“未命名规则”或空规则作为 Skill 工作流。需要先抽取有明确文本和来源证据的规则。',
+      target: 'claims',
+    });
+  } else if (!hasSupportedClaim(state)) {
+    findings.push({
+      id: 'auto-unsupported-rule',
+      severity: 'blocking',
+      title: 'SOP 规则没有绑定实质来源',
+      detail: '至少一条可启用规则需要通过 evidenceIds 指向已登记的实质来源。',
+      target: 'claims.evidenceIds',
+    });
+  }
+  return findings;
+};
+
+const currentValidationFindings = (state: LabSkillSessionState): LabSkillValidationFinding[] =>
+  mergeById(state.findings, derivedValidationFindings(state));
+
+const enableBlockers = (state: LabSkillSessionState): LabSkillValidationFinding[] =>
+  currentValidationFindings(state).filter((finding) => finding.severity === 'blocking');
+
 type BackendConversation = {
   id: string;
   name?: string;
@@ -272,13 +341,16 @@ const writeSourceLocations = async (state: LabSkillSessionState, payload: JsonRe
   const conversationId = injectedConversationId || requestedConversationId;
   if (conversationId) state.conversationId = conversationId;
 
-  let currentConversation:
-    | { markdownPath: string; jsonPath: string; messageCount: number; total?: number }
-    | undefined;
+  let currentConversation: { markdownPath: string; jsonPath: string; messageCount: number; total?: number } | undefined;
   if (conversationId) {
     try {
       currentConversation = await exportConversationFiles(state, conversationId);
       if (!currentConversation) notes.push(`No backend conversation was returned for ${conversationId}.`);
+      if (currentConversation && currentConversation.messageCount === 0) {
+        notes.push(
+          `Current conversation ${conversationId} exported 0 messages; it was not registered as H1 because an empty transcript is not a substantive source.`
+        );
+      }
     } catch (error) {
       notes.push(`Current conversation export unavailable: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -296,7 +368,9 @@ const writeSourceLocations = async (state: LabSkillSessionState, payload: JsonRe
     '',
     `- Project root: ${state.projectRoot}`,
     `- Deposition session: ${sessionDir(state)}`,
-    state.conversationId ? `- Current conversation id: ${state.conversationId}` : '- Current conversation id: unavailable',
+    state.conversationId
+      ? `- Current conversation id: ${state.conversationId}`
+      : '- Current conversation id: unavailable',
     '',
     '## Scope Boundary',
     '- Scope is the current OpenScience deposition conversation plus explicit files/artifacts under the authorized project root.',
@@ -340,7 +414,7 @@ const writeSourceLocations = async (state: LabSkillSessionState, payload: JsonRe
   writeText(sourceLocationsPath, lines.join('\n'));
   state.sourceLocationsPath = sourceLocationsPath;
 
-  if (currentConversation) {
+  if (currentConversation && currentConversation.messageCount > 0) {
     state.sources = mergeById(state.sources, [
       {
         id: 'H1',
@@ -356,11 +430,19 @@ const writeSourceLocations = async (state: LabSkillSessionState, payload: JsonRe
   }
 };
 
-const openSession = async (payload: JsonRecord, projectRoot?: string, sessionId?: string): Promise<LabSkillSessionState> => {
+const openSession = async (
+  payload: JsonRecord,
+  projectRoot?: string,
+  sessionId?: string
+): Promise<LabSkillSessionState> => {
   const root = resolveProjectRoot(projectRoot || asString(payload.projectRoot));
   const id = sessionId || asString(payload.sessionId, randomId('lab_skill_session'));
   const existing = loadSession(id, root);
-  if (existing) return existing;
+  if (existing) {
+    await writeSourceLocations(existing, payload);
+    persistSession(existing);
+    return existing;
+  }
   const userInstruction = asString(payload.userInstruction || payload.user_instruction);
   const targetSkillName = slug(asString(payload.targetSkillName || payload.target_skill_name, 'lab-skill-draft'));
   const created: LabSkillSessionState = {
@@ -406,8 +488,17 @@ const ensureSession = async (
   sessionId?: string,
   projectRoot?: string,
   payload: JsonRecord = {}
-): Promise<LabSkillSessionState> =>
-  (sessionId ? loadSession(sessionId, projectRoot) : undefined) || (await openSession(payload, projectRoot, sessionId));
+): Promise<LabSkillSessionState> => {
+  const loaded = sessionId ? loadSession(sessionId, projectRoot) : undefined;
+  if (loaded) {
+    if (!loaded.sourceLocationsPath || !fs.existsSync(loaded.sourceLocationsPath)) {
+      await writeSourceLocations(loaded, payload);
+      persistSession(loaded);
+    }
+    return loaded;
+  }
+  return await openSession(payload, projectRoot, sessionId);
+};
 
 const eventFor = (
   state: LabSkillSessionState,
@@ -444,7 +535,7 @@ const normalizeSource = (value: JsonRecord, index: number): LabSkillEvidenceItem
 
 const normalizeClaim = (value: JsonRecord, index: number): LabSkillClaim => ({
   id: asString(value.id, `C${index + 1}`),
-  text: asString(value.text || value.claim, '未命名规则'),
+  text: asString(value.text || value.claim),
   status: (asString(value.status, 'candidate') as LabSkillClaim['status']) || 'candidate',
   evidenceIds: asArray(value.evidenceIds || value.evidence_ids).filter(
     (item): item is string => typeof item === 'string'
@@ -599,7 +690,7 @@ const compileDraft = (state: LabSkillSessionState, payload: JsonRecord): void =>
   });
 
   state.draftDir = draftDir;
-  state.status = state.findings.some((finding) => finding.severity === 'blocking') ? 'blocked' : 'draft';
+  state.status = enableBlockers(state).length ? 'blocked' : 'draft';
   persistSession(state);
 };
 
@@ -632,8 +723,9 @@ const buildGraph = (state: LabSkillSessionState): LabSkillDepositionPanelData['g
 };
 
 const buildPanel = (state: LabSkillSessionState, patch?: JsonRecord): LabSkillDepositionPanelData => {
-  const blockingFindings = state.findings.filter((finding) => finding.severity === 'blocking');
-  const canEnable = blockingFindings.length === 0 && Boolean(state.draftDir);
+  const findings = currentValidationFindings(state);
+  const blockingFindings = findings.filter((finding) => finding.severity === 'blocking');
+  const canEnable = blockingFindings.length === 0 && Boolean(state.draftDir) && hasSubstantiveSource(state);
   const files: LabSkillDepositionPanelData['files'] = [
     ...(state.sourceLocationsPath
       ? [{ path: state.sourceLocationsPath, role: 'reference' as const, label: '来源位置' }]
@@ -701,9 +793,7 @@ const buildPanel = (state: LabSkillSessionState, patch?: JsonRecord): LabSkillDe
             '- 不使用全局记忆、其他会话、浏览器历史或其他项目内容，除非用户明确选择。',
             '- 来源登记建议：U=用户指示，H=当前会话，A=artifact，F=项目文件，C=代码/日志。',
           ].join('\n'),
-          evidenceIds: state.sources
-            .filter((source) => ['U1', 'H1'].includes(source.id))
-            .map((source) => source.id),
+          evidenceIds: state.sources.filter((source) => ['U1', 'H1'].includes(source.id)).map((source) => source.id),
         },
         {
           id: 'skill',
@@ -729,7 +819,7 @@ const buildPanel = (state: LabSkillSessionState, patch?: JsonRecord): LabSkillDe
     files,
     validation: {
       canEnable,
-      findings: state.findings,
+      findings,
     },
     graph: buildGraph(state),
     nextActions:
@@ -745,6 +835,10 @@ const publishSkill = (state: LabSkillSessionState): void => {
   if (!state.draftDir || !fs.existsSync(state.draftDir)) {
     throw new Error('No compiled draft exists. Call compile_draft first.');
   }
+  const blockers = enableBlockers(state);
+  if (blockers.length) {
+    throw new Error(`Cannot publish incomplete lab Skill: ${blockers.map((finding) => finding.title).join('; ')}`);
+  }
   const targetDir = path.join(state.projectRoot, '.openscience', 'lab-skills', state.targetSkillName);
   fs.rmSync(targetDir, { recursive: true, force: true });
   fs.cpSync(state.draftDir, targetDir, { recursive: true });
@@ -757,6 +851,10 @@ const installSkill = (state: LabSkillSessionState, payload: JsonRecord): void =>
   const sourceDir = state.publishedDir || state.draftDir;
   if (!sourceDir || !fs.existsSync(sourceDir)) {
     throw new Error('No draft or published skill exists. Call compile_draft and publish_skill first.');
+  }
+  const blockers = enableBlockers(state);
+  if (blockers.length) {
+    throw new Error(`Cannot install incomplete lab Skill: ${blockers.map((finding) => finding.title).join('; ')}`);
   }
   const targetDir = asString(
     payload.targetDir || payload.target_dir,
@@ -880,7 +978,26 @@ async function main() {
           body.claims || body.items || body.claim ? body.claims || body.items || [body.claim] : [body]
         )
           .filter(isRecord)
-          .map((item, index) => normalizeClaim(item, state.claims.length + index));
+          .map((item, index) => normalizeClaim(item, state.claims.length + index))
+          .filter((claim) => claim.text.trim());
+        if (!incoming.length) {
+          state.findings = mergeById(state.findings, [
+            {
+              id: 'auto-empty-claim-submission',
+              severity: 'blocking',
+              title: '没有收到可沉淀的规则文本',
+              detail: 'extract_claims/review_claim 需要提交明确的 claim.text 或 claim 字段，不能提交空对象。',
+              target: 'extract_claims',
+            },
+          ]);
+          state.status = 'blocked';
+          persistSession(state);
+          return jsonText({
+            ...eventFor(state, action, { target: eventTarget }),
+            object: [],
+            panel: buildPanel(state),
+          });
+        }
         state.claims = mergeById(state.claims, incoming);
         persistSession(state);
         appendJsonl(path.join(sessionDir(state), 'claims.jsonl'), { action, claims: incoming, timestamp: now() });
@@ -922,11 +1039,13 @@ async function main() {
 
       if (action === 'compile_draft') {
         compileDraft(state, body);
+        const event = eventFor(state, action, {
+          target: { kind: 'draft', id: state.targetSkillName },
+          filePaths: [state.draftDir || ''],
+        });
+        appendJsonl(path.join(sessionDir(state), 'events.jsonl'), event);
         return jsonText({
-          ...eventFor(state, action, {
-            target: { kind: 'draft', id: state.targetSkillName },
-            filePaths: [state.draftDir || ''],
-          }),
+          ...event,
           object: { draftDir: state.draftDir },
           panel: buildPanel(state),
         });

@@ -342,6 +342,147 @@
   gap: 5px;
 }
 
+.science-report-embed {
+  display: grid;
+  gap: 8px;
+  margin: 13px 0 16px;
+  animation: medicalEvidenceReportLayerIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.science-report-embed--wide {
+  width: min(100%, 960px);
+}
+
+.science-report-embed--compact {
+  max-width: 520px;
+}
+
+.science-report-embed__media {
+  appearance: none;
+  display: flex;
+  width: 100%;
+  min-height: 96px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 0;
+  border-top: 1px solid var(--science-report-rule);
+  border-bottom: 1px solid var(--science-report-rule);
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 0;
+  color: inherit;
+}
+
+.science-report-embed__media img {
+  display: block;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.science-report-embed__media iframe {
+  display: block;
+  width: 100%;
+  min-height: 280px;
+  border: 0;
+  background: var(--color-bg-1);
+}
+
+.science-report-embed__fallback {
+  display: grid;
+  min-height: 120px;
+  place-items: center;
+  gap: 4px;
+  color: var(--color-text-3);
+  font-size: 12.5px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.science-report-embed__fallback b {
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.science-report-embed figcaption {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  color: var(--color-text-2);
+  font-size: 12.5px;
+  line-height: 19px;
+}
+
+.science-report-embed__captionHead {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.science-report-embed__captionHead > span {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-3);
+  font-size: 11.5px;
+  font-weight: 680;
+  line-height: 16px;
+}
+
+.science-report-embed__captionHead button {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  padding: 2px 5px;
+  color: var(--color-text-3);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.science-report-embed__captionHead button:hover {
+  background: color-mix(in srgb, var(--color-fill-2) 56%, transparent);
+  color: var(--color-text-1);
+}
+
+.science-report-embed__captionHead button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.science-report-embed__captionHead button:disabled:hover {
+  background: transparent;
+  color: var(--color-text-3);
+}
+
+.science-report-embed figcaption em {
+  max-width: min(100%, 360px);
+  overflow: hidden;
+  color: var(--color-text-3);
+  font-style: normal;
+  font-weight: 520;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.science-report-embed figcaption b {
+  color: var(--color-text-2);
+  font-size: 12.5px;
+  font-weight: 560;
+  line-height: 19px;
+}
+
 .science-report-artifactsSection {
   border-top: 1px solid var(--medical-evidence-rule);
   padding-top: 18px;
@@ -860,6 +1001,23 @@
   .science-evidence-chain__edge,
   .science-report-edge {
     grid-template-columns: 1fr;
+  }
+
+  .science-report-embed {
+    margin: 10px 0 14px;
+  }
+
+  .science-report-embed__media {
+    min-height: 72px;
+    padding: 8px 0;
+  }
+
+  .science-report-embed__media iframe {
+    min-height: 220px;
+  }
+
+  .science-report-embed figcaption em {
+    max-width: 100%;
   }
 
   .science-evidence-chain__verb {

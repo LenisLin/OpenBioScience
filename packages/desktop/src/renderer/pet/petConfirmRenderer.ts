@@ -28,6 +28,10 @@ const optionsEl = document.getElementById('options')!;
 let currentConfirmation: IConfirmation | null = null;
 let msgId = '';
 
+function isAlwaysAllowValue(value: unknown): boolean {
+  return value === 'proceed_always' || value === 'proceed_always_tool' || value === 'proceed_always_server';
+}
+
 /**
  * Render confirmation UI.
  */
@@ -58,7 +62,7 @@ function renderConfirmation(confirmation: IConfirmation): void {
       shortcut = 'Enter';
     } else if (option.value === 'cancel' || option.value === 'deny') {
       shortcut = 'Esc';
-    } else if (option.value === 'proceed_always') {
+    } else if (isAlwaysAllowValue(option.value)) {
       shortcut = 'A';
     } else if (option.value === 'proceed_once') {
       shortcut = 'Y';
@@ -95,6 +99,7 @@ function respond(value: any): void {
     msg_id: msgId,
     call_id: currentConfirmation.call_id,
     data: value,
+    always_allow: isAlwaysAllowValue(value),
   });
 
   currentConfirmation = null;
@@ -128,7 +133,7 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
   // A: always allow
   if (e.key === 'a' || e.key === 'A') {
     e.preventDefault();
-    const alwaysOption = currentConfirmation.options.find((opt) => opt.value === 'proceed_always');
+    const alwaysOption = currentConfirmation.options.find((opt) => isAlwaysAllowValue(opt.value));
     if (alwaysOption) {
       respond(alwaysOption.value);
     }

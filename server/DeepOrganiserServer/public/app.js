@@ -79,7 +79,7 @@ const sourceWorks = [
 const translations = {
   "zh-CN": {
     meta: { title: "OpenScience 下载" },
-    nav: { download: "下载", evidence: "证据", projects: "项目", preview: "客户端预览", updates: "更新源", language: "语言" },
+    nav: { download: "下载", evidence: "证据", videos: "视频", projects: "项目", preview: "客户端预览", updates: "更新源", language: "语言" },
     source: {
       panelKicker: "ResearAI Works",
       panelTitle: "ResearAI 的公开工作",
@@ -116,6 +116,28 @@ const translations = {
       secondary: "查看研究示例",
       verbs: ["检索证据...", "运行分析...", "生成图表...", "整理手稿...", "记录过程..."],
     },
+    cinema: {
+      stepA: {
+        kicker: "本地研究",
+        title: "研究从你的电脑开始。",
+        text: "读取文件、运行分析、生成图表，同时保留可检查的过程。",
+      },
+      stepB: {
+        kicker: "开源免费",
+        title: "自由选择模型和环境。",
+        text: "OpenScience 面向全球科研人员开放，适合接入自己的数据和模型。",
+      },
+      stepC: {
+        kicker: "科学模式",
+        title: "覆盖多学科研究。",
+        text: "350+ 科研能力覆盖生命科学、化学、工程计算、数据科学与因果推断。",
+      },
+      stepD: {
+        kicker: "可复查成果",
+        title: "结果可以被团队复查。",
+        text: "报告、图表、Notebook 和手稿会保留证据、代码和关键决定。",
+      },
+    },
     metrics: {
       kicker: "证据覆盖",
       title: "先有证据，再有结论。",
@@ -130,6 +152,19 @@ const translations = {
       kicker: "EVIDENCE-BACKED SCIENCE",
       title: "不是一次回答，而是一套研究记录。",
       subtitle: "每个图表、表格、Notebook 和手稿片段，都保留生成它的证据、代码和上下文。",
+    },
+    videos: {
+      kicker: "视频演示",
+      title: "看看 OpenScience 如何动起来。",
+      subtitle: "一个随滚动展开的短镜头：研究材料如何变成可检查的工作台。",
+      clipA: {
+        title: "连接科学 web",
+        text: "在研究开始前配置来源、连接和集成。",
+      },
+      clipB: {
+        title: "科研工作台",
+        text: "预览分析、笔记、图表和输出如何保留在同一个项目空间。",
+      },
     },
     scienceMode: {
       kicker: "SCIENCE MODE",
@@ -267,38 +302,40 @@ const translations = {
     },
     capabilitySwap: {
       kicker: "能力堆栈",
-      title: "把科研过程组织成可交付的成果。",
-      subtitle: "证据、代码、图表、笔记和手稿保留在同一个研究项目里，每个结果都能重新打开、检查和继续推进。",
+      title: "四种研究方式，都留下可审查的结果。",
+      subtitle: "从新会话、医学循证到科学研究和知识沉淀，OpenScience 把任务、证据、代码、图表和报告放进同一个可复现记录。",
       cards: [
         {
-          label: "证据",
-          title: "证据变得可用",
-          text: "来源、段落和结论绑定在一起。",
-          keywords: ["文献", "引用", "来源"],
+          label: "新会话",
+          title: "从一句任务开始",
+          text: "把问题、文件和数据放进同一个工作区。",
+          keywords: ["自然语言", "项目", "本地"],
+          image: "assets/showcase/openscience-new-session.png",
+          tone: "paper",
         },
         {
-          label: "分析",
-          title: "在本地运行分析",
-          text: "读取文件，运行代码，生成图表。",
-          keywords: ["数据", "代码", "图表"],
+          label: "医学循证",
+          title: "回答带着证据",
+          text: "结论绑定来源编号，关键建议可复查。",
+          keywords: ["PICO", "来源", "审查"],
+          image: "assets/showcase/openscience-medical-evidence.png",
+          tone: "green",
         },
         {
-          label: "成果",
-          title: "结果保留来路",
-          text: "计划、证据、代码和报告形成记录。",
-          keywords: ["Artifact", "历史", "复现"],
+          label: "科学研究",
+          title: "图表和报告一起生成",
+          text: "结构、代码、图表和解释并排保留。",
+          keywords: ["结构", "图表", "代码"],
+          image: "assets/showcase/openscience-science-artifact.png",
+          tone: "blue",
         },
         {
-          label: "学科",
-          title: "覆盖多学科研究",
-          text: "350+ skills 支持从分子到因果推断。",
-          keywords: ["10+ 方向", "350+ skills", "Science Mode"],
-        },
-        {
-          label: "审查",
-          title: "交付前先检查",
-          text: "引用、数字、图表步骤和边界可核查。",
-          keywords: ["审查", "边界", "交付"],
+          label: "研究记录",
+          title: "Artifact 可追溯",
+          text: "文件、修改、报告和证据进入同一记录。",
+          keywords: ["文件", "版本", "复现"],
+          image: "assets/showcase/openscience-research-run.png",
+          tone: "gold",
         },
       ],
     },
@@ -330,10 +367,14 @@ const translations = {
       navNew: "新会话",
       navSearch: "搜索",
       navSchedule: "定时任务",
+      collaboration: "协作功能",
+      navMessages: "消息页面",
+      navCalendar: "日历页面",
+      navDocs: "云文档",
+      navTasks: "任务页面",
       groupProjects: "科研项目",
-      groupChats: "最近会话",
-      chatA: "论文图表复现",
-      chatB: "实验报告整理",
+      projectA: "过敏性休克循证",
+      projectB: "肾上腺素观察方案",
       promptLabel: "自然语言任务",
       prompt: "分析这批实验数据，生成图表和一份可审查的研究报告。",
       projectHint: "Work in a project",
@@ -341,6 +382,25 @@ const translations = {
       artifactA: "实验数据",
       artifactB: "分析代码",
       artifactC: "研究报告",
+      taskABadge: "医学循证模式",
+      taskAStatus: "证据已整理",
+      taskATitle: "过敏性休克：肾上腺素、二线治疗与观察时间",
+      taskAText: "OpenScience 把问题拆成可核查结论，引用指南、药品标签和临床证据，并保留每条结论的来源。",
+      taskAFindingA: "立即处理",
+      taskAFindingAText: "疑似或确诊时优先肌注肾上腺素。",
+      taskAFindingB: "二线治疗",
+      taskAFindingBText: "抗组胺药和激素不能延误急救。",
+      taskAFindingC: "观察时间",
+      taskAFindingCText: "按严重程度、复发风险和气道风险分层。",
+      taskBBadge: "方案复核",
+      taskBStatus: "等待人工确认",
+      taskBTitle: "肾上腺素给药、随访和出院说明",
+      taskBText: "系统把剂量、禁忌、复发风险和出院教育放进同一份可复查记录，便于后续修改或交给团队。",
+      taskBStepA: "识别风险人群",
+      taskBStepB: "核对剂量和途径",
+      taskBStepC: "生成随访清单",
+      taskBNoteTitle: "Review note",
+      taskBNoteText: "每个建议都能回到对应来源，方便医生、研究者或合作者继续审查。",
       traceA: "本地执行",
       traceB: "Artifact 留痕",
       traceC: "项目继续推进",
@@ -373,7 +433,7 @@ const translations = {
   },
   en: {
     meta: { title: "OpenScience Download" },
-    nav: { download: "Download", evidence: "Evidence", projects: "Projects", preview: "Client Preview", updates: "Update Feed", language: "Language" },
+    nav: { download: "Download", evidence: "Evidence", videos: "Videos", projects: "Projects", preview: "Client Preview", updates: "Update Feed", language: "Language" },
     source: {
       panelKicker: "ResearAI Works",
       panelTitle: "Public work from ResearAI",
@@ -410,6 +470,28 @@ const translations = {
       secondary: "Explore research examples",
       verbs: ["searching evidence...", "running analyses...", "making figures...", "drafting manuscripts...", "recording history..."],
     },
+    cinema: {
+      stepA: {
+        kicker: "LOCAL RESEARCH",
+        title: "Research starts on your computer.",
+        text: "Read files, run analyses, and generate figures while the process stays inspectable.",
+      },
+      stepB: {
+        kicker: "OPEN AND FREE",
+        title: "Use your own models and environment.",
+        text: "OpenScience is free for researchers and built to work with your data.",
+      },
+      stepC: {
+        kicker: "SCIENCE MODE",
+        title: "Built for many sciences.",
+        text: "350+ research skills span life science, chemistry, engineering, data science, and causal inference.",
+      },
+      stepD: {
+        kicker: "REVIEWABLE OUTPUT",
+        title: "Results your team can inspect.",
+        text: "Reports, figures, notebooks, and manuscripts keep the evidence and decisions behind them.",
+      },
+    },
     metrics: {
       kicker: "EVIDENCE COVERAGE",
       title: "Evidence first. Claims second.",
@@ -424,6 +506,19 @@ const translations = {
       kicker: "EVIDENCE-BACKED SCIENCE",
       title: "Not a reply. A research record.",
       subtitle: "Figures, tables, notebooks, and manuscript drafts keep the evidence, code, and context that produced them.",
+    },
+    videos: {
+      kicker: "VIDEOS",
+      title: "See OpenScience in motion",
+      subtitle: "A short scroll-controlled view of how research material becomes an inspectable workspace.",
+      clipA: {
+        title: "Connect the scientific web",
+        text: "Configure research sources and integrations before the workspace begins.",
+      },
+      clipB: {
+        title: "Research workspace",
+        text: "Preview the artifact-first workspace where analysis, notes, and visual outputs stay together.",
+      },
     },
     scienceMode: {
       kicker: "SCIENCE MODE",
@@ -561,38 +656,40 @@ const translations = {
     },
     capabilitySwap: {
       kicker: "CAPABILITY STACK",
-      title: "Research work, organized as artifacts.",
-      subtitle: "Evidence, code, figures, notes, and manuscripts stay in one project record. Each result can be reopened, checked, and continued.",
+      title: "Four research modes. One reviewable record.",
+      subtitle: "From a new task to evidence review, scientific analysis, and reusable knowledge, OpenScience keeps evidence, code, figures, and reports together.",
       cards: [
         {
+          label: "New task",
+          title: "Start from one research request",
+          text: "Bring the question, files, and data into one workspace.",
+          keywords: ["Natural language", "Project", "Local"],
+          image: "assets/showcase/openscience-new-session.png",
+          tone: "paper",
+        },
+        {
           label: "Evidence",
-          title: "Evidence becomes usable",
-          text: "Sources, passages, and claims stay linked.",
-          keywords: ["Papers", "Citations", "Sources"],
+          title: "Answers carry sources",
+          text: "Claims stay tied to references and review points.",
+          keywords: ["PICO", "Sources", "Review"],
+          image: "assets/showcase/openscience-medical-evidence.png",
+          tone: "green",
         },
         {
-          label: "Analysis",
-          title: "Run analysis locally",
-          text: "Read files, run code, and generate figures.",
-          keywords: ["Data", "Code", "Figures"],
+          label: "Science",
+          title: "Figures and reports ship together",
+          text: "Structure, code, figures, and explanation remain side by side.",
+          keywords: ["Structure", "Figures", "Code"],
+          image: "assets/showcase/openscience-science-artifact.png",
+          tone: "blue",
         },
         {
-          label: "Artifacts",
-          title: "Results keep their path",
-          text: "Plans, evidence, code, and reports form a record.",
-          keywords: ["Artifacts", "History", "Reproduce"],
-        },
-        {
-          label: "Domains",
-          title: "Built for many sciences",
-          text: "350+ skills support molecules through causal inference.",
-          keywords: ["10+ domains", "350+ skills", "Science Mode"],
-        },
-        {
-          label: "Review",
-          title: "Check before delivery",
-          text: "Citations, numbers, figure steps, and boundaries remain inspectable.",
-          keywords: ["Review", "Boundaries", "Delivery"],
+          label: "Record",
+          title: "Artifacts keep their path",
+          text: "Files, edits, reports, and evidence form a reusable record.",
+          keywords: ["Files", "Versions", "Reproduce"],
+          image: "assets/showcase/openscience-research-run.png",
+          tone: "gold",
         },
       ],
     },
@@ -624,10 +721,14 @@ const translations = {
       navNew: "New Chat",
       navSearch: "Search",
       navSchedule: "Scheduled Tasks",
+      collaboration: "Collaboration",
+      navMessages: "Messages",
+      navCalendar: "Calendar",
+      navDocs: "Docs",
+      navTasks: "Tasks",
       groupProjects: "Research projects",
-      groupChats: "Recent conversations",
-      chatA: "Figure reproduction",
-      chatB: "Experiment report",
+      projectA: "Anaphylaxis evidence",
+      projectB: "Epinephrine observation plan",
       promptLabel: "Natural language task",
       prompt: "Analyze this experiment dataset, create figures, and draft a reviewable report.",
       projectHint: "Work in a project",
@@ -635,6 +736,25 @@ const translations = {
       artifactA: "Dataset",
       artifactB: "Analysis code",
       artifactC: "Research report",
+      taskABadge: "Medical Evidence Mode",
+      taskAStatus: "Evidence organized",
+      taskATitle: "Anaphylaxis: epinephrine, second-line therapy, and observation time",
+      taskAText: "OpenScience turns the question into checkable conclusions, cites guidelines, labels, and clinical evidence, and keeps the source behind each claim.",
+      taskAFindingA: "First response",
+      taskAFindingAText: "Use IM epinephrine promptly when anaphylaxis is suspected or diagnosed.",
+      taskAFindingB: "Second-line therapy",
+      taskAFindingBText: "Antihistamines and steroids must not delay acute rescue.",
+      taskAFindingC: "Observation",
+      taskAFindingCText: "Stratify by severity, recurrence risk, and airway risk.",
+      taskBBadge: "Plan review",
+      taskBStatus: "Awaiting review",
+      taskBTitle: "Epinephrine dosing, follow-up, and discharge notes",
+      taskBText: "Dose, cautions, recurrence risk, and discharge education stay in one reviewable record for later edits or team handoff.",
+      taskBStepA: "Identify high-risk groups",
+      taskBStepB: "Check dose and route",
+      taskBStepC: "Create follow-up checklist",
+      taskBNoteTitle: "Review note",
+      taskBNoteText: "Every recommendation can return to its source so clinicians, researchers, or collaborators can review it.",
       traceA: "Local execution",
       traceB: "Artifact trace",
       traceC: "Project continuity",
@@ -762,10 +882,14 @@ const translations = {
       navNew: "新規会話",
       navSearch: "検索",
       navSchedule: "定期タスク",
+      collaboration: "連携機能",
+      navMessages: "メッセージ",
+      navCalendar: "カレンダー",
+      navDocs: "ドキュメント",
+      navTasks: "タスク",
       groupProjects: "研究プロジェクト",
-      groupChats: "最近の会話",
-      chatA: "図表の再現",
-      chatB: "実験レポート",
+      projectA: "アナフィラキシー根拠",
+      projectB: "エピネフリン観察計画",
       promptLabel: "自然言語タスク",
       prompt: "この実験データを分析し、再現・レビュー・継続できる研究レポートを生成。",
       projectHint: "プロジェクトで作業",
@@ -773,9 +897,50 @@ const translations = {
       artifactA: "実験データ",
       artifactB: "分析コード",
       artifactC: "研究報告",
+      taskABadge: "医学エビデンスモード",
+      taskAStatus: "証拠整理済み",
+      taskATitle: "アナフィラキシー：エピネフリン、二次治療、観察時間",
+      taskAText: "OpenScience は問いを検証可能な結論に分解し、ガイドライン、添付文書、臨床証拠を結びつけます。",
+      taskAFindingA: "初期対応",
+      taskAFindingAText: "疑いまたは診断時は速やかに筋注エピネフリンを優先します。",
+      taskAFindingB: "二次治療",
+      taskAFindingBText: "抗ヒスタミン薬やステロイドで救急処置を遅らせません。",
+      taskAFindingC: "観察時間",
+      taskAFindingCText: "重症度、再発リスク、気道リスクで層別します。",
+      taskBBadge: "計画レビュー",
+      taskBStatus: "確認待ち",
+      taskBTitle: "エピネフリン投与、フォローアップ、退院説明",
+      taskBText: "用量、注意点、再発リスク、退院教育を一つの確認可能な記録にまとめます。",
+      taskBStepA: "高リスク群を特定",
+      taskBStepB: "用量と投与経路を確認",
+      taskBStepC: "フォローアップ一覧を作成",
+      taskBNoteTitle: "レビュー記録",
+      taskBNoteText: "各提案は出典に戻れるため、医師、研究者、共同作業者が確認できます。",
       traceA: "ローカル実行",
       traceB: "Artifact 記録",
       traceC: "プロジェクト継続",
+    },
+    cinema: {
+      stepA: {
+        kicker: "ローカル研究",
+        title: "研究は自分のPCから始まります。",
+        text: "ファイルを読み、分析を実行し、図を作成しながら、過程を確認できる形で残します。",
+      },
+      stepB: {
+        kicker: "オープンで無料",
+        title: "モデルと環境を自由に選べます。",
+        text: "OpenScience は研究者のための無料デスクトップ環境です。",
+      },
+      stepC: {
+        kicker: "サイエンスモード",
+        title: "多くの分野に対応。",
+        text: "350+ の研究スキルが生命科学、化学、工学計算、データ科学、因果推論を支えます。",
+      },
+      stepD: {
+        kicker: "確認できる成果",
+        title: "チームで結果を確認できます。",
+        text: "レポート、図、Notebook、原稿には根拠と判断の流れが残ります。",
+      },
     },
     downloads: {
       kicker: "DOWNLOAD",
@@ -894,10 +1059,14 @@ const translations = {
       navNew: "새 대화",
       navSearch: "검색",
       navSchedule: "예약 작업",
+      collaboration: "협업 기능",
+      navMessages: "메시지",
+      navCalendar: "캘린더",
+      navDocs: "문서",
+      navTasks: "작업",
       groupProjects: "연구 프로젝트",
-      groupChats: "최근 대화",
-      chatA: "그림 재현",
-      chatB: "실험 보고서",
+      projectA: "아나필락시스 근거",
+      projectB: "에피네프린 관찰 계획",
       promptLabel: "자연어 작업",
       prompt: "이 실험 데이터를 분석하고 재현, 검토, 이어서 진행할 수 있는 연구 보고서를 생성.",
       projectHint: "프로젝트에서 작업",
@@ -905,9 +1074,50 @@ const translations = {
       artifactA: "실험 데이터",
       artifactB: "분석 코드",
       artifactC: "연구 보고서",
+      taskABadge: "의학 근거 모드",
+      taskAStatus: "근거 정리됨",
+      taskATitle: "아나필락시스: 에피네프린, 이차 치료, 관찰 시간",
+      taskAText: "OpenScience는 질문을 확인 가능한 결론으로 나누고 가이드라인, 라벨, 임상 근거를 연결합니다.",
+      taskAFindingA: "초기 대응",
+      taskAFindingAText: "의심되거나 진단되면 근육주사 에피네프린을 우선합니다.",
+      taskAFindingB: "이차 치료",
+      taskAFindingBText: "항히스타민제와 스테로이드가 구조 처치를 늦추면 안 됩니다.",
+      taskAFindingC: "관찰 시간",
+      taskAFindingCText: "중증도, 재발 위험, 기도 위험에 따라 나눕니다.",
+      taskBBadge: "계획 검토",
+      taskBStatus: "확인 대기",
+      taskBTitle: "에피네프린 투여, 추적 관찰, 퇴원 안내",
+      taskBText: "용량, 주의점, 재발 위험, 퇴원 교육을 하나의 검토 가능한 기록으로 유지합니다.",
+      taskBStepA: "고위험군 식별",
+      taskBStepB: "용량과 경로 확인",
+      taskBStepC: "추적 관찰 목록 작성",
+      taskBNoteTitle: "검토 메모",
+      taskBNoteText: "각 권고는 출처로 돌아갈 수 있어 임상의와 연구자가 계속 확인할 수 있습니다.",
       traceA: "로컬 실행",
       traceB: "Artifact 기록",
       traceC: "프로젝트 지속",
+    },
+    cinema: {
+      stepA: {
+        kicker: "로컬 연구",
+        title: "연구는 내 컴퓨터에서 시작됩니다.",
+        text: "파일을 읽고 분석을 실행하며 그림을 만들고, 과정을 확인 가능한 기록으로 남깁니다.",
+      },
+      stepB: {
+        kicker: "오픈소스 무료",
+        title: "모델과 환경을 자유롭게 선택하세요.",
+        text: "OpenScience는 연구자를 위한 무료 데스크톱 작업공간입니다.",
+      },
+      stepC: {
+        kicker: "사이언스 모드",
+        title: "여러 학문 분야를 지원합니다.",
+        text: "350개 이상의 연구 기술이 생명과학, 화학, 공학 계산, 데이터 과학, 인과 추론을 지원합니다.",
+      },
+      stepD: {
+        kicker: "검토 가능한 결과",
+        title: "팀이 결과를 확인할 수 있습니다.",
+        text: "보고서, 그림, 노트북, 원고에는 근거와 결정 과정이 남습니다.",
+      },
     },
     downloads: {
       kicker: "DOWNLOAD",
@@ -1026,10 +1236,14 @@ const translations = {
       navNew: "Nueva conversación",
       navSearch: "Buscar",
       navSchedule: "Tareas programadas",
+      collaboration: "Colaboración",
+      navMessages: "Mensajes",
+      navCalendar: "Calendario",
+      navDocs: "Docs",
+      navTasks: "Tareas",
       groupProjects: "Proyectos",
-      groupChats: "Conversaciones",
-      chatA: "Reproducir figura",
-      chatB: "Informe experimental",
+      projectA: "Evidencia de anafilaxia",
+      projectB: "Plan de observación",
       promptLabel: "Tarea en lenguaje natural",
       prompt: "Analiza este dataset experimental y genera un informe reproducible, revisable y continuable.",
       projectHint: "Trabajar en un proyecto",
@@ -1037,9 +1251,50 @@ const translations = {
       artifactA: "Datos",
       artifactB: "Código",
       artifactC: "Informe",
+      taskABadge: "Modo de evidencia médica",
+      taskAStatus: "Evidencia organizada",
+      taskATitle: "Anafilaxia: epinefrina, segunda línea y observación",
+      taskAText: "OpenScience convierte la pregunta en conclusiones verificables y conserva la fuente de cada afirmación.",
+      taskAFindingA: "Primera respuesta",
+      taskAFindingAText: "Usar epinefrina IM pronto cuando se sospecha o confirma anafilaxia.",
+      taskAFindingB: "Segunda línea",
+      taskAFindingBText: "Antihistamínicos y esteroides no deben retrasar el rescate.",
+      taskAFindingC: "Observación",
+      taskAFindingCText: "Estratificar por gravedad, recurrencia y riesgo de vía aérea.",
+      taskBBadge: "Revisión del plan",
+      taskBStatus: "Pendiente de revisión",
+      taskBTitle: "Dosis de epinefrina, seguimiento y alta",
+      taskBText: "Dosis, alertas, recurrencia y educación al alta quedan en un registro revisable.",
+      taskBStepA: "Identificar alto riesgo",
+      taskBStepB: "Comprobar dosis y vía",
+      taskBStepC: "Crear seguimiento",
+      taskBNoteTitle: "Nota de revisión",
+      taskBNoteText: "Cada recomendación vuelve a su fuente para que el equipo pueda revisarla.",
       traceA: "Ejecución local",
       traceB: "Rastro artifact",
       traceC: "Continuidad del proyecto",
+    },
+    cinema: {
+      stepA: {
+        kicker: "INVESTIGACION LOCAL",
+        title: "La investigacion empieza en tu ordenador.",
+        text: "Lee archivos, ejecuta analisis y crea figuras con un proceso que puedes revisar.",
+      },
+      stepB: {
+        kicker: "ABIERTO Y GRATIS",
+        title: "Elige tus modelos y tu entorno.",
+        text: "OpenScience es un espacio de escritorio gratuito para investigadores.",
+      },
+      stepC: {
+        kicker: "SCIENCE MODE",
+        title: "Hecho para muchas ciencias.",
+        text: "350+ skills cubren ciencias de la vida, quimica, ingenieria, datos e inferencia causal.",
+      },
+      stepD: {
+        kicker: "RESULTADOS REVISABLES",
+        title: "Resultados que tu equipo puede revisar.",
+        text: "Informes, figuras, notebooks y manuscritos conservan la evidencia y las decisiones.",
+      },
     },
     downloads: {
       kicker: "DOWNLOAD",
@@ -1158,10 +1413,14 @@ const translations = {
       navNew: "محادثة جديدة",
       navSearch: "بحث",
       navSchedule: "مهام مجدولة",
+      collaboration: "التعاون",
+      navMessages: "الرسائل",
+      navCalendar: "التقويم",
+      navDocs: "المستندات",
+      navTasks: "المهام",
       groupProjects: "مشاريع بحثية",
-      groupChats: "محادثات حديثة",
-      chatA: "إعادة إنتاج الشكل",
-      chatB: "تقرير التجربة",
+      projectA: "دليل التأق",
+      projectB: "خطة مراقبة الإبينفرين",
       promptLabel: "مهمة باللغة الطبيعية",
       prompt: "حلل بيانات التجربة وأنشئ تقريرا قابلا للإعادة والمراجعة والمتابعة.",
       projectHint: "العمل داخل مشروع",
@@ -1169,9 +1428,50 @@ const translations = {
       artifactA: "بيانات التجربة",
       artifactB: "كود التحليل",
       artifactC: "تقرير البحث",
+      taskABadge: "وضع الدليل الطبي",
+      taskAStatus: "تم تنظيم الأدلة",
+      taskATitle: "التأق: الإبينفرين والعلاج الثاني ووقت المراقبة",
+      taskAText: "يحوّل OpenScience السؤال إلى استنتاجات قابلة للفحص ويربط كل ادعاء بمصدره.",
+      taskAFindingA: "الاستجابة الأولى",
+      taskAFindingAText: "استخدم الإبينفرين العضلي مبكرا عند الاشتباه أو التشخيص.",
+      taskAFindingB: "العلاج الثاني",
+      taskAFindingBText: "لا ينبغي أن تؤخر مضادات الهيستامين أو الستيرويدات الإنقاذ.",
+      taskAFindingC: "المراقبة",
+      taskAFindingCText: "قسّم حسب الشدة وخطر النكس وخطر مجرى الهواء.",
+      taskBBadge: "مراجعة الخطة",
+      taskBStatus: "بانتظار المراجعة",
+      taskBTitle: "جرعة الإبينفرين والمتابعة وتعليمات الخروج",
+      taskBText: "تبقى الجرعة والتنبيهات وخطر النكس وتعليمات الخروج في سجل قابل للمراجعة.",
+      taskBStepA: "تحديد الفئات عالية الخطر",
+      taskBStepB: "فحص الجرعة والطريق",
+      taskBStepC: "إنشاء قائمة متابعة",
+      taskBNoteTitle: "ملاحظة مراجعة",
+      taskBNoteText: "يمكن الرجوع بمصدر كل توصية كي يراجعها الفريق لاحقا.",
       traceA: "تشغيل محلي",
       traceB: "أثر Artifact",
       traceC: "استمرار المشروع",
+    },
+    cinema: {
+      stepA: {
+        kicker: "بحث محلي",
+        title: "يبدأ البحث من حاسوبك.",
+        text: "اقرأ الملفات وشغل التحليل وأنشئ الأشكال مع بقاء العملية قابلة للفحص.",
+      },
+      stepB: {
+        kicker: "مفتوح ومجاني",
+        title: "اختر النماذج والبيئة التي تريدها.",
+        text: "OpenScience مساحة عمل مكتبية مجانية للباحثين.",
+      },
+      stepC: {
+        kicker: "وضع العلم",
+        title: "مصمم لعلوم متعددة.",
+        text: "أكثر من 350 مهارة بحثية تغطي علوم الحياة والكيمياء والحوسبة الهندسية وعلوم البيانات والاستدلال السببي.",
+      },
+      stepD: {
+        kicker: "نتائج قابلة للمراجعة",
+        title: "نتائج يستطيع الفريق فحصها.",
+        text: "تحتفظ التقارير والأشكال والدفاتر والمخطوطات بالأدلة والقرارات خلفها.",
+      },
     },
     downloads: {
       kicker: "DOWNLOAD",
@@ -1268,6 +1568,7 @@ function applyTranslations() {
   renderDownloads();
   renderChannels();
   prepareSplitReveal();
+  prepareCinemaCopy();
   updateVerb(true);
   moveNavGlider(document.querySelector(".nav-link.is-active") || document.querySelector("[data-nav-link]"));
 }
@@ -1362,7 +1663,7 @@ function renderCapabilitySwap() {
     const article = document.createElement("article");
     article.className = "capability-swap-card";
     article.dataset.index = String(index);
-    article.dataset.visual = ["evidence", "analysis", "artifact", "domains", "review"][index % 5];
+    article.dataset.visual = card.tone || ["paper", "green", "blue", "gold"][index % 4];
     article.innerHTML = `
       <div class="capability-swap-card__head">
         <img src="${iconSrc(capabilitySwapIcon(index))}" alt="" loading="lazy" decoding="async" />
@@ -1372,7 +1673,7 @@ function renderCapabilitySwap() {
         <h3>${escapeHtml(card.title)}</h3>
         <p>${escapeHtml(card.text)}</p>
       </div>
-      ${capabilitySwapVisual(index, card.keywords || [])}
+      ${capabilitySwapVisual(index, card)}
     `;
     cardRoot.appendChild(article);
 
@@ -1391,61 +1692,23 @@ function renderCapabilitySwap() {
 }
 
 function capabilitySwapIcon(index) {
-  return ["source-search", "code-run", "artifact-history", "scientific-research-mode", "review-check"][index % 5];
+  return ["project-record", "medical-evidence-mode", "scientific-research-mode", "artifact-history"][index % 4];
 }
 
-function capabilitySwapVisual(index, keywords) {
+function capabilitySwapVisual(index, card) {
+  const keywords = Array.isArray(card.keywords) ? card.keywords : [];
+  const image = card.image || "assets/showcase/openscience-new-session.png";
   const chips = keywords
     .map((keyword) => `<span>${escapeHtml(keyword)}</span>`)
     .join("");
-  if (index === 0) {
-    return `
-      <div class="capability-card-visual capability-card-visual--evidence">
-        <div class="source-stack">
-          <span><img src="${iconSrc("evidence-papers")}" alt="" />11M+</span>
-          <span><img src="${iconSrc("evidence-regulatory")}" alt="" />225K+</span>
-          <span><img src="${iconSrc("evidence-trials")}" alt="" />1M+</span>
-        </div>
-        <div class="claim-card">
-          <b>Claim</b>
-          <p>linked to source passages</p>
-          <em>E1 · E2 · E3</em>
-        </div>
-        <div class="capability-keywords">${chips}</div>
-      </div>
-    `;
-  }
-  if (index === 1) {
-    return `
-      <div class="capability-card-visual capability-card-visual--analysis">
-        <div class="mini-table"><span></span><span></span><span></span><span></span><b></b><b></b><b></b><b></b></div>
-        <pre>run_analysis(data)\nplot.figure()</pre>
-        <div class="mini-chart"><i></i><i></i><i></i><i></i></div>
-        <div class="capability-keywords">${chips}</div>
-      </div>
-    `;
-  }
-  if (index === 2) {
-    return `
-      <div class="capability-card-visual capability-card-visual--artifact">
-        ${["protocol.md", "evidence.json", "analysis.py", "figure.svg", "report.docx"].map((file) => `<span><b></b>${escapeHtml(file)}</span>`).join("")}
-        <div class="capability-keywords">${chips}</div>
-      </div>
-    `;
-  }
-  if (index === 3) {
-    return `
-      <div class="capability-card-visual capability-card-visual--domains">
-        <strong>350+</strong>
-        <div>${["Life science", "Drug discovery", "Engineering", "Social science", "Causal inference"].map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>
-        <div class="capability-keywords">${chips}</div>
-      </div>
-    `;
-  }
   return `
-    <div class="capability-card-visual capability-card-visual--review">
-      ${["Citations checked", "Numbers traced", "Figure steps logged", "Boundaries stated"].map((item) => `<span><b></b>${escapeHtml(item)}</span>`).join("")}
-      <div class="capability-keywords">${chips}</div>
+    <div class="capability-screenshot-board capability-screenshot-board--${escapeHtml(card.tone || "paper")}">
+      <div class="capability-screenshot-frame">
+        <img src="${escapeHtml(image)}" alt="${escapeHtml(card.title)}" loading="lazy" decoding="async" />
+      </div>
+      <div class="capability-screenshot-meta">
+        <div class="capability-keywords">${chips}</div>
+      </div>
     </div>
   `;
 }
@@ -1787,6 +2050,293 @@ function setupSpotlightCards() {
   });
 }
 
+function prepareCinemaCopy() {
+  document.querySelectorAll(".cinema-copy h2, .cinema-copy > span").forEach((node) => {
+    const text = node.textContent?.trim() || "";
+    if (!text) return;
+    const splitByWord = /\s/u.test(text);
+    const parts = splitByWord ? text.split(/(\s+)/u) : [...text];
+    node.innerHTML = parts
+      .map((part) => {
+        if (!part) return "";
+        if (/^\s+$/u.test(part)) return part;
+        return `<span class="cinema-word">${escapeHtml(part)}</span>`;
+      })
+      .join("");
+  });
+}
+
+function setupHeroCinemaBridge() {
+  const hero = document.querySelector(".hero-section");
+  const motionLayer = document.getElementById("heroMotionLayer");
+  const bridge = document.getElementById("heroCinemaBridge");
+  const previewVideo = document.getElementById("heroCinemaPreview");
+  const cinema = document.querySelector(".scroll-cinema");
+  if (!hero || !motionLayer) return;
+
+  let ticking = false;
+  const motionScale = 1.8;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (previewVideo) {
+    previewVideo.muted = true;
+    previewVideo.playsInline = true;
+    previewVideo.loop = true;
+    previewVideo.preload = "metadata";
+    previewVideo.playbackRate = 1 / motionScale;
+  }
+  const smooth = (value) => {
+    const clamped = Math.min(1, Math.max(0, value));
+    return clamped * clamped * (3 - 2 * clamped);
+  };
+
+  const update = () => {
+    ticking = false;
+    const viewport = window.innerHeight || 1;
+    const heroRect = hero.getBoundingClientRect();
+    const cinemaTop = cinema?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY;
+    const travel = Math.max(0, -heroRect.top);
+    const prelude = smooth((travel - viewport * 0.34) / Math.max(1, viewport * 0.58 * motionScale));
+    const lift = smooth((travel - viewport * 0.64) / Math.max(1, viewport * 0.54 * motionScale));
+    const handoff = smooth((viewport * 0.54 - cinemaTop) / Math.max(1, viewport * 0.52 * motionScale));
+    const compact = window.innerWidth <= 760;
+
+    motionLayer.style.setProperty("--hero-motion-opacity", (0.28 + prelude * 0.34 - handoff * 0.36).toFixed(3));
+    motionLayer.style.setProperty("--hero-motion-y", `${(prelude * (compact ? 150 : 210) - lift * (compact ? 70 : 110) - handoff * 80).toFixed(1)}px`);
+    motionLayer.style.setProperty("--hero-motion-scale", (1 + prelude * 0.075).toFixed(4));
+    motionLayer.style.setProperty("--hero-motion-radius", `${(18 + prelude * 18).toFixed(1)}px`);
+    motionLayer.style.setProperty("--hero-motion-veil", (1 - prelude * 0.5).toFixed(3));
+    motionLayer.style.setProperty("--hero-motion-z", prelude > 0.18 && handoff < 0.94 ? "1" : "0");
+    motionLayer.style.setProperty("--hero-motion-shadow", prelude > 0.2 ? "0 34px 120px rgba(24, 21, 18, 0.16)" : "none");
+    motionLayer.style.setProperty("--hero-motion-mask", prelude > 0.44 ? "linear-gradient(180deg, #000 0%, #000 100%)" : "linear-gradient(180deg, transparent 0%, #000 16%, #000 78%, transparent 100%)");
+
+    if (!bridge) return;
+    const bridgeReveal = smooth((travel - viewport * 0.62) / Math.max(1, viewport * 0.48 * motionScale));
+    const bridgeOpacity = Math.min(0.98, bridgeReveal * 1.12) * (1 - handoff * 0.9);
+    bridge.style.setProperty("--hero-cinema-opacity", bridgeOpacity.toFixed(3));
+    bridge.style.setProperty("--hero-cinema-y", `${((compact ? 270 : 210) - bridgeReveal * (compact ? 150 : 175) - handoff * 90).toFixed(1)}px`);
+    bridge.style.setProperty("--hero-cinema-scale", (0.88 + bridgeReveal * 0.12).toFixed(4));
+    bridge.style.setProperty("--hero-cinema-radius", `${(44 - bridgeReveal * 18).toFixed(1)}px`);
+    bridge.style.setProperty("--hero-cinema-z", bridgeReveal > 0.12 && handoff < 0.95 ? "1" : "0");
+    bridge.style.setProperty("--hero-cinema-shade", (0.78 - bridgeReveal * 0.36).toFixed(3));
+
+    if (previewVideo && !reduceMotion) {
+      const shouldPlay = bridgeOpacity > 0.36 && handoff < 0.82;
+      if (shouldPlay && previewVideo.paused) {
+        previewVideo.playbackRate = 1 / motionScale;
+        previewVideo.play().catch(() => {});
+      } else if (!shouldPlay && !previewVideo.paused) {
+        previewVideo.pause();
+      }
+      if (bridgeReveal < 0.08 || handoff > 0.9) {
+        try {
+          previewVideo.currentTime = 0;
+        } catch {
+          // Metadata can arrive after the first scroll event.
+        }
+      }
+    }
+  };
+
+  const schedule = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  };
+
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", schedule);
+  update();
+}
+
+function setupScrollCinema() {
+  const section = document.querySelector(".scroll-cinema");
+  const video = document.getElementById("researchCinema");
+  const steps = [...document.querySelectorAll("[data-cinema-step]")];
+  const progressBar = document.getElementById("cinemaProgress");
+  if (!section || !video || !steps.length) return;
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let ticking = false;
+  let raf = 0;
+  let started = false;
+  let completed = false;
+  let fallbackStart = 0;
+  let fallbackRunning = false;
+  let lastScrollY = window.scrollY;
+  let scrollDirection = 1;
+  const speedScale = 1.8;
+  const fallbackDuration = 5.2 * speedScale;
+  video.preload = "auto";
+  video.muted = true;
+  video.playsInline = true;
+  video.playbackRate = 1 / speedScale;
+
+  const smooth = (value) => {
+    const clamped = Math.min(1, Math.max(0, value));
+    return clamped * clamped * (3 - 2 * clamped);
+  };
+
+  const updateStep = (step, progress, forceVisible = false) => {
+    const start = Number(step.dataset.start || "0");
+    const end = Number(step.dataset.end || "1");
+    const local = (progress - start) / Math.max(0.001, end - start);
+    const enter = smooth(local / 0.22);
+    const exit = 1 - smooth((local - 0.76) / 0.28);
+    const visible = forceVisible ? 1 : Math.min(1, Math.max(0, enter * exit));
+    const direction = step.classList.contains("cinema-copy--right") ? 1 : -1;
+    step.style.opacity = visible.toFixed(3);
+    step.style.filter = `blur(${((1 - visible) * 4).toFixed(2)}px)`;
+    step.style.transform = `translate3d(${(direction * (1 - visible) * 24).toFixed(1)}px, ${((1 - visible) * 14).toFixed(1)}px, 0)`;
+    step.toggleAttribute("data-active", visible > 0.08);
+
+    [...step.querySelectorAll(".cinema-word")].forEach((word, index) => {
+      const dense = step.querySelectorAll(".cinema-word").length > 9;
+      const wordProgress = smooth((local - (dense ? 0.02 : 0.045) - index * (dense ? 0.006 : 0.013)) / (dense ? 0.22 : 0.3));
+      word.style.setProperty("--word-visible", (visible * wordProgress).toFixed(3));
+    });
+  };
+
+  const paintProgress = (progress) => {
+    const clamped = Math.min(1, Math.max(0, progress));
+    section.style.setProperty("--cinema-progress", clamped.toFixed(4));
+    if (progressBar) progressBar.style.width = `${(clamped * 100).toFixed(2)}%`;
+    steps.forEach((step) => updateStep(step, clamped));
+    section.dataset.cinemaProgress = clamped.toFixed(3);
+  };
+
+  const getDuration = () => (
+    Number.isFinite(video.duration) && video.duration > 0 ? video.duration : fallbackDuration
+  );
+
+  const finish = () => {
+    completed = true;
+    started = false;
+    fallbackRunning = false;
+    section.classList.remove("is-playing");
+    section.classList.add("is-complete", "has-video-frame");
+    section.dataset.cinemaState = "complete";
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    paintProgress(1);
+    steps.forEach((step) => updateStep(step, 0.92, step.dataset.cinemaStep === "final"));
+  };
+
+  const tick = () => {
+    if (!started) return;
+    const progress = fallbackRunning
+      ? (performance.now() - fallbackStart) / (fallbackDuration * 1000)
+      : video.currentTime / getDuration();
+    paintProgress(progress);
+    if (progress >= 0.995 || video.ended) {
+      finish();
+      return;
+    }
+    raf = requestAnimationFrame(tick);
+  };
+
+  const start = async () => {
+    if (started || completed || reduceMotion) return;
+    started = true;
+    fallbackRunning = false;
+    section.classList.add("is-playing");
+    section.classList.remove("is-complete");
+    section.dataset.cinemaState = "playing";
+    paintProgress(0.001);
+
+    try {
+      video.currentTime = 0;
+      video.playbackRate = 1 / speedScale;
+      await video.play();
+    } catch {
+      fallbackStart = performance.now();
+      fallbackRunning = true;
+      section.dataset.cinemaState = "fallback";
+    }
+
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(tick);
+  };
+
+  const reset = () => {
+    if (!started && !completed) return;
+    started = false;
+    completed = false;
+    fallbackRunning = false;
+    section.classList.remove("is-playing", "is-complete", "has-video-frame");
+    section.dataset.cinemaState = "idle";
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    video.pause();
+    try {
+      video.currentTime = 0;
+    } catch {
+      // Ignore metadata timing differences across browsers.
+    }
+    paintProgress(0);
+  };
+
+  const updateEntry = () => {
+    ticking = false;
+    const rect = section.getBoundingClientRect();
+    const viewport = window.innerHeight || 1;
+    const entryOpacity = smooth((viewport * 0.9 - rect.top) / Math.max(1, viewport * 0.62));
+    section.style.setProperty("--cinema-entry-opacity", entryOpacity.toFixed(3));
+
+    if (reduceMotion) {
+      section.classList.add("is-complete");
+      section.dataset.cinemaState = "reduced-motion";
+      paintProgress(1);
+      return;
+    }
+
+    if (scrollDirection < 0 && rect.top > viewport * 0.72) {
+      reset();
+      return;
+    }
+
+    const inPlayZone = rect.top <= viewport * 0.82 && rect.bottom >= viewport * 0.22;
+    if (inPlayZone) start();
+  };
+
+  const schedule = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(updateEntry);
+  };
+
+  video.addEventListener("loadeddata", () => section.classList.add("has-video-frame"));
+  video.addEventListener("loadedmetadata", () => {
+    video.playbackRate = 1 / speedScale;
+  });
+  video.addEventListener("canplay", () => {
+    if (started || completed) section.classList.add("has-video-frame");
+  });
+  video.addEventListener("playing", () => {
+    section.classList.add("has-video-frame");
+    section.dataset.cinemaState = "playing";
+  });
+  video.addEventListener("timeupdate", () => {
+    if (video.currentTime > 0.04) section.classList.add("has-video-frame");
+  });
+  video.addEventListener("ended", finish);
+  section.dataset.cinemaState = "idle";
+  video.load();
+  paintProgress(0);
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", schedule);
+  window.addEventListener("wheel", (event) => {
+    scrollDirection = event.deltaY >= 0 ? 1 : -1;
+  }, { passive: true });
+  window.addEventListener("scroll", () => {
+    const nextScrollY = window.scrollY;
+    if (nextScrollY !== lastScrollY) {
+      scrollDirection = nextScrollY > lastScrollY ? 1 : -1;
+      lastScrollY = nextScrollY;
+    }
+  }, { passive: true });
+  updateEntry();
+}
+
 function setupScrollTone() {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     document.documentElement.style.setProperty("--warm-page-opacity", "0.42");
@@ -1812,6 +2362,30 @@ function setupScrollTone() {
 
 function setupNav() {
   const links = [...document.querySelectorAll("[data-nav-link]")];
+  const sectionIds = links
+    .map((link) => link.getAttribute("href") || "")
+    .filter((href) => href.startsWith("#"))
+    .map((href) => href.slice(1));
+  let ticking = false;
+
+  const updateActiveFromScroll = () => {
+    ticking = false;
+    const anchorY = window.scrollY + Math.min(window.innerHeight * 0.34, 360);
+    let activeId = sectionIds[0];
+    sectionIds.forEach((id) => {
+      const section = document.getElementById(id);
+      if (section && section.offsetTop <= anchorY) activeId = id;
+    });
+    const activeLink = document.querySelector(`[data-nav-link][href="#${activeId}"]`);
+    if (activeLink) setActiveNav(activeLink);
+  };
+
+  const scheduleScrollSpy = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(updateActiveFromScroll);
+  };
+
   links.forEach((link) => {
     link.addEventListener("mouseenter", () => moveNavGlider(link));
     link.addEventListener("focus", () => moveNavGlider(link));
@@ -1821,28 +2395,15 @@ function setupNav() {
     moveNavGlider(document.querySelector(".nav-link.is-active") || links[0]);
   });
   window.addEventListener("resize", () => {
+    scheduleScrollSpy();
     moveNavGlider(document.querySelector(".nav-link.is-active") || links[0]);
   });
+  window.addEventListener("scroll", scheduleScrollSpy, { passive: true });
 
-  if ("IntersectionObserver" in window) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (!visible) return;
-        const link = document.querySelector(`[data-nav-link][href="#${visible.target.id}"]`);
-        if (link) setActiveNav(link);
-      },
-      { rootMargin: "-28% 0px -55% 0px", threshold: [0.1, 0.35, 0.65] },
-    );
-    ["download", "evidence", "projects"].forEach((id) => {
-      const section = document.getElementById(id);
-      if (section) observer.observe(section);
-    });
-  }
-
-  requestAnimationFrame(() => moveNavGlider(document.querySelector(".nav-link.is-active") || links[0]));
+  requestAnimationFrame(() => {
+    updateActiveFromScroll();
+    moveNavGlider(document.querySelector(".nav-link.is-active") || links[0]);
+  });
 }
 
 function setActiveNav(link) {
@@ -1858,6 +2419,96 @@ function moveNavGlider(link) {
   const linkRect = link.getBoundingClientRect();
   glider.style.width = `${Math.max(28, linkRect.width)}px`;
   glider.style.transform = `translateX(${linkRect.left - clusterRect.left}px)`;
+}
+
+function setupHomePreviewDemo() {
+  const root = document.querySelector("[data-preview-root]");
+  if (!root) return;
+
+  const panels = [...root.querySelectorAll("[data-preview-panel]")];
+  const navItems = [...document.querySelectorAll("[data-preview-nav]")];
+  const cursor = root.querySelector(".os-preview-cursor");
+  const validNames = new Set(panels.map((panel) => panel.dataset.previewPanel));
+  const sequence = ["new", "taskA", "taskB"];
+  let activeName = "";
+  let autoIndex = 0;
+  let autoTimer = 0;
+  let pauseUntil = 0;
+
+  const pulseCursor = (name) => {
+    if (!cursor) return;
+    const escapedName = window.CSS?.escape ? CSS.escape(name) : name;
+    const target = document.querySelector(`[data-preview-nav="${escapedName}"]`);
+    const host = root.closest(".os-main-preview__window") || root;
+    if (target && host) {
+      const hostRect = host.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      cursor.style.setProperty("--cursor-x", `${(targetRect.left - hostRect.left + targetRect.width * 0.18).toFixed(1)}px`);
+      cursor.style.setProperty("--cursor-y", `${(targetRect.top - hostRect.top + targetRect.height * 0.52).toFixed(1)}px`);
+    }
+    root.dataset.previewCursor = name;
+    cursor.classList.remove("is-clicking");
+    void cursor.offsetWidth;
+    cursor.classList.add("is-clicking");
+  };
+
+  const activate = (name, options = {}) => {
+    if (!validNames.has(name)) return;
+    const isSame = name === activeName;
+    if (options.cursor) pulseCursor(name);
+    if (isSame && !options.force) return;
+    activeName = name;
+    root.dataset.activePreview = name;
+    root.dataset.previewCursor = name;
+
+    panels.forEach((panel) => {
+      const isActive = panel.dataset.previewPanel === name;
+      panel.classList.toggle("is-active", isActive);
+      panel.hidden = !isActive;
+    });
+
+    navItems.forEach((item) => {
+      item.classList.toggle("is-active", item.dataset.previewNav === name);
+      item.setAttribute("aria-current", item.dataset.previewNav === name ? "page" : "false");
+    });
+  };
+
+  const scheduleAuto = (delay = 0) => {
+    window.clearTimeout(autoTimer);
+    autoTimer = window.setTimeout(() => {
+      if (Date.now() < pauseUntil) {
+        scheduleAuto(Math.max(600, pauseUntil - Date.now()));
+        return;
+      }
+      const name = sequence[autoIndex % sequence.length];
+      activate(name, { cursor: true, force: true });
+      autoIndex += 1;
+      scheduleAuto(name === "new" ? 3200 : 4300);
+    }, delay);
+  };
+
+  navItems.forEach((item) => {
+    const name = item.dataset.previewNav;
+    item.setAttribute("role", "button");
+    item.tabIndex = 0;
+    const activateFromUser = () => {
+      pauseUntil = Date.now() + 6500;
+      activate(name, { cursor: true });
+      scheduleAuto(6500);
+    };
+    item.addEventListener("click", activateFromUser);
+    item.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        activateFromUser();
+      }
+    });
+  });
+
+  activate("new", { force: true });
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    scheduleAuto(650);
+  }
 }
 
 function updateVerb(force = false) {
@@ -1899,9 +2550,12 @@ setupLanguageSelect();
 setupSourceMenu();
 setupReveal();
 setupNav();
+setupHomePreviewDemo();
 setupVerbTicker();
 setupSpotlightCards();
 setupScrollTone();
 applyTranslations();
 setupCapabilitySwap();
+setupHeroCinemaBridge();
+setupScrollCinema();
 loadStatus();

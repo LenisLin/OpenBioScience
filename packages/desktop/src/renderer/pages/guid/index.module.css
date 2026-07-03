@@ -219,6 +219,155 @@
   line-height: 1;
 }
 
+.researchHeroTitleGroup {
+  width: min(100%, 860px);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.researchHeroTopLogo {
+  width: 92px;
+  height: 92px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.96;
+}
+
+.researchHeroTopLogoImage {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  display: block;
+}
+
+.researchHeroTitle {
+  width: min(100%, 860px);
+  min-height: 38px;
+  margin-inline: auto;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 16px;
+  line-height: 1.28;
+  letter-spacing: 0;
+  text-wrap: balance;
+  font-size: clamp(32px, 2.8vw, 44px);
+  font-weight: 720;
+}
+
+.researchHeroWordmark {
+  height: 55px;
+  width: 196px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(5px);
+}
+
+.researchHeroWordmarkImage {
+  width: 196px;
+  height: 55px;
+  object-fit: contain;
+  display: block;
+}
+
+.researchHeroPrefix {
+  flex: 0 0 auto;
+  color: var(--color-text-0);
+}
+
+.researchHeroPhrase {
+  min-width: 0;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  color: #8a5a2b;
+  white-space: nowrap;
+}
+
+.researchHeroUnit {
+  display: inline-block;
+  transform: translateY(12px);
+  opacity: 0;
+  animation: researchHeroSplitIn 560ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--split-index, 0) * 34ms);
+  will-change: transform, opacity;
+}
+
+.researchHeroSpace {
+  display: inline-block;
+  width: 0.28em;
+}
+
+@keyframes researchHeroSplitIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .researchHeroTitleGroup {
+    gap: 10px;
+  }
+
+  .researchHeroTopLogo {
+    width: 70px;
+    height: 70px;
+  }
+
+  .researchHeroTopLogoImage {
+    width: 70px;
+    height: 70px;
+  }
+
+  .researchHeroTitle {
+    min-height: 72px;
+    flex-wrap: wrap;
+    align-items: center;
+    align-content: center;
+    gap: 4px 8px;
+    font-size: clamp(28px, 8vw, 34px);
+  }
+
+  .researchHeroWordmark {
+    height: 44px;
+    width: 160px;
+    transform: translateY(3px);
+  }
+
+  .researchHeroWordmarkImage {
+    width: 160px;
+    height: 44px;
+  }
+
+  .researchHeroPhrase {
+    flex-basis: 100%;
+    min-width: 0;
+    justify-content: center;
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .researchHeroUnit {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: none;
+  }
+}
+
 .heroSubtitle {
   margin: 0 auto 14px;
   max-width: 760px;
@@ -557,6 +706,10 @@
   background: var(--bg-2);
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-border-2) 34%, transparent);
   box-sizing: border-box;
+}
+
+.guidContextRowSingle {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .guidContextRowWithBadge {
@@ -956,27 +1109,33 @@
 .actionConfigGroup {
   display: inline-flex;
   align-items: center;
-  gap: 0;
+  gap: 4px;
   min-width: 0;
   flex: 0 1 auto;
 }
 
+.actionServerConfig {
+  width: clamp(92px, 18vw, 154px);
+  min-width: 0;
+  flex: 0 1 154px;
+}
+
 /* 首页输入框右下「模型 / 模式」按钮：与对话框 .sendbox-tools/.sendbox-actions 同款 */
-.actionSubmit :global(.sendbox-model-btn),
-.actionSubmit :global(.sendbox-model-btn:hover),
-.actionSubmit :global(.sendbox-model-btn:active),
-.actionSubmit :global(.sendbox-model-btn:focus),
-.actionSubmit :global(.sendbox-model-btn:focus-visible) {
+.actionMiddle :global(.sendbox-model-btn),
+.actionMiddle :global(.sendbox-model-btn:hover),
+.actionMiddle :global(.sendbox-model-btn:active),
+.actionMiddle :global(.sendbox-model-btn:focus),
+.actionMiddle :global(.sendbox-model-btn:focus-visible) {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   color: var(--text-secondary) !important;
 }
 
-.actionSubmit :global(.sendbox-model-btn:hover),
-.actionSubmit :global(.sendbox-model-btn:active),
-.actionSubmit :global(.sendbox-model-btn:focus),
-.actionSubmit :global(.sendbox-model-btn:focus-visible) {
+.actionMiddle :global(.sendbox-model-btn:hover),
+.actionMiddle :global(.sendbox-model-btn:active),
+.actionMiddle :global(.sendbox-model-btn:focus),
+.actionMiddle :global(.sendbox-model-btn:focus-visible) {
   color: var(--text-primary) !important;
 }
 
@@ -993,8 +1152,17 @@
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
-  margin-left: auto;
   min-width: 0;
+}
+
+.actionMiddle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .workspaceFootnote {
@@ -1048,6 +1216,59 @@
 .workspaceEmptyBtnActive:hover {
   color: var(--color-text-1);
   background: var(--bg-base);
+}
+
+.collaborationEmptyBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  font-size: 14px;
+  font-weight: 560;
+  color: var(--color-text-3);
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    color 0.15s,
+    background 0.15s,
+    box-shadow 0.18s;
+  line-height: 1;
+}
+
+.collaborationEmptyBtn:hover {
+  color: var(--color-text-2);
+  background: var(--color-fill-3);
+}
+
+.collaborationEmptyBtnActive {
+  color: var(--color-text-1);
+  background: var(--bg-base);
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.035),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-white) 56%, transparent);
+}
+
+.collaborationEmptyBtnActive:hover {
+  color: var(--color-text-1);
+  background: var(--bg-base);
+}
+
+.collaborationContextName {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+  opacity: 0.72;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 /* 选中态：和空状态同色系，不做颜色跳变 */
@@ -1335,7 +1556,7 @@
 
   .actionSubmit {
     flex-shrink: 0;
-    margin-left: 8px;
+    margin-left: 0;
   }
 }
 

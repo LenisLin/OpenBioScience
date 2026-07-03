@@ -90,7 +90,7 @@ describe('UpdateModal manual install fallback', () => {
           assets: [],
           recommendedAsset: {
             name: 'DeepOrganiser-2.1.14-mac-arm64.dmg',
-            url: 'https://static.deepscientist.cc/releases/2.1.14/DeepOrganiser-2.1.14-mac-arm64.dmg',
+            url: 'https://openscience.cc/2.1.14/DeepOrganiser-2.1.14-mac-arm64.dmg',
             fallbackUrl:
               'https://github.com/ResearAI/DeepOrganiser/releases/download/v2.1.14/DeepOrganiser-2.1.14-mac-arm64.dmg',
             size: 123,
@@ -141,7 +141,7 @@ describe('UpdateModal manual install fallback', () => {
 
     expect(mocks.updateDownloadMock).toHaveBeenCalledWith({
       downloadId: expect.any(String),
-      url: 'https://static.deepscientist.cc/releases/2.1.14/DeepOrganiser-2.1.14-mac-arm64.dmg',
+      url: 'https://openscience.cc/2.1.14/DeepOrganiser-2.1.14-mac-arm64.dmg',
       fallbackUrl:
         'https://github.com/ResearAI/DeepOrganiser/releases/download/v2.1.14/DeepOrganiser-2.1.14-mac-arm64.dmg',
       file_name: 'DeepOrganiser-2.1.14-mac-arm64.dmg',

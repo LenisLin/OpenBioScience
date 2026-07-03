@@ -1,6 +1,6 @@
 {
   "welcome": {
-    "title": "Hi，今天有什么安排？",
+    "title": "OpenScience 帮你",
     "placeholder": "发消息、上传文件、打开文件夹或创建定时任务...",
     "linkFolder": "打开文件夹",
     "newConversation": "新会话",

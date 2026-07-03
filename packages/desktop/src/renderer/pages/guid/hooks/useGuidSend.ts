@@ -570,7 +570,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
         : undefined;
     const baseSelectedSessionMcpServersForExtra =
       selectedMcpServerIds !== undefined ? selectedSessionMcpServers : selectedSessionMcpServersToSend;
-    const selectedSessionMcpServersWithMedicalEvidence = mergeSessionMcpServers([
+    const selectedSessionMcpServersWithModeRequirements = mergeSessionMcpServers([
       ...baseSelectedSessionMcpServersForExtra,
       ...(medicalEvidenceSessionMcpServer ? [medicalEvidenceSessionMcpServer] : []),
       ...(imageGenerationSessionMcpServer ? [imageGenerationSessionMcpServer] : []),
@@ -584,7 +584,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       .map((server) => toSessionMcpServer(server));
     const loadedMcpServersForSnapshot = mergeSessionMcpServers([
       ...selectedUserMcpServersForSnapshot,
-      ...selectedSessionMcpServersWithMedicalEvidence,
+      ...selectedSessionMcpServersWithModeRequirements,
     ]);
     const loadedMcpStatusesForSnapshot = buildConversationMcpStatuses(loadedMcpServersForSnapshot);
 
@@ -682,11 +682,11 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
           ...(!is_preset && enabled_skills_to_send?.length ? { enabled_skills: enabled_skills_to_send } : {}),
           ...(!is_preset && excludeBuiltinSkills?.length ? { exclude_builtin_skills: excludeBuiltinSkills } : {}),
           selected_mcp_server_ids: selectedUserMcpServerIdsToSend,
-          selected_session_mcp_servers: selectedSessionMcpServersWithMedicalEvidence,
+          selected_session_mcp_servers: selectedSessionMcpServersWithModeRequirements,
           mcp_server_ids: selectedUserMcpServerIdsToSend,
           mcp_servers: loadedMcpServersForSnapshot.map((server) => server.name),
           mcp_statuses: loadedMcpStatusesForSnapshot,
-          session_mcp_servers: selectedSessionMcpServersWithMedicalEvidence,
+          session_mcp_servers: selectedSessionMcpServersWithModeRequirements,
           ...(loopGoalForCreate ? { loop_goal: loopGoalForCreate } : {}),
           ...larkProjectExtra,
           ...medicalEvidenceExtra,

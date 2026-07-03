@@ -23,7 +23,7 @@ let mainWindowRef: BrowserWindow | null = null;
 
 const START_ON_BOOT_UNSUPPORTED_MESSAGE = 'Start on boot is only available in packaged macOS and Windows apps.';
 export const START_ON_BOOT_WINDOWS_ARG = '--start-on-boot';
-const OPENSCIENCE_DOWNLOAD_URL = 'https://deepscientist.cc/openscience';
+const OPENSCIENCE_DOWNLOAD_URL = 'https://openscience.cc';
 
 const SAFE_ENV_KEYS = [
   'NODE_ENV',

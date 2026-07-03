@@ -52,8 +52,8 @@ const DEEPSCIENTIST_REPO_URL = 'https://github.com/ResearAI/OpenScience';
 const DEEPSCIENTIST_DOCS_URL = 'https://github.com/ResearAI/OpenScience/tree/main/docs/en';
 const DEEPSCIENTIST_QUICK_START_URL = 'https://github.com/ResearAI/OpenScience/blob/main/docs/en/00_QUICK_START.md';
 const DEEPSCIENTIST_PAPER_URL = 'https://openreview.net/forum?id=cZFgsLq8Gs';
-const DEEPSCIENTIST_WEBSITE_URL = 'https://deepscientist.cc/openscience/';
-const DEEPSCIENTIST_DOWNLOAD_URL = 'https://deepscientist.cc/openscience/';
+const DEEPSCIENTIST_WEBSITE_URL = 'https://openscience.cc/';
+const DEEPSCIENTIST_DOWNLOAD_URL = 'https://openscience.cc/';
 const OPENSCIENCE_COMMERCIAL_EMAIL = 'resear.ai@gmail.com';
 
 const institutionPartners: InstitutionPartner[] = [

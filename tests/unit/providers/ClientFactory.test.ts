@@ -162,8 +162,8 @@ describe('ClientFactory', () => {
       const calls = (OpenAIRotatingClient as any).mock.calls;
       const config = calls[0][1];
       expect(config.defaultHeaders).toEqual({
-        'HTTP-Referer': 'https://deepscientist.cc',
-        'X-Title': 'DeepOrganiser',
+        'HTTP-Referer': 'https://openscience.cc',
+        'X-Title': 'OpenScience',
       });
     });
 

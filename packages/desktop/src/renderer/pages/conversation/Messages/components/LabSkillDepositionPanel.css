@@ -145,9 +145,75 @@
   background: color-mix(in srgb, var(--lab-skill-accent) 88%, #000);
 }
 
+.lab-skill-primary--blocked {
+  border-color: color-mix(in srgb, var(--color-border-2) 90%, transparent);
+  background: color-mix(in srgb, var(--color-fill-1) 68%, transparent);
+  color: var(--color-text-2);
+  cursor: help;
+  opacity: 1;
+}
+
+.lab-skill-primary--blocked:not(:disabled):hover {
+  border-color: color-mix(in srgb, var(--color-text-1) 22%, var(--color-border-2));
+  background: color-mix(in srgb, var(--color-fill-1) 86%, transparent);
+  color: var(--color-text-1);
+}
+
 .lab-skill-secondary:hover {
   border-color: color-mix(in srgb, var(--color-text-1) 22%, var(--color-border-2));
   background: color-mix(in srgb, var(--color-fill-1) 54%, transparent);
+}
+
+.lab-skill-enableReasons {
+  display: grid;
+  gap: 12px;
+  color: var(--color-text-2);
+  font-size: 13px;
+  line-height: 21px;
+}
+
+.lab-skill-enableReasons__lead,
+.lab-skill-enableReasons__next {
+  margin: 0;
+}
+
+.lab-skill-enableReasons ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lab-skill-enableReasons li {
+  display: grid;
+  gap: 3px;
+  border-top: 1px solid color-mix(in srgb, var(--color-border-2) 72%, transparent);
+  padding-top: 10px;
+}
+
+.lab-skill-enableReasons li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.lab-skill-enableReasons b {
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 19px;
+}
+
+.lab-skill-enableReasons span {
+  color: var(--color-text-3);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.lab-skill-enableReasons__next {
+  border-top: 1px solid color-mix(in srgb, var(--color-border-2) 72%, transparent);
+  padding-top: 10px;
+  color: var(--color-text-2);
 }
 
 .lab-skill-actions {

@@ -113,7 +113,7 @@
       "devDependencies": {
         "@electron/fuses": "^1.8.0",
         "@electron/notarize": "^3.1.0",
-        "@playwright/test": "^1.58.2",
+        "@playwright/test": "1.59.1",
         "@sentry/vite-plugin": "^5.1.1",
         "@testing-library/jest-dom": "^6.9.1",
         "@testing-library/react": "^16.3.2",
@@ -152,7 +152,7 @@
         "oxfmt": "^0.41.0",
         "oxlint": "^1.56.0",
         "patch-package": "^8.0.0",
-        "playwright": "^1.59.1",
+        "playwright": "1.59.1",
         "ts-morph": "^28.0.0",
         "ts-node": "^10.9.2",
         "tsx": "^4.19.1",
@@ -1077,7 +1077,7 @@
 
     "@pkgr/core": ["@pkgr/core@0.2.9", "https://registry.npmmirror.com/@pkgr/core/-/core-0.2.9.tgz", {}, "sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA=="],
 
-    "@playwright/test": ["@playwright/test@1.58.2", "https://registry.npmmirror.com/@playwright/test/-/test-1.58.2.tgz", { "dependencies": { "playwright": "1.58.2" }, "bin": { "playwright": "cli.js" } }, "sha512-akea+6bHYBBfA9uQqSYmlJXn61cTa+jbO87xVLCWbTqbWadRVmhxlXATaOjOgcBaWU4ePo0wB41KMFv3o35IXA=="],
+    "@playwright/test": ["@playwright/test@1.59.1", "", { "dependencies": { "playwright": "1.59.1" }, "bin": { "playwright": "cli.js" } }, "sha512-PG6q63nQg5c9rIi4/Z5lR5IVF7yU5MqmKaPOe0HSc0O2cX1fPi96sUQu5j7eo4gKCkB2AnNGoWt7y4/Xx3Kcqg=="],
 
     "@polka/url": ["@polka/url@1.0.0-next.29", "https://registry.npmmirror.com/@polka/url/-/url-1.0.0-next.29.tgz", {}, "sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww=="],
 
@@ -3901,8 +3901,6 @@
 
     "@opentelemetry/sdk-trace-node/@opentelemetry/context-async-hooks": ["@opentelemetry/context-async-hooks@2.6.0", "https://registry.npmmirror.com/@opentelemetry/context-async-hooks/-/context-async-hooks-2.6.0.tgz", { "peerDependencies": { "@opentelemetry/api": ">=1.0.0 <1.10.0" } }, "sha512-L8UyDwqpTcbkIK5cgwDRDYDoEhQoj8wp8BwsO19w3LB1Z41yEQm2VJyNfAi9DrLP/YTqXqWpKHyZfR9/tFYo1Q=="],
 
-    "@playwright/test/playwright": ["playwright@1.58.2", "https://registry.npmmirror.com/playwright/-/playwright-1.58.2.tgz", { "dependencies": { "playwright-core": "1.58.2" }, "optionalDependencies": { "fsevents": "2.3.2" }, "bin": { "playwright": "cli.js" } }, "sha512-vA30H8Nvkq/cPBnNw4Q8TWz1EJyqgpuinBcHET0YVJVFldr8JDNiU9LaWAE1KqSkRYazuaBhTpB5ZzShOezQ6A=="],
-
     "@prisma/instrumentation/@opentelemetry/instrumentation": ["@opentelemetry/instrumentation@0.207.0", "https://registry.npmmirror.com/@opentelemetry/instrumentation/-/instrumentation-0.207.0.tgz", { "dependencies": { "@opentelemetry/api-logs": "0.207.0", "import-in-the-middle": "^2.0.0", "require-in-the-middle": "^8.0.0" }, "peerDependencies": { "@opentelemetry/api": "^1.3.0" } }, "sha512-y6eeli9+TLKnznrR8AZlQMSJT7wILpXH+6EYq5Vf/4Ao+huI7EedxQHwRgVUOMLFbe7VFDvHJrX9/f4lcwnJsA=="],
 
     "@sentry/bundler-plugin-core/dotenv": ["dotenv@16.6.1", "https://registry.npmmirror.com/dotenv/-/dotenv-16.6.1.tgz", {}, "sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow=="],
@@ -4368,8 +4366,6 @@
     "@office-ai/aioncli-core/google-auth-library/gcp-metadata": ["gcp-metadata@6.1.1", "https://registry.npmmirror.com/gcp-metadata/-/gcp-metadata-6.1.1.tgz", { "dependencies": { "gaxios": "^6.1.1", "google-logging-utils": "^0.0.2", "json-bigint": "^1.0.0" } }, "sha512-a4tiq7E0/5fTjxPAaH4jpjkSv/uCaU2p5KC6HVGrvl0cDjA8iBZv4vv1gyzlmK0ZUKqwpOyQMKzZQe3lTit77A=="],
 
     "@opentelemetry/otlp-transformer/protobufjs/@types/node": ["@types/node@25.5.0", "https://registry.npmmirror.com/@types/node/-/node-25.5.0.tgz", { "dependencies": { "undici-types": "~7.18.0" } }, "sha512-jp2P3tQMSxWugkCUKLRPVUpGaL5MVFwF8RDuSRztfwgN1wmqJeMSbKlnEtQqU8UrhTmzEmZdu2I6v2dpp7XIxw=="],
-
-    "@playwright/test/playwright/playwright-core": ["playwright-core@1.58.2", "https://registry.npmmirror.com/playwright-core/-/playwright-core-1.58.2.tgz", { "bin": { "playwright-core": "cli.js" } }, "sha512-yZkEtftgwS8CsfYo7nm0KE8jsvm6i/PTgVtB8DL726wNf6H2IMsDuxCpJj59KDaxCtSnrWan2AeDqM7JBaultg=="],
 
     "@prisma/instrumentation/@opentelemetry/instrumentation/@opentelemetry/api-logs": ["@opentelemetry/api-logs@0.207.0", "https://registry.npmmirror.com/@opentelemetry/api-logs/-/api-logs-0.207.0.tgz", { "dependencies": { "@opentelemetry/api": "^1.3.0" } }, "sha512-lAb0jQRVyleQQGiuuvCOTDVspc14nx6XJjP4FspJ1sNARo3Regq4ZZbrc3rN4b1TYSuUCvgH+UXUPug4SLOqEQ=="],
 

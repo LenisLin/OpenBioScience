@@ -13,6 +13,8 @@ import { useTranslation } from 'react-i18next';
 import useSWR, { mutate } from 'swr';
 import PreferenceRow from './PreferenceRow';
 
+const PLAYWRIGHT_MCP_PACKAGE = '@playwright/mcp@0.0.77';
+
 /**
  * Developer Settings Component
  * Groups DevTools toggle and CDP remote debugging config.
@@ -129,7 +131,8 @@ const DevSettings: React.FC = () => {
     "playwright": {
       "command": "npx",
       "args": [
-        "@playwright/mcp@latest",
+        "-y",
+        "${PLAYWRIGHT_MCP_PACKAGE}",
         "--cdp-endpoint",
         "http://127.0.0.1:${status.port}"
       ]
@@ -274,7 +277,8 @@ const DevSettings: React.FC = () => {
     "playwright": {
       "command": "npx",
       "args": [
-        "@playwright/mcp@latest",
+        "-y",
+        "${PLAYWRIGHT_MCP_PACKAGE}",
         "--cdp-endpoint",
         "http://127.0.0.1:${status.port}"
       ]

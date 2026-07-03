@@ -104,7 +104,7 @@ describe('AutoUpdaterService', () => {
 
     expect(autoUpdaterMock.setFeedURL).toHaveBeenCalledWith({
       provider: 'custom',
-      url: 'https://deepscientist.cc/DeepOrganiser',
+      url: 'https://openscience.cc',
       updateProvider: CdnGenericProvider,
     });
   });
@@ -250,7 +250,7 @@ describe('AutoUpdaterService', () => {
       releaseDate: '2026-06-08T00:00:00.000Z',
     };
     const fileInfo = {
-      url: new URL('https://deepscientist.cc/DeepOrganiser/2.1.14/DeepOrganiser-2.1.14-mac.zip'),
+      url: new URL('https://openscience.cc/2.1.14/DeepOrganiser-2.1.14-mac.zip'),
       info: { url: 'DeepOrganiser-2.1.14-mac.zip', sha512: 'sha512-value' },
     };
     const cachedUpdatePath = path.join('/cache/pending', 'DeepOrganiser-2.1.14-mac.zip');
@@ -294,7 +294,7 @@ describe('AutoUpdaterService', () => {
       releaseDate: '2026-06-08T00:00:00.000Z',
     };
     const fileInfo = {
-      url: new URL('https://deepscientist.cc/DeepOrganiser/2.1.14/DeepOrganiser-2.1.14-mac.zip'),
+      url: new URL('https://openscience.cc/2.1.14/DeepOrganiser-2.1.14-mac.zip'),
       info: { url: 'DeepOrganiser-2.1.14-mac.zip', sha512: 'sha512-value' },
     };
     const validateDownloadedPath = vi.fn().mockResolvedValue(null);

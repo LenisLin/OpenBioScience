@@ -99,7 +99,7 @@ describe('UpdateNotificationCard', () => {
           assets: [],
           recommendedAsset: {
             name: 'DeepOrganiser-2.1.14-mac-arm64.dmg',
-            url: 'https://static.deepscientist.cc/releases/2.1.14/DeepOrganiser-2.1.14-mac-arm64.dmg',
+            url: 'https://openscience.cc/2.1.14/DeepOrganiser-2.1.14-mac-arm64.dmg',
             fallbackUrl:
               'https://github.com/ResearAI/DeepOrganiser/releases/download/v2.1.14/DeepOrganiser-2.1.14-mac-arm64.dmg',
             size: 123,

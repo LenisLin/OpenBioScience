@@ -1,6 +1,6 @@
 {
   "welcome": {
-    "title": "Olá, qual é o seu plano para hoje?",
+    "title": "OpenScience ajuda você a pesquisar",
     "placeholder": "Envie uma mensagem, faça upload de arquivos, abra uma pasta, ou crie uma tarefa agendada...",
     "linkFolder": "Abrir Pasta",
     "newConversation": "Novo Chat",

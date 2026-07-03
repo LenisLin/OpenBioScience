@@ -26,6 +26,11 @@ import './MessageToolGroup.css';
 
 const CODE_STYLE = { marginTop: 4, marginBottom: 4 };
 
+const isAlwaysAllowOutcome = (outcome: ToolConfirmationOutcome): boolean =>
+  outcome === ToolConfirmationOutcome.ProceedAlways ||
+  outcome === ToolConfirmationOutcome.ProceedAlwaysTool ||
+  outcome === ToolConfirmationOutcome.ProceedAlwaysServer;
+
 // Alert 组件样式常量 Alert component style constant
 // 顶部对齐图标与内容，避免多行文本时图标垂直居中
 const ALERT_CLASSES =
@@ -565,6 +570,7 @@ const MessageToolGroup: React.FC<IMessageToolGroupProps> = ({ message }) => {
                     msg_id: message.id,
                     call_id: call_id,
                     conversation_id: message.conversation_id,
+                    always_allow: isAlwaysAllowOutcome(outcome),
                   })
                   .then(() => {
                     // confirmation sent successfully

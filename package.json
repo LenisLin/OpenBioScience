@@ -6,7 +6,7 @@
   "license": "AGPL-3.0-only",
   "author": {
     "name": "OpenScience",
-    "email": "contact@deepscientist.cc"
+    "email": "resear.ai@gmail.com"
   },
   "workspaces": [
     "packages/*"
@@ -59,6 +59,8 @@
     "debug:mcp:list": "bunx tsx scripts/debug-mcp.ts list",
     "debug:mcp:validate": "bunx tsx scripts/debug-mcp.ts validate",
     "debug:custom-agent": "bunx tsx scripts/debug-custom-agent.ts",
+    "playwright:check": "node scripts/playwright-runtime.js check",
+    "playwright:install": "node scripts/playwright-runtime.js install",
     "test:e2e": "playwright test --config playwright.config.ts",
     "test:e2e:team": "playwright test --config playwright.config.ts tests/e2e/cases/teams/*.e2e.ts --reporter=list",
     "test:e2e:team:create": "playwright test --config playwright.config.ts tests/e2e/cases/teams/team-create.e2e.ts --reporter=list",
@@ -178,7 +180,7 @@
   "devDependencies": {
     "@electron/fuses": "^1.8.0",
     "@electron/notarize": "^3.1.0",
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "1.59.1",
     "@sentry/vite-plugin": "^5.1.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -217,7 +219,7 @@
     "oxfmt": "^0.41.0",
     "oxlint": "^1.56.0",
     "patch-package": "^8.0.0",
-    "playwright": "^1.59.1",
+    "playwright": "1.59.1",
     "ts-morph": "^28.0.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.1",

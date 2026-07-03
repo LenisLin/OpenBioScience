@@ -16,7 +16,17 @@ import { CheckOne, CloseOne, Loading, Down, Up } from '@icon-park/react';
 import classNames from 'classnames';
 import { ipcBridge } from '@/common';
 import type { ICreateConversationParams } from '@/common/adapter/ipcBridge';
+import { isLabSkillDepositionConversationExtra } from '@/common/chat/labSkillDeposition';
+import { isMedicalEvidenceConversationExtra } from '@/common/chat/medicalEvidence';
+import { isScienceConversationExtra } from '@/common/chat/science';
+import type { IConversationMcpStatus, ISessionMcpServer, TChatConversation } from '@/common/config/storage';
 import type { AgentCheckResult } from '@/renderer/hooks/agent/useAgentReadinessCheck';
+import { ensureBackendMcpCatalog, toSessionMcpServer } from '@/renderer/hooks/mcp/catalog';
+import {
+  getGuidModeRequiredMcpNames,
+  normalizeGuidAgentBackend,
+  type GuidCapabilityMode,
+} from '@/renderer/pages/guid/utils/modeCapabilities';
 import { applyDefaultConversationName } from '@/renderer/pages/conversation/utils/newConversationName';
 import { getConversationOrNull } from '@/renderer/pages/conversation/utils/conversationCache';
 import { getConversationCreateErrorMessage } from '@/renderer/pages/conversation/utils/conversationCreateError';
@@ -36,6 +46,61 @@ type AgentSetupCardProps = {
   autoSwitch?: boolean;
   // Initial message to pass to the new conversation after switching
   initialMessage?: string;
+};
+
+const toArray = <T,>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
+
+const mergeSessionMcpServers = (servers: ISessionMcpServer[]): ISessionMcpServer[] => {
+  const byKey = new Map<string, ISessionMcpServer>();
+  for (const server of servers) {
+    byKey.set(server.name || server.id, server);
+  }
+  return [...byKey.values()];
+};
+
+const buildMcpStatuses = (servers: ISessionMcpServer[]): IConversationMcpStatus[] =>
+  servers.map((server) => ({
+    id: server.id || server.name,
+    name: server.name,
+    status: 'loaded',
+  }));
+
+const resolveModeForConversation = (conversation: TChatConversation): GuidCapabilityMode | undefined => {
+  const extra = conversation.extra;
+  if (isMedicalEvidenceConversationExtra(extra)) return 'medical-evidence';
+  if (isLabSkillDepositionConversationExtra(extra)) return 'skill-deposition';
+  if (isScienceConversationExtra(extra)) return 'science';
+  return undefined;
+};
+
+const resolveModeRequiredSessionMcpServers = async (
+  conversation: TChatConversation,
+  backend: string
+): Promise<ISessionMcpServer[]> => {
+  const extra = (conversation.extra ?? {}) as Record<string, unknown>;
+  const existingSessionServers = mergeSessionMcpServers([
+    ...toArray<ISessionMcpServer>(extra.session_mcp_servers),
+    ...toArray<ISessionMcpServer>(extra.selected_session_mcp_servers),
+  ]);
+  const mode = resolveModeForConversation(conversation);
+  if (!mode) return existingSessionServers;
+
+  const requiredNames = getGuidModeRequiredMcpNames(mode, {
+    medicalEvidenceAgentBackend: normalizeGuidAgentBackend(backend),
+  });
+  if (!requiredNames.length) return existingSessionServers;
+
+  try {
+    const { allServers } = await ensureBackendMcpCatalog();
+    const requiredSessionServers = requiredNames
+      .map((name) => allServers.find((server) => server.builtin === true && server.name === name))
+      .filter((server): server is NonNullable<typeof server> => Boolean(server))
+      .map((server) => toSessionMcpServer(server));
+    return mergeSessionMcpServers([...existingSessionServers, ...requiredSessionServers]);
+  } catch (error) {
+    console.warn('[AgentSetupCard] Failed to resolve mode-required MCP servers:', error);
+    return existingSessionServers;
+  }
 };
 
 const AgentSetupCard: React.FC<AgentSetupCardProps> = ({
@@ -74,6 +139,17 @@ const AgentSetupCard: React.FC<AgentSetupCardProps> = ({
           return;
         }
 
+        const sessionMcpServers = await resolveModeRequiredSessionMcpServers(conversation, agent.backend);
+        const sessionMcpSnapshot =
+          sessionMcpServers.length > 0
+            ? {
+                selected_session_mcp_servers: sessionMcpServers,
+                session_mcp_servers: sessionMcpServers,
+                mcp_servers: sessionMcpServers.map((server) => server.name),
+                mcp_statuses: buildMcpStatuses(sessionMcpServers),
+              }
+            : {};
+
         // New agent conversations use ACP; the concrete provider stays in extra.backend.
         const conversation_type = 'acp';
         const defaultConversationName = t('conversation.welcome.newConversation');
@@ -101,12 +177,7 @@ const AgentSetupCard: React.FC<AgentSetupCardProps> = ({
             selected_mcp_server_ids: Array.isArray((conversation.extra as Record<string, unknown>)?.mcp_server_ids)
               ? ((conversation.extra as Record<string, unknown>).mcp_server_ids as string[])
               : undefined,
-            selected_session_mcp_servers: Array.isArray(
-              (conversation.extra as Record<string, unknown>)?.session_mcp_servers
-            )
-              ? ((conversation.extra as Record<string, unknown>)
-                  .session_mcp_servers as ICreateConversationParams['extra']['selected_session_mcp_servers'])
-              : undefined,
+            ...sessionMcpSnapshot,
           },
         };
 

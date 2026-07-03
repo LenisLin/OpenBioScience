@@ -76,7 +76,7 @@ export class ClientFactory {
           baseURL: base_url,
           timeout: options.timeout,
           defaultHeaders: {
-            'HTTP-Referer': 'https://deepscientist.cc',
+            'HTTP-Referer': 'https://openscience.cc',
             'X-Title': 'OpenScience',
           },
           ...(options.baseConfig as OpenAIClientConfig),
@@ -127,7 +127,7 @@ export class ClientFactory {
           baseURL: base_url,
           timeout: options.timeout,
           defaultHeaders: {
-            'HTTP-Referer': 'https://deepscientist.cc',
+            'HTTP-Referer': 'https://openscience.cc',
             'X-Title': 'OpenScience',
           },
           ...(options.baseConfig as OpenAIClientConfig),

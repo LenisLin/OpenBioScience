@@ -30,6 +30,7 @@ type GuidActionRowProps = {
 
   // Model selector node (rendered by parent)
   modelSelectorNode: React.ReactNode;
+  serverConfigNode?: React.ReactNode;
 
   // Agent mode
   selectedAgent: string | 'custom';
@@ -86,6 +87,7 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
   files,
   onFilesUploaded,
   modelSelectorNode,
+  serverConfigNode,
   selectedAgent,
   effectiveModeAgent,
   selectedMode,
@@ -131,7 +133,7 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
   const [isPlusDropdownOpen, setIsPlusDropdownOpen] = useState(false);
   const modeBackend = effectiveModeAgent || selectedAgent;
   const showModeSwitch = supportsModeSwitch(modeBackend);
-  const configOptionCount = (modelSelectorNode ? 1 : 0) + (showModeSwitch ? 1 : 0);
+  const configOptionCount = (serverConfigNode ? 1 : 0) + (modelSelectorNode ? 1 : 0) + (showModeSwitch ? 1 : 0);
 
   // Browser file picker ref (WebUI only)
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -506,38 +508,43 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
           )}
         </div>
       </div>
-      <div className={styles.actionSubmit}>
-        {configOptionCount > 0 && (
-          <div className={styles.actionConfigGroup} data-mobile={isMobile ? 'true' : undefined}>
-            {modelSelectorNode}
+      {(configOptionCount > 0 || (!hidePresetTag && is_presetAgent && selectedAgentInfo)) && (
+        <div className={styles.actionMiddle}>
+          {configOptionCount > 0 && (
+            <div className={styles.actionConfigGroup} data-mobile={isMobile ? 'true' : undefined}>
+              {serverConfigNode ? <div className={styles.actionServerConfig}>{serverConfigNode}</div> : null}
+              {modelSelectorNode}
 
-            {showModeSwitch && (
-              <AgentModeSelector
-                backend={modeBackend}
-                compact
-                initialMode={selectedMode}
-                onModeSelect={onModeSelect}
-                compactLeadingIcon={<Shield theme='outline' size='14' fill={iconColors.secondary} />}
-                modeLabelFormatter={getModeDisplayLabel}
+              {showModeSwitch && (
+                <AgentModeSelector
+                  backend={modeBackend}
+                  compact
+                  initialMode={selectedMode}
+                  onModeSelect={onModeSelect}
+                  compactLeadingIcon={<Shield theme='outline' size='14' fill={iconColors.secondary} />}
+                  modeLabelFormatter={getModeDisplayLabel}
+                />
+              )}
+            </div>
+          )}
+
+          {!hidePresetTag && is_presetAgent && selectedAgentInfo && (
+            <div className={styles.actionPresetAgent}>
+              <PresetAgentTag
+                agentInfo={selectedAgentInfo}
+                assistants={assistants}
+                localeKey={localeKey}
+                onClose={onClosePresetTag}
+                agentLogo={agentLogo}
+                agentSwitcherItems={agentSwitcherItems}
+                onAgentSwitch={onAgentSwitch}
               />
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+      )}
 
-        {!hidePresetTag && is_presetAgent && selectedAgentInfo && (
-          <div className={styles.actionPresetAgent}>
-            <PresetAgentTag
-              agentInfo={selectedAgentInfo}
-              assistants={assistants}
-              localeKey={localeKey}
-              onClose={onClosePresetTag}
-              agentLogo={agentLogo}
-              agentSwitcherItems={agentSwitcherItems}
-              onAgentSwitch={onAgentSwitch}
-            />
-          </div>
-        )}
-
+      <div className={styles.actionSubmit}>
         {speechInputNode}
         <Button
           shape='circle'

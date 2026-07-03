@@ -66,6 +66,16 @@ const OnboardingStepper: React.FC<OnboardingStepperProps> = ({
             </React.Fragment>
           );
         })}
+        <div className='onboarding-stepper__top-actions'>
+          <button
+            type='button'
+            className='onboarding-stepper__primary onboarding-stepper__top-next'
+            disabled={nextDisabled}
+            onClick={onNext}
+          >
+            {isLastStep ? completeLabel : nextLabel}
+          </button>
+        </div>
       </div>
 
       <div className='onboarding-stepper__content' key={currentStep}>

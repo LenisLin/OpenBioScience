@@ -19,6 +19,7 @@ import { spawnSync } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const OPENSCIENCE_DIR = '.openscience';
 const SCIENCE_ARTIFACTS_DIR = 'science-artifacts';
@@ -980,6 +981,16 @@ const panelToMarkdown = (panel: SciencePanelData, options: { includeHeader?: boo
         );
         lines.push('');
       }
+      if (block.type === 'artifact_embed') {
+        const artifact = panel.artifacts.find((item) => item.id === block.artifactId);
+        const artifactPath = artifact?.previewPath || artifact?.primaryPath || artifact?.thumbnailPath;
+        if (artifactPath && artifact?.type === 'figure') {
+          lines.push(`![${block.caption || artifact.title}](${artifactPath})`, '');
+        } else {
+          lines.push(`- Embedded artifact: \`${block.artifactId}\`${block.caption ? ` — ${block.caption}` : ''}`, '');
+        }
+        continue;
+      }
       if ('artifactId' in block) lines.push(`- Artifact: \`${block.artifactId}\``, '');
     }
   }
@@ -1020,6 +1031,15 @@ const renderInlineHtml = (value: string): string =>
 
 const sourceTypeLabel = (value: string): string => value.replace(/_/gu, ' ');
 
+const artifactDisplayPath = (artifact?: ScienceArtifact): string | undefined =>
+  artifact?.previewPath || artifact?.primaryPath || artifact?.thumbnailPath || artifact?.outputPaths?.[0];
+
+const artifactFileUrl = (filePath?: string): string | undefined => {
+  if (!filePath) return undefined;
+  if (/^[a-z]+:\/\//iu.test(filePath)) return filePath;
+  return path.isAbsolute(filePath) ? pathToFileURL(filePath).toString() : filePath;
+};
+
 const renderReportBlockHtml = (
   panel: SciencePanelData,
   block: SciencePanelData['report']['sections'][number]['blocks'][number]
@@ -1041,6 +1061,23 @@ const renderReportBlockHtml = (
         return `<li><span class="check">${done ? '&#10003;' : ''}</span><span>${renderInlineHtml(item.label)}${detail}</span></li>`;
       }),
       '</ul>',
+    ].join('\n');
+  }
+  if (block.type === 'artifact_embed') {
+    const artifact = panel.artifacts.find((item) => item.id === block.artifactId);
+    const artifactPath = artifactDisplayPath(artifact);
+    const src = artifactFileUrl(artifactPath);
+    const caption = block.caption || artifact?.title || block.artifactId;
+    const isImage = Boolean(artifactPath && /\.(png|jpe?g|gif|svg|webp|bmp|tiff?|avif)$/iu.test(artifactPath));
+    const media =
+      src && isImage
+        ? `<img src="${escapeHtml(src)}" alt="${escapeHtml(caption)}" />`
+        : `<p class="artifact-ref">Embedded artifact <code>${escapeHtml(block.artifactId)}</code>${artifact ? ` &middot; ${renderInlineHtml(artifact.title)}` : ''}</p>`;
+    return [
+      '<figure class="artifact-embed">',
+      media,
+      `<figcaption>${renderInlineHtml(caption)}</figcaption>`,
+      '</figure>',
     ].join('\n');
   }
   if ('artifactId' in block) {
@@ -1148,6 +1185,9 @@ const panelToHtml = (panel: SciencePanelData): string => {
     '.checklist li{display:flex;gap:8px;margin:6px 0;}',
     '.check{width:16px;height:16px;border:1px solid #b8c0ca;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:3px;}',
     '.artifact-ref{border-left:3px solid #6f7b88;padding-left:10px;color:#38414a;}',
+    '.artifact-embed{margin:14px 0 18px;padding:0;}',
+    '.artifact-embed img{display:block;max-width:100%;height:auto;margin:0 auto;border-top:1px solid #e6e9ee;border-bottom:1px solid #e6e9ee;padding:10px 0;}',
+    '.artifact-embed figcaption{margin-top:7px;color:#68717d;font-size:12px;line-height:1.45;}',
     '.table-wrap{overflow:hidden;border:1px solid #e1e5ea;border-radius:8px;}',
     'table{width:100%;border-collapse:collapse;font-size:13px;}',
     'th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid #edf0f3;}',
@@ -1255,6 +1295,11 @@ const panelToLatex = (panel: SciencePanelData): string => {
         lines.push('\\begin{itemize}');
         block.items.forEach((item) => lines.push('\\item ' + escapeLatex(item.text)));
         lines.push('\\end{itemize}', '');
+      }
+      if (block.type === 'artifact_embed') {
+        lines.push('\\noindent Embedded artifact: \\texttt{' + escapeLatex(block.artifactId) + '}', '');
+        if (block.caption) lines.push('\\noindent ' + escapeLatex(block.caption), '');
+        continue;
       }
       if ('artifactId' in block) lines.push('\\noindent Artifact: \\texttt{' + escapeLatex(block.artifactId) + '}', '');
     }

@@ -133,14 +133,14 @@ describe('resolveLocalFileLinkPath', () => {
     expect(resolveLocalFileLinkReference('./user.ts')).toBeNull();
     expect(resolveLocalFileLinkReference('../user.ts')).toBeNull();
     expect(resolveLocalFileLinkReference('/settings')).toBeNull();
-    expect(resolveLocalFileLinkReference('https://deepscientist.cc/docs#L10')).toBeNull();
+    expect(resolveLocalFileLinkReference('https://openscience.cc/docs#L10')).toBeNull();
     expect(resolveLocalFileLinkReference('https://github.com/org/repo/blob/main/file.ts#L10')).toBeNull();
     expect(resolveLocalFileLinkReference('/Users/demo/file.ts#l10')).toBeNull();
     expect(resolveLocalFileLinkReference('/Users/demo/file.ts#L10-l20')).toBeNull();
   });
 
   it('does not treat normal web links or app routes as local files', () => {
-    expect(resolveLocalFileLinkPath('https://deepscientist.cc/docs')).toBeNull();
+    expect(resolveLocalFileLinkPath('https://openscience.cc/docs')).toBeNull();
     expect(resolveLocalFileLinkPath('/settings')).toBeNull();
   });
 

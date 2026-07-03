@@ -4,9 +4,10 @@
  */
 
 const { execSync } = require('child_process');
+const { installPlaywrightBrowsersIfRequested } = require('./playwright-runtime');
 
-// Note: web-tree-sitter is now a direct dependency in package.json
-// No need for symlinks or copying - npm will install it directly to node_modules
+// Note: web-tree-sitter is now a direct dependency in package.json.
+// No need for symlinks or copying - npm will install it directly to node_modules.
 
 function runPostInstall() {
   try {
@@ -31,6 +32,8 @@ function runPostInstall() {
           npm_config_build_from_source: 'true',
         },
       });
+
+      installPlaywrightBrowsersIfRequested({ isCI });
     }
   } catch (e) {
     console.error('Postinstall failed:', e.message);

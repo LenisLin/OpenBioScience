@@ -10,6 +10,7 @@ import DeepScientistWordmark from '@renderer/components/icons/DeepScientistWordm
 import { getAgents, refreshAgents } from '@renderer/hooks/agent/useAgents';
 import { changeLanguage } from '@renderer/services/i18n';
 import { getAgentLogo } from '@renderer/utils/model/agentLogo';
+import { fetchManagedAgents, type AgentMetadata } from '@renderer/utils/model/agentTypes';
 import { isElectronDesktop } from '@renderer/utils/platform';
 import OnboardingStepper, { type OnboardingStepperStep } from './OnboardingStepper';
 import {
@@ -88,6 +89,57 @@ const normalizePaperclipConfig = (): Required<Pick<ResearchEvidenceConfig, 'pape
   };
 };
 
+const getAgentIdentityValues = (agent: AgentMetadata): string[] =>
+  [
+    agent.id,
+    agent.backend,
+    agent.command,
+    agent.agent_source_info?.binary_name,
+    agent.agent_source_info?.bridge_binary,
+    agent.name,
+  ]
+    .filter((value): value is string => Boolean(value))
+    .map((value) => value.toLowerCase());
+
+const findRuntimeAgent = (agents: AgentMetadata[], item: RuntimeCheckItem): AgentMetadata | undefined => {
+  const target = item.id.toLowerCase();
+  const targetCommand = item.command.toLowerCase();
+  return agents.find((agent) => {
+    const values = getAgentIdentityValues(agent);
+    return values.some((value) => value === target || value === targetCommand || value.includes(targetCommand));
+  });
+};
+
+const getAgentSourceLabel = (agent?: AgentMetadata): string | undefined => {
+  if (!agent) return undefined;
+  const source = [agent.agent_source, agent.agent_type].filter(Boolean).join(' / ');
+  const binary = agent.command || agent.agent_source_info?.binary_name;
+  return binary ? `${source} · ${binary}` : source;
+};
+
+const sanitizeRuntimeDetail = (message: string | undefined, fallback: string): string => {
+  if (!message) return fallback;
+  const normalized = message.replace(/\s+/g, ' ').trim();
+  if (
+    /<!doctype|<html|error response|HTTPStatus|Unsupported method|\/api\/agents\/health-check/i.test(normalized)
+  ) {
+    return fallback;
+  }
+  return normalized.length > 180 ? `${normalized.slice(0, 177)}...` : normalized;
+};
+
+const mergeAgentLists = (...lists: AgentMetadata[][]): AgentMetadata[] => {
+  const byKey = new Map<string, AgentMetadata>();
+  for (const agent of lists.flat()) {
+    const key = agent.id || `${agent.backend || ''}:${agent.command || agent.name}`;
+    const existing = byKey.get(key);
+    if (!existing || (!existing.available && agent.available) || (existing.enabled === false && agent.enabled)) {
+      byKey.set(key, agent);
+    }
+  }
+  return [...byKey.values()];
+};
+
 const OnboardingPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -149,6 +201,11 @@ const OnboardingPage: React.FC = () => {
   );
 
   const detectRuntimes = useCallback(async () => {
+    const checkedAt = new Date().toLocaleTimeString(language, {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
     setRuntimeChecking(true);
     setRuntimeItems((items) =>
       items.map(
@@ -156,6 +213,9 @@ const OnboardingPage: React.FC = () => {
           ...item,
           status: 'checking',
           detail: undefined,
+          healthLatencyMs: undefined,
+          isRealCheck: false,
+          lastCheckedAt: undefined,
         })
       )
     );
@@ -167,29 +227,81 @@ const OnboardingPage: React.FC = () => {
         // Health checks below still provide the most important signal.
       }
 
-      const detectedAgents = await getAgents().catch((): Awaited<ReturnType<typeof getAgents>> => []);
+      const [detectedAgents, managedAgents] = await Promise.all([
+        getAgents().catch((): Awaited<ReturnType<typeof getAgents>> => []),
+        fetchManagedAgents().catch((): AgentMetadata[] => []),
+      ]);
+      const allAgents = mergeAgentLists(managedAgents, detectedAgents);
       const nextItems = await Promise.all(
         targetRuntimes.map(async (item): Promise<RuntimeCheckItem> => {
-          const detected = detectedAgents.find(
-            (agent) => agent.backend === item.id || agent.id === item.id || agent.command === item.command
-          );
+          const detected = findRuntimeAgent(allAgents, item);
+          const actualCommand = detected?.command || detected?.agent_source_info?.binary_name || item.command;
 
           try {
             const result = await ipcBridge.acpConversation.checkAgentHealth.invoke({ backend: item.id });
+            const healthAvailable = result.available === true;
+            const registryAvailable = detected?.available === true && detected.enabled !== false;
+            const disabled = detected?.enabled === false;
+            const status: RuntimeCheckItem['status'] =
+              healthAvailable || registryAvailable ? 'available' : detected ? 'needs_setup' : 'missing';
+            const fallbackDetail = disabled
+              ? isEnglish
+                ? 'Detected in the registry, but currently disabled'
+                : '已在 registry 中发现，但当前被禁用'
+              : detected
+                ? isEnglish
+                  ? 'Command was found, but the health check did not pass'
+                  : '已发现命令，但健康检查未通过'
+                : isEnglish
+                  ? 'Not found in the backend runtime registry'
+                  : '后端运行器 registry 未发现';
+            const detail = healthAvailable
+              ? result.latency
+                ? isEnglish
+                  ? `Health check passed in ${Math.round(result.latency)} ms`
+                  : `健康检查 ${Math.round(result.latency)} ms`
+                : isEnglish
+                  ? 'Health check passed'
+                  : '健康检查通过'
+              : disabled
+                ? fallbackDetail
+                : sanitizeRuntimeDetail(result.error || detected?.description, fallbackDetail);
+
             return Object.assign({}, item, {
               logo: getAgentLogo(item.id),
-              status: result.available ? 'available' : detected ? 'needs_setup' : 'missing',
-              detail: result.available
-                ? result.latency
-                  ? `健康检查 ${Math.round(result.latency)} ms`
-                  : '健康检查通过'
-                : result.error || detected?.description || undefined,
+              status,
+              detail,
+              actualCommand,
+              agentAvailable: detected?.available,
+              agentEnabled: detected?.enabled,
+              detectedName: detected?.name,
+              detectedSource: getAgentSourceLabel(detected),
+              healthLatencyMs: result.latency,
+              isRealCheck: true,
+              lastCheckedAt: checkedAt,
             });
           } catch (error) {
+            const registryAvailable = detected?.available === true && detected.enabled !== false;
             return Object.assign({}, item, {
               logo: getAgentLogo(item.id),
-              status: detected ? 'needs_setup' : 'missing',
-              detail: error instanceof Error ? error.message : undefined,
+              status: registryAvailable ? 'available' : detected ? 'needs_setup' : 'missing',
+              detail: sanitizeRuntimeDetail(
+                error instanceof Error ? error.message : undefined,
+                detected
+                  ? isEnglish
+                    ? 'Registry entry found, but health check failed'
+                    : '已发现 registry 项，但健康检查失败'
+                  : isEnglish
+                    ? 'Health-check endpoint is unavailable'
+                    : '健康检查接口暂不可用'
+              ),
+              actualCommand,
+              agentAvailable: detected?.available,
+              agentEnabled: detected?.enabled,
+              detectedName: detected?.name,
+              detectedSource: getAgentSourceLabel(detected),
+              isRealCheck: true,
+              lastCheckedAt: checkedAt,
             });
           }
         })
@@ -199,7 +311,7 @@ const OnboardingPage: React.FC = () => {
     } finally {
       setRuntimeChecking(false);
     }
-  }, []);
+  }, [isEnglish, language]);
 
   useEffect(() => {
     void detectRuntimes();
@@ -256,7 +368,7 @@ const OnboardingPage: React.FC = () => {
       });
       setPaperclipSkipped(false);
     },
-    [paperclipApiKey, paperclipBaseUrl]
+    [labels.paperclipNeedKey, paperclipApiKey, paperclipBaseUrl]
   );
 
   const handleTestPaperclip = useCallback(async () => {
@@ -289,30 +401,40 @@ const OnboardingPage: React.FC = () => {
   }, [labels, paperclipApiKey, paperclipBaseUrl, savePaperclipIfPresent]);
 
   const finishOnboarding = useCallback(
-    async (skipped: boolean) => {
-      try {
-        await persistTelemetryConsent();
-      } catch (error) {
-        console.error('Failed to persist telemetry consent:', error);
-      }
-
-      try {
-        if (!paperclipSkipped) {
-          await savePaperclipIfPresent();
-        }
-      } catch (error) {
-        console.error('Failed to save PaperClip settings:', error);
-      }
-
+    (skipped: boolean) => {
       completeOnboarding({ skipped });
       navigate(nextPath, { replace: true });
+
+      if (typeof window !== 'undefined') {
+        window.requestAnimationFrame(() => {
+          if (window.location.hash.includes('/onboarding')) {
+            window.location.hash = `#${nextPath}`;
+          }
+        });
+      }
+
+      void (async () => {
+        try {
+          await persistTelemetryConsent();
+        } catch (error) {
+          console.error('Failed to persist telemetry consent:', error);
+        }
+
+        try {
+          if (!paperclipSkipped) {
+            await savePaperclipIfPresent();
+          }
+        } catch (error) {
+          console.error('Failed to save PaperClip settings:', error);
+        }
+      })();
     },
     [navigate, nextPath, paperclipSkipped, persistTelemetryConsent, savePaperclipIfPresent]
   );
 
   const handleNext = useCallback(() => {
     if (currentStep >= steps.length) {
-      void finishOnboarding(false);
+      finishOnboarding(false);
       return;
     }
     setCurrentStep((step) => Math.min(steps.length, step + 1));
@@ -323,7 +445,7 @@ const OnboardingPage: React.FC = () => {
   }, []);
 
   const handleSkip = useCallback(() => {
-    void finishOnboarding(true);
+    finishOnboarding(true);
   }, [finishOnboarding]);
 
   const handleSkipPaperclip = useCallback(() => {

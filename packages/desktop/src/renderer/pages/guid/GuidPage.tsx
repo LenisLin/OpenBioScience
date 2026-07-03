@@ -22,6 +22,8 @@ import GuidLarkProjectPanel, { type GuidLarkProjectContext } from './components/
 import GuidModelSelector from './components/GuidModelSelector';
 import MentionDropdown from './components/MentionDropdown';
 import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
+import DeepScientistLogo from '@/renderer/components/icons/DeepScientistLogo';
+import DeepScientistWordmark from '@/renderer/components/icons/DeepScientistWordmark';
 import CollaborationIcon from '@/renderer/components/icons/CollaborationIcon';
 import QuickActionButtons from './components/QuickActionButtons';
 import { PreviewPanel, usePreviewContext, type PreviewPanelLayoutMode } from '@/renderer/pages/conversation/Preview';
@@ -53,6 +55,84 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useSWR, { mutate as swrMutate } from 'swr';
 import styles from './index.module.css';
+
+const RESEARCH_HERO_TASKS_ZH = [
+  '跑通科研分析',
+  '复现关键结果',
+  '追溯证据链路',
+  '打磨论文图表',
+  '撰写研究手稿',
+  '整理实验数据',
+  '检查代码来源',
+  '生成可信报告',
+];
+
+const RESEARCH_HERO_TASKS_EN = [
+  'run scientific analysis',
+  'reproduce key results',
+  'trace evidence chains',
+  'refine publication figures',
+  'write research manuscripts',
+  'organize experimental data',
+  'inspect code provenance',
+  'generate trusted reports',
+];
+
+const splitHeroPhrase = (phrase: string): string[] => {
+  if (phrase.includes(' ')) {
+    return phrase.split(/(\s+)/).filter(Boolean);
+  }
+  return Array.from(phrase);
+};
+
+const ResearchHeroTitle: React.FC<{ localeKey: string }> = ({ localeKey }) => {
+  const isChinese = localeKey === 'zh-CN' || localeKey === 'zh-TW';
+  const phrases = isChinese ? RESEARCH_HERO_TASKS_ZH : RESEARCH_HERO_TASKS_EN;
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const phrase = phrases[phraseIndex] ?? phrases[0];
+  const helperText = isChinese ? '帮你' : 'helps you';
+  const ariaLabel = `OpenScience ${helperText} ${phrase}`;
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setPhraseIndex((current) => (current + 1) % phrases.length);
+    }, 2800);
+    return () => window.clearInterval(timer);
+  }, [phrases.length]);
+
+  return (
+    <div className={styles.researchHeroTitleGroup} aria-label={ariaLabel}>
+      <DeepScientistLogo
+        wrapperClassName={styles.researchHeroTopLogo}
+        className={styles.researchHeroTopLogoImage}
+        alt=''
+        aria-hidden='true'
+      />
+      <p className={`${styles.researchHeroTitle} text-2xl font-semibold mb-0 text-0 text-center`}>
+        <DeepScientistWordmark
+          wrapperClassName={styles.researchHeroWordmark}
+          className={styles.researchHeroWordmarkImage}
+          aria-hidden='true'
+        />
+        <span className={styles.researchHeroPrefix}>{helperText}</span>
+        <span key={phrase} className={styles.researchHeroPhrase} aria-hidden='true'>
+          {splitHeroPhrase(phrase).map((part, index) => {
+            const isSpace = /^\s+$/.test(part);
+            return (
+              <span
+                key={`${part}-${index}`}
+                className={isSpace ? styles.researchHeroSpace : styles.researchHeroUnit}
+                style={{ '--split-index': index } as React.CSSProperties}
+              >
+                {part}
+              </span>
+            );
+          })}
+        </span>
+      </p>
+    </div>
+  );
+};
 
 const GuidPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -801,12 +881,17 @@ const GuidPage: React.FC = () => {
     setGuidContextMode((current) => (current === 'leader-agent' ? undefined : 'leader-agent'));
   }, [closePreview, leaderAgentBetaEnabled, navigate]);
 
+  const computeSelectorNode = (
+    <SshHostSelector selectedIds={selectedComputeHostIds} onChange={setSelectedComputeHostIds} variant='contextPill' />
+  );
+
   // Build the action row
   const actionRowNode = (
     <GuidActionRow
       files={guidInput.files}
       onFilesUploaded={guidInput.handleFilesUploaded}
       modelSelectorNode={modelSelectorNode}
+      serverConfigNode={leaderAgentBetaEnabled ? computeSelectorNode : undefined}
       selectedAgent={agentSelection.selectedAgent}
       effectiveModeAgent={agentSelection.currentEffectiveAgentInfo.agent_type}
       selectedMode={agentSelection.selectedMode}
@@ -872,7 +957,7 @@ const GuidPage: React.FC = () => {
       isSkillDepositionMode={isSkillDepositionMode}
       onStartSkillDepositionMode={handleStartSkillDepositionMode}
       onOpenCollaborationMode={handleOpenCollaborationMode}
-      onOpenLeaderAgentMode={leaderAgentBetaEnabled ? handleOpenLeaderAgentMode : undefined}
+      onOpenLeaderAgentMode={undefined}
       hidePresetTag
       speechInputNode={
         <SpeechInputButton
@@ -885,10 +970,6 @@ const GuidPage: React.FC = () => {
       isButtonDisabled={send.isButtonDisabled}
       onSend={send.sendMessageHandler}
     />
-  );
-
-  const computeSelectorNode = (
-    <SshHostSelector selectedIds={selectedComputeHostIds} onChange={setSelectedComputeHostIds} variant='contextPill' />
   );
 
   const scienceWorkspaceLabels = useMemo(
@@ -1002,7 +1083,7 @@ const GuidPage: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <p className='text-2xl font-semibold mb-0 text-0 text-center'>{heroTitle}</p>
+                <ResearchHeroTitle localeKey={localeKey} />
               )}
             </div>
 
@@ -1114,7 +1195,18 @@ const GuidPage: React.FC = () => {
                 }}
                 workspaceLabels={scienceWorkspaceLabels}
                 contextBadge={contextBadge}
-                contextLeading={computeSelectorNode}
+                contextLeading={leaderAgentBetaEnabled ? undefined : computeSelectorNode}
+                collaborationLabel={activeLarkProjectContext?.tasklistName}
+                collaborationButtonLabel={t('guid.larkProject.panelTitle')}
+                isCollaborationContextActive={Boolean(activeLarkProjectContext || isLeaderAgentPanelOpen)}
+                onToggleCollaborationContext={
+                  leaderAgentBetaEnabled
+                    ? () => {
+                        if (isLarkProjectContextLocked) return;
+                        handleOpenLeaderAgentMode();
+                      }
+                    : undefined
+                }
               />
             </div>
             {isGuidPreviewOpen ? (

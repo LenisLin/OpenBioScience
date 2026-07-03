@@ -16,9 +16,15 @@ import type {
 import { ipcBridge } from '@/common';
 import { useConversationContextSafe } from '@/renderer/hooks/context/ConversationContext';
 import OpenScienceIcon, { type OpenScienceIconName } from '@/renderer/components/icons/OpenScienceIcon';
-import { collectSciencePanelFiles, resolveSciencePreviewPath } from '@/renderer/utils/science/scienceProjectIndex';
+import {
+  collectSciencePanelFiles,
+  resolveScienceArtifactStoredPath,
+  resolveSciencePreviewPath,
+} from '@/renderer/utils/science/scienceProjectIndex';
 import { useLocalFilePreview } from '../../Preview/hooks/useLocalFilePreview';
 import { usePreviewContext } from '../../Preview/context/PreviewContext';
+import { buildLocalFileSrc } from '../../Preview/previewUrls';
+import { getContentTypeByExtension } from '../../Preview/fileUtils';
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import './MedicalEvidencePanel.css';
@@ -39,6 +45,20 @@ const getArtifactPreviewPath = (artifact?: ScienceArtifact): string | undefined 
 
 const getEvidencePreviewPath = (evidence?: ScienceEvidenceItem): string | undefined =>
   evidence?.path || evidence?.region?.filePath;
+
+const getArtifactResolvedPreviewPath = (
+  artifact: ScienceArtifact,
+  panel: SciencePanelData,
+  workspace?: string
+): string | undefined => {
+  const previewPath = getArtifactPreviewPath(artifact);
+  if (!previewPath) return undefined;
+  return (
+    resolveScienceArtifactStoredPath(workspace, panel, previewPath, artifact) ||
+    resolveSciencePreviewPath(workspace || panel.projectRoot, previewPath) ||
+    previewPath
+  );
+};
 
 const isEvidenceOpenable = (evidence?: ScienceEvidenceItem): boolean =>
   Boolean(getEvidencePreviewPath(evidence) || evidence?.url);
@@ -384,13 +404,164 @@ const renderInlineEvidenceText = (
   return nodes;
 };
 
+type ScienceArtifactEmbedBlock = Extract<ScienceReportBlock, { type: 'artifact_embed' }>;
+type ScienceArtifactEmbedRenderer = NonNullable<ScienceArtifactEmbedBlock['renderer']>;
+
+const resolveEmbedRenderer = (
+  block: ScienceArtifactEmbedBlock,
+  artifact: ScienceArtifact,
+  filePath?: string
+): ScienceArtifactEmbedRenderer => {
+  if (block.renderer && block.renderer !== 'auto') return block.renderer;
+  const contentType = getContentTypeByExtension(filePath || artifact.previewPath || artifact.primaryPath || '');
+  if (contentType === 'image') return 'image';
+  if (contentType === 'html' || artifact.type === 'html') return 'html';
+  if (contentType === 'pdf' || artifact.type === 'pdf') return 'pdf';
+  if (artifact.type === 'latex') return 'latex_pdf';
+  if (contentType === 'excel' || artifact.type === 'table' || artifact.type === 'regression_table') return 'table';
+  if (artifact.type === 'notebook') return 'notebook';
+  return 'auto';
+};
+
+const ScienceArtifactEmbeddedMedia: React.FC<{
+  block: ScienceArtifactEmbedBlock;
+  artifact: ScienceArtifact;
+  panel: SciencePanelData;
+  workspace?: string;
+  evidenceById: Map<string, ScienceEvidenceItem>;
+  onOpenArtifact: (artifact: ScienceArtifact) => void;
+  blockIndex: number;
+}> = ({ block, artifact, panel, workspace, evidenceById, onOpenArtifact, blockIndex }) => {
+  const effectiveWorkspace = workspace || panel.projectRoot;
+  const filePath = useMemo(
+    () => getArtifactResolvedPreviewPath(artifact, panel, effectiveWorkspace),
+    [artifact, effectiveWorkspace, panel]
+  );
+  const renderer = resolveEmbedRenderer(block, artifact, filePath);
+  const [imageSrc, setImageSrc] = useState<string>('');
+  const [imageFailed, setImageFailed] = useState(false);
+  const maxHeight = Math.min(Math.max(block.maxHeight || 460, 180), 900);
+  const fileName = pathLabel(filePath);
+  const canOpenArtifact = Boolean(getArtifactPreviewPath(artifact));
+
+  useEffect(() => {
+    if (renderer !== 'image' && renderer !== 'svg') {
+      setImageSrc('');
+      setImageFailed(false);
+      return undefined;
+    }
+    if (!filePath) {
+      setImageSrc('');
+      setImageFailed(true);
+      return undefined;
+    }
+    let cancelled = false;
+    setImageSrc('');
+    setImageFailed(false);
+    ipcBridge.fs.getImageBase64
+      .invoke({ path: filePath, workspace: effectiveWorkspace })
+      .then((value) => {
+        if (cancelled) return;
+        if (value) {
+          setImageSrc(value);
+        } else {
+          setImageFailed(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setImageFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [effectiveWorkspace, filePath, renderer]);
+
+  const renderMedia = () => {
+    if (!filePath) {
+      return <div className='science-report-embed__fallback'>No preview path recorded for this artifact.</div>;
+    }
+
+    if (renderer === 'image' || renderer === 'svg') {
+      if (imageFailed) {
+        return <div className='science-report-embed__fallback'>Image preview is unavailable.</div>;
+      }
+      return imageSrc ? (
+        <img src={imageSrc} alt={block.caption || artifact.title} style={{ maxHeight }} />
+      ) : (
+        <div className='science-report-embed__fallback'>Loading preview...</div>
+      );
+    }
+
+    if (renderer === 'html') {
+      return (
+        <iframe
+          title={artifact.title}
+          src={buildLocalFileSrc(filePath)}
+          sandbox='allow-scripts allow-same-origin'
+          loading='lazy'
+          style={{ height: Math.min(Math.max(maxHeight, 280), 720) }}
+        />
+      );
+    }
+
+    if (renderer === 'pdf' || renderer === 'latex_pdf') {
+      return (
+        <iframe
+          title={artifact.title}
+          src={buildLocalFileSrc(filePath)}
+          loading='lazy'
+          style={{ height: Math.min(Math.max(maxHeight, 320), 760) }}
+        />
+      );
+    }
+
+    return (
+      <div className='science-report-embed__fallback'>
+        <OpenScienceIcon name={artifactIconName(artifact)} size={24} visualScale={1.08} />
+        <span>{artifactKindLabel(artifact)}</span>
+        <b>{fileName || artifact.title}</b>
+      </div>
+    );
+  };
+
+  return (
+    <figure
+      className={classNames(
+        'science-report-embed',
+        `science-report-embed--${block.display || 'inline'}`,
+        `science-report-embed--${renderer}`
+      )}
+      style={{ animationDelay: `${Math.min(blockIndex * 42, 220)}ms` }}
+    >
+      <div className='science-report-embed__media'>
+        {renderMedia()}
+      </div>
+      <figcaption>
+        <div className='science-report-embed__captionHead'>
+          <span>
+            <OpenScienceIcon name={artifactIconName(artifact)} size={13} visualScale={1.05} />
+            {artifact.title}
+            {block.showSource !== false && fileName ? <em>{fileName}</em> : null}
+          </span>
+          <button type='button' disabled={!canOpenArtifact} onClick={() => onOpenArtifact(artifact)}>
+            Open
+          </button>
+        </div>
+        {block.caption ? <b>{renderInlineEvidenceText(block.caption, block.evidenceIds, evidenceById)}</b> : null}
+      </figcaption>
+    </figure>
+  );
+};
+
 const ScienceReportBlockView: React.FC<{
   block: ScienceReportBlock;
   blockIndex: number;
   artifactsById: Map<string, ScienceArtifact>;
   evidenceById: Map<string, ScienceEvidenceItem>;
+  panel: SciencePanelData;
+  workspace?: string;
   onOpenArtifact: (artifact: ScienceArtifact) => void;
-}> = ({ block, blockIndex, artifactsById, evidenceById, onOpenArtifact }) => {
+}> = ({ block, blockIndex, artifactsById, evidenceById, panel, workspace, onOpenArtifact }) => {
   if (block.type === 'paragraph') {
     return (
       <p
@@ -431,6 +602,22 @@ const ScienceReportBlockView: React.FC<{
           </div>
         ))}
       </div>
+    );
+  }
+
+  if (block.type === 'artifact_embed') {
+    const artifact = artifactsById.get(block.artifactId);
+    if (!artifact) return null;
+    return (
+      <ScienceArtifactEmbeddedMedia
+        block={block}
+        artifact={artifact}
+        panel={panel}
+        workspace={workspace}
+        evidenceById={evidenceById}
+        onOpenArtifact={onOpenArtifact}
+        blockIndex={blockIndex}
+      />
     );
   }
 
@@ -865,6 +1052,8 @@ export const ScienceReportPreviewPanel: React.FC<{ panel: SciencePanelData }> = 
                   blockIndex={blockIndex}
                   artifactsById={artifactsById}
                   evidenceById={evidenceById}
+                  panel={panel}
+                  workspace={workspace}
                   onOpenArtifact={openArtifact}
                 />
               ))}

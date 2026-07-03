@@ -8,7 +8,7 @@ import { CdnGenericProvider } from './cdnGenericProvider';
 import type { CdnGenericProviderConfiguration } from './cdnGenericProvider';
 import { legacyEnvName } from '@/common/config/legacyIdentifiers';
 
-export const DEFAULT_UPDATE_BASE_URL = 'https://deepscientist.cc/openscience';
+export const DEFAULT_UPDATE_BASE_URL = 'https://openscience.cc';
 
 const trimTrailingSlash = (url: string): string => url.replace(/\/+$/, '');
 

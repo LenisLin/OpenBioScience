@@ -120,7 +120,7 @@ describe('updateBridge manual download dedupe', () => {
   it('reuses the active manual download for the same URL, fallback URL, and file name', async () => {
     const handler = await getDownloadHandler();
     const request = {
-      url: 'https://static.deepscientist.cc/releases/2.2.0/DeepOrganiser-2.2.0-mac-arm64.dmg',
+      url: 'https://openscience.cc/2.2.0/DeepOrganiser-2.2.0-mac-arm64.dmg',
       fallbackUrl:
         'https://github.com/ResearAI/DeepOrganiser/releases/download/v2.2.0/DeepOrganiser-2.2.0-mac-arm64.dmg',
       file_name: 'DeepOrganiser-2.2.0-mac-arm64.dmg',
@@ -158,7 +158,7 @@ describe('updateBridge manual download dedupe', () => {
 
     const handler = await getDownloadHandler();
     const request = {
-      url: 'https://static.deepscientist.cc/releases/2.2.0/DeepOrganiser-2.2.0-mac-arm64.dmg',
+      url: 'https://openscience.cc/2.2.0/DeepOrganiser-2.2.0-mac-arm64.dmg',
       fallbackUrl:
         'https://github.com/ResearAI/DeepOrganiser/releases/download/v2.2.0/DeepOrganiser-2.2.0-mac-arm64.dmg',
       file_name: 'DeepOrganiser-2.2.0-mac-arm64.dmg',
@@ -203,7 +203,7 @@ describe('updateBridge manual download dedupe', () => {
 
     const { download, cancel, ipcBridge } = await getDownloadHandlers();
     const request = {
-      url: 'https://static.deepscientist.cc/releases/2.2.0/DeepOrganiser-2.2.0-mac-arm64.dmg',
+      url: 'https://openscience.cc/2.2.0/DeepOrganiser-2.2.0-mac-arm64.dmg',
       fallbackUrl:
         'https://github.com/ResearAI/DeepOrganiser/releases/download/v2.2.0/DeepOrganiser-2.2.0-mac-arm64.dmg',
       file_name: 'DeepOrganiser-2.2.0-mac-arm64.dmg',

@@ -78,7 +78,7 @@ async function main() {
     `Ask the user structured questions and wait for their answers.
 
 Use this when important missing information would change the answer, evidence applicability, safety advice, or next action.
-Prefer at most 3 concise questions. Use single_choice, multi_choice, or text. For medical evidence mode, ask for clinically relevant missing context rather than guessing.
+Prefer at most 3 concise questions. Use single_choice, multi_choice, or text. For medical evidence mode, ask for clinically relevant missing context rather than guessing. For Science Mode, ask for decisive research variables such as dataset scope, organism/model/system, method choice, statistical threshold, compute/privacy boundary, artifact format, or publication target before committing to an analysis plan.
 
 If the tool returns status "timeout", "cancelled", "skipped", or "unavailable", continue safely and ask in normal text only if the missing information is still necessary.`,
     {
@@ -131,4 +131,3 @@ main().catch((error) => {
   console.error('[builtin-user-input] fatal:', error);
   process.exit(1);
 });
-

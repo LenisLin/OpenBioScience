@@ -1,6 +1,6 @@
 {
   "welcome": {
-    "title": "Hi、今日の予定は何ですか？",
+    "title": "OpenScience が研究を支援します",
     "placeholder": "メッセージの送信、ファイルの追加、フォルダーの追加、またはスケジュールタスクの作成...",
     "linkFolder": "フォルダを追加",
     "newConversation": "新しいチャット",

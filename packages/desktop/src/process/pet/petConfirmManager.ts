@@ -327,7 +327,7 @@ function registerIpcHandlers(): void {
 
   ipcMain.on(
     'pet:confirm-respond',
-    (_event, data: { conversation_id: string; msg_id: string; call_id: string; data: any }) => {
+    (_event, data: { conversation_id: string; msg_id: string; call_id: string; data: any; always_allow?: boolean }) => {
       console.log('[PetConfirm] Received response:', JSON.stringify(data));
 
       // Remove from local tracking
@@ -356,6 +356,7 @@ function registerIpcHandlers(): void {
           msg_id: data.msg_id,
           call_id: data.call_id,
           data: data.data,
+          always_allow: data.always_allow ?? false,
         })
         .catch((error: unknown) => {
           console.error('[PetConfirm] confirmation.confirm.invoke failed:', error);

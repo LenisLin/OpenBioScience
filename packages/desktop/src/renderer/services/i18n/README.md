@@ -80,7 +80,7 @@ const LanguageSwitcher = () => {
   },
   "conversation": {
     "welcome": {
-      "title": "今天有什么安排？"
+      "title": "OpenScience 帮你"
     }
   }
 }

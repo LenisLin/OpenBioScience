@@ -7,6 +7,7 @@
 import type { IMessageAcpPermission } from '@/common/chat/chatLib';
 import { conversation } from '@/common/adapter/ipcBridge';
 import { Button, Card, Radio, Typography } from '@arco-design/web-react';
+import { ToolConfirmationOutcome } from '@renderer/utils/common';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -60,6 +61,10 @@ const MessageAcpPermission: React.FC<MessageAcpPermissionProps> = React.memo(({ 
         msg_id: message.id,
         conversation_id: message.conversation_id,
         call_id: tool_call?.tool_call_id || message.id,
+        always_allow:
+          selected === ToolConfirmationOutcome.ProceedAlways ||
+          selected === ToolConfirmationOutcome.ProceedAlwaysTool ||
+          selected === ToolConfirmationOutcome.ProceedAlwaysServer,
       };
 
       await conversation.confirmMessage.invoke(invokeData);

@@ -19,25 +19,34 @@ manuscripts, or scientific claims.
 - Use `openscience-science-artifact` for the exact artifact MCP protocol.
 - Use the default router skills to select narrow leaf skills. Do not load or
   cite vendored skill text as evidence.
+- Default artifact rule: every Science Mode task that produces a user-facing
+  answer, file, figure, table, report, notebook, viewer, dataset slice,
+  manuscript, or reusable result should create or update a Science artifact and
+  publish at least a concise report/run-bundle panel. Skip only when the user
+  explicitly asks for chat-only brainstorming.
 - Concrete results must enter the artifact graph before the final answer.
 
 ## Minimal SOP
 
 1. Restate the research objective, project root, deliverables, selected router
    skills, and assumptions.
-2. Search/read or inspect inputs before making claims.
-3. Execute the analysis or compilation in the real runtime.
-4. Register evidence for source data, database records, papers, commands, logs,
+2. Before asking follow-up questions, inspect the prior conversation, previous
+   `user_input` results, registered user-decision evidence, and current artifact
+   state. Reuse existing answers across turns; only ask again when the user has
+   changed scope or the old answer no longer applies.
+3. Search/read or inspect inputs before making claims.
+4. Execute the analysis or compilation in the real runtime.
+5. Register evidence for source data, database records, papers, commands, logs,
    generated files, environments, and user decisions.
-5. Create or version user-visible artifacts: figures, tables, datasets,
-   notebooks, manuscripts, PDFs, HTML pages, native viewer objects, or run
-   bundles.
-6. Snapshot files needed for inspection or reproducibility.
-7. Write the Science report with short Markdown-bold conclusion phrases; put
+6. Create or version the task's default Science report/run-bundle artifact, then
+   attach user-visible artifacts: figures, tables, datasets, notebooks,
+   manuscripts, PDFs, HTML pages, native viewer objects, or run bundles.
+7. Snapshot files needed for inspection or reproducibility.
+8. Write the Science report with short Markdown-bold conclusion phrases; put
    evidence ids only in `evidenceIds` arrays, not as literal `[E3]` or
    `[ev_file]` text inside the sentence. Bold only the conclusion phrase, not
    whole paragraphs.
-8. Publish a Science report in the existing Preview frame.
+9. Publish a Science report in the existing Preview frame.
 
 ## Claim Discipline
 

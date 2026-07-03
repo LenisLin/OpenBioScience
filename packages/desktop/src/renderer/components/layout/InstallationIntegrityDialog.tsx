@@ -3,7 +3,7 @@ import type { TFunction } from 'i18next';
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const OPENSCIENCE_DOWNLOAD_URL = 'https://deepscientist.cc/openscience';
+const OPENSCIENCE_DOWNLOAD_URL = 'https://openscience.cc';
 
 export function openDownloadLatest(): void {
   window.open(OPENSCIENCE_DOWNLOAD_URL, '_blank', 'noopener,noreferrer');

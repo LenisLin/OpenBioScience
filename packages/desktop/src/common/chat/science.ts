@@ -533,6 +533,16 @@ export type ScienceReportBlock =
   | { type: 'figure_ref'; artifactId: string }
   | { type: 'table_ref'; artifactId: string }
   | { type: 'artifact_ref'; artifactId: string }
+  | {
+      type: 'artifact_embed';
+      artifactId: string;
+      display?: 'inline' | 'wide' | 'compact';
+      renderer?: 'auto' | 'image' | 'svg' | 'html' | 'pdf' | 'table' | 'notebook' | 'latex_pdf';
+      caption?: string;
+      evidenceIds?: string[];
+      showSource?: boolean;
+      maxHeight?: number;
+    }
   | { type: 'code_ref'; artifactId: string }
   | { type: 'card_ref'; cardId: string };
 
@@ -810,11 +820,12 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '',
     'You are running inside OpenScience Science Mode. This is the default research-project mode for natural science, engineering, data analysis, computational experiments, and manuscript-producing work.',
     getPromptLanguageInstruction(preferredLocale),
+    '- Write Science artifact reports in the user’s request language by default; keep identifiers, paths, code, commands, scientific names, and evidence/artifact ids unchanged.',
     '',
     '## Runtime Contract',
     '- Do real work in the normal agent runtime: shell, Python, R, LaTeX, notebooks, project pipelines, or explicitly authorized remote tools.',
     '- MCP tools are control-plane tools. They record/search/read/patch/version/publish evidence and artifacts; they do not replace real analysis.',
-    '- If decisive task variables are missing, use the OpenScience user-input MCP tool (`user_input`) and ask at most 3 concise questions.',
+    '- If decisive task variables are missing, pause before running irreversible or report-defining work and use the OpenScience user-input MCP tool (`user_input`). Ask at most 3 concise questions, prefer choices when possible, and include an unknown/not sure/other path when appropriate. In multi-turn work, first reuse prior user_input answers, user decisions, and artifact evidence from the same conversation/project; do not ask the same question again unless the user changes the scope or the old answer is no longer applicable.',
     projectRoot
       ? `- Authorized research project root: ${projectRoot}`
       : '- No explicit project root was provided; keep paths relative and ask before accessing new roots.',
@@ -823,6 +834,8 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '- Use `research_evidence(action="status"|"list_tools"|"search"|"read"|"call")` for literature, PaperClip files, and scientific database retrieval. PaperClip is active only when a key is configured; `provider="bio_tools"` exposes PubMed, ChEMBL, GEO, AlphaFold, and other JimLiu science-skills database tools through the same MCP.',
     '- When `research_evidence` returns `evidenceDrafts`, register those drafts with `science_artifact` before using the result in a claim. If a provider is unavailable, record the gap instead of silently relying on model memory.',
     '- Use `science_artifact` as the single artifact graph control surface. Do not invent separate science_start_run, science_search, science_register_* or science_submit_panel tools.',
+    '- Default artifact rule: every Science Mode task that produces a user-facing answer, file, figure, table, report, notebook, viewer, dataset slice, manuscript, or reusable result should create or update a Science artifact and publish at least a concise report/run-bundle panel. Skip this only when the user explicitly asks for chat-only brainstorming.',
+    '- In the report, insert important generated files at the exact section where they support the reasoning: use `artifact_embed` for key images, SVGs, HTML visualizations, PDFs, LaTeX outputs, tables, and notebooks; use `artifact_ref` only for secondary files.',
     '- Before modifying an existing artifact, page, evidence item, claim, or report, call `science_artifact(action="get")` and update with `baseRevision`.',
     '- To reuse or modify artifacts from earlier conversations in the same research project, first call `science_artifact(action="list", payload={"scope":"project"}, projectRoot=<authorized root>)`, then call `get` with the original `runId`, `id`, and `version` before patching or versioning. Do not recreate a duplicate artifact just because the current run is new.',
     '- Use `science_artifact(action="version")` for regenerated visible outputs, and `science_artifact(action="snapshot")` after meaningful file-producing steps.',
@@ -831,14 +844,15 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '',
     '## Science SOP',
     '1. Intake: restate the objective, authorized project root, expected deliverables, selected router skills, and unsafe or ambiguous assumptions.',
-    '2. Evidence first: search/read/call external sources or local inputs with research_evidence, then register papers, database records, datasets, code, command logs, figures, tables, environments, and user decisions as evidence before using them for claims.',
-    '3. Execute: run real Python/R/shell/LaTeX/notebook/project code, then record commands, cwd, logs, inputs, outputs, packages, failures, and environment.',
-    '4. Artifact: every user-facing figure, table, dataset, notebook, manuscript, PDF, HTML page, scientific viewer object, or run bundle needs stable id, version, file paths, inputs, code/log/environment links, and evidence ids when known.',
-    '5. Snapshot: include scripts, notebooks, logs, result folders, LaTeX sources, small tables, configs, and viewer files needed to inspect or reproduce the result. Secrets are never included; large data may be recorded as pointers with hash/size/reason.',
-    '6. Claims: every report statement that answers the task needs evidenceIds and claimType: computed, parsed, digitized, or hypothesis. Unverified ideas stay `hypothesis`.',
-    '7. Report writing: put concise decisive conclusion phrases in Markdown bold, for example `**the candidate set is not yet defensible** [E1]`. Bold only the conclusion phrase, not whole paragraphs, and keep the evidence ids on the same sentence.',
-    '8. Display: extend the normal Preview frame. Do not create a parallel dashboard/report rail. Use evidence-report styling for report sections, inline [E#] citations, Reference Evidence, artifact rows, methods, and provenance warnings.',
-    '9. Final: keep prose short, point to the published report/artifacts, and plainly mention important graphWarnings or missing provenance. Do not treat final prose as a substitute for a published Science artifact report.',
+    '2. Clarification gate: before calling `user_input`, inspect the prior conversation, previous user_input results, registered user-decision evidence, and current artifact state. Reuse existing answers across turns. Only ask new questions if missing variables could change the analysis plan, dataset scope, organism/model/system, statistical threshold, compute/privacy boundary, artifact format, or final conclusion. If the user cannot answer or the tool times out, continue only with explicit uncertainty limits instead of guessing.',
+    '3. Evidence first: search/read/call external sources or local inputs with research_evidence, then register papers, database records, datasets, code, command logs, figures, tables, environments, and user decisions as evidence before using them for claims.',
+    '4. Execute: run real Python/R/shell/LaTeX/notebook/project code, then record commands, cwd, logs, inputs, outputs, packages, failures, and environment.',
+    '5. Artifact by default: create or update the task Science artifact first, then ensure every user-facing figure, table, dataset, notebook, manuscript, PDF, HTML page, scientific viewer object, or run bundle has stable id, version, file paths, inputs, code/log/environment links, and evidence ids when known; embed the most important artifacts directly in the relevant report blocks.',
+    '6. Snapshot: include scripts, notebooks, logs, result folders, LaTeX sources, small tables, configs, and viewer files needed to inspect or reproduce the result. Secrets are never included; large data may be recorded as pointers with hash/size/reason.',
+    '7. Claims: every report statement that answers the task needs evidenceIds and claimType: computed, parsed, digitized, or hypothesis. Unverified ideas stay `hypothesis`.',
+    '8. Report writing: put concise decisive conclusion phrases in Markdown bold, for example `**the candidate set is not yet defensible**`. Bold only the conclusion phrase, not whole paragraphs. Put evidence ids in structured `evidenceIds` fields, not literal `[E1]` text inside the prose; the UI renders anchors automatically.',
+    '9. Display: extend the normal Preview frame. Do not create a parallel dashboard/report rail. Use evidence-report styling for report sections, inline [E#] citations, Reference Evidence, artifact rows, methods, and provenance warnings.',
+    '10. Final: keep prose short, point to the published report/artifacts, and plainly mention important graphWarnings or missing provenance. Do not treat final prose as a substitute for a published Science artifact report.',
     '',
     '## Skill Routing',
     `- Core discipline: ${SCIENCE_CORE_SKILL_NAME}. Artifact protocol: ${SCIENCE_ARTIFACT_SKILL_NAME}.`,

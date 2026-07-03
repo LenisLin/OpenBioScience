@@ -6,9 +6,13 @@
 
 import type { IMessageToolGroup } from '@/common/chat/chatLib';
 import MessageToolGroup from '@/renderer/pages/conversation/Messages/components/MessageToolGroup';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const mocks = vi.hoisted(() => ({
+  confirmMessageInvoke: vi.fn(),
+}));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'en' } }),
@@ -36,12 +40,17 @@ vi.mock('@/renderer/hooks/file/useDiffPreviewHandlers', () => ({
 
 vi.mock('@/common', () => ({
   ipcBridge: {
-    conversation: { confirmMessage: { invoke: vi.fn() } },
+    conversation: { confirmMessage: { invoke: mocks.confirmMessageInvoke } },
     fs: { getImageBase64: { invoke: vi.fn() } },
   },
 }));
 
 describe('MessageToolGroup command output', () => {
+  beforeEach(() => {
+    mocks.confirmMessageInvoke.mockReset();
+    mocks.confirmMessageInvoke.mockResolvedValue(undefined);
+  });
+
   it('renders command-like tool results as an output block instead of raw JSON', () => {
     const message: IMessageToolGroup = {
       id: 'tool-group-1',
@@ -71,5 +80,43 @@ describe('MessageToolGroup command output', () => {
     expect(screen.getByText('1 warning')).toBeInTheDocument();
     expect(screen.getByText('exit 0')).toBeInTheDocument();
     expect(screen.queryByText(/"stdout"/)).not.toBeInTheDocument();
+  });
+
+  it('passes always_allow when an MCP tool is allowed permanently', () => {
+    const message: IMessageToolGroup = {
+      id: 'tool-group-2',
+      conversation_id: 'conversation-1',
+      type: 'tool_group',
+      content: [
+        {
+          call_id: 'call-mcp-1',
+          description: '',
+          name: 'science_artifact',
+          render_output_as_markdown: false,
+          status: 'Confirming',
+          confirmationDetails: {
+            type: 'mcp',
+            title: 'Allow MCP',
+            tool_name: 'science_artifact',
+            tool_display_name: 'science_artifact',
+            server_name: 'openscience',
+          },
+        },
+      ],
+    };
+
+    render(<MessageToolGroup message={message} />);
+    fireEvent.click(screen.getByLabelText('messages.confirmation.yesAlwaysAllowTool'));
+    fireEvent.click(screen.getByText('messages.confirm'));
+
+    expect(mocks.confirmMessageInvoke).toHaveBeenCalledWith(
+      expect.objectContaining({
+        call_id: 'call-mcp-1',
+        confirm_key: 'proceed_always_tool',
+        conversation_id: 'conversation-1',
+        msg_id: 'tool-group-2',
+        always_allow: true,
+      })
+    );
   });
 });

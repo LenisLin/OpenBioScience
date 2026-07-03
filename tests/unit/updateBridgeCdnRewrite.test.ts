@@ -163,7 +163,7 @@ describe('updateBridge CDN URL rewriting', () => {
       const macAsset = assets.find((a: { name: string }) => a.name === 'DeepOrganiser-1.9.22-mac-arm64.dmg');
       expect(macAsset).toBeDefined();
       expect(macAsset?.url).toBe(
-        'https://deepscientist.cc/DeepOrganiser/1.9.22/DeepOrganiser-1.9.22-mac-arm64.dmg'
+        'https://openscience.cc/1.9.22/DeepOrganiser-1.9.22-mac-arm64.dmg'
       );
       expect(macAsset?.fallbackUrl).toBe(
         'https://github.com/ResearAI/DeepOrganiser/releases/download/v1.9.22/DeepOrganiser-1.9.22-mac-arm64.dmg'
@@ -171,7 +171,7 @@ describe('updateBridge CDN URL rewriting', () => {
 
       const linuxAsset = assets.find((a: { name: string }) => a.name === 'DeepOrganiser-1.9.22-linux-amd64.deb');
       expect(linuxAsset?.url).toBe(
-        'https://deepscientist.cc/DeepOrganiser/1.9.22/DeepOrganiser-1.9.22-linux-amd64.deb'
+        'https://openscience.cc/1.9.22/DeepOrganiser-1.9.22-linux-amd64.deb'
       );
     } finally {
       vi.unstubAllGlobals();
@@ -189,7 +189,7 @@ describe('updateBridge CDN URL rewriting', () => {
       const handler = await getCheckHandler();
       const result = await handler({ repo: 'ResearAI/DeepOrganiser' });
       const asset = result.data?.latest?.assets?.[0];
-      expect(asset?.url).toMatch(/^https:\/\/deepscientist\.cc\/DeepOrganiser\/1\.9\.22\//);
+      expect(asset?.url).toMatch(/^https:\/\/openscience\.cc\/1\.9\.22\//);
       expect(asset?.url).not.toMatch(/\/v1\.9\.22\//);
     } finally {
       vi.unstubAllGlobals();
@@ -198,7 +198,7 @@ describe('updateBridge CDN URL rewriting', () => {
 });
 
 describe('updateBridge allowlist includes configured update host', () => {
-  it('accepts deepscientist.cc DeepOrganiser URLs for download', async () => {
+  it('accepts openscience.cc URLs for download', async () => {
     vi.resetModules();
     vi.clearAllMocks();
 
@@ -226,7 +226,7 @@ describe('updateBridge allowlist includes configured update host', () => {
 
       const result = await handler({
         downloadId: 'manual-download-1',
-        url: 'https://deepscientist.cc/DeepOrganiser/1.9.22/DeepOrganiser-1.9.22-mac-arm64.dmg',
+        url: 'https://openscience.cc/1.9.22/DeepOrganiser-1.9.22-mac-arm64.dmg',
         file_name: 'DeepOrganiser-1.9.22-mac-arm64.dmg',
       });
 

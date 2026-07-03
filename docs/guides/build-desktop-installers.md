@@ -391,7 +391,7 @@ Linux runner 会自动安装 Debian/Electron 所需依赖，包括：
 应用内默认更新地址由 `packages/desktop/src/process/services/updateFeed.ts` 控制。当前默认值是：
 
 ```text
-https://deepscientist.cc
+https://openscience.cc
 ```
 
 也可以通过环境变量覆盖：

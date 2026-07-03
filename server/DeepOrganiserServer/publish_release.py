@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parent
 UPDATES_DIR = ROOT / "data" / "updates"
 MANIFEST_PATH = UPDATES_DIR / "manifest.json"
 PRODUCT_NAME = os.environ.get("DEEPORGANISER_PRODUCT_NAME", "OpenScience")
-BASE_URL = os.environ.get("DEEPORGANISER_BASE_URL", "https://deepscientist.cc/openscience").rstrip("/")
+BASE_URL = os.environ.get("DEEPORGANISER_BASE_URL", "https://openscience.cc").rstrip("/")
 CHANNEL_PATTERNS = ("latest*.yml",)
 ARTIFACT_EXTENSIONS = {".dmg", ".zip", ".exe", ".msi", ".deb", ".rpm", ".appimage", ".blockmap"}
 

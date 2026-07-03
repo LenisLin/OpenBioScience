@@ -388,7 +388,7 @@
 | 3    | 意见反馈 | 打开外部链接       | `https://github.com/ResearAI/DeepOrganiser/issues`   |
 | 4    | 问题报告 | **打开应用内弹窗** | FeedbackReportModal（见 F-ABOUT-11）                 |
 | 5    | 联系我   | 打开外部链接       | `https://x.com/WailiVery`                            |
-| 6    | 官网     | 打开外部链接       | `https://deepscientist.cc`                           |
+| 6    | 官网     | 打开外部链接       | `https://openscience.cc`                             |
 
 **打开机制**：
 

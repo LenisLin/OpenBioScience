@@ -12,6 +12,11 @@ claim, report, page, annotation, or provenance link.
 
 Use one MCP tool: `science_artifact`.
 
+Default lifecycle for any Science Mode task with a user-facing result:
+`status` -> create or update the task report/run-bundle artifact -> register
+evidence, claims, pages, files, and provenance -> `snapshot` meaningful files ->
+`publish` the UI-renderable panel before the final answer.
+
 Important actions:
 
 - `status`: inspect the current run/project graph.
@@ -117,6 +122,10 @@ When creating or patching a report page/panel:
   literal `[E2]`, `[ev_file]`, or `[ev_a, ev_b]` text inside `summary`, `text`,
   `label`, `detail`, captions, table cells, or report prose. The UI renders
   clickable anchors automatically from structured fields.
+- Insert key generated files where they support the argument with
+  `{ "type": "artifact_embed", "artifactId": "...", "caption": "...", "evidenceIds": [...] }`.
+  Use it for important images, SVGs, HTML visualizations, PDFs, compiled LaTeX,
+  tables, and notebooks; keep `artifact_ref` for secondary files.
 - Keep Reference Evidence entries short; detailed query parameters, identifier
   conversions, and warnings belong in evidence metadata/provenance, not in the
   main reading flow.

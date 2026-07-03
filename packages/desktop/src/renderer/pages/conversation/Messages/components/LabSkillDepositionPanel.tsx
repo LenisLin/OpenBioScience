@@ -15,12 +15,17 @@ import OpenScienceIcon, { type OpenScienceIconName } from '@/renderer/components
 import { useConversationContextSafe } from '@/renderer/hooks/context/ConversationContext';
 import { useLocalFilePreview } from '@/renderer/pages/conversation/Preview/hooks/useLocalFilePreview';
 import { emitter } from '@/renderer/utils/emitter';
-import { Message } from '@arco-design/web-react';
+import { Message, Modal } from '@arco-design/web-react';
 import classNames from 'classnames';
 import React, { useMemo, useState } from 'react';
 import './LabSkillDepositionPanel.css';
 
 type InspectorTab = 'overview' | 'sources' | 'files' | 'protocols' | 'validation' | 'graph';
+type EnableBlockReason = {
+  id: string;
+  title: string;
+  detail?: string;
+};
 type LabMarkdownSegment =
   | { type: 'heading'; text: string }
   | { type: 'paragraph'; text: string }
@@ -74,11 +79,135 @@ const FINDING_ICONS: Record<LabSkillValidationFinding['severity'], OpenScienceIc
   blocking: 'reviewFailed',
 };
 
+const SUBSTANTIVE_SOURCE_TYPES = new Set<LabSkillEvidenceItem['sourceType']>([
+  'conversation',
+  'artifact',
+  'file',
+  'protocol',
+  'paper',
+  'code',
+  'review',
+]);
+
+const PLACEHOLDER_CLAIM_TEXTS = new Set(['未命名规则', 'unnamed rule', 'placeholder rule']);
+
 const pathLabel = (value?: string): string => {
   if (!value) return '';
   const normalized = value.replace(/\\/g, '/');
   return normalized.split('/').pop() || value;
 };
+
+const hasSubstantiveSource = (panel: LabSkillDepositionPanelData): boolean =>
+  panel.sources.some(
+    (source) =>
+      SUBSTANTIVE_SOURCE_TYPES.has(source.sourceType) && source.status !== 'ignored' && source.status !== 'blocked'
+  );
+
+const isPlaceholderClaim = (claim: LabSkillClaim): boolean =>
+  !claim.text.trim() || PLACEHOLDER_CLAIM_TEXTS.has(claim.text.trim().toLowerCase());
+
+const hasSupportedClaim = (panel: LabSkillDepositionPanelData): boolean => {
+  const sourceIds = new Set(
+    panel.sources
+      .filter(
+        (source) =>
+          SUBSTANTIVE_SOURCE_TYPES.has(source.sourceType) && source.status !== 'ignored' && source.status !== 'blocked'
+      )
+      .map((source) => source.id)
+  );
+  return (panel.claims || []).some(
+    (claim) =>
+      !isPlaceholderClaim(claim) &&
+      claim.status !== 'blocked' &&
+      claim.status !== 'conflict' &&
+      claim.evidenceIds.some((sourceId) => sourceIds.has(sourceId))
+  );
+};
+
+const getEnableBlockReasons = (panel: LabSkillDepositionPanelData): EnableBlockReason[] => {
+  const reasons: EnableBlockReason[] = [];
+  const reasonIds = new Set<string>();
+  const addReason = (reason: EnableBlockReason) => {
+    if (reasonIds.has(reason.id)) return;
+    reasonIds.add(reason.id);
+    reasons.push(reason);
+  };
+
+  const blockingFindings = (panel.validation?.findings || []).filter((finding) => finding.severity === 'blocking');
+  for (const finding of blockingFindings) {
+    addReason({
+      id: `finding-${finding.id}`,
+      title: finding.title || '存在阻断级校验问题',
+      detail: finding.detail || finding.target,
+    });
+  }
+
+  if (!panel.skill.draftDir) {
+    addReason({
+      id: 'missing-draft',
+      title: '尚未生成 Skill 草稿',
+      detail: '需要先让 Agent 完成 compile_draft，并产出可检查的 SKILL.md、Protocol 或引用文件。',
+    });
+  }
+
+  if (!panel.sources.length || panel.stats.sources <= 0) {
+    addReason({
+      id: 'missing-sources',
+      title: '尚未登记可追踪来源',
+      detail: '沉淀结果至少需要绑定一条 conversation、artifact、文件、代码、论文或 review 来源。',
+    });
+  } else if (!hasSubstantiveSource(panel)) {
+    addReason({
+      id: 'weak-sources',
+      title: '缺少可沉淀的实质来源',
+      detail: '当前来源主要是用户指令或手工备注，不能证明 SOP 来自真实会话、文件、artifact 或代码证据。',
+    });
+  }
+
+  if ((panel.claims || []).length === 0 || panel.stats.claims <= 0 || (panel.claims || []).every(isPlaceholderClaim)) {
+    addReason({
+      id: 'missing-claims',
+      title: '尚未抽取 SOP 规则',
+      detail: '需要先把可复用的操作步骤、约束、校验标准或适用边界沉淀为规则。',
+    });
+  } else if (!hasSupportedClaim(panel)) {
+    addReason({
+      id: 'unsupported-claims',
+      title: 'SOP 规则没有绑定实质来源',
+      detail:
+        '至少一条可启用规则需要通过 evidenceIds 指向已登记的 conversation、artifact、文件、代码、论文或 review 来源。',
+    });
+  }
+
+  if (!['ready', 'enabled'].includes(panel.status) && panel.validation?.canEnable === false) {
+    addReason({
+      id: 'not-ready',
+      title: '沉淀状态尚未进入 ready',
+      detail: `当前状态是 ${panel.status}，需要先完成来源选择、规则抽取、草稿编译和校验。`,
+    });
+  }
+
+  if (!reasons.length && panel.validation?.canEnable === false) {
+    addReason({
+      id: 'validation-failed',
+      title: '校验结果尚不允许启用',
+      detail: '后端校验返回 canEnable=false，请先查看右侧“校验”页签中的 finding。',
+    });
+  }
+
+  if (!reasons.length && !panel.skill.canEnable) {
+    addReason({
+      id: 'skill-not-enableable',
+      title: 'Skill 草稿尚不可启用',
+      detail: '当前草稿还没有满足发布或安装前置条件。',
+    });
+  }
+
+  return reasons;
+};
+
+const isPanelEnableable = (panel: LabSkillDepositionPanelData, reasons = getEnableBlockReasons(panel)): boolean =>
+  Boolean(panel.validation?.canEnable && panel.skill.canEnable && reasons.length === 0);
 
 const stripStandaloneEvidenceCitations = (text: string): string =>
   text
@@ -391,6 +520,7 @@ const InspectorPane: React.FC<{
 }> = ({ panel, onOpenFile }) => {
   const [tab, setTab] = useState<InspectorTab>('overview');
   const findings = panel.validation?.findings || [];
+  const canEnable = useMemo(() => isPanelEnableable(panel), [panel]);
 
   return (
     <aside className='lab-skill-inspector'>
@@ -416,7 +546,7 @@ const InspectorPane: React.FC<{
             <span>状态</span>
             <b>{panel.status}</b>
             <span>可启用</span>
-            <b>{panel.skill.canEnable ? '是' : '否'}</b>
+            <b>{canEnable ? '是' : '否'}</b>
             <span>草稿</span>
             <button
               type='button'
@@ -503,7 +633,8 @@ export const LabSkillDepositionPanel: React.FC<{ panel: LabSkillDepositionPanelD
   const workspace = panel.projectRoot || conversationContext?.workspace;
   const openLocalFilePreview = useLocalFilePreview(workspace);
   const sourcesById = useMemo(() => new Map(panel.sources.map((source) => [source.id, source])), [panel.sources]);
-  const canEnable = Boolean(panel.validation?.canEnable && panel.skill.canEnable);
+  const enableBlockReasons = useMemo(() => getEnableBlockReasons(panel), [panel]);
+  const canEnable = isPanelEnableable(panel, enableBlockReasons);
 
   const openFile = React.useCallback(
     (filePath: string) => {
@@ -513,13 +644,46 @@ export const LabSkillDepositionPanel: React.FC<{ panel: LabSkillDepositionPanelD
   );
 
   const handleEnable = React.useCallback(() => {
-    if (!canEnable) return;
+    if (!canEnable) {
+      Modal.warning({
+        title: '暂不能启用这个 Skill',
+        okText: '知道了',
+        content: (
+          <div className='lab-skill-enableReasons'>
+            <p className='lab-skill-enableReasons__lead'>
+              当前沉淀结果还不能安全发布或安装。请先修复下面的问题，再重新生成沉淀报告。
+            </p>
+            <ul>
+              {(enableBlockReasons.length
+                ? enableBlockReasons
+                : [
+                    {
+                      id: 'unknown',
+                      title: '启用条件未满足',
+                      detail: '系统没有拿到更具体的失败原因，请查看校验页签或重新提交沉淀报告。',
+                    },
+                  ]
+              ).map((reason) => (
+                <li key={reason.id}>
+                  <b>{reason.title}</b>
+                  {reason.detail ? <span>{reason.detail}</span> : null}
+                </li>
+              ))}
+            </ul>
+            {panel.nextActions?.length ? (
+              <p className='lab-skill-enableReasons__next'>建议下一步：{panel.nextActions.join(' · ')}</p>
+            ) : null}
+          </div>
+        ),
+      });
+      return;
+    }
     emitter.emit(
       'sendbox.fill',
       `请启用当前沉淀 Skill：${panel.skill.name}。请先调用 lab_skill(action="publish_skill")，确认没有 blocking finding 后，再调用 lab_skill(action="install_skill", options={approved:true})。`
     );
     Message.info('已填入启用指令，请发送后由 Agent 完成发布和安装。');
-  }, [canEnable, panel.skill.name]);
+  }, [canEnable, enableBlockReasons, panel.nextActions, panel.skill.name]);
 
   const handleRevision = React.useCallback(() => {
     emitter.emit('sendbox.fill', '还需要修改：');
@@ -546,7 +710,13 @@ export const LabSkillDepositionPanel: React.FC<{ panel: LabSkillDepositionPanelD
             <OpenScienceIcon name='depositionRevise' size={17} visualScale={1.08} />
             还需要修改
           </button>
-          <button type='button' className='lab-skill-primary' disabled={!canEnable} onClick={handleEnable}>
+          <button
+            type='button'
+            className={classNames('lab-skill-primary', !canEnable && 'lab-skill-primary--blocked')}
+            aria-disabled={!canEnable}
+            title={!canEnable ? '查看暂不能启用的原因' : undefined}
+            onClick={handleEnable}
+          >
             <OpenScienceIcon name='depositionEnable' size={17} visualScale={1.08} />
             启用
           </button>

@@ -8,6 +8,7 @@ import { Message } from '@arco-design/web-react';
 import MonacoEditor from '@monaco-editor/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { buildLocalFileDirectorySrc } from '../../previewUrls';
 
 interface HTMLPreviewProps {
   content: string;
@@ -72,10 +73,8 @@ const HTMLPreview: React.FC<HTMLPreviewProps> = ({ content, file_path, hideToolb
     // 注入 <base> 标签以支持相对路径 / Inject <base> tag to support relative paths
     let finalHtml = htmlCode;
     if (file_path) {
-      // 获取文件所在目录 / Get directory of the file
-      const fileDir = file_path.substring(0, file_path.lastIndexOf('/') + 1);
       // 构造 file:// 协议的 base URL / Construct file:// protocol base URL
-      const base_url = `file://${fileDir}`;
+      const base_url = buildLocalFileDirectorySrc(file_path);
 
       // 检查是否已有 base 标签 / Check if base tag exists
       if (!finalHtml.match(/<base\s+href=/i)) {
@@ -96,7 +95,7 @@ const HTMLPreview: React.FC<HTMLPreviewProps> = ({ content, file_path, hideToolb
     if (inspectorMode) {
       injectInspectorScript(iframeDoc);
     }
-  }, [htmlCode, inspectorMode]);
+  }, [htmlCode, inspectorMode, file_path]);
 
   /**
    * 注入元素选择器脚本到 iframe
