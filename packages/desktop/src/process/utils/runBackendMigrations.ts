@@ -561,13 +561,13 @@ function toManagedCodexMcpServer(
 }
 
 function sanitizeMedicalEvidenceEnvForCodex(env?: Record<string, string>): Record<string, string> {
-  const next = { ...(env || {}) };
+  const next = { ...env };
   delete next[MEDICAL_EVIDENCE_ENV_KEYS.apiKey];
   return next;
 }
 
 function sanitizeResearchEvidenceEnvForCodex(env?: Record<string, string>): Record<string, string> {
-  const next = { ...(env || {}) };
+  const next = { ...env };
   delete next[RESEARCH_EVIDENCE_ENV_KEYS.apiKey];
 
   if (next[RESEARCH_EVIDENCE_ENV_KEYS.paperclipEnabled] === 'true') {
