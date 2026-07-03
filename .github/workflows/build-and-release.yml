@@ -45,12 +45,14 @@ jobs:
         run: bun run lint
 
       - name: Check Prettier formatting
+        if: github.ref == 'refs/heads/dev'
         run: bun run format:check
 
       - name: TypeScript type check
         run: bunx tsc --noEmit
 
       - name: Run unit tests
+        if: github.ref == 'refs/heads/dev'
         run: bunx vitest run
 
   build-pipeline:

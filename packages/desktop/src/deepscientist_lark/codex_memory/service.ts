@@ -257,11 +257,11 @@ async function persistAcpSessionCodexMemoryBinding(
   try {
     const current = await queryAcpSessionBinding(conversationId);
     const nextConfig: JsonRecord = {
-      ...(current.sessionConfig ?? {}),
+      ...current.sessionConfig,
       memory: {
         ...(isRecord(current.sessionConfig?.memory) ? current.sessionConfig.memory : {}),
         codex: {
-          ...(getNestedRecord(current.sessionConfig, ['memory', 'codex']) ?? {}),
+          ...getNestedRecord(current.sessionConfig, ['memory', 'codex']),
           rollout_path: binding.rolloutPath,
           rollout_session_id: binding.codexRolloutSessionId,
           workspace: binding.workspace,
