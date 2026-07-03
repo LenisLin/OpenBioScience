@@ -296,7 +296,8 @@ jobs:
       - name: Remove stale draft release for tag
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
           TAG_NAME: ${{ steps.version.outputs.tag_name }}
         run: |
           existing_draft="$(gh release view "$TAG_NAME" --json isDraft --jq '.isDraft' 2>/dev/null || true)"
@@ -330,4 +331,5 @@ jobs:
           draft: true
           prerelease: ${{ steps.version.outputs.is_dev == 'true' || contains(steps.version.outputs.tag_name, 'beta') || contains(steps.version.outputs.tag_name, 'alpha') || contains(steps.version.outputs.tag_name, 'rc') }}
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
