@@ -110,52 +110,42 @@ Inside a research project, the same conversation can produce multiple result typ
 <table>
 <tr>
 <td width="50%" valign="top">
-<img src="./resources/readme/xhs/xhs-01.png" alt="OpenScience open-source Claude Science cover" /><br/>
+<img src="./resources/readme/xhs-en/xhs-en-01.png" alt="OpenScience open-source Claude Science cover" /><br/>
 <sub><b>Open-source Claude Science</b> — open-source, local-first research workflows that support any model and many scientific disciplines.</sub>
 </td>
 <td width="50%" valign="top">
-<img src="./resources/readme/xhs/xhs-02.png" alt="OpenScience research project entry" /><br/>
+<img src="./resources/readme/xhs-en/xhs-en-02.png" alt="OpenScience research project entry" /><br/>
 <sub><b>Research projects</b> — start from a project, not a disposable chat, so files, runs, evidence, and results stay together.</sub>
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<img src="./resources/readme/xhs/xhs-03.png" alt="OpenScience four research modes" /><br/>
+<img src="./resources/readme/xhs-en/xhs-en-03.png" alt="OpenScience four research modes" /><br/>
 <sub><b>Four work modes</b> — Science Mode, Medical Evidence Mode, Knowledge Distillation Mode, and Goal Mode for different research situations.</sub>
 </td>
 <td width="50%" valign="top">
-<img src="./resources/readme/xhs/xhs-04.png" alt="OpenScience medical evidence mode" /><br/>
+<img src="./resources/readme/xhs-en/xhs-en-04.png" alt="OpenScience medical evidence mode" /><br/>
 <sub><b>Medical evidence</b> — organize clinical and biomedical answers around citations, evidence boundaries, conflicts, and traceable references.</sub>
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<img src="./resources/readme/xhs/xhs-05.png" alt="OpenScience goal mode" /><br/>
+<img src="./resources/readme/xhs-en/xhs-en-05.png" alt="OpenScience goal mode" /><br/>
 <sub><b>Goal mode</b> — sustain long-running research goals with progress, blockers, decisions, and next actions.</sub>
 </td>
 <td width="50%" valign="top">
-<img src="./resources/readme/xhs/xhs-06.png" alt="OpenScience knowledge distillation mode" /><br/>
+<img src="./resources/readme/xhs-en/xhs-en-06.png" alt="OpenScience knowledge distillation mode" /><br/>
 <sub><b>Knowledge distillation</b> — turn successful conversations, SOPs, and project context into reusable local skills.</sub>
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<img src="./resources/readme/xhs/xhs-07.png" alt="OpenScience artifact as research object" /><br/>
+<img src="./resources/readme/xhs-en/xhs-en-07.png" alt="OpenScience artifact as research object" /><br/>
 <sub><b>Science artifacts</b> — outputs are not attachments; they keep previews, code, inputs, logs, versions, and export paths.</sub>
 </td>
 <td width="50%" valign="top">
-<img src="./resources/readme/xhs/xhs-08.png" alt="OpenScience result studio workflow" /><br/>
+<img src="./resources/readme/xhs-en/xhs-en-08.png" alt="OpenScience result studio workflow" /><br/>
 <sub><b>Result studio</b> — conversations, files, reports, and evidence chains land in one Science artifact.</sub>
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-<img src="./resources/readme/xhs/xhs-09.png" alt="OpenScience GitHub and website QR code" /><br/>
-<sub><b>Open project</b> — visit OpenScience.cc or GitHub ResearAI/OpenScience to try, star, and contribute.</sub>
-</td>
-<td width="50%" valign="top">
-<img src="./resources/readme/xhs/contact-sheet.png" alt="OpenScience poster overview" /><br/>
-<sub><b>Full walkthrough</b> — the complete product story in one overview, from project entry to artifacts and open contribution.</sub>
 </td>
 </tr>
 </table>
