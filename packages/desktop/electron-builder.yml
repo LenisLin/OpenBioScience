@@ -125,8 +125,9 @@ extraResources:
 win:
   target:
     - nsis
+    # Portable zip builds are not installer artifacts and are slow/flaky on
+    # Windows CI when the bundle contains many research resources.
     #    - msi
-    - zip
   icon: resources/app.ico # Use the checked-in Windows icon resource for executable metadata/icon patching
   artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 
