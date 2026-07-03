@@ -132,74 +132,110 @@ else
   exit 1
 fi
 
-# 7. Auth-setup smoke: verify stdout announces a generated admin password on
-#    first launch, then POST it to /login and check for success + session cookie.
-#    Skip when the bundled backend was unavailable — there's no /login to call.
+# 7. Auth/access smoke: OpenScience WebUI runs in local no-login mode. Verify
+#    the local auth compatibility endpoints are ready. Keep a fallback for older
+#    bundles that still seed and print an initial admin password.
 echo ""
-echo "7. Testing first-launch admin password seeding + login..."
+echo "7. Testing WebUI access mode..."
 if grep -q 'Backend binary not found' /tmp/deeporganiser-web.log; then
-  echo "⚠️  frontend-only mode detected (no bundled backend) — skipping login probe"
+  echo "⚠️  frontend-only mode detected (no bundled backend) — skipping auth/access probe"
   kill "$SERVER_PID" 2>/dev/null || true
   wait "$SERVER_PID" 2>/dev/null || true
 else
-  # Wait up to 20s for the "Generated initial admin password" line — the backend
-  # needs to finish migrations before /api/auth/status replies.
+  # Wait up to 20s for the no-login compatibility endpoint. Older bundles may
+  # instead print "Generated initial admin password", in which case we exercise
+  # the legacy login flow below.
   PASSWORD=""
+  NO_LOGIN_READY=""
+  AUTH_STATUS_BODY=$(mktemp)
   for i in $(seq 1 20); do
     PASSWORD=$(grep -oE 'Generated initial admin password: [^ ]+' /tmp/deeporganiser-web.log | head -1 | sed 's/^Generated initial admin password: //')
+    AUTH_STATUS_CODE=$(curl -sS -o "$AUTH_STATUS_BODY" -w '%{http_code}' \
+      "http://127.0.0.1:${HTTP_PORT}/api/auth/status" 2>/dev/null || echo "000")
+    if [ "$AUTH_STATUS_CODE" = "200" ] &&
+      grep -q '"success":[[:space:]]*true' "$AUTH_STATUS_BODY" &&
+      grep -q '"needs_setup":[[:space:]]*false' "$AUTH_STATUS_BODY" &&
+      grep -q '"is_authenticated":[[:space:]]*true' "$AUTH_STATUS_BODY"; then
+      NO_LOGIN_READY="1"
+      break
+    fi
     if [ -n "$PASSWORD" ]; then
       break
     fi
     sleep 1
   done
 
-  if [ -z "$PASSWORD" ]; then
+  if [ -n "$NO_LOGIN_READY" ]; then
+    AUTH_USER_BODY=$(mktemp)
+    AUTH_USER_CODE=$(curl -sS -o "$AUTH_USER_BODY" -w '%{http_code}' \
+      "http://127.0.0.1:${HTTP_PORT}/api/auth/user" 2>/dev/null || echo "000")
+
+    # Stop the server before asserting so we don't leak a process on failure.
     kill "$SERVER_PID" 2>/dev/null || true
     wait "$SERVER_PID" 2>/dev/null || true
-    echo "❌ Never saw 'Generated initial admin password: ...' in stdout."
-    echo "---server log---"
-    cat /tmp/deeporganiser-web.log
-    exit 1
+
+    if [ "$AUTH_USER_CODE" != "200" ] || ! grep -q '"username":[[:space:]]*"OpenScience"' "$AUTH_USER_BODY"; then
+      echo "❌ No-login /api/auth/user probe failed (HTTP $AUTH_USER_CODE)"
+      echo "---/api/auth/status---"
+      cat "$AUTH_STATUS_BODY"
+      echo "---/api/auth/user---"
+      cat "$AUTH_USER_BODY"
+      echo "---server log---"
+      cat /tmp/deeporganiser-web.log
+      exit 1
+    fi
+    echo "✓ No-login WebUI access endpoints are ready"
+  else
+    if [ -z "$PASSWORD" ]; then
+      kill "$SERVER_PID" 2>/dev/null || true
+      wait "$SERVER_PID" 2>/dev/null || true
+      echo "❌ Neither no-login auth status nor legacy admin password became available."
+      echo "---last /api/auth/status body---"
+      cat "$AUTH_STATUS_BODY"
+      echo "---server log---"
+      cat /tmp/deeporganiser-web.log
+      exit 1
+    fi
+    echo "✓ Captured initial admin password from stdout"
+
+    # POST /login — static server proxies to backend. Expect 200, success:true,
+    # and at least one Set-Cookie header containing a session cookie.
+    LOGIN_BODY=$(printf '{"username":"admin","password":"%s","remember":false}' "$PASSWORD")
+    LOGIN_RESP_HEADERS=$(mktemp)
+    LOGIN_RESP_BODY=$(mktemp)
+    HTTP_CODE=$(curl -sS -o "$LOGIN_RESP_BODY" -D "$LOGIN_RESP_HEADERS" -w '%{http_code}' \
+      -X POST "http://127.0.0.1:${HTTP_PORT}/login" \
+      -H 'Content-Type: application/json' \
+      --data "$LOGIN_BODY" || echo "000")
+
+    # Stop the server before asserting so we don't leak a process on failure.
+    kill "$SERVER_PID" 2>/dev/null || true
+    wait "$SERVER_PID" 2>/dev/null || true
+
+    if [ "$HTTP_CODE" != "200" ]; then
+      echo "❌ /login returned HTTP $HTTP_CODE"
+      echo "---headers---"
+      cat "$LOGIN_RESP_HEADERS"
+      echo "---body---"
+      cat "$LOGIN_RESP_BODY"
+      echo "---server log---"
+      cat /tmp/deeporganiser-web.log
+      exit 1
+    fi
+
+    if ! grep -q '"success":[[:space:]]*true' "$LOGIN_RESP_BODY"; then
+      echo "❌ /login returned 200 but body had no success:true"
+      cat "$LOGIN_RESP_BODY"
+      exit 1
+    fi
+
+    if ! grep -iq '^set-cookie:' "$LOGIN_RESP_HEADERS"; then
+      echo "❌ /login returned success but no Set-Cookie header"
+      cat "$LOGIN_RESP_HEADERS"
+      exit 1
+    fi
+    echo "✓ Login with printed password succeeded (HTTP 200 + Set-Cookie present)"
   fi
-  echo "✓ Captured initial admin password from stdout"
-
-  # POST /login — static server proxies to backend. Expect 200, success:true,
-  # and at least one Set-Cookie header containing a session cookie.
-  LOGIN_BODY=$(printf '{"username":"admin","password":"%s","remember":false}' "$PASSWORD")
-  LOGIN_RESP_HEADERS=$(mktemp)
-  LOGIN_RESP_BODY=$(mktemp)
-  HTTP_CODE=$(curl -sS -o "$LOGIN_RESP_BODY" -D "$LOGIN_RESP_HEADERS" -w '%{http_code}' \
-    -X POST "http://127.0.0.1:${HTTP_PORT}/login" \
-    -H 'Content-Type: application/json' \
-    --data "$LOGIN_BODY" || echo "000")
-
-  # Stop the server before asserting so we don't leak a process on failure.
-  kill "$SERVER_PID" 2>/dev/null || true
-  wait "$SERVER_PID" 2>/dev/null || true
-
-  if [ "$HTTP_CODE" != "200" ]; then
-    echo "❌ /login returned HTTP $HTTP_CODE"
-    echo "---headers---"
-    cat "$LOGIN_RESP_HEADERS"
-    echo "---body---"
-    cat "$LOGIN_RESP_BODY"
-    echo "---server log---"
-    cat /tmp/deeporganiser-web.log
-    exit 1
-  fi
-
-  if ! grep -q '"success":[[:space:]]*true' "$LOGIN_RESP_BODY"; then
-    echo "❌ /login returned 200 but body had no success:true"
-    cat "$LOGIN_RESP_BODY"
-    exit 1
-  fi
-
-  if ! grep -iq '^set-cookie:' "$LOGIN_RESP_HEADERS"; then
-    echo "❌ /login returned success but no Set-Cookie header"
-    cat "$LOGIN_RESP_HEADERS"
-    exit 1
-  fi
-  echo "✓ Login with printed password succeeded (HTTP 200 + Set-Cookie present)"
 fi
 
 # Cleanup
