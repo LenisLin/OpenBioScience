@@ -8,22 +8,20 @@ This guide is for users who install the desktop app directly instead of building
 
 ## macOS
 
+<img src="assets/openscience-logo-mark.png" alt="OpenScience logo mark" width="96">
+
+![OpenScience research workspace preview](assets/openscience-research-workspace-hero.png)
+
 1. Open the Releases page and download the package for your Mac.
    - Apple Silicon Macs usually use `arm64`.
    - Intel Macs usually use `x64`.
 2. Open the downloaded package and drag OpenScience into `Applications`.
 3. On first launch, macOS may say it cannot verify the developer, or that OpenScience was not opened.
-
-![macOS warning that OpenScience was not opened](assets/macos-gatekeeper-unverified-warning.png)
-
 4. Do not choose to move the app to Trash. Click `Done`, then open:
 
    `System Settings` -> `Privacy & Security` -> `Security`
 
 5. Near the message saying OpenScience was blocked to protect your Mac, click `Open Anyway`.
-
-![Open Anyway in macOS Privacy & Security](assets/macos-privacy-security-open-anyway.png)
-
 6. macOS may ask for Touch ID, your password, or one more `Open` confirmation. After that, OpenScience should launch normally.
 
 If `Open Anyway` does not appear, double-click OpenScience once more to trigger the security prompt, then return to `Privacy & Security`.
@@ -34,6 +32,7 @@ If `Open Anyway` does not appear, double-click OpenScience once more to trigger 
 2. Double-click the installer.
 3. If Microsoft Defender SmartScreen appears, choose `More info`, then `Run anyway`.
 4. If your browser says the downloaded file is uncommon, confirm it came from the `ResearAI/OpenScience` Releases page, then keep it.
+5. If your organization manages Windows security policy, allow the installer from Windows Security or your enterprise device-management console.
 
 ## Linux
 

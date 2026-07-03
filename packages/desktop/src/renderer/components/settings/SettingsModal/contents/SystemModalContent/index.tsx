@@ -407,7 +407,7 @@ const SystemModalContent: React.FC = () => {
       key: 'telemetryUpdate',
       label: t('settings.telemetry.updateEnabled', { defaultValue: '更新状态同步' }),
       description: t('settings.telemetry.updateEnabledDesc', {
-        defaultValue: '仅同步版本、平台、更新检查和下载状态，用于判断更新是否可用。',
+        defaultValue: '每周批量同步版本、平台、硬件摘要、更新检查和下载状态，用于判断更新是否可用。',
       }),
       component: <Switch checked={telemetryUpdateEnabled} onChange={handleTelemetryUpdateEnabledChange} />,
     },
@@ -415,7 +415,7 @@ const SystemModalContent: React.FC = () => {
       key: 'telemetryUsage',
       label: t('settings.telemetry.usageEnabled', { defaultValue: '匿名使用统计' }),
       description: t('settings.telemetry.usageEnabledDesc', {
-        defaultValue: '记录模式选择和 artifact 类型等匿名事件，不上传科研内容。',
+        defaultValue: '每周批量同步模式选择和 artifact 类型等匿名事件，不上传科研内容。',
       }),
       component: <Switch checked={telemetryUsageEnabled} onChange={handleTelemetryUsageEnabledChange} />,
     },
@@ -423,7 +423,7 @@ const SystemModalContent: React.FC = () => {
       key: 'telemetryDiagnostics',
       label: t('settings.telemetry.diagnosticsEnabled', { defaultValue: '诊断详情' }),
       description: t('settings.telemetry.diagnosticsEnabledDesc', {
-        defaultValue: '允许发送脱敏后的启动和错误摘要，帮助定位安装与更新问题。',
+        defaultValue: '允许每周发送脱敏后的启动和错误摘要，帮助定位安装与更新问题。',
       }),
       component: (
         <Switch checked={telemetryDiagnosticsEnabled} onChange={handleTelemetryDiagnosticsEnabledChange} />
@@ -546,7 +546,8 @@ const SystemModalContent: React.FC = () => {
               </div>
               <div className='mt-4px text-12px text-t-secondary leading-5'>
                 {t('settings.telemetry.description', {
-                  defaultValue: 'OpenScience 只同步匿名运行状态。科研内容、文件正文、提示词和账号信息不会通过此通道上传。',
+                  defaultValue:
+                    'OpenScience 每周同步匿名运行状态和系统硬件摘要。科研内容、文件正文、提示词和账号信息不会通过此通道上传。',
                 })}
               </div>
             </div>

@@ -111,21 +111,21 @@ Inside a research project, the same conversation can produce multiple result typ
 <tr>
 <td width="50%" valign="top">
 <img src="./resources/readme/xhs/xhs-01.png" alt="OpenScience open-source Claude Science cover" /><br/>
-<sub><b>Open-source Claude Science</b> — local-first research workflows with evidence, files, and reproducible outputs.</sub>
+<sub><b>Open-source Claude Science</b> — open-source, local-first research workflows that support any model and many scientific disciplines.</sub>
 </td>
 <td width="50%" valign="top">
 <img src="./resources/readme/xhs/xhs-02.png" alt="OpenScience research project entry" /><br/>
-<sub><b>Research projects</b> — start from a project, not a disposable chat, so files, runs, and results stay together.</sub>
+<sub><b>Research projects</b> — start from a project, not a disposable chat, so files, runs, evidence, and results stay together.</sub>
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
 <img src="./resources/readme/xhs/xhs-03.png" alt="OpenScience four research modes" /><br/>
-<sub><b>Four work modes</b> — science research, medical evidence, knowledge distillation, and long-horizon goals.</sub>
+<sub><b>Four work modes</b> — Science Mode, Medical Evidence Mode, Knowledge Distillation Mode, and Goal Mode for different research situations.</sub>
 </td>
 <td width="50%" valign="top">
 <img src="./resources/readme/xhs/xhs-04.png" alt="OpenScience medical evidence mode" /><br/>
-<sub><b>Medical evidence</b> — organize clinical answers around citations, evidence boundaries, and traceable references.</sub>
+<sub><b>Medical evidence</b> — organize clinical and biomedical answers around citations, evidence boundaries, conflicts, and traceable references.</sub>
 </td>
 </tr>
 <tr>
@@ -135,7 +135,7 @@ Inside a research project, the same conversation can produce multiple result typ
 </td>
 <td width="50%" valign="top">
 <img src="./resources/readme/xhs/xhs-06.png" alt="OpenScience knowledge distillation mode" /><br/>
-<sub><b>Knowledge distillation</b> — turn successful conversations and SOPs into reusable skills that help the agent learn your workflow.</sub>
+<sub><b>Knowledge distillation</b> — turn successful conversations, SOPs, and project context into reusable local skills.</sub>
 </td>
 </tr>
 <tr>
@@ -154,8 +154,8 @@ Inside a research project, the same conversation can produce multiple result typ
 <sub><b>Open project</b> — visit OpenScience.cc or GitHub ResearAI/OpenScience to try, star, and contribute.</sub>
 </td>
 <td width="50%" valign="top">
-<img src="./resources/readme/xhs/contact-sheet.png" alt="OpenScience Xiaohongshu poster overview" /><br/>
-<sub><b>Full walkthrough</b> — the complete launch-note poster set in one overview.</sub>
+<img src="./resources/readme/xhs/contact-sheet.png" alt="OpenScience poster overview" /><br/>
+<sub><b>Full walkthrough</b> — the complete product story in one overview, from project entry to artifacts and open contribution.</sub>
 </td>
 </tr>
 </table>
@@ -521,6 +521,25 @@ Use [Discussions](https://github.com/ResearAI/OpenScience/discussions) for ideas
 OpenScience is developed by WestlakeNLP and Zhongguancun Academy. See the [developer list](./docs/developers.md) for the current development team and contact information.
 
 For research collaboration, long-term internship, PhD, or research assistant opportunities, contact Professor Yue Zhang at `zhangyue@westlake.edu.cn`.
+
+OpenScience inherits part of its long-horizon research workflow design from DeepScientist. If OpenScience or its Science workflows materially help your paper, report, or research project, please also consider citing the DeepScientist paper:
+
+```bibtex
+@inproceedings{
+weng2026deepscientist,
+title={DeepScientist: Advancing Frontier-Pushing Scientific Findings Progressively},
+author={Yixuan Weng and Minjun Zhu and Qiujie Xie and QiYao Sun and Zhen Lin and Sifan Liu and Yue Zhang},
+booktitle={The Fourteenth International Conference on Learning Representations},
+year={2026},
+url={https://openreview.net/forum?id=cZFgsLq8Gs}
+}
+```
+
+For discussion and community updates, you can join the WeChat group below. The QR code may be refreshed periodically.
+
+<p align="center">
+  <img src="./resources/readme/wechat/ai-scientist-wechat-group-8.jpg" alt="AI Scientist research discussion WeChat group" width="360" />
+</p>
 
 ---
 

@@ -51,7 +51,7 @@ type IconAsset = {
 };
 
 const ICON_ASSETS: Record<SendBoxIconName, IconAsset> = {
-  send: { light: sendIcon, dark: sendIconDark },
+  send: { light: sendIconDark, dark: sendIcon },
   stop: { light: stopIcon, dark: stopIconDark },
   attach: { light: attachIcon, dark: attachIconDark },
   slashCommand: { light: slashCommandIcon, dark: slashCommandIconDark },

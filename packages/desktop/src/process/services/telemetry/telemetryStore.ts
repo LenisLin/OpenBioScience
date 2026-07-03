@@ -13,6 +13,7 @@ const MAX_QUEUE_EVENTS = 500;
 
 export type TelemetryQueueState = {
   events: TelemetryEvent[];
+  lastAttemptAt?: string;
   lastFlushAt?: string;
 };
 
@@ -39,6 +40,7 @@ export function readTelemetryQueue(userDataPath: string): TelemetryQueueState {
       : [];
     return {
       events: events.slice(-MAX_QUEUE_EVENTS),
+      lastAttemptAt: typeof parsed.lastAttemptAt === 'string' ? parsed.lastAttemptAt : undefined,
       lastFlushAt: typeof parsed.lastFlushAt === 'string' ? parsed.lastFlushAt : undefined,
     };
   } catch {
@@ -55,6 +57,7 @@ export function writeTelemetryQueue(userDataPath: string, state: TelemetryQueueS
       JSON.stringify(
         {
           events: state.events.slice(-MAX_QUEUE_EVENTS),
+          lastAttemptAt: state.lastAttemptAt,
           lastFlushAt: state.lastFlushAt,
         },
         null,
@@ -80,10 +83,12 @@ export function appendTelemetryEvent(userDataPath: string, event: TelemetryEvent
 export function replaceTelemetryEvents(
   userDataPath: string,
   events: TelemetryEvent[],
-  lastFlushAt?: string
+  lastFlushAt?: string,
+  lastAttemptAt?: string
 ): TelemetryQueueState {
   const state = {
     events: events.slice(-MAX_QUEUE_EVENTS),
+    lastAttemptAt,
     lastFlushAt,
   };
   writeTelemetryQueue(userDataPath, state);

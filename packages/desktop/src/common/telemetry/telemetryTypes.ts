@@ -24,6 +24,29 @@ export type TelemetryEvent = {
   properties?: TelemetryProperties;
 };
 
+export type TelemetryHardwareSnapshot = {
+  cpu?: {
+    architecture?: string;
+    logicalCores?: number;
+    model?: string;
+    speedMHz?: number;
+  };
+  gpu?: {
+    devices?: Array<{
+      active?: boolean;
+      device?: string;
+      deviceId?: string;
+      vendor?: string;
+      vendorId?: string;
+    }>;
+    featureStatus?: Record<string, string>;
+  };
+  memory?: {
+    totalBytes?: number;
+    totalGb?: number;
+  };
+};
+
 export type TelemetryTrackRequest = {
   category?: TelemetryEventCategory;
   name: string;
@@ -36,6 +59,7 @@ export type TelemetryBatch = {
   channel: string;
   consent: TelemetryConsentSettings;
   events: TelemetryEvent[];
+  hardware?: TelemetryHardwareSnapshot;
   installationId: string;
   locale: string;
   platform: NodeJS.Platform;
@@ -46,8 +70,10 @@ export type TelemetryBatch = {
 export type TelemetrySettingsSnapshot = {
   consent: TelemetryConsentSettings;
   endpoint: string;
+  lastAttemptAt?: string;
   installationId: string;
   lastFlushAt?: string;
+  nextFlushAt?: string;
   queuedEvents: number;
 };
 
@@ -62,4 +88,6 @@ export type TelemetryFlushResult = {
   success: boolean;
   remaining: number;
   error?: string;
+  nextFlushAt?: string;
+  reason?: string;
 };
