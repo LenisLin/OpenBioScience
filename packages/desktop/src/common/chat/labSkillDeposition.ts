@@ -10,6 +10,8 @@ import { getPromptLanguageInstruction, getPromptLanguageName } from './language'
 export const LAB_SKILL_DEPOSITION_MODE_ID = 'lab_skill_deposition';
 export const LAB_SKILL_DEPOSITION_EVENT_SCHEMA = 'deeporganiser.lab_skill_deposition.event.v1';
 export const LAB_SKILL_DEPOSITION_PANEL_SCHEMA = 'deeporganiser.lab_skill_deposition.panel.v1';
+export const LAB_SKILL_DEPOSITION_SKILL_NAME = 'openscience-lab-skill-deposition';
+export const LAB_SKILL_DEPOSITION_SKILL_PATH = 'resources/skills/lab-skill-deposition/SKILL.md';
 
 export type LabSkillDepositionAction =
   | 'open_session'

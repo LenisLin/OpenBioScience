@@ -6,6 +6,7 @@
 
 import { DEFAULT_MEDICAL_EVIDENCE_SKILL_IDS } from '@/common/chat/medicalEvidence';
 import { DEFAULT_SCIENCE_SKILL_IDS } from '@/common/chat/science';
+import { LAB_SKILL_DEPOSITION_SKILL_NAME } from '@/common/chat/labSkillDeposition';
 import {
   BUILTIN_IMAGE_GEN_NAME,
   BUILTIN_LAB_SKILL_NAME,
@@ -36,6 +37,7 @@ export function normalizeGuidAgentBackend(backend: string | undefined): string |
 export function getGuidModeDefaultSkillIds(mode: GuidCapabilityMode): string[] {
   if (mode === 'science') return [...DEFAULT_SCIENCE_SKILL_IDS];
   if (mode === 'medical-evidence') return [...DEFAULT_MEDICAL_EVIDENCE_SKILL_IDS];
+  if (mode === 'skill-deposition') return [LAB_SKILL_DEPOSITION_SKILL_NAME];
   return [];
 }
 

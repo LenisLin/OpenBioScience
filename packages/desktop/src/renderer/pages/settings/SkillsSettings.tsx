@@ -5,6 +5,11 @@
  */
 
 import { ipcBridge } from '@/common';
+import { LAB_SKILL_DEPOSITION_SKILL_NAME } from '@/common/chat/labSkillDeposition';
+import { LOOP_GOAL_SKILL_NAME } from '@/common/chat/loopGoal';
+import { DEFAULT_MEDICAL_EVIDENCE_SKILL_IDS } from '@/common/chat/medicalEvidence';
+import { DEFAULT_SCIENCE_SKILL_IDS } from '@/common/chat/science';
+import { SCIENCE_MATERIALIZED_SKILL_IDS } from '@/common/chat/scienceSkills.generated';
 import OpenScienceIcon from '@/renderer/components/icons/OpenScienceIcon';
 import { Button, Empty, Input, Message, Spin, Tag } from '@arco-design/web-react';
 import { CheckOne, Download, Edit, FolderOpen, PreviewOpen, Refresh, Search } from '@icon-park/react';
@@ -18,6 +23,7 @@ import SettingsPageWrapper from './components/SettingsPageWrapper';
 import './SkillsSettings.css';
 
 type SkillSource = 'builtin' | 'custom' | 'extension' | 'builtin-auto';
+type SkillModeTag = 'science-default' | 'science-leaf' | 'medical-evidence' | 'loop-goal' | 'skill-deposition';
 
 type SkillInfo = {
   name: string;
@@ -29,6 +35,8 @@ type SkillInfo = {
   source: SkillSource;
   id: string;
   isBuiltinAuto?: boolean;
+  isCatalogFallback?: boolean;
+  modeTags: SkillModeTag[];
 };
 
 type SkillPaths = {
@@ -49,6 +57,16 @@ type SkillZipFile = {
   name: string;
   source_path?: string;
   content?: string | Uint8Array;
+};
+
+type ApiSkillInfo = {
+  name: string;
+  description: string;
+  location: string;
+  display_location?: string;
+  relative_location?: string;
+  is_custom: boolean;
+  source: 'builtin' | 'custom' | 'extension';
 };
 
 const REMARK_PLUGINS = [remarkGfm];
@@ -108,21 +126,65 @@ const stripMarkdownFrontmatter = (markdown: string): string => {
   return match ? normalized.slice(match[0].length).trimStart() : markdown;
 };
 
+const SCIENCE_DEFAULT_SKILL_SET = new Set<string>(DEFAULT_SCIENCE_SKILL_IDS);
+const SCIENCE_LEAF_SKILL_SET = new Set<string>(SCIENCE_MATERIALIZED_SKILL_IDS);
+const MEDICAL_EVIDENCE_SKILL_SET = new Set<string>(DEFAULT_MEDICAL_EVIDENCE_SKILL_IDS);
+
+const getSkillModeTags = (name: string): SkillModeTag[] => {
+  const tags: SkillModeTag[] = [];
+  if (SCIENCE_DEFAULT_SKILL_SET.has(name)) tags.push('science-default');
+  if (SCIENCE_LEAF_SKILL_SET.has(name)) tags.push('science-leaf');
+  if (MEDICAL_EVIDENCE_SKILL_SET.has(name)) tags.push('medical-evidence');
+  if (name === LOOP_GOAL_SKILL_NAME) tags.push('loop-goal');
+  if (name === LAB_SKILL_DEPOSITION_SKILL_NAME) tags.push('skill-deposition');
+  return tags;
+};
+
+const modeTagLabel = (tag: SkillModeTag): string => {
+  if (tag === 'science-default') return 'Science 默认';
+  if (tag === 'science-leaf') return 'Science 技能';
+  if (tag === 'medical-evidence') return '循证模式';
+  if (tag === 'loop-goal') return '目标模式';
+  return '沉淀模式';
+};
+
+const modeTagClassName = (tag: SkillModeTag): string => `skills-settings__modeTag skills-settings__modeTag--${tag}`;
+
+const getSkillIconName = (skill: Pick<SkillInfo, 'name' | 'modeTags' | 'source' | 'is_custom' | 'description' | 'location'>) => {
+  if (skill.modeTags.includes('skill-deposition')) return 'modeDeposition';
+  if (skill.modeTags.includes('loop-goal')) return 'modeGoal';
+  if (skill.modeTags.includes('medical-evidence')) return 'modeMedicalEvidence';
+  if (skill.modeTags.includes('science-default') || skill.modeTags.includes('science-leaf')) return 'modeScience';
+  if (isDepositedSkill(skill as SkillInfo)) return 'depositionSkill';
+  return 'settingsSkills';
+};
+
 const isDepositedSkill = (skill: SkillInfo): boolean => {
+  if (skill.name === LAB_SKILL_DEPOSITION_SKILL_NAME) return false;
   if (skill.source === 'custom' || skill.is_custom) return true;
   const haystack = `${skill.name} ${skill.description} ${skill.location} ${skill.relative_location || ''}`;
   return /知识沉淀|deposition|lab[-_ ]?skill|protocol/iu.test(haystack);
 };
 
 const getSkillRank = (skill: SkillInfo): number => {
+  if (skill.modeTags.includes('skill-deposition')) return 0;
+  if (skill.modeTags.includes('loop-goal')) return 1;
+  if (skill.modeTags.includes('science-default')) return 2;
+  if (skill.modeTags.includes('medical-evidence')) return 3;
   if (isDepositedSkill(skill)) return 0;
-  if (skill.source === 'custom') return 1;
-  if (skill.source === 'extension') return 2;
-  if (skill.source === 'builtin-auto') return 3;
-  return 4;
+  if (skill.source === 'custom') return 4;
+  if (skill.modeTags.includes('science-leaf')) return 5;
+  if (skill.source === 'extension') return 6;
+  if (skill.source === 'builtin-auto') return 7;
+  return 8;
 };
 
 const sourceLabel = (skill: SkillInfo): string => {
+  if (skill.modeTags.includes('skill-deposition')) return '沉淀模式';
+  if (skill.modeTags.includes('loop-goal')) return '目标模式';
+  if (skill.modeTags.includes('medical-evidence')) return '循证模式';
+  if (skill.modeTags.includes('science-default')) return 'Science 默认';
+  if (skill.modeTags.includes('science-leaf')) return 'Science 技能';
   if (isDepositedSkill(skill)) return '知识沉淀';
   if (skill.source === 'extension') return '扩展';
   if (skill.source === 'builtin-auto') return '自动注入';
@@ -130,13 +192,54 @@ const sourceLabel = (skill: SkillInfo): string => {
   return '自建';
 };
 
-const isEditableSkill = (skill: SkillInfo): boolean => isDepositedSkill(skill) || skill.source === 'custom';
+const isEditableSkill = (skill: SkillInfo): boolean =>
+  !skill.isCatalogFallback && (isDepositedSkill(skill) || skill.source === 'custom');
 
 const buildSkillId = (source: SkillSource, name: string, location: string, index: number): string =>
   `${source}:${name}:${location || index}`;
 
+const buildCatalogFallbackSkills = (paths?: SkillPaths): SkillInfo[] => {
+  const builtinRoot = paths?.builtin_skills_dir || '';
+  const fallbackNames = Array.from(
+    new Set<string>([
+      ...DEFAULT_SCIENCE_SKILL_IDS,
+      ...SCIENCE_MATERIALIZED_SKILL_IDS,
+      ...DEFAULT_MEDICAL_EVIDENCE_SKILL_IDS,
+      LOOP_GOAL_SKILL_NAME,
+      LAB_SKILL_DEPOSITION_SKILL_NAME,
+    ])
+  );
+
+  return fallbackNames.map((name, index) => {
+    const location = builtinRoot ? joinPath(builtinRoot, `${name}/SKILL.md`) : `${name}/SKILL.md`;
+    const modeTags = getSkillModeTags(name);
+    const description =
+      name === LOOP_GOAL_SKILL_NAME
+        ? 'Persistent target mode skill for iterative work toward a user-defined goal.'
+        : name === LAB_SKILL_DEPOSITION_SKILL_NAME
+          ? 'Knowledge deposition mode skill for turning conversations, artifacts, and lab notes into reusable SOPs.'
+          : modeTags.includes('science-default')
+            ? 'Default OpenScience Science Mode router skill.'
+            : modeTags.includes('medical-evidence')
+              ? 'Default medical evidence mode skill.'
+              : 'Materialized OpenScience Science skill from the bundled scientific skill pack.';
+    return {
+      name,
+      description,
+      location,
+      display_location: `${name}/SKILL.md`,
+      relative_location: `${name}/SKILL.md`,
+      is_custom: false,
+      source: 'builtin' as const,
+      id: buildSkillId('builtin', name, location, index),
+      isCatalogFallback: true,
+      modeTags,
+    };
+  });
+};
+
 const buildSkills = (
-  availableSkills: Array<Omit<SkillInfo, 'id'> & { source: 'builtin' | 'custom' | 'extension' }>,
+  availableSkills: ApiSkillInfo[],
   autoSkills: Array<{ name: string; description: string; location: string }>,
   paths?: SkillPaths
 ): SkillInfo[] => {
@@ -149,6 +252,7 @@ const buildSkills = (
         location,
         display_location: displayLocation,
         id: buildSkillId(skill.source, skill.name, location, index),
+        modeTags: getSkillModeTags(skill.name),
       };
     }),
     ...autoSkills.map((skill, index) => {
@@ -161,23 +265,27 @@ const buildSkills = (
         is_custom: false,
         source: 'builtin-auto' as const,
         isBuiltinAuto: true,
+        modeTags: getSkillModeTags(skill.name),
       };
     }),
+    ...buildCatalogFallbackSkills(paths),
   ];
 
-  const seenNames = new Set<string>();
-  return items
+  const byName = new Map<string, SkillInfo>();
+  for (const item of items) {
+    const key = item.name.trim().toLowerCase();
+    if (!key) continue;
+    const existing = byName.get(key);
+    if (!existing || (existing.isCatalogFallback && !item.isCatalogFallback)) {
+      byName.set(key, item);
+    }
+  }
+
+  return [...byName.values()]
     .toSorted((left, right) => {
       const rankDiff = getSkillRank(left) - getSkillRank(right);
       if (rankDiff !== 0) return rankDiff;
       return left.name.localeCompare(right.name, undefined, { sensitivity: 'base' });
-    })
-    .filter((skill) => {
-      const key = skill.name.trim().toLowerCase();
-      if (!key) return true;
-      if (seenNames.has(key)) return false;
-      seenNames.add(key);
-      return true;
     });
 };
 
@@ -189,8 +297,27 @@ const readSkillContent = async (skill: SkillInfo): Promise<string> => {
   for (const result of results) {
     if (result.status === 'fulfilled' && typeof result.value === 'string') return result.value;
   }
+  if (skill.isCatalogFallback) return buildCatalogFallbackMarkdown(skill);
   throw new Error('Skill content is not readable');
 };
+
+const buildCatalogFallbackMarkdown = (skill: SkillInfo): string =>
+  [
+    `# ${skill.name}`,
+    '',
+    skill.description || '该技能在 OpenScience 内置技能目录中，但当前运行时还没有返回完整的 SKILL.md 内容。',
+    '',
+    '## Runtime Status',
+    '',
+    '- This row is shown from the OpenScience mode skill catalog.',
+    '- If the full source preview is unavailable, restart OpenScience/WebUI so `resources/skills` is synced into the runtime `builtin-skills` directory.',
+    `- Expected runtime path: \`${getSkillMarkdownPath(skill) || skill.location}\``,
+    '',
+    skill.modeTags.length ? '## Mode Tags' : undefined,
+    skill.modeTags.length ? skill.modeTags.map((tag) => `- ${modeTagLabel(tag)}`).join('\n') : undefined,
+  ]
+    .filter((line): line is string => typeof line === 'string')
+    .join('\n');
 
 const collectSkillZipFiles = async (skill: SkillInfo, rootName: string): Promise<SkillZipFile[]> => {
   const rootPath = getSkillRootPath(skill);
@@ -268,15 +395,22 @@ const SkillsSettings: React.FC = () => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return skills;
     return skills.filter((skill) => {
-      const haystack = `${skill.name} ${skill.description} ${sourceLabel(skill)} ${skill.location}`.toLowerCase();
+      const haystack =
+        `${skill.name} ${skill.description} ${sourceLabel(skill)} ${skill.modeTags.map(modeTagLabel).join(' ')} ${skill.location}`.toLowerCase();
       return haystack.includes(query);
     });
   }, [searchQuery, skills]);
 
   const stats = useMemo(() => {
+    const science = skills.filter((skill) =>
+      skill.modeTags.some((tag) => tag === 'science-default' || tag === 'science-leaf')
+    ).length;
+    const mode = skills.filter((skill) =>
+      skill.modeTags.some((tag) => tag === 'medical-evidence' || tag === 'loop-goal' || tag === 'skill-deposition')
+    ).length;
     const deposited = skills.filter(isDepositedSkill).length;
     const editable = skills.filter(isEditableSkill).length;
-    return { total: skills.length, deposited, editable };
+    return { total: skills.length, science, mode, deposited, editable };
   }, [skills]);
 
   const fetchSkills = useCallback(async () => {
@@ -404,7 +538,7 @@ const SkillsSettings: React.FC = () => {
               Skills
             </span>
             <h1>{t('settings.skills.title', { defaultValue: '技能' })}</h1>
-            <p>查看、检索和维护 OpenScience 可调用的科研技能。知识沉淀生成的技能会优先展示，并保持可编辑。</p>
+            <p>查看、检索和维护 OpenScience 可调用的技能。Science、目标、循证和知识沉淀模式会在同一目录中标明归属。</p>
           </div>
           <div className='skills-settings__stats'>
             <span>
@@ -412,8 +546,12 @@ const SkillsSettings: React.FC = () => {
               全部
             </span>
             <span>
-              <b>{stats.deposited}</b>
-              知识沉淀
+              <b>{stats.science}</b>
+              Science
+            </span>
+            <span>
+              <b>{stats.mode}</b>
+              模式
             </span>
             <span>
               <b>{stats.editable}</b>
@@ -450,10 +588,7 @@ const SkillsSettings: React.FC = () => {
                         onClick={() => setSelectedSkillId(skill.id)}
                       >
                         <span className='skills-settings__itemIcon'>
-                          <OpenScienceIcon
-                            name={isDepositedSkill(skill) ? 'depositionSkill' : 'settingsSkills'}
-                            size={22}
-                          />
+                          <OpenScienceIcon name={getSkillIconName(skill)} size={22} />
                         </span>
                         <span className='skills-settings__itemBody'>
                           <span className='skills-settings__itemTopline'>
@@ -468,6 +603,15 @@ const SkillsSettings: React.FC = () => {
                             </span>
                           </span>
                           <span className='skills-settings__itemDesc'>{skill.description || '暂无描述'}</span>
+                          {skill.modeTags.length ? (
+                            <span className='skills-settings__modeTags'>
+                              {skill.modeTags.slice(0, 3).map((tag) => (
+                                <span key={tag} className={modeTagClassName(tag)}>
+                                  {modeTagLabel(tag)}
+                                </span>
+                              ))}
+                            </span>
+                          ) : null}
                         </span>
                       </button>
                     );
@@ -486,16 +630,19 @@ const SkillsSettings: React.FC = () => {
                   <div className='skills-settings__detailTitleRow'>
                     <div className='skills-settings__detailIdentity'>
                       <h2 title={selectedSkill.description || selectedSkill.name}>
-                        <OpenScienceIcon
-                          name={isDepositedSkill(selectedSkill) ? 'depositionSkill' : 'settingsSkills'}
-                          size={22}
-                        />
+                        <OpenScienceIcon name={getSkillIconName(selectedSkill)} size={22} />
                         {selectedSkill.name}
                       </h2>
                       <div className='skills-settings__meta'>
                         <Tag size='small' color={isDepositedSkill(selectedSkill) ? 'gray' : undefined}>
                           {sourceLabel(selectedSkill)}
                         </Tag>
+                        {selectedSkill.modeTags.map((tag) => (
+                          <Tag key={tag} size='small' className={modeTagClassName(tag)}>
+                            {modeTagLabel(tag)}
+                          </Tag>
+                        ))}
+                        {selectedSkill.isCatalogFallback ? <Tag size='small'>待同步</Tag> : null}
                         <Tag size='small'>{isEditableSkill(selectedSkill) ? '可编辑' : '只读'}</Tag>
                         <Tag size='small'>{editMode ? '编辑源文件' : '渲染预览'}</Tag>
                         <code title={getSkillMarkdownPath(selectedSkill)}>{getSkillDisplayPath(selectedSkill)}</code>

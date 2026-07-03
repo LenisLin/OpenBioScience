@@ -15,7 +15,6 @@ import {
   buildScienceConversationExtra,
   buildScienceModePrompt,
   DEFAULT_SCIENCE_SKILL_IDS,
-  SCIENCE_WORKFLOW_SKILL_NAME,
 } from '@/common/chat/science';
 import { buildComputeConversationExtra } from '@/common/chat/compute';
 import { configService } from '@/common/config/configService';
@@ -51,6 +50,7 @@ import type { GuidLarkProjectContext } from '../components/GuidLarkProjectPanel'
 import {
   createLoopGoalState,
   buildLoopGoalKickoffPrompt,
+  LOOP_GOAL_SKILL_NAME,
   summarizeLoopGoal,
   type LoopGoalState,
 } from '@/common/chat/loopGoal';
@@ -482,7 +482,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       : guidEnabledSkills?.length
         ? guidEnabledSkills
         : undefined;
-    const loopGoalSkillIds = loopGoalForCreate ? [SCIENCE_WORKFLOW_SKILL_NAME] : undefined;
+    const loopGoalSkillIds = loopGoalForCreate ? [LOOP_GOAL_SKILL_NAME] : undefined;
     const modeDefaultSkillIds = getGuidModeDefaultSkillIds(activeCapabilityMode);
     const enabled_skills_to_send = mergeSkillIds(base_enabled_skills_to_send, modeDefaultSkillIds, loopGoalSkillIds);
     const excludeBuiltinSkills =

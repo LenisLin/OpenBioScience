@@ -9,6 +9,9 @@ import { getPromptLanguageInstruction } from './language';
 
 export type LoopGoalStatus = 'active' | 'paused' | 'deleted';
 
+export const LOOP_GOAL_SKILL_NAME = 'openscience-loop-goal';
+export const LOOP_GOAL_SKILL_PATH = 'resources/skills/loop-goal/SKILL.md';
+
 export type LoopGoalOptions = {
   max_iterations?: number;
   continue_when_idle?: boolean;

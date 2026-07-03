@@ -65,7 +65,7 @@
 
 .skills-settings__stats {
   display: grid;
-  grid-template-columns: repeat(3, max-content);
+  grid-template-columns: repeat(4, max-content);
   gap: 8px;
   flex: 0 0 auto;
 }
@@ -229,6 +229,52 @@
   line-height: 18px;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.skills-settings__modeTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+
+.skills-settings__modeTag {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-fill-1) 82%, transparent);
+  color: var(--color-text-3);
+  padding: 1px 7px;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 17px;
+  white-space: nowrap;
+}
+
+.skills-settings__modeTag--science-default {
+  background: color-mix(in srgb, rgb(64 88 81) 12%, transparent);
+  color: rgb(52 75 68);
+}
+
+.skills-settings__modeTag--science-leaf {
+  background: color-mix(in srgb, rgb(64 88 81) 7%, transparent);
+  color: rgb(82 99 94);
+}
+
+.skills-settings__modeTag--medical-evidence {
+  background: color-mix(in srgb, rgb(82 82 82) 9%, transparent);
+  color: rgb(70 70 70);
+}
+
+.skills-settings__modeTag--loop-goal {
+  background: color-mix(in srgb, rgb(45 92 135) 10%, transparent);
+  color: rgb(48 82 111);
+}
+
+.skills-settings__modeTag--skill-deposition {
+  background: color-mix(in srgb, rgb(185 142 36) 18%, transparent);
+  color: rgb(113 84 20);
 }
 
 .skills-settings__detail {
