@@ -212,6 +212,8 @@ resources/hub
 
 # Server build output
 dist-server/
+# Website project is maintained outside the OpenScience app repository.
+server/DeepOrganiserServer/
 # Local release/update packages are generated artifacts and can exceed GitHub pack limits.
 server/DeepOrganiserServer/data/updates/
 server/DeepOrganiserServer/data/*.sqlite3
