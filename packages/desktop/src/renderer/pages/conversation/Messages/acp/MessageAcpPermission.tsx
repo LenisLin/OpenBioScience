@@ -56,12 +56,15 @@ const MessageAcpPermission: React.FC<MessageAcpPermissionProps> = React.memo(({ 
 
     setIsResponding(true);
     try {
+      const selectedOption = options.find((option) => option?.option_id === selected);
       const invokeData = {
         confirm_key: selected,
         msg_id: message.id,
         conversation_id: message.conversation_id,
         call_id: tool_call?.tool_call_id || message.id,
         always_allow:
+          selectedOption?.kind === 'allow_always' ||
+          selectedOption?.kind === 'reject_always' ||
           selected === ToolConfirmationOutcome.ProceedAlways ||
           selected === ToolConfirmationOutcome.ProceedAlwaysTool ||
           selected === ToolConfirmationOutcome.ProceedAlwaysServer,

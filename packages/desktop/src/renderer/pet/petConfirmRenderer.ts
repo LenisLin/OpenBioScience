@@ -29,7 +29,13 @@ let currentConfirmation: IConfirmation | null = null;
 let msgId = '';
 
 function isAlwaysAllowValue(value: unknown): boolean {
-  return value === 'proceed_always' || value === 'proceed_always_tool' || value === 'proceed_always_server';
+  return (
+    value === 'proceed_always' ||
+    value === 'proceed_always_tool' ||
+    value === 'proceed_always_server' ||
+    value === 'allow_always' ||
+    value === 'reject_always'
+  );
 }
 
 /**
@@ -60,11 +66,11 @@ function renderConfirmation(confirmation: IConfirmation): void {
     let shortcut = '';
     if (index === 0) {
       shortcut = 'Enter';
-    } else if (option.value === 'cancel' || option.value === 'deny') {
+    } else if (option.value === 'cancel' || option.value === 'deny' || option.value === 'reject_once') {
       shortcut = 'Esc';
     } else if (isAlwaysAllowValue(option.value)) {
       shortcut = 'A';
-    } else if (option.value === 'proceed_once') {
+    } else if (option.value === 'proceed_once' || option.value === 'allow_once') {
       shortcut = 'Y';
     } else {
       shortcut = String(index + 1);
@@ -123,7 +129,9 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
   // Escape: find cancel option
   if (e.key === 'Escape') {
     e.preventDefault();
-    const cancelOption = currentConfirmation.options.find((opt) => opt.value === 'cancel' || opt.value === 'deny');
+    const cancelOption = currentConfirmation.options.find(
+      (opt) => opt.value === 'cancel' || opt.value === 'deny' || opt.value === 'reject_once'
+    );
     if (cancelOption) {
       respond(cancelOption.value);
     }
@@ -143,7 +151,9 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
   // Y: allow once
   if (e.key === 'y' || e.key === 'Y') {
     e.preventDefault();
-    const yesOption = currentConfirmation.options.find((opt) => opt.value === 'proceed_once');
+    const yesOption = currentConfirmation.options.find(
+      (opt) => opt.value === 'proceed_once' || opt.value === 'allow_once'
+    );
     if (yesOption) {
       respond(yesOption.value);
     }
@@ -153,7 +163,9 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
   // N: no/deny
   if (e.key === 'n' || e.key === 'N') {
     e.preventDefault();
-    const noOption = currentConfirmation.options.find((opt) => opt.value === 'cancel' || opt.value === 'deny');
+    const noOption = currentConfirmation.options.find(
+      (opt) => opt.value === 'cancel' || opt.value === 'deny' || opt.value === 'reject_once'
+    );
     if (noOption) {
       respond(noOption.value);
     }

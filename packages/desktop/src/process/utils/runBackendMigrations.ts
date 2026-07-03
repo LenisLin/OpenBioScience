@@ -15,11 +15,13 @@ import {
   type ImageGenerationMcpEnvResolveResult,
 } from '@/common/config/imageGenerationMcpEnv';
 import {
+  MEDICAL_EVIDENCE_ENV_KEYS,
   removeMedicalEvidenceEnvKeys,
   resolveMedicalEvidenceMcpEnv,
   type MedicalEvidenceMcpEnvResolveResult,
 } from '@/common/config/medicalEvidenceMcpEnv';
 import {
+  RESEARCH_EVIDENCE_ENV_KEYS,
   removeResearchEvidenceEnvKeys,
   resolveResearchEvidenceMcpEnv,
   type ResearchEvidenceMcpEnvResolveResult,
@@ -53,6 +55,7 @@ import { getProjectAgentDataDir } from '@/deepscientist_lark/project_agent/store
 import { getBuiltinMcpScriptPath, type ProcessConfig as ProcessConfigType } from './initStorage';
 import { migrateAssistantsToBackend } from './migrateAssistants';
 import { getUserInputGatewayEnv, startUserInputGateway } from '../bridge/userInputBridge';
+import { syncCodexOpenScienceMcpConfig, type ManagedCodexMcpServer } from './syncCodexOpenScienceMcpConfig';
 
 type ConfigFile = typeof ProcessConfigType;
 type MigrationStepResult = boolean;
@@ -71,7 +74,12 @@ const BUILTIN_SERVER_LEGACY_NAMES = new Map<string, readonly string[]>([
 ]);
 
 function findExistingBuiltinServer(existingByName: Map<string, IMcpServer>, name: string): IMcpServer | undefined {
-  return existingByName.get(name) ?? BUILTIN_SERVER_LEGACY_NAMES.get(name)?.map((legacy) => existingByName.get(legacy)).find(Boolean);
+  return (
+    existingByName.get(name) ??
+    BUILTIN_SERVER_LEGACY_NAMES.get(name)
+      ?.map((legacy) => existingByName.get(legacy))
+      .find(Boolean)
+  );
 }
 
 function hasExistingBuiltinServer(existingByName: Map<string, IMcpServer>, name: string): boolean {
@@ -537,6 +545,62 @@ function buildDefaultMcpServers(): McpImportServer[] {
       original_json: JSON.stringify({ mcpServers: { [BUILTIN_CHROME_DEVTOOLS_NAME]: chromeConfig } }, null, 2),
     },
   ];
+}
+
+function toManagedCodexMcpServer(
+  server: McpImportServer,
+  envOverride?: Record<string, string>
+): ManagedCodexMcpServer | undefined {
+  if (!server.transport || server.transport.type !== 'stdio') return undefined;
+  return {
+    name: server.name,
+    command: server.transport.command,
+    args: server.transport.args || [],
+    env: envOverride ?? server.transport.env,
+  };
+}
+
+function sanitizeMedicalEvidenceEnvForCodex(env?: Record<string, string>): Record<string, string> {
+  const next = { ...(env || {}) };
+  delete next[MEDICAL_EVIDENCE_ENV_KEYS.apiKey];
+  return next;
+}
+
+function sanitizeResearchEvidenceEnvForCodex(env?: Record<string, string>): Record<string, string> {
+  const next = { ...(env || {}) };
+  delete next[RESEARCH_EVIDENCE_ENV_KEYS.apiKey];
+
+  if (next[RESEARCH_EVIDENCE_ENV_KEYS.paperclipEnabled] === 'true') {
+    next[RESEARCH_EVIDENCE_ENV_KEYS.paperclipEnabled] = 'false';
+  }
+
+  const providers = (next[RESEARCH_EVIDENCE_ENV_KEYS.enabledProviders] || '')
+    .split(',')
+    .map((provider) => provider.trim())
+    .filter((provider) => provider.length > 0 && provider !== 'paperclip');
+  next[RESEARCH_EVIDENCE_ENV_KEYS.enabledProviders] = providers.join(',');
+  return next;
+}
+
+function buildCodexOpenScienceMcpServers(
+  medicalEvidenceServer: McpImportServer,
+  researchEvidenceServer: McpImportServer,
+  scienceArtifactServer: McpImportServer
+): ManagedCodexMcpServer[] {
+  const medicalEnv =
+    medicalEvidenceServer.transport?.type === 'stdio'
+      ? sanitizeMedicalEvidenceEnvForCodex(medicalEvidenceServer.transport.env)
+      : undefined;
+  const researchEnv =
+    researchEvidenceServer.transport?.type === 'stdio'
+      ? sanitizeResearchEvidenceEnvForCodex(researchEvidenceServer.transport.env)
+      : undefined;
+
+  return [
+    toManagedCodexMcpServer(medicalEvidenceServer, medicalEnv),
+    toManagedCodexMcpServer(researchEvidenceServer, researchEnv),
+    toManagedCodexMcpServer(scienceArtifactServer),
+  ].filter((server): server is ManagedCodexMcpServer => Boolean(server));
 }
 
 async function isCommandAvailable(command: string): Promise<boolean> {
@@ -1082,6 +1146,18 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
       });
       scienceArtifactServerUpdated = true;
     }
+  }
+
+  try {
+    const codexConfigChanged = await syncCodexOpenScienceMcpConfig(
+      buildCodexOpenScienceMcpServers(medicalEvidenceServer, researchEvidenceServer, scienceArtifactServer)
+    );
+    console.info(
+      '[Migration] OpenScience MCP entries in Codex config %s',
+      codexConfigChanged ? 'updated' : 'already up to date'
+    );
+  } catch (error) {
+    console.warn('[Migration] skipped Codex MCP config sync because it failed', error);
   }
 
   if (imageConfig?.switch === true) {
