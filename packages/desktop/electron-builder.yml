@@ -116,6 +116,12 @@ extraResources:
     to: hub
   - from: resources/skills
     to: skills
+    filter:
+      - '**/*'
+      # Vendored upstream repositories are source material for materialization,
+      # not runtime skill bodies. Excluding them avoids broken symlinks on
+      # Windows packaging and keeps installers substantially smaller.
+      - '!vendor/**'
 win:
   target:
     - nsis
