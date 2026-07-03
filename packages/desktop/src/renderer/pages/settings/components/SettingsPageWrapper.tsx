@@ -33,7 +33,7 @@ export function getBuiltinSettingsNavItems(isDesktop: boolean, t: TranslateFn): 
     },
     skills: {
       id: 'skills',
-      label: t('settings.skills.title', { defaultValue: '技能' }),
+      label: t('settings.skills.title', { defaultValue: 'Skills' }),
       icon: <OpenScienceIcon name='settingsSkills' size={16} />,
       path: 'skills',
     },
@@ -57,7 +57,7 @@ export function getBuiltinSettingsNavItems(isDesktop: boolean, t: TranslateFn): 
     },
     compute: {
       id: 'compute',
-      label: t('settings.compute.title', { defaultValue: '服务器管理' }),
+      label: t('settings.compute.title', { defaultValue: 'Server Management' }),
       icon: <OpenScienceIcon name='remoteJob' size={16} />,
       path: 'compute',
     },
@@ -88,7 +88,7 @@ export function getBuiltinSettingsNavItems(isDesktop: boolean, t: TranslateFn): 
     pet: { id: 'pet', label: t('pet.desktopPet'), icon: <Cat theme='outline' size='16' />, path: 'pet' },
     diagnostics: {
       id: 'diagnostics',
-      label: t('settings.diagnostics.title', { defaultValue: '诊断' }),
+      label: t('settings.diagnostics.title', { defaultValue: 'Diagnostics' }),
       icon: <OpenScienceIcon name='settingsPermission' size={16} />,
       path: 'diagnostics',
     },

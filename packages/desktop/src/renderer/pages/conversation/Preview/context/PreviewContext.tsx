@@ -107,9 +107,44 @@ const LEGACY_PREVIEW_STATE_KEY = 'deeporganiser_preview_state';
 const MAX_PERSISTED_TAB_CONTENT_LENGTH = 80_000;
 const PERSISTABLE_CONTENT_TYPES = new Set<PreviewContentType>(['markdown', 'html', 'code', 'diff']);
 
+const safeDecodePath = (value: string): string => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    try {
+      return decodeURI(value);
+    } catch {
+      return value;
+    }
+  }
+};
+
+const normalizePreviewFilePath = (value?: string): string | undefined => {
+  if (!value) return value;
+  const trimmed = value.trim();
+  if (!trimmed) return trimmed;
+  if (/^file:/iu.test(trimmed)) {
+    try {
+      return safeDecodePath(new URL(trimmed).pathname);
+    } catch {
+      return safeDecodePath(trimmed.replace(/^file:(?:\/\/)?/iu, ''));
+    }
+  }
+  return safeDecodePath(trimmed);
+};
+
+const normalizePreviewMetadata = (metadata?: PreviewMetadata): PreviewMetadata | undefined => {
+  if (!metadata) return metadata;
+  return {
+    ...metadata,
+    file_path: normalizePreviewFilePath(metadata.file_path),
+    workspace: normalizePreviewFilePath(metadata.workspace),
+  };
+};
+
 const stripVolatileMetadata = (metadata?: PreviewMetadata): PreviewMetadata | undefined => {
-  if (!metadata?.science) return metadata;
-  const next = { ...metadata };
+  const next = normalizePreviewMetadata(metadata);
+  if (!next?.science) return next;
   delete next.science;
   return next;
 };
@@ -145,6 +180,7 @@ const parsePersistedTabs = (value: unknown): PreviewTab[] => {
     .filter((tab) => tab.content.length <= MAX_PERSISTED_TAB_CONTENT_LENGTH)
     .map((tab) =>
       Object.assign({}, tab, {
+        metadata: normalizePreviewMetadata(tab.metadata),
         originalContent: typeof tab.originalContent === 'string' ? tab.originalContent : tab.content,
         isDirty: false,
       })
@@ -651,30 +687,44 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // is unreliable after the first emission in Electron (only the first event reaches the renderer).
   const checkFileUpdate = useCallback(
     (tab: PreviewTab) => {
-      const file_path = tab.metadata?.file_path;
+      const file_path = normalizePreviewFilePath(tab.metadata?.file_path);
       if (!file_path || tab.isDirty || savingFilesRef.current.has(file_path)) return;
+      const workspace = normalizePreviewFilePath(tab.metadata?.workspace);
 
       void ipcBridge.fs.getFileMetadata
-        .invoke({ path: file_path, workspace: tab.metadata?.workspace })
+        .invoke({ path: file_path, workspace })
         .then((metadata) => {
           if (!metadata) return;
           const prevMtime = fileMtimeRef.current.get(file_path);
           fileMtimeRef.current.set(file_path, metadata.lastModified);
-          if (prevMtime === undefined || metadata.lastModified === prevMtime) return;
+          const shouldRestoreMissingFile = tab.metadata?.missingFile === true;
+          if (prevMtime === undefined && !shouldRestoreMissingFile) return;
+          if (prevMtime !== undefined && metadata.lastModified === prevMtime && !shouldRestoreMissingFile) return;
 
           const readPromise =
             tab.content_type === 'image'
-              ? ipcBridge.fs.getImageBase64.invoke({ path: file_path, workspace: tab.metadata?.workspace })
-              : ipcBridge.fs.readFile.invoke({ path: file_path, workspace: tab.metadata?.workspace });
+              ? ipcBridge.fs.getImageBase64.invoke({ path: file_path, workspace })
+              : ipcBridge.fs.readFile.invoke({ path: file_path, workspace });
 
           void readPromise
             .then((content) => {
               if (content == null) return;
               setTabs((latest) =>
                 latest.map((t) => {
-                  if (t.metadata?.file_path !== file_path) return t;
+                  if (normalizePreviewFilePath(t.metadata?.file_path) !== file_path) return t;
                   if (savingFilesRef.current.has(file_path) || t.isDirty) return t;
-                  return { ...t, content, originalContent: content, isDirty: false };
+                  return {
+                    ...t,
+                    content,
+                    originalContent: content,
+                    isDirty: false,
+                    metadata: {
+                      ...t.metadata,
+                      file_path,
+                      workspace,
+                      missingFile: false,
+                    },
+                  };
                 })
               );
             })

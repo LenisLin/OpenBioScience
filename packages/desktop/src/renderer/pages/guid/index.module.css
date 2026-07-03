@@ -262,6 +262,11 @@
   font-weight: 720;
 }
 
+.researchHeroTitleEnglish {
+  font-size: clamp(22px, 1.96vw, 31px);
+  gap: 12px;
+}
+
 .researchHeroWordmark {
   height: 55px;
   width: 196px;
@@ -342,6 +347,12 @@
     align-content: center;
     gap: 4px 8px;
     font-size: clamp(28px, 8vw, 34px);
+  }
+
+  .researchHeroTitleEnglish {
+    min-height: 52px;
+    font-size: clamp(20px, 5.6vw, 24px);
+    gap: 4px 7px;
   }
 
   .researchHeroWordmark {

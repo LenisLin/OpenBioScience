@@ -820,7 +820,7 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '',
     'You are running inside OpenScience Science Mode. This is the default research-project mode for natural science, engineering, data analysis, computational experiments, and manuscript-producing work.',
     getPromptLanguageInstruction(preferredLocale),
-    '- Write Science artifact reports in the user’s request language by default; keep identifiers, paths, code, commands, scientific names, and evidence/artifact ids unchanged.',
+    '- Write Science artifact reports in the user’s request language by default; keep existing identifiers, paths, code, commands, scientific names, and evidence/artifact ids unchanged. For newly registered Science evidence, prefer compact display ids `E1`, `E2`, `E3` in first-use order.',
     '',
     '## Runtime Contract',
     '- Do real work in the normal agent runtime: shell, Python, R, LaTeX, notebooks, project pipelines, or explicitly authorized remote tools.',
@@ -832,7 +832,7 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '',
     '## Required Control Surfaces',
     '- Use `research_evidence(action="status"|"list_tools"|"search"|"read"|"call")` for literature, PaperClip files, and scientific database retrieval. PaperClip is active only when a key is configured; `provider="bio_tools"` exposes PubMed, ChEMBL, GEO, AlphaFold, and other JimLiu science-skills database tools through the same MCP.',
-    '- When `research_evidence` returns `evidenceDrafts`, register those drafts with `science_artifact` before using the result in a claim. If a provider is unavailable, record the gap instead of silently relying on model memory.',
+    '- When `research_evidence` returns `evidenceDrafts`, register those drafts with `science_artifact` before using the result in a claim. Assign each new evidence item a stable human-readable id in first-use order (`E1`, `E2`, `E3`, ...), unless patching an existing evidence item whose id must be preserved. If a provider is unavailable, record the gap instead of silently relying on model memory.',
     '- Use `science_artifact` as the single artifact graph control surface. Do not invent separate science_start_run, science_search, science_register_* or science_submit_panel tools.',
     '- Default artifact rule: every Science Mode task that produces a user-facing answer, file, figure, table, report, notebook, viewer, dataset slice, manuscript, or reusable result should create or update a Science artifact and publish at least a concise report/run-bundle panel. Skip this only when the user explicitly asks for chat-only brainstorming.',
     '- In the report, insert important generated files at the exact section where they support the reasoning: use `artifact_embed` for key images, SVGs, HTML visualizations, PDFs, LaTeX outputs, tables, and notebooks; use `artifact_ref` only for secondary files.',
@@ -845,7 +845,7 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '## Science SOP',
     '1. Intake: restate the objective, authorized project root, expected deliverables, selected router skills, and unsafe or ambiguous assumptions.',
     '2. Clarification gate: before calling `user_input`, inspect the prior conversation, previous user_input results, registered user-decision evidence, and current artifact state. Reuse existing answers across turns. Only ask new questions if missing variables could change the analysis plan, dataset scope, organism/model/system, statistical threshold, compute/privacy boundary, artifact format, or final conclusion. If the user cannot answer or the tool times out, continue only with explicit uncertainty limits instead of guessing.',
-    '3. Evidence first: search/read/call external sources or local inputs with research_evidence, then register papers, database records, datasets, code, command logs, figures, tables, environments, and user decisions as evidence before using them for claims.',
+    '3. Evidence first: search/read/call external sources or local inputs with research_evidence, then register papers, database records, datasets, code, command logs, figures, tables, environments, and user decisions as evidence before using them for claims. New evidence ids should be `E1`, `E2`, `E3` in the order the report will cite them.',
     '4. Execute: run real Python/R/shell/LaTeX/notebook/project code, then record commands, cwd, logs, inputs, outputs, packages, failures, and environment.',
     '5. Artifact by default: create or update the task Science artifact first, then ensure every user-facing figure, table, dataset, notebook, manuscript, PDF, HTML page, scientific viewer object, or run bundle has stable id, version, file paths, inputs, code/log/environment links, and evidence ids when known; embed the most important artifacts directly in the relevant report blocks.',
     '6. Snapshot: include scripts, notebooks, logs, result folders, LaTeX sources, small tables, configs, and viewer files needed to inspect or reproduce the result. Secrets are never included; large data may be recorded as pointers with hash/size/reason.',
@@ -948,34 +948,26 @@ function findPayloadCandidate(value: unknown, depth = 0): SciencePayload | undef
   return undefined;
 }
 
-const parsePayloadCandidate = (text: string): SciencePayload | undefined => parsePayloadString(text);
+const parsePayloadCandidate = (value: unknown): SciencePayload | undefined =>
+  typeof value === 'string' ? parsePayloadString(value) : findPayloadCandidate(value);
 
-const getToolGroupOutput = (message: IMessageToolGroup): string[] =>
+const getToolGroupOutput = (message: IMessageToolGroup): unknown[] =>
   Array.isArray(message.content)
     ? message.content
         .flatMap((tool) => {
           const result = tool.result_display;
           if (!result) return [];
-          if (typeof result === 'string') return [result];
-          if ('output' in result && typeof result.output === 'string') return [result.output];
-          if ('result' in result && typeof result.result === 'string') return [result.result];
-          if ('text' in result && typeof result.text === 'string') return [result.text];
-          return [];
+          return [result];
         })
         .filter(Boolean)
     : [];
 
-const getAcpToolOutput = (message: IMessageAcpToolCall): string[] => {
-  const update = message.content?.update;
-  const textParts =
-    update?.content
-      ?.map((item) => (item.type === 'content' ? item.content?.text : undefined))
-      .filter((item): item is string => Boolean(item)) ?? [];
-  const rawOutput = update?.rawOutput || update?.raw_output;
-  return [...textParts, ...(rawOutput ? [JSON.stringify(rawOutput)] : [])];
+const getAcpToolOutput = (message: IMessageAcpToolCall): unknown[] => {
+  const content = message.content;
+  return content ? [content] : [];
 };
 
-const getToolCallOutput = (message: IMessageToolCall): string[] =>
+const getToolCallOutput = (message: IMessageToolCall): unknown[] =>
   [message.content.output, message.content.error].filter((item): item is string => Boolean(item));
 
 export const extractSciencePayloadsFromTools = (

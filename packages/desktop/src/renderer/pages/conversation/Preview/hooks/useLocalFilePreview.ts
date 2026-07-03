@@ -18,15 +18,11 @@ import {
   type PreviewMetadata,
 } from '@/renderer/pages/conversation/Preview/context/PreviewContext';
 import {
+  getFileNameFromSciencePath,
   resolveScienceArtifactStoredPath,
   resolveSciencePreviewPath,
 } from '@/renderer/utils/science/scienceProjectIndex';
 import { useCallback } from 'react';
-
-const getFileNameFromPath = (file_path: string): string => {
-  const normalized = file_path.replace(/\\/g, '/');
-  return normalized.split('/').pop() || file_path;
-};
 
 const getPreviewLanguage = (file_name: string): string => {
   const dotIndex = file_name.lastIndexOf('.');
@@ -61,7 +57,7 @@ export const useLocalFilePreview = (workspace?: string) => {
       options?: OpenPreviewOptions
     ) => {
       const effectiveWorkspace = metadataOverride?.workspace || workspace;
-      const fileName = getFileNameFromPath(file_path);
+      const fileName = getFileNameFromSciencePath(file_path);
       const contentType = getContentTypeByExtension(fileName);
       const sciencePanel = metadataOverride?.science?.panel;
       const artifactId = metadataOverride?.science?.artifactId;

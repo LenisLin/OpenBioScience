@@ -119,6 +119,7 @@ out/
 *.tmp
 .tmp_*
 tmp-webui.err
+tmp/
 *.bak
 *.swp
 *~

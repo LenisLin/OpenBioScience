@@ -215,7 +215,7 @@ push to dev
 - `code-quality` 会运行 `bun install --frozen-lockfile`、`bun run lint`、`bun run format:check`、`bunx tsc --noEmit`、`bunx vitest run`。
 - `build-pipeline` 会构建 6 个桌面包：macOS arm64、macOS x64、Windows x64、Windows arm64、Linux x64、Linux arm64。
 - `pack-web-cli` 会同时打包 web-cli。
-- 构建成功后会自动创建一个 dev tag，格式类似 `v0.0.1-dev-<commit>`。
+- 构建成功后会自动创建一个 dev tag，格式类似 `v0.1.0-dev-<commit>`。
 - 最后会创建 GitHub Release，但当前配置是 `draft: true`，也就是草稿发布，不会立刻公开。
 - dev tag 自己不会再次触发完整构建，因为 workflow 显式排除了包含 `-dev-` 的 tag，避免重复构建。
 
@@ -224,14 +224,14 @@ push to dev
 当推送正式 tag 时，例如：
 
 ```bash
-git tag v0.0.1
-git push origin v0.0.1
+git tag v0.1.0
+git push origin v0.1.0
 ```
 
 只要 tag 名不包含 `-dev-`，就会触发完整构建：
 
 ```text
-push tag v0.0.1
+push tag v0.1.0
   -> code-quality
   -> build-pipeline
   -> pack-web-cli

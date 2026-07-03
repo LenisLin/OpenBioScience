@@ -166,6 +166,149 @@ describe('Science Mode payload parsing', () => {
     expect(summary?.trace.at(-1)?.kind).toBe('publish');
   });
 
+  it('extracts a Science panel from nested MCP content in a tool group result object', () => {
+    const panel = {
+      schema: SCIENCE_PANEL_SCHEMA,
+      runId: 'run-nested-tool-group',
+      question: 'Inspect HBA1 AlphaFold structure',
+      generatedAt: 10,
+      status: 'completed',
+      stats: { searches: 2, artifacts: 1, evidence: 2, commands: 1, validations: 1, warnings: 0 },
+      report: { title: 'HBA1 structure report', sections: [{ id: 'summary', heading: 'Summary', blocks: [] }] },
+      evidence: [],
+      artifacts: [
+        {
+          id: 'hba1_structure_figure',
+          runId: 'run-nested-tool-group',
+          type: 'figure',
+          title: 'HBA1 structure annotation',
+          version: 1,
+          primaryPath: 'results/hba1_structure.svg',
+          createdAt: 10,
+        },
+      ],
+      claims: [],
+      provenance: [],
+      edges: [],
+      graphWarnings: [],
+    } as const;
+    const event = {
+      schema: SCIENCE_EVENT_SCHEMA,
+      eventId: 'evt-nested-tool-group',
+      runId: panel.runId,
+      action: 'publish',
+      timestamp: 11,
+      panel,
+      artifactIds: ['hba1_structure_figure'],
+      displayIntent: 'open',
+    };
+    const messages = [
+      {
+        type: 'tool_group',
+        content: [
+          {
+            result_display: {
+              content: [{ type: 'text', text: JSON.stringify(event) }],
+            },
+          },
+        ],
+      },
+    ] as never;
+
+    expect(latestSciencePanel(messages)?.report.title).toBe('HBA1 structure report');
+  });
+
+  it('extracts a Science panel from ACP rawOutput objects', () => {
+    const panel = {
+      schema: SCIENCE_PANEL_SCHEMA,
+      runId: 'run-acp-raw-output',
+      question: 'Inspect AlphaFold confidence',
+      generatedAt: 20,
+      status: 'completed',
+      stats: { searches: 1, artifacts: 1, evidence: 1, commands: 0, validations: 1, warnings: 0 },
+      report: { title: 'AlphaFold confidence report', sections: [{ id: 'summary', heading: 'Summary', blocks: [] }] },
+      evidence: [],
+      artifacts: [],
+      claims: [],
+      provenance: [],
+      edges: [],
+      graphWarnings: [],
+    } as const;
+    const event = {
+      schema: SCIENCE_EVENT_SCHEMA,
+      eventId: 'evt-acp-raw-output',
+      runId: panel.runId,
+      action: 'publish',
+      timestamp: 21,
+      panel,
+      displayIntent: 'open',
+    };
+    const messages = [
+      {
+        type: 'acp_tool_call',
+        content: {
+          update: {
+            rawOutput: event,
+            content: [],
+          },
+        },
+      },
+    ] as never;
+
+    expect(latestSciencePanel(messages)?.report.title).toBe('AlphaFold confidence report');
+  });
+
+  it('extracts a Science panel from ACP top-level MCP content arrays', () => {
+    const panel = {
+      schema: SCIENCE_PANEL_SCHEMA,
+      runId: 'run-acp-content-array',
+      question: 'Inspect AlphaFold and UniProt',
+      generatedAt: 30,
+      status: 'completed',
+      stats: { searches: 2, artifacts: 1, evidence: 2, commands: 1, validations: 1, warnings: 0 },
+      report: { title: 'HBA1 artifact report', sections: [{ id: 'summary', heading: 'Summary', blocks: [] }] },
+      evidence: [],
+      artifacts: [],
+      claims: [],
+      provenance: [],
+      edges: [],
+      graphWarnings: [],
+    } as const;
+    const event = {
+      schema: SCIENCE_EVENT_SCHEMA,
+      eventId: 'evt-acp-content-array',
+      runId: panel.runId,
+      action: 'publish',
+      timestamp: 31,
+      panel,
+      displayIntent: 'open',
+    };
+    const messages = [
+      {
+        type: 'acp_tool_call',
+        content: {
+          update: {
+            kind: 'execute',
+            raw_input: {
+              server: 'openscience-science-artifact',
+              tool: 'science_artifact',
+            },
+          },
+          content: [
+            {
+              content: {
+                text: JSON.stringify(event),
+              },
+            },
+          ],
+        },
+      },
+    ] as never;
+
+    expect(latestSciencePanel(messages)?.report.title).toBe('HBA1 artifact report');
+    expect(resolveScienceDisplayTarget(event)?.kind).toBe('report');
+  });
+
   it('resolves a focus_page event to a real artifact preview target', () => {
     const panel = {
       schema: SCIENCE_PANEL_SCHEMA,

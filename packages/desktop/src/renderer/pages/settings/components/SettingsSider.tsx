@@ -84,7 +84,7 @@ const SettingsSider: React.FC<{ collapsed?: boolean; tooltipEnabled?: boolean }>
       },
       skills: {
         id: 'skills',
-        label: t('settings.skills.title', { defaultValue: '技能' }),
+        label: t('settings.skills.title', { defaultValue: 'Skills' }),
         icon: <OpenScienceIcon name='settingsSkills' size={20} />,
         path: 'skills',
       },
@@ -108,7 +108,7 @@ const SettingsSider: React.FC<{ collapsed?: boolean; tooltipEnabled?: boolean }>
       },
       compute: {
         id: 'compute',
-        label: t('settings.compute.title', { defaultValue: '服务器管理' }),
+        label: t('settings.compute.title', { defaultValue: 'Server Management' }),
         icon: <OpenScienceIcon name='remoteJob' size={20} />,
         path: 'compute',
       },
@@ -139,7 +139,7 @@ const SettingsSider: React.FC<{ collapsed?: boolean; tooltipEnabled?: boolean }>
       pet: { id: 'pet', label: t('pet.desktopPet'), icon: <Cat />, path: 'pet' },
       diagnostics: {
         id: 'diagnostics',
-        label: t('settings.diagnostics.title', { defaultValue: '诊断' }),
+        label: t('settings.diagnostics.title', { defaultValue: 'Diagnostics' }),
         icon: <OpenScienceIcon name='settingsPermission' size={20} />,
         path: 'diagnostics',
       },

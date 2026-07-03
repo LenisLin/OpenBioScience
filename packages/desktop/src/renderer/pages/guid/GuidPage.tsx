@@ -108,7 +108,9 @@ const ResearchHeroTitle: React.FC<{ localeKey: string }> = ({ localeKey }) => {
         alt=''
         aria-hidden='true'
       />
-      <p className={`${styles.researchHeroTitle} text-2xl font-semibold mb-0 text-0 text-center`}>
+      <p
+        className={`${styles.researchHeroTitle} ${!isChinese ? styles.researchHeroTitleEnglish : ''} text-2xl font-semibold mb-0 text-0 text-center`}
+      >
         <DeepScientistWordmark
           wrapperClassName={styles.researchHeroWordmark}
           className={styles.researchHeroWordmarkImage}

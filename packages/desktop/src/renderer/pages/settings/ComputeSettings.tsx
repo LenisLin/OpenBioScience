@@ -16,14 +16,23 @@ import classNames from 'classnames';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const formatAuth = (host: ComputeSshHostPublic): string => {
-  if (host.authType === 'password') return host.hasPassword ? 'Password' : 'Password missing';
-  if (host.authType === 'privateKey') return host.privateKeyPath || 'Private key';
-  return 'SSH agent';
+const formatAuth = (host: ComputeSshHostPublic, t: (key: string, options?: Record<string, unknown>) => string): string => {
+  if (host.authType === 'password') {
+    return host.hasPassword
+      ? t('settings.compute.authPassword', { defaultValue: 'Password' })
+      : t('settings.compute.passwordMissing', { defaultValue: 'Password missing' });
+  }
+  if (host.authType === 'privateKey') {
+    return host.privateKeyPath || t('settings.compute.privateKey', { defaultValue: 'Private key' });
+  }
+  return t('settings.compute.sshAgent', { defaultValue: 'SSH agent' });
 };
 
-const formatTestTime = (test?: ComputeSshHostTestResult): string => {
-  if (!test?.testedAt) return 'Not tested';
+const formatTestTime = (
+  test: ComputeSshHostTestResult | undefined,
+  t: (key: string, options?: Record<string, unknown>) => string
+): string => {
+  if (!test?.testedAt) return t('settings.compute.notTested', { defaultValue: 'Not tested' });
   return new Date(test.testedAt).toLocaleString();
 };
 
@@ -49,7 +58,7 @@ const ComputeSettings: React.FC = () => {
       setHosts(await ipcBridge.computeHosts.list.invoke());
     } catch (error) {
       console.error('Failed to load SSH hosts:', error);
-      Message.error(t('settings.compute.loadFailed', { defaultValue: '服务器列表加载失败' }));
+      Message.error(t('settings.compute.loadFailed', { defaultValue: 'Failed to load server list' }));
     } finally {
       setLoading(false);
     }
@@ -66,17 +75,17 @@ const ComputeSettings: React.FC = () => {
         const result = await ipcBridge.computeHosts.test.invoke({ id: host.id });
         await loadHosts();
         if (result.ok) {
-          Message.success(t('settings.compute.testSuccess', { defaultValue: 'SSH 连接测试通过' }));
+          Message.success(t('settings.compute.testSuccess', { defaultValue: 'SSH connection test passed' }));
         } else {
           Modal.warning({
-            title: t('settings.compute.testFailedTitle', { defaultValue: '连接测试未通过' }),
+            title: t('settings.compute.testFailedTitle', { defaultValue: 'Connection test did not pass' }),
             content: result.message,
-            okText: t('common.confirm', { defaultValue: '知道了' }),
+            okText: t('common.confirm', { defaultValue: 'OK' }),
           });
         }
       } catch (error) {
         Message.error(
-          error instanceof Error ? error.message : t('settings.compute.testFailed', { defaultValue: '测试失败' })
+          error instanceof Error ? error.message : t('settings.compute.testFailed', { defaultValue: 'Test failed' })
         );
       } finally {
         setTestingId(null);
@@ -88,7 +97,7 @@ const ComputeSettings: React.FC = () => {
   const handleDelete = useCallback(
     async (host: ComputeSshHostPublic) => {
       await ipcBridge.computeHosts.delete.invoke({ id: host.id });
-      Message.success(t('settings.compute.deleted', { defaultValue: '服务器已删除' }));
+      Message.success(t('settings.compute.deleted', { defaultValue: 'Server deleted' }));
       await loadHosts();
     },
     [loadHosts, t]
@@ -114,17 +123,17 @@ const ComputeSettings: React.FC = () => {
                 <OpenScienceIcon name='remoteJob' size={22} visualScale={1.08} />
               </span>
               <h1 className='m-0 text-22px font-650 text-t-primary'>
-                {t('settings.compute.title', { defaultValue: '服务器管理' })}
+                {t('settings.compute.title', { defaultValue: 'Server Management' })}
               </h1>
             </div>
             <Button type='primary' icon={<Plus size='16' />} onClick={openAdd}>
-              {t('settings.compute.addHost', { defaultValue: '新增 SSH host' })}
+              {t('settings.compute.addHost', { defaultValue: 'Add SSH host' })}
             </Button>
           </div>
           <p className='m-0 max-w-760px text-13px leading-20px text-t-secondary'>
             {t('settings.compute.description', {
               defaultValue:
-                '保存常用 SSH 服务器，在新会话中按任务选择远程计算环境。保存时会自动测试连接，测试失败也会保留配置以便稍后修正。',
+                'Save frequently used SSH servers and choose remote compute environments for new sessions. Connections are tested on save, and failed tests keep the configuration for later repair.',
             })}
           </p>
         </div>
@@ -132,13 +141,15 @@ const ComputeSettings: React.FC = () => {
         <section className='rounded-14px border border-solid border-2 bg-base p-18px shadow-[0_10px_28px_rgba(15,23,42,0.035)]'>
           <div className='mb-14px flex items-start justify-between gap-12px'>
             <div>
-              <div className='text-16px font-700 text-t-primary'>SSH hosts</div>
+              <div className='text-16px font-700 text-t-primary'>
+                {t('settings.compute.sshHosts', { defaultValue: 'SSH hosts' })}
+              </div>
               <div className='mt-3px text-12px leading-18px text-t-secondary'>
-                {t('settings.compute.sshHostsDesc', { defaultValue: '远程服务器、集群登录节点或作业提交节点。' })}
+                {t('settings.compute.sshHostsDesc', { defaultValue: 'Remote servers, cluster login nodes, or job submission nodes.' })}
               </div>
             </div>
             <Button size='small' type='secondary' icon={<Refresh size='14' />} onClick={loadHosts} loading={loading}>
-              {t('common.refresh', { defaultValue: '刷新' })}
+              {t('common.refresh', { defaultValue: 'Refresh' })}
             </Button>
           </div>
 
@@ -150,11 +161,11 @@ const ComputeSettings: React.FC = () => {
             <div className='rounded-12px border border-dashed border-[var(--color-border-2)] py-36px'>
               <Empty
                 icon={<OpenScienceIcon name='remoteJob' size={34} visualScale={1.08} />}
-                description={t('settings.compute.empty', { defaultValue: '还没有 SSH host' })}
+                description={t('settings.compute.empty', { defaultValue: 'No SSH hosts yet' })}
               />
               <div className='mt-12px flex justify-center'>
                 <Button type='primary' icon={<Plus size='16' />} onClick={openAdd}>
-                  {t('settings.compute.emptyAction', { defaultValue: '添加第一台服务器' })}
+                  {t('settings.compute.emptyAction', { defaultValue: 'Add your first server' })}
                 </Button>
               </div>
             </div>
@@ -168,10 +179,10 @@ const ComputeSettings: React.FC = () => {
                         <div className='truncate text-15px font-700 text-t-primary'>{host.name}</div>
                         <Tag size='small' color={statusTone(host)}>
                           {host.lastTest?.status === 'connected'
-                            ? t('settings.compute.connected', { defaultValue: '已连接' })
+                            ? t('settings.compute.connected', { defaultValue: 'Connected' })
                             : host.lastTest?.status === 'failed'
-                              ? t('settings.compute.failed', { defaultValue: '失败' })
-                              : t('settings.compute.untested', { defaultValue: '未测试' })}
+                              ? t('settings.compute.failed', { defaultValue: 'Failed' })
+                              : t('settings.compute.untested', { defaultValue: 'Untested' })}
                         </Tag>
                       </div>
                       <div className='mt-5px flex items-center gap-6px text-13px text-t-secondary'>
@@ -189,11 +200,11 @@ const ComputeSettings: React.FC = () => {
                         loading={testingId === host.id}
                         onClick={() => handleTest(host)}
                       >
-                        {t('settings.compute.testConnection', { defaultValue: '测试' })}
+                        {t('settings.compute.testConnection', { defaultValue: 'Test' })}
                       </Button>
                       <Button size='small' type='text' icon={<Edit size='14' />} onClick={() => openEdit(host)} />
                       <Popconfirm
-                        title={t('settings.compute.deleteConfirm', { defaultValue: '确定删除这台服务器吗？' })}
+                        title={t('settings.compute.deleteConfirm', { defaultValue: 'Delete this server?' })}
                         onOk={() => handleDelete(host)}
                       >
                         <Button size='small' type='text' status='danger' icon={<Delete size='14' />} />
@@ -202,7 +213,7 @@ const ComputeSettings: React.FC = () => {
                   </div>
 
                   <div className={styles.hostMeta}>
-                    <span className={styles.miniBadge}>{formatAuth(host)}</span>
+                    <span className={styles.miniBadge}>{formatAuth(host, t)}</span>
                     {host.remoteWorkdir ? <span className={styles.miniBadge}>{host.remoteWorkdir}</span> : null}
                     {(host.tags || []).map((tag) => (
                       <span key={tag} className={styles.miniBadge}>
@@ -211,7 +222,7 @@ const ComputeSettings: React.FC = () => {
                     ))}
                     <span className={classNames(styles.miniBadge, 'inline-flex items-center gap-4px')}>
                       <Time size='12' />
-                      {formatTestTime(host.lastTest)}
+                      {formatTestTime(host.lastTest, t)}
                     </span>
                   </div>
 

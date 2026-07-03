@@ -75,11 +75,11 @@ const SshHostSelector: React.FC<SshHostSelectorProps> = ({ selectedIds, onChange
       setHosts([]);
       setLoadError(
         t('settings.compute.loadTimeout', {
-          defaultValue: '服务器列表暂未响应',
+          defaultValue: 'Server list is not responding yet',
         })
       );
       if (!(error instanceof Error && error.message.includes('timeout'))) {
-        Message.error(t('settings.compute.loadFailed', { defaultValue: '服务器列表加载失败' }));
+        Message.error(t('settings.compute.loadFailed', { defaultValue: 'Failed to load server list' }));
       }
     } finally {
       setLoading(false);
@@ -100,11 +100,11 @@ const SshHostSelector: React.FC<SshHostSelectorProps> = ({ selectedIds, onChange
 
   const selectedLabel =
     selectedHosts.length === 0 && selectedIds.length === 0
-      ? t('settings.compute.selectorLabel', { defaultValue: '服务器' })
+      ? t('settings.compute.selectorLabel', { defaultValue: 'Servers' })
       : selectedHosts.length === 1
         ? selectedHosts[0].name
         : t('settings.compute.selectorCount', {
-            defaultValue: '{{count}} 台服务器',
+            defaultValue: '{{count}} servers',
             count: selectedHosts.length || selectedIds.length,
           });
   const isContextPill = variant === 'contextPill';
@@ -117,11 +117,11 @@ const SshHostSelector: React.FC<SshHostSelectorProps> = ({ selectedIds, onChange
             {t('settings.compute.sshHosts', { defaultValue: 'SSH hosts' })}
           </div>
           <div className='mt-2px text-11px leading-16px text-t-tertiary'>
-            {t('settings.compute.selectorDesc', { defaultValue: '选择本轮任务可使用的远程服务器' })}
+            {t('settings.compute.selectorDesc', { defaultValue: 'Choose remote servers available to this task' })}
           </div>
         </div>
         <Button size='mini' type='text' icon={<SettingTwo size='14' />} onClick={() => navigate('/settings/compute')}>
-          {t('common.settings', { defaultValue: '设置' })}
+          {t('common.settings', { defaultValue: 'Settings' })}
         </Button>
       </div>
 
@@ -137,7 +137,7 @@ const SshHostSelector: React.FC<SshHostSelectorProps> = ({ selectedIds, onChange
           />
           <div className='mt-8px flex justify-center'>
             <Button size='mini' type='secondary' onClick={() => void loadHosts()}>
-              {t('common.retry', { defaultValue: '重试' })}
+              {t('common.retry', { defaultValue: 'Retry' })}
             </Button>
           </div>
         </div>
@@ -145,7 +145,7 @@ const SshHostSelector: React.FC<SshHostSelectorProps> = ({ selectedIds, onChange
         <div className='py-12px'>
           <Empty
             icon={<OpenScienceIcon name='remoteJob' size={30} visualScale={1.08} />}
-            description={t('settings.compute.emptySelector', { defaultValue: '还没有 SSH host' })}
+            description={t('settings.compute.emptySelector', { defaultValue: 'No SSH hosts yet' })}
           />
         </div>
       ) : (
@@ -172,11 +172,11 @@ const SshHostSelector: React.FC<SshHostSelectorProps> = ({ selectedIds, onChange
 
       <div className='flex items-center justify-between gap-8px border-0 border-t border-solid border-[var(--color-border-1)] pt-8px'>
         <Button size='small' type='text' icon={<Plus size='14' />} onClick={() => setModalOpen(true)}>
-          {t('settings.compute.addHost', { defaultValue: '新增 SSH host' })}
+          {t('settings.compute.addHost', { defaultValue: 'Add SSH host' })}
         </Button>
         {selectedIds.length > 0 ? (
           <Button size='small' type='text' onClick={() => onChange([])}>
-            {t('common.clear', { defaultValue: '清除' })}
+            {t('common.clear', { defaultValue: 'Clear' })}
           </Button>
         ) : null}
       </div>

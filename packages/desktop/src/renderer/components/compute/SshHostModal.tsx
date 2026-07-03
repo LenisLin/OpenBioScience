@@ -74,7 +74,7 @@ const SshHostModal: React.FC<SshHostModalProps> = ({ visible, host, onClose, onS
   const handlePickPrivateKey = useCallback(async () => {
     const selected = await ipcBridge.dialog.showOpen.invoke({
       properties: ['openFile'],
-      title: t('settings.compute.pickPrivateKey', { defaultValue: '选择 private key 文件' }),
+      title: t('settings.compute.pickPrivateKey', { defaultValue: 'Select private key file' }),
     });
     const first = selected?.[0];
     if (first) form.setFieldValue('privateKeyPath', first);
@@ -103,16 +103,16 @@ const SshHostModal: React.FC<SshHostModalProps> = ({ visible, host, onClose, onS
       onSaved?.(result.host);
       onClose();
       if (result.test.ok) {
-        Message.success(t('settings.compute.saveAndTestSuccess', { defaultValue: '服务器已保存，SSH 连接测试通过' }));
+        Message.success(t('settings.compute.saveAndTestSuccess', { defaultValue: 'Server saved and SSH connection test passed' }));
       } else {
         Modal.warning({
-          title: t('settings.compute.testFailedTitle', { defaultValue: '服务器已保存，但连接测试未通过' }),
+          title: t('settings.compute.testFailedTitle', { defaultValue: 'Server saved, but connection test did not pass' }),
           content: result.test.message,
-          okText: t('common.confirm', { defaultValue: '知道了' }),
+          okText: t('common.confirm', { defaultValue: 'OK' }),
         });
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : t('settings.compute.saveFailed', { defaultValue: '保存失败' });
+      const message = error instanceof Error ? error.message : t('settings.compute.saveFailed', { defaultValue: 'Save failed' });
       Message.error(message);
     } finally {
       setSaving(false);
@@ -125,15 +125,15 @@ const SshHostModal: React.FC<SshHostModalProps> = ({ visible, host, onClose, onS
       visible={visible}
       title={
         isEditing
-          ? t('settings.compute.editHost', { defaultValue: '编辑 SSH host' })
-          : t('settings.compute.addHost', { defaultValue: '新增 SSH host' })
+          ? t('settings.compute.editHost', { defaultValue: 'Edit SSH host' })
+          : t('settings.compute.addHost', { defaultValue: 'Add SSH host' })
       }
       onCancel={onClose}
       footer={
         <div className='flex items-center justify-end gap-8px'>
-          <Button onClick={onClose}>{t('common.cancel', { defaultValue: '取消' })}</Button>
+          <Button onClick={onClose}>{t('common.cancel', { defaultValue: 'Cancel' })}</Button>
           <Button type='primary' loading={saving} onClick={handleSave}>
-            {t('settings.compute.saveAndTest', { defaultValue: '保存并测试' })}
+            {t('settings.compute.saveAndTest', { defaultValue: 'Save and test' })}
           </Button>
         </div>
       }
@@ -144,12 +144,12 @@ const SshHostModal: React.FC<SshHostModalProps> = ({ visible, host, onClose, onS
         <div className={styles.formGrid}>
           <Form.Item
             field='name'
-            label={t('settings.compute.hostName', { defaultValue: '名称' })}
-            rules={[{ required: true, message: t('settings.compute.hostNameRequired', { defaultValue: '请填写名称' }) }]}
+            label={t('settings.compute.hostName', { defaultValue: 'Name' })}
+            rules={[{ required: true, message: t('settings.compute.hostNameRequired', { defaultValue: 'Please enter a name' }) }]}
           >
             <Input placeholder='GPU workstation' />
           </Form.Item>
-          <Form.Item field='port' label={t('settings.compute.port', { defaultValue: '端口' })}>
+          <Form.Item field='port' label={t('settings.compute.port', { defaultValue: 'Port' })}>
             <Input type='number' placeholder='22' />
           </Form.Item>
         </div>
@@ -158,32 +158,36 @@ const SshHostModal: React.FC<SshHostModalProps> = ({ visible, host, onClose, onS
           <Form.Item
             field='host'
             label='Host / IP'
-            rules={[{ required: true, message: t('settings.compute.hostRequired', { defaultValue: '请填写 Host/IP' }) }]}
+            rules={[{ required: true, message: t('settings.compute.hostRequired', { defaultValue: 'Please enter Host/IP' }) }]}
           >
             <Input placeholder='192.168.1.20' />
           </Form.Item>
           <Form.Item
             field='username'
-            label={t('settings.compute.username', { defaultValue: '用户名' })}
-            rules={[{ required: true, message: t('settings.compute.usernameRequired', { defaultValue: '请填写用户名' }) }]}
+            label={t('settings.compute.username', { defaultValue: 'Username' })}
+            rules={[{ required: true, message: t('settings.compute.usernameRequired', { defaultValue: 'Please enter a username' }) }]}
           >
             <Input placeholder='ubuntu' />
           </Form.Item>
         </div>
 
-        <Form.Item field='authType' label={t('settings.compute.authType', { defaultValue: '认证方式' })}>
+        <Form.Item field='authType' label={t('settings.compute.authType', { defaultValue: 'Authentication' })}>
           <Select>
-            <Select.Option value='password'>{t('settings.compute.authPassword', { defaultValue: '密码' })}</Select.Option>
-            <Select.Option value='privateKey'>Private key</Select.Option>
-            <Select.Option value='agent'>SSH agent</Select.Option>
+            <Select.Option value='password'>{t('settings.compute.authPassword', { defaultValue: 'Password' })}</Select.Option>
+            <Select.Option value='privateKey'>{t('settings.compute.privateKey', { defaultValue: 'Private key' })}</Select.Option>
+            <Select.Option value='agent'>{t('settings.compute.sshAgent', { defaultValue: 'SSH agent' })}</Select.Option>
           </Select>
         </Form.Item>
 
         {authType === 'password' ? (
           <Form.Item
             field='password'
-            label={t('settings.compute.password', { defaultValue: '密码' })}
-            extra={isEditing && host?.hasPassword ? t('settings.compute.passwordKeep', { defaultValue: '已保存密码，留空则保持不变' }) : undefined}
+            label={t('settings.compute.password', { defaultValue: 'Password' })}
+            extra={
+              isEditing && host?.hasPassword
+                ? t('settings.compute.passwordKeep', { defaultValue: 'Already saved. Leave blank to keep unchanged.' })
+                : undefined
+            }
           >
             <Input.Password placeholder={isEditing && host?.hasPassword ? '••••••••' : undefined} visibilityToggle />
           </Form.Item>
@@ -195,7 +199,7 @@ const SshHostModal: React.FC<SshHostModalProps> = ({ visible, host, onClose, onS
               field='privateKeyPath'
               label='Private key path'
               rules={[
-                { required: true, message: t('settings.compute.privateKeyRequired', { defaultValue: '请填写 private key 路径' }) },
+                { required: true, message: t('settings.compute.privateKeyRequired', { defaultValue: 'Please enter a private key path' }) },
               ]}
             >
               <Input
@@ -210,7 +214,7 @@ const SshHostModal: React.FC<SshHostModalProps> = ({ visible, host, onClose, onS
               label={t('settings.compute.privateKeyPassphrase', { defaultValue: 'Private key passphrase' })}
               extra={
                 isEditing && host?.hasPrivateKeyPassphrase
-                  ? t('settings.compute.passwordKeep', { defaultValue: '已保存，留空则保持不变' })
+                  ? t('settings.compute.passwordKeep', { defaultValue: 'Already saved. Leave blank to keep unchanged.' })
                   : undefined
               }
             >
@@ -219,27 +223,32 @@ const SshHostModal: React.FC<SshHostModalProps> = ({ visible, host, onClose, onS
           </>
         ) : null}
 
-        <Form.Item field='remoteWorkdir' label={t('settings.compute.remoteWorkdir', { defaultValue: '默认远程工作目录' })}>
+        <Form.Item field='remoteWorkdir' label={t('settings.compute.remoteWorkdir', { defaultValue: 'Default remote workdir' })}>
           <Input placeholder='~/openscience-workspace' />
         </Form.Item>
 
-        <Form.Item field='tags' label={t('settings.compute.tags', { defaultValue: '标签' })}>
+        <Form.Item field='tags' label={t('settings.compute.tags', { defaultValue: 'Tags' })}>
           <Input placeholder='GPU, A100, lab' />
         </Form.Item>
 
-        <Form.Item field='notes' label={t('settings.compute.notes', { defaultValue: '备注' })}>
-          <Input.TextArea autoSize={{ minRows: 2, maxRows: 4 }} placeholder={t('settings.compute.notesPlaceholder', { defaultValue: '例如：只用于训练任务，避免在白天跑满 GPU。' })} />
+        <Form.Item field='notes' label={t('settings.compute.notes', { defaultValue: 'Notes' })}>
+          <Input.TextArea
+            autoSize={{ minRows: 2, maxRows: 4 }}
+            placeholder={t('settings.compute.notesPlaceholder', {
+              defaultValue: 'For example: training tasks only; avoid saturating GPUs during the day.',
+            })}
+          />
         </Form.Item>
 
         <div className='mb-20px flex items-start justify-between gap-12px'>
           <div>
             <div className='text-13px font-650 text-t-primary'>
-              {t('settings.compute.exposeCredentials', { defaultValue: '允许把凭据信息写入 Agent 上下文' })}
+              {t('settings.compute.exposeCredentials', { defaultValue: 'Allow credentials in Agent context' })}
             </div>
             <div className='mt-3px text-12px leading-18px text-t-secondary'>
               {t('settings.compute.exposeCredentialsDesc', {
                 defaultValue:
-                  '关闭时，Agent 只会看到服务器地址、用户名和认证方式；打开后，密码或 passphrase 会随本次会话上下文提供给 Agent。',
+                  'When off, the Agent only sees server address, username, and authentication type. When on, the password or passphrase can be provided in the session context.',
               })}
             </div>
           </div>
@@ -254,7 +263,7 @@ const SshHostModal: React.FC<SshHostModalProps> = ({ visible, host, onClose, onS
           </span>
           {t('settings.compute.saveHint', {
             defaultValue:
-              '点击保存后会自动测试 SSH 连接。测试失败时仍会保留配置，方便你稍后调整网络、密钥或服务器状态。',
+              'Saving automatically tests the SSH connection. Failed tests still keep the configuration so you can adjust the network, key, or server state later.',
           })}
         </div>
       </Form>

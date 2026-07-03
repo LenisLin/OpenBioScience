@@ -46,9 +46,35 @@ export interface ScienceProjectIndex {
   filesByPath: Map<string, ScienceArtifactFileRef & { panel: SciencePanelData; panelPath: string }>;
 }
 
-const isAbsolutePath = (value: string): boolean => /^([a-zA-Z]:[\\/]|\/|\\\\)/u.test(value);
+const safeDecodePath = (value: string): string => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    try {
+      return decodeURI(value);
+    } catch {
+      return value;
+    }
+  }
+};
 
-const normalizePath = (value: string): string => value.replace(/\\/g, '/').replace(/\/+/g, '/');
+const normalizeDrivePath = (value: string): string => (/^\/[A-Za-z]:[\\/]/u.test(value) ? value.slice(1) : value);
+
+const normalizePathInput = (value: string): string => {
+  const trimmed = String(value || '').trim();
+  if (/^file:/iu.test(trimmed)) {
+    try {
+      return normalizeDrivePath(safeDecodePath(new URL(trimmed).pathname));
+    } catch {
+      return normalizeDrivePath(safeDecodePath(trimmed.replace(/^file:(?:\/\/)?/iu, '')));
+    }
+  }
+  return normalizeDrivePath(safeDecodePath(trimmed));
+};
+
+const isAbsolutePath = (value: string): boolean => /^([a-zA-Z]:[\\/]|\/|\\\\)/u.test(normalizePathInput(value));
+
+const normalizePath = (value: string): string => normalizePathInput(value).replace(/\\/g, '/').replace(/\/+/g, '/');
 const normalizeComparablePath = (value?: string): string =>
   normalizePath(String(value || ''))
     .replace(/^\.\/+/u, '')
@@ -152,6 +178,14 @@ const safeParsePanel = (raw: string | null): SciencePanelData | undefined => {
   }
 };
 
+const readFileOrNull = async (path: string, workspace?: string): Promise<string | null> => {
+  try {
+    return await ipcBridge.fs.readFile.invoke({ path, workspace });
+  } catch {
+    return null;
+  }
+};
+
 const safeParseFileRecords = (raw: string | null): ScienceArtifactFileProvenanceRecord[] => {
   if (!raw) return [];
   try {
@@ -210,19 +244,99 @@ export const collectSciencePanelFiles = (workspace: string, panel: SciencePanelD
 const panelSortTime = (panel: SciencePanelData): number =>
   Math.max(panel.generatedAt || 0, ...panel.artifacts.map((artifact) => artifact.createdAt || 0));
 
+type ProjectRunEntry = { runId: string; panelPath?: string; updatedAt?: number };
+
+const parseProjectRunEntries = (raw: string | null): ProjectRunEntry[] => {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as { runs?: unknown };
+    if (!Array.isArray(parsed.runs)) return [];
+    return parsed.runs
+      .map((item) => {
+        if (!item || typeof item !== 'object') return undefined;
+        const record = item as { runId?: unknown; panelPath?: unknown; updatedAt?: unknown; generatedAt?: unknown };
+        if (typeof record.runId !== 'string' || !record.runId.trim()) return undefined;
+        const updatedAt =
+          typeof record.updatedAt === 'number'
+            ? record.updatedAt
+            : typeof record.generatedAt === 'number'
+              ? record.generatedAt
+              : undefined;
+        const entry: ProjectRunEntry = {
+          runId: record.runId,
+          panelPath: typeof record.panelPath === 'string' ? record.panelPath : undefined,
+          updatedAt,
+        };
+        return entry;
+      })
+      .filter((item): item is ProjectRunEntry => Boolean(item));
+  } catch {
+    return [];
+  }
+};
+
+const scienceArtifactsDir = (workspace: string): string =>
+  normalizePath(`${workspace.replace(/\/$/u, '')}/.openscience/science-artifacts`);
+
+const loadIndexedScienceRuns = async (
+  workspace: string,
+  limitRuns: number,
+  enrichRef: (ref: ScienceArtifactFileRef) => ScienceArtifactFileRef
+): Promise<ScienceProjectRunIndex[]> => {
+  const artifactsDir = scienceArtifactsDir(workspace);
+  const projectIndexPath = `${artifactsDir}/project-index.json`;
+  const entries = parseProjectRunEntries(await readFileOrNull(projectIndexPath, workspace))
+    .toSorted((left, right) => (right.updatedAt || 0) - (left.updatedAt || 0))
+    .slice(0, Math.max(limitRuns, 1) * 2);
+
+  const parsedRuns = await Promise.all(
+    entries.map(async (entry): Promise<ScienceProjectRunIndex | undefined> => {
+      const candidatePaths = [
+        entry.panelPath ? resolveSciencePath(workspace, entry.panelPath) : undefined,
+        `${artifactsDir}/runs/${entry.runId}/panel.json`,
+      ].filter((item): item is string => Boolean(item));
+
+      for (const panelPath of candidatePaths) {
+        const panel = safeParsePanel(await readFileOrNull(panelPath, workspace));
+        if (!panel) continue;
+        const artifactFiles = collectSciencePanelFiles(workspace, panel).map(enrichRef);
+        return {
+          runId: panel.runId,
+          panel,
+          panelPath,
+          panelRelativePath: toWorkspaceRelativePath(workspace, panelPath),
+          title: panel.report?.title || panel.question || panel.runId,
+          summary: panel.summary,
+          updatedAt: panelSortTime(panel) || entry.updatedAt || 0,
+          artifacts: artifactFiles,
+        };
+      }
+      return undefined;
+    })
+  );
+
+  return parsedRuns
+    .filter((item): item is ScienceProjectRunIndex => Boolean(item))
+    .toSorted((left, right) => right.updatedAt - left.updatedAt)
+    .slice(0, limitRuns);
+};
+
 export async function loadScienceProjectIndex(workspace: string, limitRuns = 12): Promise<ScienceProjectIndex> {
   const filesByPath = new Map<string, ScienceArtifactFileRef & { panel: SciencePanelData; panelPath: string }>();
   if (!workspace) {
     return { workspace, runs: [], filesByPath };
   }
 
-  const files = await ipcBridge.fs.listWorkspaceFiles.invoke({ root: workspace });
+  const directFileIndexPath = `${scienceArtifactsDir(workspace)}/file-index.json`;
+  let files = await ipcBridge.fs.listWorkspaceFiles.invoke({ root: workspace });
   const fileIndexEntry = files.find((item) =>
     /(^|\/)\.openscience\/science-artifacts\/file-index\.json$/u.test(normalizePath(item.relativePath || item.fullPath))
   );
-  const fileRecords = fileIndexEntry
-    ? safeParseFileRecords(await ipcBridge.fs.readFile.invoke({ path: fileIndexEntry.fullPath, workspace }))
-    : [];
+  const fileRecords = safeParseFileRecords(await readFileOrNull(directFileIndexPath, workspace)).concat(
+    fileIndexEntry
+      ? safeParseFileRecords(await readFileOrNull(fileIndexEntry.fullPath, workspace))
+      : []
+  );
   const fileRecordsByKey = new Map<string, ScienceArtifactFileProvenanceRecord>();
   for (const record of fileRecords) {
     [record.path, record.relativePath]
@@ -247,6 +361,8 @@ export async function loadScienceProjectIndex(workspace: string, limitRuns = 12)
       role: record.role || ref.role,
     };
   };
+  const indexedRuns = await loadIndexedScienceRuns(workspace, limitRuns, enrichRef);
+
   const panelFiles = files
     .filter((item) =>
       normalizePath(item.relativePath || item.fullPath).includes('.openscience/science-artifacts/runs/')
@@ -273,14 +389,29 @@ export async function loadScienceProjectIndex(workspace: string, limitRuns = 12)
     })
   );
 
-  const runs = parsedRuns
+  const runsById = new Map<string, ScienceProjectRunIndex>();
+  for (const run of indexedRuns) {
+    runsById.set(run.runId, run);
+  }
+  for (const run of parsedRuns.filter((item): item is ScienceProjectRunIndex => Boolean(item))) {
+    if (!runsById.has(run.runId)) {
+      runsById.set(run.runId, run);
+    }
+  }
+
+  const runs = Array.from(runsById.values())
     .filter((item): item is ScienceProjectRunIndex => Boolean(item))
     .toSorted((left, right) => right.updatedAt - left.updatedAt)
     .slice(0, limitRuns);
 
   for (const run of runs) {
     for (const ref of run.artifacts) {
-      filesByPath.set(ref.path, { ...ref, panel: run.panel, panelPath: run.panelPath });
+      const value = { ...ref, panel: run.panel, panelPath: run.panelPath };
+      filesByPath.set(ref.path, value);
+      if (ref.relativePath && run.panel.projectRoot) {
+        const projectRootResolved = resolveSciencePath(run.panel.projectRoot, ref.relativePath);
+        if (projectRootResolved) filesByPath.set(projectRootResolved, value);
+      }
     }
   }
 

@@ -17,6 +17,7 @@ import classNames from 'classnames';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useSearchParams } from 'react-router-dom';
 import remarkGfm from 'remark-gfm';
 import SettingsPageWrapper from './components/SettingsPageWrapper';
@@ -70,6 +71,7 @@ type ApiSkillInfo = {
 };
 
 const REMARK_PLUGINS = [remarkGfm];
+type SettingsT = TFunction<'settings'>;
 
 const normalizePath = (value: string): string => value.replace(/\\/g, '/').replace(/\/+$/u, '');
 
@@ -140,12 +142,17 @@ const getSkillModeTags = (name: string): SkillModeTag[] => {
   return tags;
 };
 
-const modeTagLabel = (tag: SkillModeTag): string => {
-  if (tag === 'science-default') return 'Science 默认';
-  if (tag === 'science-leaf') return 'Science 技能';
-  if (tag === 'medical-evidence') return '循证模式';
-  if (tag === 'loop-goal') return '目标模式';
-  return '沉淀模式';
+const MODE_TAG_LABELS: Record<SkillModeTag, { defaultValue: string; key: string }> = {
+  'science-default': { key: 'skills.modeTags.scienceDefault', defaultValue: 'Science default' },
+  'science-leaf': { key: 'skills.modeTags.scienceSkill', defaultValue: 'Science skill' },
+  'medical-evidence': { key: 'skills.modeTags.medicalEvidence', defaultValue: 'Medical evidence' },
+  'loop-goal': { key: 'skills.modeTags.loopGoal', defaultValue: 'Goal mode' },
+  'skill-deposition': { key: 'skills.modeTags.skillDeposition', defaultValue: 'Knowledge deposition' },
+};
+
+const modeTagLabel = (tag: SkillModeTag, t?: SettingsT): string => {
+  const label = MODE_TAG_LABELS[tag];
+  return t ? t(label.key, { defaultValue: label.defaultValue }) : label.defaultValue;
 };
 
 const modeTagClassName = (tag: SkillModeTag): string => `skills-settings__modeTag skills-settings__modeTag--${tag}`;
@@ -179,17 +186,17 @@ const getSkillRank = (skill: SkillInfo): number => {
   return 8;
 };
 
-const sourceLabel = (skill: SkillInfo): string => {
-  if (skill.modeTags.includes('skill-deposition')) return '沉淀模式';
-  if (skill.modeTags.includes('loop-goal')) return '目标模式';
-  if (skill.modeTags.includes('medical-evidence')) return '循证模式';
-  if (skill.modeTags.includes('science-default')) return 'Science 默认';
-  if (skill.modeTags.includes('science-leaf')) return 'Science 技能';
-  if (isDepositedSkill(skill)) return '知识沉淀';
-  if (skill.source === 'extension') return '扩展';
-  if (skill.source === 'builtin-auto') return '自动注入';
-  if (skill.source === 'builtin') return '内置';
-  return '自建';
+const sourceLabel = (skill: SkillInfo, t?: SettingsT): string => {
+  if (skill.modeTags.includes('skill-deposition')) return modeTagLabel('skill-deposition', t);
+  if (skill.modeTags.includes('loop-goal')) return modeTagLabel('loop-goal', t);
+  if (skill.modeTags.includes('medical-evidence')) return modeTagLabel('medical-evidence', t);
+  if (skill.modeTags.includes('science-default')) return modeTagLabel('science-default', t);
+  if (skill.modeTags.includes('science-leaf')) return modeTagLabel('science-leaf', t);
+  if (isDepositedSkill(skill)) return t ? t('skills.sources.deposited', { defaultValue: 'Knowledge deposition' }) : 'Knowledge deposition';
+  if (skill.source === 'extension') return t ? t('skills.sources.extension', { defaultValue: 'Extension' }) : 'Extension';
+  if (skill.source === 'builtin-auto') return t ? t('skills.sources.builtinAuto', { defaultValue: 'Auto-injected' }) : 'Auto-injected';
+  if (skill.source === 'builtin') return t ? t('skills.sources.builtin', { defaultValue: 'Built-in' }) : 'Built-in';
+  return t ? t('skills.sources.custom', { defaultValue: 'Custom' }) : 'Custom';
 };
 
 const isEditableSkill = (skill: SkillInfo): boolean =>
@@ -289,7 +296,7 @@ const buildSkills = (
     });
 };
 
-const readSkillContent = async (skill: SkillInfo): Promise<string> => {
+const readSkillContent = async (skill: SkillInfo, t: SettingsT): Promise<string> => {
   const candidates = Array.from(
     new Set([getSkillMarkdownPath(skill), normalizePath(skill.location || '')].filter(Boolean))
   );
@@ -297,15 +304,19 @@ const readSkillContent = async (skill: SkillInfo): Promise<string> => {
   for (const result of results) {
     if (result.status === 'fulfilled' && typeof result.value === 'string') return result.value;
   }
-  if (skill.isCatalogFallback) return buildCatalogFallbackMarkdown(skill);
+  if (skill.isCatalogFallback) return buildCatalogFallbackMarkdown(skill, t);
   throw new Error('Skill content is not readable');
 };
 
-const buildCatalogFallbackMarkdown = (skill: SkillInfo): string =>
+const buildCatalogFallbackMarkdown = (skill: SkillInfo, t: SettingsT): string =>
   [
     `# ${skill.name}`,
     '',
-    skill.description || '该技能在 OpenScience 内置技能目录中，但当前运行时还没有返回完整的 SKILL.md 内容。',
+    skill.description ||
+      t('skills.catalogFallbackDescription', {
+        defaultValue:
+          'This skill is listed in the OpenScience built-in skill catalog, but the current runtime has not returned the full SKILL.md content yet.',
+      }),
     '',
     '## Runtime Status',
     '',
@@ -314,7 +325,7 @@ const buildCatalogFallbackMarkdown = (skill: SkillInfo): string =>
     `- Expected runtime path: \`${getSkillMarkdownPath(skill) || skill.location}\``,
     '',
     skill.modeTags.length ? '## Mode Tags' : undefined,
-    skill.modeTags.length ? skill.modeTags.map((tag) => `- ${modeTagLabel(tag)}`).join('\n') : undefined,
+    skill.modeTags.length ? skill.modeTags.map((tag) => `- ${modeTagLabel(tag, t)}`).join('\n') : undefined,
   ]
     .filter((line): line is string => typeof line === 'string')
     .join('\n');
@@ -342,7 +353,7 @@ const collectSkillZipFiles = async (skill: SkillInfo, rootName: string): Promise
   return [{ name: joinPath(rootName, 'SKILL.md'), source_path: markdownPath || skill.location }];
 };
 
-const SkillMarkdownPreview: React.FC<{ markdown: string }> = ({ markdown }) => (
+const SkillMarkdownPreview: React.FC<{ emptyText: string; markdown: string }> = ({ emptyText, markdown }) => (
   <div className='skills-md'>
     <ReactMarkdown
       remarkPlugins={REMARK_PLUGINS}
@@ -366,7 +377,7 @@ const SkillMarkdownPreview: React.FC<{ markdown: string }> = ({ markdown }) => (
         },
       }}
     >
-      {stripMarkdownFrontmatter(markdown) || '暂无可预览内容。'}
+      {stripMarkdownFrontmatter(markdown) || emptyText}
     </ReactMarkdown>
   </div>
 );
@@ -396,10 +407,10 @@ const SkillsSettings: React.FC = () => {
     if (!query) return skills;
     return skills.filter((skill) => {
       const haystack =
-        `${skill.name} ${skill.description} ${sourceLabel(skill)} ${skill.modeTags.map(modeTagLabel).join(' ')} ${skill.location}`.toLowerCase();
+        `${skill.name} ${skill.description} ${sourceLabel(skill, t)} ${skill.modeTags.map((tag) => modeTagLabel(tag, t)).join(' ')} ${skill.location}`.toLowerCase();
       return haystack.includes(query);
     });
-  }, [searchQuery, skills]);
+  }, [searchQuery, skills, t]);
 
   const stats = useMemo(() => {
     const science = skills.filter((skill) =>
@@ -431,7 +442,7 @@ const SkillsSettings: React.FC = () => {
       });
     } catch (error) {
       console.error('[SkillsSettings] Failed to fetch skills:', error);
-      Message.error(t('settings.skills.fetchError', { defaultValue: '获取技能列表失败' }));
+      Message.error(t('settings.skills.fetchError', { defaultValue: 'Failed to fetch skills' }));
     } finally {
       setLoading(false);
     }
@@ -452,7 +463,7 @@ const SkillsSettings: React.FC = () => {
     let cancelled = false;
     setContentLoading(true);
     setEditMode(false);
-    void readSkillContent(selectedSkill)
+    void readSkillContent(selectedSkill, t)
       .then((nextContent) => {
         if (cancelled) return;
         setContent(nextContent);
@@ -461,7 +472,12 @@ const SkillsSettings: React.FC = () => {
       .catch((error) => {
         if (cancelled) return;
         console.error('[SkillsSettings] Failed to read skill content:', error);
-        setContent(`# ${selectedSkill.name}\n\n${selectedSkill.description || '该技能没有可读取的 SKILL.md。'}`);
+        setContent(
+          `# ${selectedSkill.name}\n\n${
+            selectedSkill.description ||
+            t('settings.skills.unreadableMarkdown', { defaultValue: 'This skill does not have a readable SKILL.md file.' })
+          }`
+        );
         setDraftContent('');
       })
       .finally(() => {
@@ -471,13 +487,13 @@ const SkillsSettings: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [selectedSkill]);
+  }, [selectedSkill, t]);
 
   const handleSave = useCallback(async () => {
     if (!selectedSkill || !isEditableSkill(selectedSkill)) return;
     const markdownPath = getSkillMarkdownPath(selectedSkill);
     if (!markdownPath) {
-      Message.error('缺少可写入的 SKILL.md 路径');
+      Message.error(t('settings.skills.missingWritablePath', { defaultValue: 'Missing writable SKILL.md path' }));
       return;
     }
     setSaving(true);
@@ -486,15 +502,15 @@ const SkillsSettings: React.FC = () => {
       if (!ok) throw new Error('writeFile returned false');
       setContent(draftContent);
       setEditMode(false);
-      Message.success('技能已保存');
+      Message.success(t('settings.skills.saveSuccess', { defaultValue: 'Skill saved' }));
       void fetchSkills();
     } catch (error) {
       console.error('[SkillsSettings] Failed to save skill:', error);
-      Message.error('保存技能失败');
+      Message.error(t('settings.skills.saveFailed', { defaultValue: 'Failed to save skill' }));
     } finally {
       setSaving(false);
     }
-  }, [draftContent, fetchSkills, selectedSkill]);
+  }, [draftContent, fetchSkills, selectedSkill, t]);
 
   const handleDownload = useCallback(async () => {
     if (!selectedSkill || !selectedSkill.location) return;
@@ -512,15 +528,15 @@ const SkillsSettings: React.FC = () => {
         files,
       });
       if (!ok) throw new Error('createZip returned false');
-      Message.success(`技能已下载到 ${targetPath}`);
+      Message.success(t('settings.skills.downloadSuccess', { defaultValue: 'Skill downloaded to {{path}}', path: targetPath }));
     } catch (error) {
       console.error('[SkillsSettings] Failed to download skill:', error);
       void ipcBridge.fs.cancelZip.invoke({ request_id });
-      Message.error('下载技能失败');
+      Message.error(t('settings.skills.downloadFailed', { defaultValue: 'Failed to download skill' }));
     } finally {
       setDownloading(false);
     }
-  }, [selectedSkill]);
+  }, [selectedSkill, t]);
 
   const handleReveal = useCallback(() => {
     if (!selectedSkill) return;
@@ -537,13 +553,13 @@ const SkillsSettings: React.FC = () => {
               <OpenScienceIcon name='settingsSkills' size={18} />
               Skills
             </span>
-            <h1>{t('settings.skills.title', { defaultValue: '技能' })}</h1>
-            <p>查看、检索和维护 OpenScience 可调用的技能。Science、目标、循证和知识沉淀模式会在同一目录中标明归属。</p>
+            <h1>{t('settings.skills.title', { defaultValue: 'Skills' })}</h1>
+            <p>{t('settings.skills.description')}</p>
           </div>
           <div className='skills-settings__stats'>
             <span>
               <b>{stats.total}</b>
-              全部
+              {t('settings.skills.statsAll')}
             </span>
             <span>
               <b>{stats.science}</b>
@@ -551,11 +567,11 @@ const SkillsSettings: React.FC = () => {
             </span>
             <span>
               <b>{stats.mode}</b>
-              模式
+              {t('settings.skills.statsModes')}
             </span>
             <span>
               <b>{stats.editable}</b>
-              可编辑
+              {t('settings.skills.statsEditable')}
             </span>
           </div>
         </header>
@@ -566,12 +582,12 @@ const SkillsSettings: React.FC = () => {
               <Input
                 allowClear
                 prefix={<Search size={15} />}
-                placeholder='搜索技能、描述或来源'
+                placeholder={t('settings.skills.searchPlaceholder')}
                 value={searchQuery}
                 onChange={setSearchQuery}
               />
               <Button icon={<Refresh />} loading={loading} onClick={() => void fetchSkills()}>
-                刷新
+                {t('common.refresh', { defaultValue: 'Refresh' })}
               </Button>
             </div>
 
@@ -599,15 +615,17 @@ const SkillsSettings: React.FC = () => {
                                 isDepositedSkill(skill) && 'skills-settings__sourceBadge--deposited'
                               )}
                             >
-                              {sourceLabel(skill)}
+                              {sourceLabel(skill, t)}
                             </span>
                           </span>
-                          <span className='skills-settings__itemDesc'>{skill.description || '暂无描述'}</span>
+                          <span className='skills-settings__itemDesc'>
+                            {skill.description || t('settings.skills.noDescription')}
+                          </span>
                           {skill.modeTags.length ? (
                             <span className='skills-settings__modeTags'>
                               {skill.modeTags.slice(0, 3).map((tag) => (
                                 <span key={tag} className={modeTagClassName(tag)}>
-                                  {modeTagLabel(tag)}
+                                  {modeTagLabel(tag, t)}
                                 </span>
                               ))}
                             </span>
@@ -617,7 +635,7 @@ const SkillsSettings: React.FC = () => {
                     );
                   })
                 ) : (
-                  <Empty description='没有找到匹配的技能' />
+                  <Empty description={t('settings.skills.noSearchResults')} />
                 )}
               </div>
             </Spin>
@@ -635,25 +653,29 @@ const SkillsSettings: React.FC = () => {
                       </h2>
                       <div className='skills-settings__meta'>
                         <Tag size='small' color={isDepositedSkill(selectedSkill) ? 'gray' : undefined}>
-                          {sourceLabel(selectedSkill)}
+                          {sourceLabel(selectedSkill, t)}
                         </Tag>
                         {selectedSkill.modeTags.map((tag) => (
                           <Tag key={tag} size='small' className={modeTagClassName(tag)}>
-                            {modeTagLabel(tag)}
+                            {modeTagLabel(tag, t)}
                           </Tag>
                         ))}
-                        {selectedSkill.isCatalogFallback ? <Tag size='small'>待同步</Tag> : null}
-                        <Tag size='small'>{isEditableSkill(selectedSkill) ? '可编辑' : '只读'}</Tag>
-                        <Tag size='small'>{editMode ? '编辑源文件' : '渲染预览'}</Tag>
+                        {selectedSkill.isCatalogFallback ? <Tag size='small'>{t('settings.skills.pendingSync')}</Tag> : null}
+                        <Tag size='small'>
+                          {isEditableSkill(selectedSkill) ? t('settings.skills.editable') : t('settings.skills.readonly')}
+                        </Tag>
+                        <Tag size='small'>
+                          {editMode ? t('settings.skills.editingSource') : t('settings.skills.renderedPreview')}
+                        </Tag>
                         <code title={getSkillMarkdownPath(selectedSkill)}>{getSkillDisplayPath(selectedSkill)}</code>
                       </div>
                     </div>
                     <div className='skills-settings__actions'>
                       <Button icon={<FolderOpen />} onClick={handleReveal}>
-                        位置
+                        {t('settings.skills.reveal')}
                       </Button>
                       <Button icon={<Download />} loading={downloading} onClick={() => void handleDownload()}>
-                        下载
+                        {t('settings.skills.download')}
                       </Button>
                       {editMode ? (
                         <>
@@ -665,10 +687,10 @@ const SkillsSettings: React.FC = () => {
                               setEditMode(false);
                             }}
                           >
-                            预览
+                            {t('settings.skills.preview')}
                           </Button>
                           <Button type='primary' icon={<CheckOne />} loading={saving} onClick={() => void handleSave()}>
-                            保存
+                            {t('settings.skills.save')}
                           </Button>
                         </>
                       ) : (
@@ -678,7 +700,7 @@ const SkillsSettings: React.FC = () => {
                           disabled={!isEditableSkill(selectedSkill)}
                           onClick={() => setEditMode(true)}
                         >
-                          编辑
+                          {t('settings.skills.edit')}
                         </Button>
                       )}
                     </div>
@@ -695,7 +717,7 @@ const SkillsSettings: React.FC = () => {
                         autoSize={{ minRows: 28 }}
                       />
                     ) : (
-                      <SkillMarkdownPreview markdown={content} />
+                      <SkillMarkdownPreview markdown={content} emptyText={t('settings.skills.emptyPreview')} />
                     )}
                   </Spin>
                 </section>
@@ -703,8 +725,8 @@ const SkillsSettings: React.FC = () => {
             ) : (
               <div className='skills-settings__emptyDetail'>
                 <OpenScienceIcon name='settingsSkills' size={42} />
-                <h2>暂无技能</h2>
-                <p>导入或生成一个技能后，这里会显示可预览、可编辑、可下载的详情。</p>
+                <h2>{t('settings.skills.emptyTitle')}</h2>
+                <p>{t('settings.skills.emptyDescription')}</p>
               </div>
             )}
           </main>

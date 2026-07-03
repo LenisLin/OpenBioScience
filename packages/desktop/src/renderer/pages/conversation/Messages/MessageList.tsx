@@ -73,7 +73,7 @@ import { useAutoScroll } from './useAutoScroll';
 import { useAutoPreviewOfficeFiles } from '@/renderer/hooks/file/useAutoPreviewOfficeFiles';
 import { useLocalFilePreview } from '@/renderer/pages/conversation/Preview/hooks/useLocalFilePreview';
 import { usePreviewContext } from '@/renderer/pages/conversation/Preview';
-import { resolveSciencePreviewPath } from '@/renderer/utils/science/scienceProjectIndex';
+import { loadScienceProjectIndex, resolveSciencePreviewPath } from '@/renderer/utils/science/scienceProjectIndex';
 import SelectionReplyButton from './components/SelectionReplyButton';
 import { isCodexConversationRuntime } from '@/renderer/pages/conversation/utils/agentBackend';
 
@@ -764,6 +764,7 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
   const [memoryDetailLoading, setMemoryDetailLoading] = useState(false);
   const [medicalEvidenceReports, setMedicalEvidenceReports] = useState<MedicalEvidenceReportRecord[]>([]);
   const [scienceArtifactReports, setScienceArtifactReports] = useState<ScienceArtifactReportRecord[]>([]);
+  const [workspaceSciencePanel, setWorkspaceSciencePanel] = useState<SciencePanelData | undefined>();
   const handledScienceDisplayKeysRef = useRef<Set<string> | null>(null);
   const restoredSciencePreviewKeyRef = useRef<string>('');
 
@@ -881,6 +882,28 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
       disposeChanged();
     };
   }, [conversationContext?.conversation_id, loadScienceArtifactReports]);
+
+  useEffect(() => {
+    const workspace = conversationContext?.workspace;
+    if (!workspace || !conversationContext?.isScienceMode) {
+      setWorkspaceSciencePanel(undefined);
+      return;
+    }
+
+    let cancelled = false;
+    loadScienceProjectIndex(workspace, 1)
+      .then((index) => {
+        if (cancelled) return;
+        setWorkspaceSciencePanel(index.runs[0]?.panel);
+      })
+      .catch(() => {
+        if (!cancelled) setWorkspaceSciencePanel(undefined);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [conversationContext?.isScienceMode, conversationContext?.workspace]);
 
   const openCodexMemory = React.useCallback(
     async (memory: CodexMemoryRecord) => {
@@ -1214,12 +1237,15 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
     for (const panel of sciencePanelByRenderableItemId.values()) {
       candidates.push({ panel, updatedAt: getSciencePanelUpdatedAt(panel) });
     }
+    if (workspaceSciencePanel) {
+      candidates.push({ panel: workspaceSciencePanel, updatedAt: getSciencePanelUpdatedAt(workspaceSciencePanel) });
+    }
     candidates.sort((a, b) => a.updatedAt - b.updatedAt);
     return candidates.at(-1)?.panel;
-  }, [resultSciencePanelByTextId, scienceArtifactReports, sciencePanelByRenderableItemId]);
+  }, [resultSciencePanelByTextId, scienceArtifactReports, sciencePanelByRenderableItemId, workspaceSciencePanel]);
 
   useEffect(() => {
-    if (!conversationContext?.isScienceMode || !conversationContext.conversation_id || !latestRestorableSciencePanel) {
+    if (!conversationContext?.conversation_id || !latestRestorableSciencePanel) {
       return;
     }
     const restoreKey = getScienceReportPreviewKey(conversationContext.conversation_id, latestRestorableSciencePanel);
@@ -1228,7 +1254,6 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
     openScienceReportPreview(latestRestorableSciencePanel, false);
   }, [
     conversationContext?.conversation_id,
-    conversationContext?.isScienceMode,
     latestRestorableSciencePanel,
     openScienceReportPreview,
   ]);

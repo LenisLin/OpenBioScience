@@ -170,7 +170,7 @@
     },
     "packages/desktop": {
       "name": "@deeporganiser/desktop",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@deeporganiser/web-host": "workspace:*",
       },

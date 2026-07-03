@@ -405,6 +405,22 @@ export const RuntimeCheckStep: React.FC<RuntimeCheckStepProps> = ({ checking, it
   const en = isEnglishLocale(locale);
   const statusMeta = getStatusMeta(locale);
   const hasAvailableRuntime = items.some((item) => item.status === 'available');
+  const quickInstallCards = [
+    {
+      id: 'codex',
+      title: en ? 'Install Codex' : '安装 Codex',
+      hint: en ? 'Fast OpenAI coding-agent setup for macOS, Linux, or WSL.' : '适用于 macOS、Linux 或 WSL 的 OpenAI 代码智能体快速安装。',
+      command: 'curl -fsSL https://chatgpt.com/codex/install.sh | sh\ncodex',
+      url: 'https://developers.openai.com/codex/cli',
+    },
+    {
+      id: 'claude',
+      title: en ? 'Install Claude Code' : '安装 Claude Code',
+      hint: en ? 'Anthropic native installer for macOS, Linux, or WSL.' : '适用于 macOS、Linux 或 WSL 的 Anthropic 原生安装方式。',
+      command: 'curl -fsSL https://claude.ai/install.sh | bash\nclaude',
+      url: 'https://docs.anthropic.com/en/docs/claude-code/quickstart',
+    },
+  ];
   const runtimeDescriptions: Record<RuntimeCheckItem['id'], string> = {
     claude: en
       ? 'Anthropic local coding agent for long tasks, file editing, and iterative research artifacts.'
@@ -446,6 +462,52 @@ export const RuntimeCheckStep: React.FC<RuntimeCheckStepProps> = ({ checking, it
           ? 'This uses the same backend registry and health-check endpoint as the app runtime picker.'
           : '这里使用的是和模型选择器相同的后端 registry 与健康检查接口。'}
       </div>
+      {!hasAvailableRuntime && (
+        <section className='onboarding-runtime-quickstart' aria-label={en ? 'Quick install commands' : '快速安装命令'}>
+          <div className='onboarding-runtime-quickstart__intro'>
+            <strong>{en ? 'No runtime yet? Start with one command.' : '还没安装？复制一条命令即可开始。'}</strong>
+            <span>
+              {en
+                ? 'Install either option, finish the terminal sign-in, then return here and check again.'
+                : '任选其一安装，在终端完成登录后回到这里点“重新检测”。'}
+            </span>
+          </div>
+          <div className='onboarding-runtime-quickstart__cards'>
+            {quickInstallCards.map((card) => (
+              <article key={card.id} className='onboarding-runtime-quickstart__card'>
+                <div>
+                  <strong>{card.title}</strong>
+                  <span>{card.hint}</span>
+                </div>
+                <pre>
+                  <code>{card.command}</code>
+                </pre>
+                <div className='onboarding-runtime-quickstart__actions'>
+                  <button
+                    type='button'
+                    className='onboarding-inline-link'
+                    onClick={() => {
+                      void navigator.clipboard?.writeText(card.command);
+                    }}
+                  >
+                    {en ? 'Copy command' : '复制命令'}
+                  </button>
+                  <button
+                    type='button'
+                    className='onboarding-inline-link'
+                    onClick={() => {
+                      void openExternalUrl(card.url);
+                    }}
+                  >
+                    {en ? 'Official guide' : '官方指南'}
+                    <Right theme='outline' size='13' />
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
       <div className='onboarding-runtime-grid'>
         {items.map((item) => {
           const meta = statusMeta[item.status];

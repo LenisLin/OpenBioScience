@@ -9,12 +9,37 @@
  * is a proper `file:///` URL on every platform, and encode segments (spaces / CJK) via
  * encodeURI (which preserves `/` and `:`).
  */
+
+const safeDecodePath = (value: string): string => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    try {
+      return decodeURI(value);
+    } catch {
+      return value;
+    }
+  }
+};
+
+const normalizeInputPath = (filePath: string): string => {
+  if (filePath.startsWith('file://')) {
+    try {
+      const url = new URL(filePath);
+      return safeDecodePath(url.pathname);
+    } catch {
+      return safeDecodePath(filePath.replace(/^file:(?:\/\/)?/iu, ''));
+    }
+  }
+  return safeDecodePath(filePath);
+};
+
 export const buildLocalFileSrc = (filePath: string): string => {
   if (filePath.startsWith('file://')) {
-    return encodeURI(filePath);
+    return `file://${encodeURI(normalizeInputPath(filePath))}`;
   }
 
-  const normalized = filePath.replace(/\\/g, '/');
+  const normalized = normalizeInputPath(filePath).replace(/\\/g, '/');
   const withLeadingSlash = normalized.startsWith('/') ? normalized : `/${normalized}`;
   return `file://${encodeURI(withLeadingSlash)}`;
 };

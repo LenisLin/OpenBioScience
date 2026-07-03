@@ -42,7 +42,7 @@ const DiagnosticsSettings: React.FC = () => {
     try {
       const result = await ipcBridge.application.getDiagnostics.invoke();
       if (!result.success || !result.data) {
-        throw new Error(result.msg || t('settings.diagnostics.loadFailed', { defaultValue: '诊断信息读取失败' }));
+        throw new Error(result.msg || t('settings.diagnostics.loadFailed', { defaultValue: 'Failed to read diagnostics' }));
       }
       setReport(result.data);
     } catch (err) {
@@ -71,7 +71,7 @@ const DiagnosticsSettings: React.FC = () => {
   const copyReport = useCallback(async () => {
     if (!reportText) return;
     await navigator.clipboard.writeText(reportText);
-    Message.success(t('settings.diagnostics.copied', { defaultValue: '诊断信息已复制' }));
+    Message.success(t('settings.diagnostics.copied', { defaultValue: 'Diagnostics copied' }));
   }, [reportText, t]);
 
   const lastUpdateEvent = report?.autoUpdate?.lastEvent;
@@ -86,21 +86,22 @@ const DiagnosticsSettings: React.FC = () => {
             </span>
             <div className='min-w-0'>
               <h1 className='m-0 text-22px font-650 text-t-primary'>
-                {t('settings.diagnostics.title', { defaultValue: '诊断' })}
+                {t('settings.diagnostics.title', { defaultValue: 'Diagnostics' })}
               </h1>
               <p className='mt-6px mb-0 max-w-760px text-13px leading-20px text-t-secondary'>
                 {t('settings.diagnostics.description', {
-                  defaultValue: '自动检查 OpenScience 本机安装、运行资源、更新记录和关键路径；信息只显示给当前用户，不会自动发送。',
+                  defaultValue:
+                    'Checks local OpenScience installation, runtime resources, update records, and key paths. The information is shown only to the current user and is not sent automatically.',
                 })}
               </p>
             </div>
           </div>
           <div className='flex shrink-0 flex-wrap gap-8px'>
             <Button icon={<Refresh theme='outline' size='15' />} loading={loading} onClick={() => void loadReport()}>
-              {t('common.refresh', { defaultValue: '刷新' })}
+              {t('common.refresh', { defaultValue: 'Refresh' })}
             </Button>
             <Button icon={<Copy theme='outline' size='15' />} disabled={!reportText} onClick={() => void copyReport()}>
-              {t('common.copy', { defaultValue: '复制' })}
+              {t('common.copy', { defaultValue: 'Copy' })}
             </Button>
           </div>
         </div>
@@ -110,9 +111,9 @@ const DiagnosticsSettings: React.FC = () => {
           content={
             requiredMissing.length > 0
               ? t('settings.diagnostics.requiredMissing', {
-                  defaultValue: '发现必要资源缺失，建议下载并重新安装最新版 OpenScience。',
+                  defaultValue: 'Required resources are missing. Download and reinstall the latest OpenScience release.',
                 })
-              : t('settings.diagnostics.ready', { defaultValue: '必要资源检查通过。' })
+              : t('settings.diagnostics.ready', { defaultValue: 'Required resources check passed.' })
           }
         />
 
@@ -125,27 +126,27 @@ const DiagnosticsSettings: React.FC = () => {
             <>
               <section className='grid gap-10px md:grid-cols-4'>
                 <SummaryCard
-                  label={t('settings.diagnostics.version', { defaultValue: '版本' })}
+                  label={t('settings.diagnostics.version', { defaultValue: 'Version' })}
                   value={report.app.version}
                   detail={`${report.app.platform} / ${report.app.arch}`}
                 />
                 <SummaryCard
-                  label={t('settings.diagnostics.package', { defaultValue: '安装状态' })}
+                  label={t('settings.diagnostics.package', { defaultValue: 'Installation status' })}
                   value={
                     requiredMissing.length > 0
-                      ? t('settings.diagnostics.needsRepair', { defaultValue: '需修复' })
-                      : t('settings.diagnostics.ok', { defaultValue: '正常' })
+                      ? t('settings.diagnostics.needsRepair', { defaultValue: 'Needs repair' })
+                      : t('settings.diagnostics.ok', { defaultValue: 'OK' })
                   }
                   detail={report.app.isPackaged ? 'Packaged' : 'Development'}
                 />
                 <SummaryCard
-                  label={t('settings.diagnostics.generatedAt', { defaultValue: '检查时间' })}
+                  label={t('settings.diagnostics.generatedAt', { defaultValue: 'Checked at' })}
                   value={formatDate(report.generatedAt)}
                   detail={report.app.locale || '-'}
                 />
                 <SummaryCard
-                  label={t('settings.diagnostics.update', { defaultValue: '更新记录' })}
-                  value={String(lastUpdateEvent?.status ?? t('settings.diagnostics.noRecord', { defaultValue: '暂无' }))}
+                  label={t('settings.diagnostics.update', { defaultValue: 'Update record' })}
+                  value={String(lastUpdateEvent?.status ?? t('settings.diagnostics.noRecord', { defaultValue: 'None' }))}
                   detail={formatDate(String(lastUpdateEvent?.at ?? ''))}
                 />
               </section>
@@ -154,16 +155,21 @@ const DiagnosticsSettings: React.FC = () => {
                 <div className='mb-12px flex flex-wrap items-center justify-between gap-10px'>
                   <div>
                     <div className='text-16px font-700 text-t-primary'>
-                      {t('settings.diagnostics.resources', { defaultValue: '资源完整性' })}
+                      {t('settings.diagnostics.resources', { defaultValue: 'Resource integrity' })}
                     </div>
                     <div className='mt-3px text-12px text-t-secondary'>
                       {requiredMissing.length > 0
                         ? t('settings.diagnostics.missingCount', {
                             count: requiredMissing.length,
-                            defaultValue: '缺失 {{count}} 个必要资源',
+                            defaultValue: '{{count}} required resources missing',
                           })
-                        : t('settings.diagnostics.allRequiredPresent', { defaultValue: '必要资源均存在' })}
-                      {optionalMissing.length > 0 ? ` · ${optionalMissing.length} optional missing` : ''}
+                        : t('settings.diagnostics.allRequiredPresent', { defaultValue: 'All required resources are present' })}
+                      {optionalMissing.length > 0
+                        ? ` · ${t('settings.diagnostics.optionalMissing', {
+                            count: optionalMissing.length,
+                            defaultValue: '{{count}} optional missing',
+                          })}`
+                        : ''}
                     </div>
                   </div>
                   <Button type='text' onClick={() => window.open(report.downloadUrl, '_blank', 'noopener,noreferrer')}>
@@ -176,7 +182,11 @@ const DiagnosticsSettings: React.FC = () => {
                       <div className='text-13px font-600 text-t-primary'>{item.label}</div>
                       <div>
                         <Tag size='small' color={getPathStatusTone(item)}>
-                          {item.exists ? item.kind : item.required ? 'missing' : 'optional'}
+                          {item.exists
+                            ? item.kind
+                            : item.required
+                              ? t('settings.diagnostics.missing', { defaultValue: 'missing' })
+                              : t('settings.diagnostics.optional', { defaultValue: 'optional' })}
                         </Tag>
                       </div>
                       <div className='min-w-0 break-all rounded-6px bg-1 px-8px py-5px font-mono text-12px text-t-secondary'>
@@ -191,7 +201,7 @@ const DiagnosticsSettings: React.FC = () => {
               </section>
 
               <section className='grid gap-12px md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]'>
-                <InfoPanel title={t('settings.diagnostics.paths', { defaultValue: '关键路径' })}>
+                <InfoPanel title={t('settings.diagnostics.paths', { defaultValue: 'Key paths' })}>
                   <KeyValueRows
                     rows={[
                       ['resourcesPath', report.paths.resourcesPath],
@@ -203,7 +213,7 @@ const DiagnosticsSettings: React.FC = () => {
                     ]}
                   />
                 </InfoPanel>
-                <InfoPanel title={t('settings.diagnostics.runtime', { defaultValue: '运行环境' })}>
+                <InfoPanel title={t('settings.diagnostics.runtime', { defaultValue: 'Runtime' })}>
                   <KeyValueRows
                     rows={[
                       ['Electron', report.versions.electron || '-'],
@@ -217,7 +227,7 @@ const DiagnosticsSettings: React.FC = () => {
               </section>
 
               <section className='grid gap-12px md:grid-cols-2'>
-                <InfoPanel title={t('settings.diagnostics.env', { defaultValue: '安全环境标记' })}>
+                <InfoPanel title={t('settings.diagnostics.env', { defaultValue: 'Safe environment flags' })}>
                   <div className='flex flex-col gap-7px'>
                     {report.env.map((item) => (
                       <div key={item.name} className='flex items-center justify-between gap-10px text-12px'>
@@ -229,20 +239,20 @@ const DiagnosticsSettings: React.FC = () => {
                     ))}
                   </div>
                 </InfoPanel>
-                <InfoPanel title={t('settings.diagnostics.startupFailure', { defaultValue: '启动失败记录' })}>
+                <InfoPanel title={t('settings.diagnostics.startupFailure', { defaultValue: 'Startup failure record' })}>
                   {report.backendStartupFailure ? (
                     <pre className='m-0 max-h-220px overflow-auto whitespace-pre-wrap break-all rounded-8px bg-1 p-10px text-12px leading-18px text-t-secondary'>
                       {JSON.stringify(report.backendStartupFailure, null, 2)}
                     </pre>
                   ) : (
                     <div className='text-13px text-t-secondary'>
-                      {t('settings.diagnostics.noStartupFailure', { defaultValue: '当前会话没有启动失败记录。' })}
+                      {t('settings.diagnostics.noStartupFailure', { defaultValue: 'No startup failure was recorded in this session.' })}
                     </div>
                   )}
                 </InfoPanel>
               </section>
 
-              <InfoPanel title={t('settings.diagnostics.raw', { defaultValue: '原始诊断信息' })}>
+              <InfoPanel title={t('settings.diagnostics.raw', { defaultValue: 'Raw diagnostics' })}>
                 <pre className='m-0 max-h-360px overflow-auto whitespace-pre-wrap break-all rounded-8px bg-1 p-12px text-12px leading-18px text-t-secondary'>
                   {reportText}
                 </pre>
