@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 import('../src/index.js').catch((err) => {
-  console.error('Failed to start deeporganiser-web:', err);
+  console.error('Failed to start openscience-web:', err);
   process.exit(1);
 });

@@ -107,9 +107,9 @@ const getFlag = (name: string): string | undefined => {
  *
  *   --data-dir <path>       CLI override (highest priority)
  *   $DEEPORGANISER_DATA_DIR env override (same effect)
- *   otherwise               ~/.deeporganiser-web         (production)
- *                           ~/.deeporganiser-web-dev     (dev, default)
- *                           ~/.deeporganiser-web-dev-2   (dev + multi instance)
+ *   otherwise               ~/.openscience-web         (production)
+ *                           ~/.openscience-web-dev     (dev, default)
+ *                           ~/.openscience-web-dev-2   (dev + multi instance)
  *
  * Why a dedicated `-web` name, not the same desktop data dir that Electron
  * uses: on macOS, Electron's getDataPath() (packages/desktop/src/process/utils/
@@ -120,7 +120,7 @@ const getFlag = (name: string): string | undefined => {
  * installed, its `ensureCliSafeSymlink` refuses to overwrite a real dir and
  * falls back to returning the space-containing path — and then every ACP
  * agent inside the desktop app starts failing on CLI commands. Using
- * `.deeporganiser-web` keeps standalone webui's data dir off of the path Electron's
+ * `.openscience-web` keeps standalone webui's data dir off of the path Electron's
  * symlink needs.
  *
  * If the user wants the two to share data they opt-in explicitly via
@@ -136,7 +136,7 @@ function resolveBackendDataDir(): string {
     return resolved;
   }
   const suffix = process.env.NODE_ENV === 'production' ? '' : readEnv('MULTI_INSTANCE') === '1' ? '-dev-2' : '-dev';
-  const dir = path.join(os.homedir(), `.deeporganiser-web${suffix}`);
+  const dir = path.join(os.homedir(), `.openscience-web${suffix}`);
   fs.mkdirSync(dir, { recursive: true });
   return dir;
 }

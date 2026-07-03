@@ -45,7 +45,7 @@ Standalone WebUI startup:
 
 1. `scripts/webui.ts` optionally runs `bun run package`, resolves renderer assets, resolves `deeporganiser-core`, chooses a data dir and port, then calls `startWebHost`.
 2. Default WebUI ports are dev `25809`, multi-instance dev `25810`, production `25808`.
-3. Default standalone data dirs are `~/.deeporganiser-web-dev`, `~/.deeporganiser-web-dev-2`, or `~/.deeporganiser-web`; they intentionally do not collide with Electron's default data dir.
+3. Default standalone data dirs are `~/.openscience-web-dev`, `~/.openscience-web-dev-2`, or `~/.openscience-web`; they intentionally do not collide with Electron's default data dir.
 4. `packages/web-host/src/static-server.ts` is a static server and reverse proxy only. Do not put business routes there.
 
 Backend spawning:
@@ -204,7 +204,7 @@ Important path behavior:
 
 - Electron data path is resolved by `getDataPath()` in `packages/desktop/src/process/utils/utils.ts`.
 - On macOS, Electron creates CLI-safe symlinks such as `~/.deeporganiser-dev` and `~/.deeporganiser-config-dev` to avoid spaces in `Application Support` paths breaking external CLIs.
-- Standalone WebUI intentionally defaults to `~/.deeporganiser-web-dev` so it does not pre-create or block Electron's symlink targets.
+- Standalone WebUI intentionally defaults to `~/.openscience-web-dev` so it does not pre-create or block Electron's symlink targets.
 - Legacy JSON/base64 file storage still exists in `packages/desktop/src/process/utils/initStorage.ts` for migration and some local config. New user-facing settings should normally go through backend `/api/settings/client`.
 - SQLite schema helpers and legacy migration code under `packages/desktop/src/process/services/database/` are not the full backend database implementation. Treat them as compatibility/migration support unless the code path proves otherwise.
 
@@ -383,7 +383,7 @@ curl -fsS 'http://127.0.0.1:25809/api/agents?include_disabled=true'
 When the WebUI was launched through this workspace during setup, it used:
 
 ```bash
-DEEPORGANISER_DATA_DIR="$HOME/.deeporganiser-web-dev-deeporganiser-git" DEEPORGANISER_OPEN_BROWSER=0 DEEPORGANISER_NO_BUILD=1 bun run webui -- --no-open --no-build
+DEEPORGANISER_DATA_DIR="$HOME/.openscience-web-dev" DEEPORGANISER_OPEN_BROWSER=0 DEEPORGANISER_NO_BUILD=1 bun run webui -- --no-open --no-build
 ```
 
 The launchd label used for that local service was `com.codex.deeporganiser.webui`; remove it with `launchctl remove com.codex.deeporganiser.webui` if you need to stop that background instance.

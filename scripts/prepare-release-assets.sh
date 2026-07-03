@@ -23,54 +23,26 @@ mkdir -p "$OUTPUT_DIR"
 # 1) Copy all distributables (unique file names)
 # ---------------------------------------------------------------------------
 echo "==> Copying distributables from $ARTIFACTS_DIR ..."
-mapfile -t DISTRIBUTABLES < <(find "$ARTIFACTS_DIR" -type f \( \
+DISTRIBUTABLES_FILE=$(mktemp)
+find "$ARTIFACTS_DIR" -type f \( \
   -name "*.exe" -o \
   -name "*.msi" -o \
   -name "*.dmg" -o \
   -name "*.deb" -o \
   -name "*.zip" \
-\) | sort)
+\) | sort > "$DISTRIBUTABLES_FILE"
 
-DUPLICATE_BASENAMES=$(for file in "${DISTRIBUTABLES[@]}"; do basename "$file"; done | sort | uniq -d || true)
+DUPLICATE_BASENAMES=$(while IFS= read -r file; do basename "$file"; done < "$DISTRIBUTABLES_FILE" | sort | uniq -d || true)
 if [ -n "$DUPLICATE_BASENAMES" ]; then
   echo "::error::Found duplicate distributable basenames that would be overwritten in flat output:"
   echo "$DUPLICATE_BASENAMES"
   exit 1
 fi
 
-for file in "${DISTRIBUTABLES[@]}"; do
+while IFS= read -r file; do
+  [ -n "$file" ] || continue
   cp -f "$file" "$OUTPUT_DIR/"
-done
-
-# ---------------------------------------------------------------------------
-# 1b) Copy web-cli tarballs (+ sha256 checksums)
-# ---------------------------------------------------------------------------
-echo "==> Copying web-cli tarballs from $ARTIFACTS_DIR ..."
-mapfile -t WEB_CLI_FILES < <(find "$ARTIFACTS_DIR" -type f \( \
-  -name "deeporganiser-web-*.tar.gz" -o \
-  -name "deeporganiser-web-*.tar.gz.sha256" \
-\) | sort)
-
-WEB_CLI_DUPS=$(for file in "${WEB_CLI_FILES[@]}"; do basename "$file"; done | sort | uniq -d || true)
-if [ -n "$WEB_CLI_DUPS" ]; then
-  echo "::error::Duplicate web-cli artifact basenames:"
-  echo "$WEB_CLI_DUPS"
-  exit 1
-fi
-
-for file in "${WEB_CLI_FILES[@]}"; do
-  cp -f "$file" "$OUTPUT_DIR/"
-done
-
-# ---------------------------------------------------------------------------
-# 1c) Copy install-web.sh (version-substituted)
-# ---------------------------------------------------------------------------
-echo "==> Copying install-web.sh ..."
-INSTALL_SCRIPT=$(find "$ARTIFACTS_DIR" -type f -name 'install-web.sh' | head -n 1 || true)
-if [ -n "$INSTALL_SCRIPT" ]; then
-  cp -f "$INSTALL_SCRIPT" "$OUTPUT_DIR/install-web.sh"
-  chmod +x "$OUTPUT_DIR/install-web.sh"
-fi
+done < "$DISTRIBUTABLES_FILE"
 
 # ---------------------------------------------------------------------------
 # 2) Collect updater metadata from each platform artifact directory
@@ -118,37 +90,6 @@ for required in latest.yml latest-mac.yml latest-linux.yml latest-linux-arm64.ym
     MISSING=1
   fi
 done
-
-# ---------------------------------------------------------------------------
-# 5b) Hard validation for web-cli release assets
-# ---------------------------------------------------------------------------
-echo "==> Validating web-cli assets ..."
-
-VERSION="${MOCK_VERSION:-$(node -p "require('./package.json').version")}"
-WEB_PLATFORMS=(
-  "darwin-arm64"
-  "darwin-x86_64"
-  "linux-arm64"
-  "linux-x86_64"
-  "win-x86_64"
-)
-
-for plat in "${WEB_PLATFORMS[@]}"; do
-  tarball="deeporganiser-web-${VERSION}-${plat}.tar.gz"
-  if [ ! -f "$OUTPUT_DIR/$tarball" ]; then
-    echo "::error::Missing web-cli tarball: $tarball"
-    MISSING=1
-  fi
-  if [ ! -f "$OUTPUT_DIR/${tarball}.sha256" ]; then
-    echo "::error::Missing web-cli checksum: ${tarball}.sha256"
-    MISSING=1
-  fi
-done
-
-if [ ! -f "$OUTPUT_DIR/install-web.sh" ]; then
-  echo "::error::Missing install-web.sh"
-  MISSING=1
-fi
 
 if [ "$MISSING" -ne 0 ]; then
   exit 1

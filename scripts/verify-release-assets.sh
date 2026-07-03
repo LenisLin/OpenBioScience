@@ -56,7 +56,7 @@ assert_metadata_points_to_existing_file "latest-mac.yml" "(mac-x64|darwin-x64|x6
 assert_metadata_points_to_existing_file "latest-linux.yml" "(linux|AppImage|deb)"
 assert_metadata_points_to_existing_file "latest-linux-arm64.yml" "(arm64|aarch64)"
 
-for f in latest-win-arm64.yml latest-arm64-mac.yml; do
+for f in latest-arm64-mac.yml; do
   if [ ! -f "$OUTPUT_DIR/$f" ]; then
     echo "FAIL: missing arch-specific updater metadata: $f"
     ERRORS=$((ERRORS + 1))
@@ -65,7 +65,7 @@ for f in latest-win-arm64.yml latest-arm64-mac.yml; do
   fi
 done
 
-for f in DeepOrganiser-1.0.0-win-x64.exe DeepOrganiser-1.0.0-win-arm64.exe DeepOrganiser-1.0.0-mac-x64.dmg DeepOrganiser-1.0.0-mac-arm64.dmg DeepOrganiser-1.0.0.deb DeepOrganiser-1.0.0-arm64.deb; do
+for f in OpenScience-1.0.0-win-x64.exe OpenScience-1.0.0-mac-x64.dmg OpenScience-1.0.0-mac-arm64.dmg OpenScience-1.0.0-linux-amd64.deb OpenScience-1.0.0-linux-arm64.deb; do
   if [ ! -f "$OUTPUT_DIR/$f" ]; then
     echo "FAIL: missing distributable: $f"
     ERRORS=$((ERRORS + 1))
@@ -73,26 +73,6 @@ for f in DeepOrganiser-1.0.0-win-x64.exe DeepOrganiser-1.0.0-win-arm64.exe DeepO
     echo "PASS: $f exists"
   fi
 done
-
-# Web-CLI tarballs + checksums
-for plat in darwin-arm64 darwin-x86_64 linux-arm64 linux-x86_64 win-x86_64; do
-  tarball="deeporganiser-web-1.0.0-${plat}.tar.gz"
-  for f in "$tarball" "${tarball}.sha256"; do
-    if [ ! -f "$OUTPUT_DIR/$f" ]; then
-      echo "FAIL: missing web-cli asset: $f"
-      ERRORS=$((ERRORS + 1))
-    else
-      echo "PASS: $f exists"
-    fi
-  done
-done
-
-if [ ! -f "$OUTPUT_DIR/install-web.sh" ]; then
-  echo "FAIL: missing install-web.sh"
-  ERRORS=$((ERRORS + 1))
-else
-  echo "PASS: install-web.sh exists"
-fi
 
 echo ""
 if [ "$ERRORS" -gt 0 ]; then

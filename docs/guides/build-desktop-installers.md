@@ -187,7 +187,7 @@ sudo apt-get install -y \
 1. 打开 GitHub Actions。
 2. 选择 `Manual Build`。
 3. 选择 branch。
-4. `platform` 可选 `macos-arm64`、`macos-x64`、`windows-x64`、`windows-arm64`、`linux-x64`、`linux-arm64` 或 `all`。
+4. `platform` 可选 `macos-arm64`、`macos-x64`、`windows-x64`、`linux-x64`、`linux-arm64` 或 `all`。
 5. 如果要临时使用某次 Core 构建，填写 `deeporganiser_core_run_id`。
 6. 运行 workflow，等待 artifacts 生成。
 
@@ -205,7 +205,6 @@ sudo apt-get install -y \
 push to dev
   -> code-quality
   -> build-pipeline
-  -> pack-web-cli
   -> create-tag
   -> create draft GitHub Release
 ```
@@ -213,8 +212,7 @@ push to dev
 其中：
 
 - `code-quality` 会运行 `bun install --frozen-lockfile`、`bun run lint`、`bun run format:check`、`bunx tsc --noEmit`、`bunx vitest run`。
-- `build-pipeline` 会构建 6 个桌面包：macOS arm64、macOS x64、Windows x64、Windows arm64、Linux x64、Linux arm64。
-- `pack-web-cli` 会同时打包 web-cli。
+- `build-pipeline` 会构建 5 个桌面包：macOS arm64、macOS x64、Windows x64、Linux x64、Linux arm64。
 - 构建成功后会自动创建一个 dev tag，格式类似 `v0.1.0-dev-<commit>`。
 - 最后会创建 GitHub Release，但当前配置是 `draft: true`，也就是草稿发布，不会立刻公开。
 - dev tag 自己不会再次触发完整构建，因为 workflow 显式排除了包含 `-dev-` 的 tag，避免重复构建。
@@ -234,7 +232,6 @@ git push origin v0.1.0
 push tag v0.1.0
   -> code-quality
   -> build-pipeline
-  -> pack-web-cli
   -> create draft GitHub Release
 ```
 
@@ -272,7 +269,7 @@ GitHub Actions -> Manual Build -> Run workflow
 - TypeScript type check
 - unit tests
 
-其中任一步失败，后续桌面打包和 web-cli 打包都不会继续。
+其中任一步失败，后续桌面打包都不会继续。
 
 ### OpenScience Core runtime 必须可下载
 

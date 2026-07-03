@@ -27,5 +27,5 @@ export async function ensureAdminPassword(
   _opts: EnsureAdminPasswordOptions,
   deps: EnsureAdminPasswordDeps
 ): Promise<void> {
-  deps.log('[deeporganiser-web] OpenScience WebUI uses no app-level login; open the URL directly.');
+  deps.log('[openscience-web] OpenScience WebUI uses no app-level login; open the URL directly.');
 }

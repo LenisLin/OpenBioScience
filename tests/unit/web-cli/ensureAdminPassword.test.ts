@@ -35,7 +35,7 @@ describe('ensureAdminPassword', () => {
     expect(deps.warn).not.toHaveBeenCalled();
     expect(deps.sleep).not.toHaveBeenCalled();
     expect(logs).toEqual([
-      '[deeporganiser-web] OpenScience WebUI uses no app-level login; open the URL directly.',
+      '[openscience-web] OpenScience WebUI uses no app-level login; open the URL directly.',
     ]);
   });
 });

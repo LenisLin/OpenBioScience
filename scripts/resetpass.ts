@@ -77,7 +77,7 @@ function resolveWorkDir(): string {
     return resolved;
   }
   const suffix = process.env.NODE_ENV === 'production' ? '' : readEnv('MULTI_INSTANCE') === '1' ? '-dev-2' : '-dev';
-  const dir = path.join(os.homedir(), `.deeporganiser-web${suffix}`);
+  const dir = path.join(os.homedir(), `.openscience-web${suffix}`);
   fs.mkdirSync(dir, { recursive: true });
   return dir;
 }

@@ -6,9 +6,8 @@
  *   2. "deepOrganiserCoreVersion" field in repo-root package.json (the pin)
  *   3. 'latest' (GitHub API releases/latest; non-reproducible fallback)
  *
- * Keep this file tiny and dependency-free — it's required from both
- * scripts/prepareDeepOrganiserCore.js and scripts/pack-web-cli.js before
- * any project-level install has necessarily completed.
+ * Keep this file tiny and dependency-free — packaging may call it before any
+ * project-level install has necessarily completed.
  */
 
 const fs = require('fs');
