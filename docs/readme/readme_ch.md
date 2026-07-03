@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../../server/DeepOrganiserServer/public/openscience-wordmark.png" alt="OpenScience" width="360" />
+  <img src="../../packages/desktop/src/renderer/assets/openscience-wordmark.png" alt="OpenScience" width="360" />
 </p>
 
 <p align="center">
