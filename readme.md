@@ -105,27 +105,57 @@ A quick look at the OpenScience experience: start from **Research Projects**, mo
 
 ### Result studio — many scientific outputs in one project
 
-Inside a research project, the same conversation can produce multiple result types:
+Inside a research project, the same conversation can produce multiple result types and keep the work as a reusable, traceable research record:
 
 <table>
 <tr>
 <td width="50%" valign="top">
-<img src="./resources/readme/science-output-workspace.png" alt="OpenScience science output workspace" /><br/>
-<sub><b>Figures and tables</b> — regenerate plots from code, keep input files attached, and export PNG, SVG, PDF, CSV, XLSX, or Markdown.</sub>
+<img src="./resources/readme/xhs/xhs-01.png" alt="OpenScience open-source Claude Science cover" /><br/>
+<sub><b>Open-source Claude Science</b> — local-first research workflows with evidence, files, and reproducible outputs.</sub>
 </td>
 <td width="50%" valign="top">
-<img src="./resources/readme/medical-evidence-report.png" alt="OpenScience evidence report" /><br/>
-<sub><b>Evidence reports</b> — connect findings to readable source labels, study design, confidence, conflicts, limitations, and final recommendations.</sub>
+<img src="./resources/readme/xhs/xhs-02.png" alt="OpenScience research project entry" /><br/>
+<sub><b>Research projects</b> — start from a project, not a disposable chat, so files, runs, and results stay together.</sub>
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<img src="./resources/file_generation_preview.png" alt="OpenScience file generation preview" /><br/>
-<sub><b>Manuscripts and documents</b> — export Markdown, Word, PDF, LaTeX-oriented drafts, notebooks, spreadsheets, and presentation-ready materials.</sub>
+<img src="./resources/readme/xhs/xhs-03.png" alt="OpenScience four research modes" /><br/>
+<sub><b>Four work modes</b> — science research, medical evidence, knowledge distillation, and long-horizon goals.</sub>
 </td>
 <td width="50%" valign="top">
-<img src="./resources/readme/research-protocol-panel.png" alt="OpenScience research protocol panel" /><br/>
-<sub><b>Reusable research routines</b> — keep repeatable protocols for literature review, evidence review, data analysis, figure polish, reviewer checks, and manuscript drafting.</sub>
+<img src="./resources/readme/xhs/xhs-04.png" alt="OpenScience medical evidence mode" /><br/>
+<sub><b>Medical evidence</b> — organize clinical answers around citations, evidence boundaries, and traceable references.</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="./resources/readme/xhs/xhs-05.png" alt="OpenScience goal mode" /><br/>
+<sub><b>Goal mode</b> — sustain long-running research goals with progress, blockers, decisions, and next actions.</sub>
+</td>
+<td width="50%" valign="top">
+<img src="./resources/readme/xhs/xhs-06.png" alt="OpenScience knowledge distillation mode" /><br/>
+<sub><b>Knowledge distillation</b> — turn successful conversations and SOPs into reusable skills that help the agent learn your workflow.</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="./resources/readme/xhs/xhs-07.png" alt="OpenScience artifact as research object" /><br/>
+<sub><b>Science artifacts</b> — outputs are not attachments; they keep previews, code, inputs, logs, versions, and export paths.</sub>
+</td>
+<td width="50%" valign="top">
+<img src="./resources/readme/xhs/xhs-08.png" alt="OpenScience result studio workflow" /><br/>
+<sub><b>Result studio</b> — conversations, files, reports, and evidence chains land in one Science artifact.</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="./resources/readme/xhs/xhs-09.png" alt="OpenScience GitHub and website QR code" /><br/>
+<sub><b>Open project</b> — visit OpenScience.cc or GitHub ResearAI/OpenScience to try, star, and contribute.</sub>
+</td>
+<td width="50%" valign="top">
+<img src="./resources/readme/xhs/contact-sheet.png" alt="OpenScience Xiaohongshu poster overview" /><br/>
+<sub><b>Full walkthrough</b> — the complete launch-note poster set in one overview.</sub>
 </td>
 </tr>
 </table>
