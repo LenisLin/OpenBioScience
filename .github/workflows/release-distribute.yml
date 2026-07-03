@@ -58,13 +58,36 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Tag: $TAG / Version: $VERSION"
 
+      - name: Check distribution configuration
+        id: distribution_config
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+        run: |
+          set -euo pipefail
+
+          missing=()
+          [ -z "$AWS_REGION" ] && missing+=("AWS_REGION")
+          [ -z "$AWS_ROLE_ARN" ] && missing+=("AWS_ROLE_ARN")
+          [ -z "$AWS_S3_BUCKET" ] && missing+=("AWS_S3_BUCKET")
+
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping external asset distribution; missing repository secrets: ${missing[*]}"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Configure AWS credentials (OIDC)
+        if: steps.distribution_config.outputs.configured == 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Guard against same-version overwrite
+        if: steps.distribution_config.outputs.configured == 'true'
         env:
           S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           VERSION: ${{ steps.version.outputs.version }}
@@ -87,6 +110,7 @@ jobs:
           fi
 
       - name: Download release assets from GitHub
+        if: steps.distribution_config.outputs.configured == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -106,6 +130,7 @@ jobs:
           ls -la dist
 
       - name: Validate updater metadata
+        if: steps.distribution_config.outputs.configured == 'true'
         id: metadata
         env:
           VERSION: ${{ steps.version.outputs.version }}
@@ -143,6 +168,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Upload assets
+        if: steps.distribution_config.outputs.configured == 'true'
         env:
           S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           VERSION: ${{ steps.version.outputs.version }}
@@ -154,6 +180,7 @@ jobs:
           echo "Uploaded release ${VERSION}"
 
       - name: Upload updater metadata
+        if: steps.distribution_config.outputs.configured == 'true'
         env:
           S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
         run: |
@@ -168,6 +195,7 @@ jobs:
           echo "Uploaded updater metadata"
 
       - name: Summary
+        if: steps.distribution_config.outputs.configured == 'true'
         env:
           VERSION: ${{ steps.version.outputs.version }}
           TAG: ${{ steps.version.outputs.tag }}
@@ -186,3 +214,19 @@ jobs:
               [ -n "$file" ] && echo "- \`${S3_RELEASE_PREFIX}/$file\`"
             done <<< "$FILES"
           } >> $GITHUB_STEP_SUMMARY
+
+      - name: Summary (distribution skipped)
+        if: steps.distribution_config.outputs.configured != 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          {
+            echo "### Release asset distribution skipped"
+            echo ""
+            echo "- Tag: \`${TAG}\`"
+            echo "- Version: \`${VERSION}\`"
+            echo "- Reason: external S3 distribution secrets are not configured."
+            echo ""
+            echo "GitHub Release assets remain available from the release page."
+          } >> "$GITHUB_STEP_SUMMARY"
