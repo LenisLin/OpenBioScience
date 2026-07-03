@@ -437,15 +437,12 @@
             <div class="feature-keywords" data-keywords="systems.memory.keywords" aria-label="Feature keywords"></div>
           </div>
           <div class="research-panel__visual" data-reveal>
-            <div class="system-window system-window--project spotlight-surface" data-spotlight-card>
-              <div class="visual-toolbar"><b>Research project</b><span>artifact history</span></div>
-              <div class="system-project-board">
-                <article><img class="system-project-icon" src="icons/openscience-site/local-data.png" alt="" loading="lazy" decoding="async" /><span>data</span><strong>experiment_matrix.csv</strong><em>versioned</em></article>
-                <article><img class="system-project-icon" src="icons/openscience-site/code-run.png" alt="" loading="lazy" decoding="async" /><span>code</span><strong>analysis.py · commit 48c2</strong><em>re-runnable</em></article>
-                <article><img class="system-project-icon" src="icons/openscience-site/figure-output.png" alt="" loading="lazy" decoding="async" /><span>figure</span><strong>figure_3.svg · v4</strong><em>publication-ready</em></article>
-                <article><img class="system-project-icon" src="icons/openscience-site/literature-synthesis.png" alt="" loading="lazy" decoding="async" /><span>draft</span><strong>methods_section.md</strong><em>reviewable</em></article>
-              </div>
-            </div>
+            <figure class="artifact-history-visual spotlight-surface" data-spotlight-card aria-label="Research artifact history visual">
+              <picture>
+                <source srcset="assets/generated/artifact-history-provenance-4k-web.webp" type="image/webp" />
+                <img src="assets/generated/artifact-history-provenance-4k-web.png" alt="" loading="lazy" decoding="async" />
+              </picture>
+            </figure>
           </div>
         </article>
 
@@ -559,6 +556,25 @@
             <strong>Manuscript revision</strong>
             <p>Track claims, corrections, figures, and decisions.</p>
           </article>
+        </div>
+      </section>
+
+      <section class="capability-swap-section" aria-labelledby="capabilitySwapTitle">
+        <div class="capability-swap-copy" data-reveal>
+          <p class="section-kicker" data-i18n="capabilitySwap.kicker">CAPABILITY STACK</p>
+          <h2 id="capabilitySwapTitle" data-i18n="capabilitySwap.title">Research work, organized as artifacts.</h2>
+          <p data-i18n="capabilitySwap.subtitle">
+            Evidence, code, figures, notes, and manuscripts stay in one project record.
+          </p>
+          <div class="capability-swap-current" aria-live="polite">
+            <span id="capabilitySwapIndex">01</span>
+            <strong id="capabilitySwapLabel">Evidence</strong>
+          </div>
+          <div class="capability-swap-dots" id="capabilitySwapDots" aria-label="Capability cards"></div>
+        </div>
+
+        <div class="capability-swap-stage spotlight-surface" data-reveal data-spotlight-card id="capabilitySwap" aria-label="OpenScience capability animation">
+          <div class="capability-swap-cards" id="capabilitySwapCards"></div>
         </div>
       </section>
 

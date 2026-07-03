@@ -153,6 +153,23 @@
     "vendorAutoEmpiricalDesc": "Used as the social-science and empirical-research pool: econometrics, causal inference, replication packages, citation checks, survey codebooks, qualitative analysis, and AER-style paper workflows.",
     "vendorNatureSkillsDesc": "Used as the Nature-style delivery pool: paper reading, manuscript writing, figures, citations, data availability, reviewer response, PPT, and patent-oriented drafting with restricted execution where needed."
   },
+  "betaTesting": {
+    "title": "Beta Testing",
+    "description": "Experimental OpenScience capabilities live here while they are being refined. Once enabled, their entries appear in settings, the new conversation + menu, and the conversation workspace.",
+    "enabledHint": "Beta Testing is enabled. Experimental features are available, but it is best to validate them on a small project first.",
+    "disabledHint": "Beta Testing is off by default. Experimental entries stay hidden and regular conversations are unchanged.",
+    "leaderAgentTitle": "Leader Agent",
+    "leaderAgentDesc": "Bring Lark / Feishu tasklists back into OpenScience: the leader Agent first aligns goals, members, milestones, and boundaries with you, then injects project context into a new conversation and keeps the tasklist visible in the conversation workspace.",
+    "experimental": "Experimental",
+    "projectAgentRuntime": "Project Agent service",
+    "larkAutomationRuntime": "Lark automation",
+    "openProjects": "Open Leader Agent",
+    "openAutomationSettings": "Configure Lark automation",
+    "statusReady": "Ready",
+    "statusNeedsSetup": "Needs setup",
+    "statusError": "Error",
+    "statusChecking": "Checking"
+  },
   "skillsHub": {
     "title": "Skills Hub",
     "description": "Centrally manage AI agent skills. Install once, use across all assistants.",
@@ -810,6 +827,8 @@
   "aboutVersion": "Version {{version}}",
   "aboutBadgeLocalFirst": "Local analysis",
   "aboutBadgeOpenSource": "Evidence-backed",
+  "aboutPartnerTitle": "Partner Institutions",
+  "aboutPartnerDesc": "OpenScience is advanced by the research community and partner institutions.",
   "aboutHighlightLocalFirstTitle": "Evidence Search",
   "aboutHighlightLocalFirstDesc": "Search papers, regulatory documents, clinical trials, and research abstracts, then keep each claim tied to its source.",
   "aboutHighlightResearchLoopTitle": "Real Analysis",

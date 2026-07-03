@@ -1,5 +1,6 @@
 import type { AcpInitializeResult, AcpSessionConfigOption, AcpSessionModes } from '@/common/types/platform/acpTypes';
 import type { SpeechToTextConfig } from '@/common/types/provider/speech';
+import type { BetaTestingConfig } from '@/common/config/betaTesting';
 import type {
   ICssTheme,
   IMcpServer,
@@ -59,6 +60,7 @@ export type ConfigKeyMap = {
   'tools.scienceArtifact': ScienceArtifactConfig | undefined;
   'tools.compute': ComputeConfig | undefined;
   'tools.speechToText': SpeechToTextConfig | undefined;
+  'features.betaTesting': BetaTestingConfig | undefined;
   'workspace.pasteConfirm': boolean | undefined;
   'upload.saveToWorkspace': boolean | undefined;
   'guid.lastSelectedAgent': string | undefined;
@@ -67,6 +69,9 @@ export type ConfigKeyMap = {
   'system.cronNotificationEnabled': boolean | undefined;
   'system.keepAwake': boolean | undefined;
   'system.autoPreviewOfficeFiles': boolean | undefined;
+  'telemetry.updateEnabled': boolean | undefined;
+  'telemetry.usageEnabled': boolean | undefined;
+  'telemetry.diagnosticsEnabled': boolean | undefined;
   'assistant.telegram.defaultModel': { id: string; use_model: string } | undefined;
   'assistant.telegram.agent':
     | { agent_type: string; backend?: string; id?: string; custom_agent_id?: string; name?: string }

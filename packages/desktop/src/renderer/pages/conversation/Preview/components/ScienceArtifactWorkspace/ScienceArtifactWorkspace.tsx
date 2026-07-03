@@ -11,13 +11,15 @@ import type {
   SciencePanelData,
 } from '@/common/chat/science';
 import { ipcBridge } from '@/common';
-import { ArrowLeft } from '@icon-park/react';
+import { Dropdown, Menu, Modal } from '@arco-design/web-react';
+import { ArrowLeft, MoreOne } from '@icon-park/react';
 import { usePreviewContext, type PreviewTab } from '../../context/PreviewContext';
 import OpenScienceIcon, { type OpenScienceIconName } from '@/renderer/components/icons/OpenScienceIcon';
 import CodeEditor from '../editors/CodeEditor';
 import PDFPreview from '../viewers/PDFViewer';
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { uploadFileViaHttp } from '@/renderer/services/FileService';
 import './science-artifact-workspace.css';
 
 const TAB_LABELS: Record<ScienceArtifactInspectorTab, string> = {
@@ -116,6 +118,19 @@ const inspectorTabsForArtifact = (artifact: ScienceArtifact): ScienceArtifactIns
   return artifact.reviewStatus && artifact.reviewStatus !== 'not_reviewed' ? [...DEFAULT_TABS, 'review'] : DEFAULT_TABS;
 };
 
+const initialInspectorTab = (
+  artifact: ScienceArtifact,
+  availableTabs: ScienceArtifactInspectorTab[],
+  variant: 'inline' | 'modal'
+): ScienceArtifactInspectorTab | null => {
+  if (variant === 'modal') return 'overview';
+  return artifact.defaultInspectorTab &&
+    artifact.defaultInspectorTab !== 'overview' &&
+    availableTabs.includes(artifact.defaultInspectorTab)
+    ? artifact.defaultInspectorTab
+    : null;
+};
+
 const getArtifactPdfPath = (artifact?: ScienceArtifact): string | undefined =>
   artifact?.outputPaths?.find(isPdfPath) ||
   (isPdfPath(artifact?.previewPath) ? artifact?.previewPath : undefined) ||
@@ -142,18 +157,167 @@ type AnnotationRect = {
   height: number;
 };
 
+type ImageAnnotationRect = AnnotationRect & {
+  pixelX: number;
+  pixelY: number;
+  pixelWidth: number;
+  pixelHeight: number;
+  naturalWidth: number;
+  naturalHeight: number;
+};
+
+type RenderedImageBox = {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  naturalWidth: number;
+  naturalHeight: number;
+};
+
+const clamp = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
+
+const formatNormalizedRect = (rect: AnnotationRect): string =>
+  `normalized(x=${rect.x.toFixed(4)}, y=${rect.y.toFixed(4)}, w=${rect.width.toFixed(4)}, h=${rect.height.toFixed(4)})`;
+
+const formatImageRect = (rect: ImageAnnotationRect): string =>
+  [
+    formatNormalizedRect(rect),
+    `pixels(x=${rect.pixelX}, y=${rect.pixelY}, w=${rect.pixelWidth}, h=${rect.pixelHeight})`,
+    `naturalSize=${rect.naturalWidth}x${rect.naturalHeight}`,
+  ].join(', ');
+
+const sanitizeFileSegment = (value?: string): string => {
+  const label = pathLabel(value) || 'annotation';
+  return (
+    label
+      .replace(/[^\w.-]+/gu, '_')
+      .replace(/^_+|_+$/gu, '')
+      .slice(0, 72) || 'annotation'
+  );
+};
+
+const findRenderedImage = (surface: HTMLDivElement | null): HTMLImageElement | null =>
+  surface?.closest('.science-preview-surface')?.querySelector('img') || null;
+
+const getRenderedImageBox = (image: HTMLImageElement): RenderedImageBox | null => {
+  const elementRect = image.getBoundingClientRect();
+  const naturalWidth = image.naturalWidth;
+  const naturalHeight = image.naturalHeight;
+  if (elementRect.width <= 0 || elementRect.height <= 0 || naturalWidth <= 0 || naturalHeight <= 0) return null;
+
+  const renderedScale = Math.min(elementRect.width / naturalWidth, elementRect.height / naturalHeight);
+  const renderedWidth = naturalWidth * renderedScale;
+  const renderedHeight = naturalHeight * renderedScale;
+  return {
+    left: elementRect.left + (elementRect.width - renderedWidth) / 2,
+    top: elementRect.top + (elementRect.height - renderedHeight) / 2,
+    width: renderedWidth,
+    height: renderedHeight,
+    naturalWidth,
+    naturalHeight,
+  };
+};
+
+const imageRectFromSurfaceRect = (
+  surfaceRect: AnnotationRect,
+  surfaceBounds: DOMRect,
+  imageBox: RenderedImageBox
+): ImageAnnotationRect | null => {
+  const absoluteLeft = surfaceBounds.left + surfaceRect.x * surfaceBounds.width;
+  const absoluteTop = surfaceBounds.top + surfaceRect.y * surfaceBounds.height;
+  const absoluteRight = absoluteLeft + surfaceRect.width * surfaceBounds.width;
+  const absoluteBottom = absoluteTop + surfaceRect.height * surfaceBounds.height;
+
+  const clippedLeft = clamp(absoluteLeft, imageBox.left, imageBox.left + imageBox.width);
+  const clippedTop = clamp(absoluteTop, imageBox.top, imageBox.top + imageBox.height);
+  const clippedRight = clamp(absoluteRight, imageBox.left, imageBox.left + imageBox.width);
+  const clippedBottom = clamp(absoluteBottom, imageBox.top, imageBox.top + imageBox.height);
+  if (clippedRight - clippedLeft < 2 || clippedBottom - clippedTop < 2) return null;
+
+  const x = clamp((clippedLeft - imageBox.left) / imageBox.width, 0, 1);
+  const y = clamp((clippedTop - imageBox.top) / imageBox.height, 0, 1);
+  const width = clamp((clippedRight - clippedLeft) / imageBox.width, 0, 1 - x);
+  const height = clamp((clippedBottom - clippedTop) / imageBox.height, 0, 1 - y);
+  const pixelX = clamp(Math.floor(x * imageBox.naturalWidth), 0, imageBox.naturalWidth - 1);
+  const pixelY = clamp(Math.floor(y * imageBox.naturalHeight), 0, imageBox.naturalHeight - 1);
+  const pixelRight = clamp(Math.ceil((x + width) * imageBox.naturalWidth), pixelX + 1, imageBox.naturalWidth);
+  const pixelBottom = clamp(Math.ceil((y + height) * imageBox.naturalHeight), pixelY + 1, imageBox.naturalHeight);
+
+  return {
+    x,
+    y,
+    width,
+    height,
+    pixelX,
+    pixelY,
+    pixelWidth: pixelRight - pixelX,
+    pixelHeight: pixelBottom - pixelY,
+    naturalWidth: imageBox.naturalWidth,
+    naturalHeight: imageBox.naturalHeight,
+  };
+};
+
+const canvasToPngBlob = (canvas: HTMLCanvasElement): Promise<Blob> =>
+  new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+      } else {
+        reject(new Error('Failed to create the annotated PNG.'));
+      }
+    }, 'image/png');
+  });
+
+const makeAnnotatedImage = async (image: HTMLImageElement, imageRect: ImageAnnotationRect): Promise<Blob> => {
+  if (!image.complete) {
+    await image.decode().catch((): undefined => undefined);
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = imageRect.naturalWidth;
+  canvas.height = imageRect.naturalHeight;
+  const context = canvas.getContext('2d');
+  if (!context) throw new Error('Canvas is unavailable in this preview.');
+
+  context.drawImage(image, 0, 0, imageRect.naturalWidth, imageRect.naturalHeight);
+  const redWidth = Math.max(8, Math.round(Math.min(imageRect.naturalWidth, imageRect.naturalHeight) * 0.012));
+  const haloWidth = redWidth + Math.max(3, Math.round(redWidth * 0.45));
+  const inset = redWidth / 2;
+  const x = clamp(imageRect.pixelX + inset, inset, imageRect.naturalWidth - inset);
+  const y = clamp(imageRect.pixelY + inset, inset, imageRect.naturalHeight - inset);
+  const width = Math.max(1, Math.min(imageRect.pixelWidth - redWidth, imageRect.naturalWidth - x - inset));
+  const height = Math.max(1, Math.min(imageRect.pixelHeight - redWidth, imageRect.naturalHeight - y - inset));
+
+  context.lineJoin = 'round';
+  context.lineCap = 'round';
+  context.strokeStyle = 'rgba(255, 255, 255, 0.92)';
+  context.lineWidth = haloWidth;
+  context.strokeRect(x, y, width, height);
+  context.strokeStyle = '#e11919';
+  context.lineWidth = redWidth;
+  context.strokeRect(x, y, width, height);
+
+  return canvasToPngBlob(canvas);
+};
+
 const AnnotationOverlay: React.FC<{
   artifact: ScienceArtifact;
   children: React.ReactNode;
+  conversationId?: string;
   filePath?: string;
   enabled: boolean;
-}> = ({ artifact, children, filePath, enabled }) => {
+  projectRoot?: string;
+  runId?: string;
+}> = ({ artifact, children, conversationId, filePath, enabled, projectRoot, runId }) => {
   const { addToSendBox } = usePreviewContext();
   const surfaceRef = useRef<HTMLDivElement>(null);
   const [annotating, setAnnotating] = useState(false);
   const [draftRect, setDraftRect] = useState<AnnotationRect | null>(null);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const pointFromEvent = useCallback((event: React.PointerEvent): { x: number; y: number } | null => {
     const rect = surfaceRef.current?.getBoundingClientRect();
@@ -165,18 +329,20 @@ const AnnotationOverlay: React.FC<{
 
   const handlePointerDown = useCallback(
     (event: React.PointerEvent) => {
+      if (submitting) return;
       const point = pointFromEvent(event);
       if (!point) return;
+      setSubmitError(null);
       setDragStart(point);
       setDraftRect({ x: point.x, y: point.y, width: 0.001, height: 0.001 });
       event.currentTarget.setPointerCapture(event.pointerId);
     },
-    [pointFromEvent]
+    [pointFromEvent, submitting]
   );
 
   const handlePointerMove = useCallback(
     (event: React.PointerEvent) => {
-      if (!dragStart) return;
+      if (!dragStart || submitting) return;
       const point = pointFromEvent(event);
       if (!point) return;
       setDraftRect({
@@ -186,7 +352,7 @@ const AnnotationOverlay: React.FC<{
         height: Math.max(0.001, Math.abs(point.y - dragStart.y)),
       });
     },
-    [dragStart, pointFromEvent]
+    [dragStart, pointFromEvent, submitting]
   );
 
   const handlePointerUp = useCallback((event: React.PointerEvent) => {
@@ -194,22 +360,57 @@ const AnnotationOverlay: React.FC<{
     event.currentTarget.releasePointerCapture(event.pointerId);
   }, []);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (!draftRect || !comment.trim()) return;
-    const prompt = [
-      '请根据这个科学研究 artifact 批注修改结果。',
-      '不要只编辑图片表面；优先回到生成该 artifact 的代码、LaTeX、Markdown 或 notebook 中修改，并重新运行生成新版本。',
-      `artifactId=${artifact.id}`,
-      `version=${artifact.version}`,
-      `file=${filePath || artifact.primaryPath || artifact.previewPath || ''}`,
-      `region=normalized(x=${draftRect.x.toFixed(4)}, y=${draftRect.y.toFixed(4)}, w=${draftRect.width.toFixed(4)}, h=${draftRect.height.toFixed(4)})`,
-      `comment=${comment.trim()}`,
-      '完成后请发布新版本，并保留旧版本的 source trail、输入、代码和运行记录。',
-    ].join('\n');
-    addToSendBox(prompt);
-    setComment('');
-    setAnnotating(false);
-  }, [addToSendBox, artifact, comment, draftRect, filePath]);
+    const surface = surfaceRef.current;
+    const image = findRenderedImage(surface);
+    const surfaceBounds = surface?.getBoundingClientRect();
+    const imageBox = image ? getRenderedImageBox(image) : null;
+    const imageRect = surfaceBounds && imageBox ? imageRectFromSurfaceRect(draftRect, surfaceBounds, imageBox) : null;
+
+    if (!image || !surfaceBounds || !imageBox || !imageRect) {
+      setSubmitError('Please draw the box on the visible image area.');
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const blob = await makeAnnotatedImage(image, imageRect);
+      const baseName = sanitizeFileSegment(filePath || artifact.primaryPath || artifact.previewPath || artifact.id);
+      const fileName = `${baseName.replace(/\.[^.]+$/u, '')}-annotation-v${artifact.version}-${Date.now()}.png`;
+      const annotatedImagePath = await uploadFileViaHttp(
+        new File([blob], fileName, { type: 'image/png' }),
+        conversationId,
+        undefined,
+        fileName
+      );
+      const prompt = [
+        '请根据这个 Science artifact 图片批注修改结果。',
+        '请先调用 science_artifact(action="annotate") 登记这条用户批注；region 使用下面的 imageRegion，metadata 里记录 annotatedImagePath、surfaceRegion、pixelRegion 和 comment。',
+        '不要只编辑这张标注图；请优先回到生成该 artifact 的代码、LaTeX、Markdown 或 notebook 中修改，并重新运行生成新版本。',
+        projectRoot ? `projectRoot=${projectRoot}` : 'projectRoot=not_recorded',
+        runId ? `runId=${runId}` : 'runId=not_recorded',
+        `artifactId=${artifact.id}`,
+        `version=${artifact.version}`,
+        `file=${filePath || artifact.primaryPath || artifact.previewPath || ''}`,
+        `annotatedImagePath=${annotatedImagePath}`,
+        `surfaceRegion=${formatNormalizedRect(draftRect)}`,
+        `imageRegion=${formatImageRect(imageRect)}`,
+        `comment=${comment.trim()}`,
+        '完成后请发布新版本，并保留旧版本的 source trail、输入、代码、运行记录和这张批注截图。',
+      ].join('\n');
+      addToSendBox(prompt);
+      setComment('');
+      setDraftRect(null);
+      setDragStart(null);
+      setAnnotating(false);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setSubmitting(false);
+    }
+  }, [addToSendBox, artifact, comment, conversationId, draftRect, filePath, projectRoot, runId]);
 
   const handleToggle = useCallback(() => {
     setAnnotating((value) => {
@@ -218,6 +419,7 @@ const AnnotationOverlay: React.FC<{
         setDraftRect(null);
         setDragStart(null);
         setComment('');
+        setSubmitError(null);
       }
       return next;
     });
@@ -261,11 +463,13 @@ const AnnotationOverlay: React.FC<{
             <input
               value={comment}
               placeholder='Describe what should change...'
+              disabled={submitting}
               onChange={(event) => setComment(event.target.value)}
             />
-            <button type='button' disabled={!draftRect || !comment.trim()} onClick={handleSubmit}>
-              Send
+            <button type='button' disabled={!draftRect || !comment.trim() || submitting} onClick={handleSubmit}>
+              {submitting ? 'Sending...' : 'Send'}
             </button>
+            {submitError ? <p className='science-preview-annotation-layer__error'>{submitError}</p> : null}
           </div>
         </div>
       ) : null}
@@ -412,14 +616,11 @@ const InspectorPane: React.FC<{
   reportTitle?: string;
   projectRoot?: string;
   gitRef?: SciencePanelData['git'];
-}> = ({ artifact, evidenceById, onOpenFile, onOpenFiles, reportTitle, projectRoot, gitRef }) => {
+  variant?: 'inline' | 'modal';
+}> = ({ artifact, evidenceById, onOpenFile, onOpenFiles, reportTitle, projectRoot, gitRef, variant = 'inline' }) => {
   const availableTabs = inspectorTabsForArtifact(artifact);
-  const [activeTab, setActiveTab] = useState<ScienceArtifactInspectorTab | null>(
-    artifact.defaultInspectorTab &&
-      artifact.defaultInspectorTab !== 'overview' &&
-      availableTabs.includes(artifact.defaultInspectorTab)
-      ? artifact.defaultInspectorTab
-      : null
+  const [activeTab, setActiveTab] = useState<ScienceArtifactInspectorTab | null>(() =>
+    initialInspectorTab(artifact, availableTabs, variant)
   );
   const [historyState, setHistoryState] = useState<{
     loading: boolean;
@@ -434,14 +635,8 @@ const InspectorPane: React.FC<{
   }>({ loading: false, items: [] });
   useEffect(() => {
     const nextTabs = inspectorTabsForArtifact(artifact);
-    setActiveTab(
-      artifact.defaultInspectorTab &&
-        artifact.defaultInspectorTab !== 'overview' &&
-        nextTabs.includes(artifact.defaultInspectorTab)
-        ? artifact.defaultInspectorTab
-        : null
-    );
-  }, [artifact.id, artifact.version]);
+    setActiveTab(initialInspectorTab(artifact, nextTabs, variant));
+  }, [artifact.id, artifact.version, variant]);
 
   useEffect(() => {
     if (activeTab !== 'history' || !projectRoot) return;
@@ -506,6 +701,12 @@ const InspectorPane: React.FC<{
       ? `${currentGit.repoPath.replace(/\/$/u, '')}/${currentGit.snapshotPath.replace(/^\/|\/$/gu, '')}/panel.json`
       : undefined;
   const artifactPath = getArtifactPath(artifact);
+  const openResolvedFile = useCallback(
+    (path?: string) => {
+      if (path) onOpenFile(path);
+    },
+    [onOpenFile]
+  );
   const relatedMessagesCount = (artifact.relatedMessageIds || []).length + (artifact.relatedToolCallIds || []).length;
   const detailItems: Array<{
     tab: ScienceArtifactInspectorTab;
@@ -627,7 +828,7 @@ const InspectorPane: React.FC<{
             <button
               type='button'
               disabled={!artifact.primaryPath}
-              onClick={() => artifact.primaryPath && onOpenFile(artifact.primaryPath)}
+              onClick={() => openResolvedFile(artifact.primaryPath)}
             >
               {pathLabel(artifact.primaryPath) || 'none'}
             </button>
@@ -639,7 +840,7 @@ const InspectorPane: React.FC<{
                     key={evidence.id}
                     type='button'
                     disabled={!evidence.path}
-                    onClick={() => evidence.path && onOpenFile(evidence.path)}
+                    onClick={() => openResolvedFile(evidence.path)}
                     title={evidence.summary || evidence.title}
                   >
                     {evidence.id}
@@ -661,7 +862,7 @@ const InspectorPane: React.FC<{
                     <span>{evidenceById.get(input.evidenceId)?.title || input.evidenceId}</span>
                   ) : null}
                   {input.path ? (
-                    <button type='button' onClick={() => onOpenFile(input.path!)}>
+                    <button type='button' onClick={() => openResolvedFile(input.path)}>
                       Open
                     </button>
                   ) : null}
@@ -677,7 +878,7 @@ const InspectorPane: React.FC<{
             <div>
               <span>{artifact.code?.language || 'code'}</span>
               {artifact.code?.path ? (
-                <button type='button' onClick={() => onOpenFile(artifact.code!.path!)}>
+                <button type='button' onClick={() => openResolvedFile(artifact.code?.path)}>
                   {pathLabel(artifact.code.path)}
                 </button>
               ) : null}
@@ -690,7 +891,7 @@ const InspectorPane: React.FC<{
             <div>
               <span>exit {artifact.execution?.exitCode ?? 'unknown'}</span>
               {artifact.execution?.logPath ? (
-                <button type='button' onClick={() => onOpenFile(artifact.execution!.logPath!)}>
+                <button type='button' onClick={() => openResolvedFile(artifact.execution?.logPath)}>
                   {pathLabel(artifact.execution.logPath)}
                 </button>
               ) : null}
@@ -731,9 +932,52 @@ const InspectorPane: React.FC<{
     );
   };
 
+  if (variant === 'modal') {
+    return (
+      <aside className='science-workspace-inspector science-workspace-inspector--modal'>
+        <header className='science-workspace-dialogHeader'>
+          <div className='science-workspace-dialogHeader__icon'>
+            <OpenScienceIcon name={getArtifactIconName(artifact)} size={20} visualScale={1.08} />
+          </div>
+          <div className='science-workspace-dialogHeader__copy'>
+            <h3>{artifact.title}</h3>
+            <p>
+              {artifact.type.replace(/_/gu, ' ')} · v{artifact.version} · {artifact.status || 'available'}
+            </p>
+          </div>
+          <button
+            type='button'
+            className='science-workspace-dialogHeader__files'
+            onClick={onOpenFiles}
+            aria-label='Open Science files'
+          >
+            <OpenScienceIcon name='artifactDataset' size={15} visualScale={1.05} />
+            <span>Files</span>
+          </button>
+        </header>
+        <div className='science-workspace-inspector__body'>
+          <nav className='science-workspace-dialogTabs' aria-label='Artifact details'>
+            {detailItems.map((item) => (
+              <button
+                key={item.tab}
+                type='button'
+                className={classNames(activeTab === item.tab && 'is-active')}
+                onClick={() => setActiveTab(item.tab)}
+              >
+                <OpenScienceIcon name={item.icon} size={14} visualScale={1.05} />
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
+          <div className='science-workspace-dialogContent'>{renderDetailPage()}</div>
+        </div>
+      </aside>
+    );
+  }
+
   if (activeTab) {
     return (
-      <aside className='science-workspace-inspector science-workspace-inspector--tertiary'>
+      <aside className={classNames('science-workspace-inspector', 'science-workspace-inspector--tertiary')}>
         <header className='science-workspace-tertiaryHeader'>
           <button type='button' className='science-workspace-tertiaryHeader__back' onClick={() => setActiveTab(null)}>
             <ArrowLeft theme='outline' size={13} fill='currentColor' strokeWidth={4} />
@@ -784,11 +1028,7 @@ const InspectorPane: React.FC<{
             </div>
           </section>
           <div className='science-workspace-quickActions'>
-            <button
-              type='button'
-              disabled={!artifactPath}
-              onClick={() => artifactPath && onOpenFile(artifactPath)}
-            >
+            <button type='button' disabled={!artifactPath} onClick={() => openResolvedFile(artifactPath)}>
               <OpenScienceIcon name={getArtifactIconName(artifact)} size={15} visualScale={1.05} />
               <span>{artifactPath ? pathLabel(artifactPath) : 'No preview file'}</span>
             </button>
@@ -811,6 +1051,65 @@ const InspectorPane: React.FC<{
   );
 };
 
+const ScienceArtifactActionMenu: React.FC<{
+  artifact: ScienceArtifact;
+  onOpenDetails: () => void;
+  onOpenFile: (path: string) => void;
+  onOpenFiles: () => void;
+}> = ({ artifact, onOpenDetails, onOpenFile, onOpenFiles }) => {
+  const artifactPath = getArtifactPath(artifact);
+
+  const handleClickMenuItem = (key: string) => {
+    if (key === 'details') {
+      onOpenDetails();
+      return;
+    }
+    if (key === 'files') {
+      onOpenFiles();
+      return;
+    }
+    if (key === 'open-current' && artifactPath) {
+      onOpenFile(artifactPath);
+    }
+  };
+
+  return (
+    <div className='science-artifact-layer__actions'>
+      <Dropdown
+        trigger='click'
+        position='br'
+        getPopupContainer={() => document.body}
+        droplist={
+          <Menu className='science-artifact-layer__menu' onClickMenuItem={handleClickMenuItem}>
+            <Menu.Item key='details'>
+              <span className='science-artifact-layer__menuItem'>
+                <OpenScienceIcon name='artifact' size={15} visualScale={1.05} />
+                <span>详情</span>
+              </span>
+            </Menu.Item>
+            <Menu.Item key='files'>
+              <span className='science-artifact-layer__menuItem'>
+                <OpenScienceIcon name='artifactDataset' size={15} visualScale={1.05} />
+                <span>文件列表</span>
+              </span>
+            </Menu.Item>
+            <Menu.Item key='open-current' disabled={!artifactPath}>
+              <span className='science-artifact-layer__menuItem'>
+                <OpenScienceIcon name={getArtifactIconName(artifact)} size={15} visualScale={1.05} />
+                <span>{artifactPath ? `打开 ${pathLabel(artifactPath)}` : '无可打开文件'}</span>
+              </span>
+            </Menu.Item>
+          </Menu>
+        }
+      >
+        <button type='button' className='science-artifact-layer__moreButton' aria-label='Artifact options'>
+          <MoreOne theme='outline' size={16} fill='currentColor' strokeWidth={4} />
+        </button>
+      </Dropdown>
+    </div>
+  );
+};
+
 export interface ScienceArtifactWorkspaceProps {
   panel: SciencePanelData;
   activeTab: PreviewTab;
@@ -827,6 +1126,7 @@ const ScienceArtifactWorkspace: React.FC<ScienceArtifactWorkspaceProps> = ({
   onContentChange,
 }) => {
   const { openPreview } = usePreviewContext();
+  const [detailsVisible, setDetailsVisible] = useState(false);
   const evidenceById = useMemo(
     () => new Map(panel.evidence.map((evidence) => [evidence.id, evidence])),
     [panel.evidence]
@@ -837,6 +1137,7 @@ const ScienceArtifactWorkspace: React.FC<ScienceArtifactWorkspaceProps> = ({
     findArtifact(panel.artifacts, metadataArtifactId, metadataArtifactVersion) ||
     panel.artifacts.find((artifact) => getArtifactPath(artifact) === activeTab.metadata?.file_path) ||
     panel.artifacts[0];
+  const effectiveProjectRoot = panel.projectRoot || activeTab.metadata?.workspace;
 
   const openFiles = useCallback(() => {
     openPreview(
@@ -844,7 +1145,7 @@ const ScienceArtifactWorkspace: React.FC<ScienceArtifactWorkspaceProps> = ({
       'science_files',
       {
         title: 'Files',
-        workspace: activeTab.metadata?.workspace || panel.projectRoot,
+        workspace: effectiveProjectRoot,
         science: {
           panel,
           artifactId: 'files',
@@ -852,7 +1153,7 @@ const ScienceArtifactWorkspace: React.FC<ScienceArtifactWorkspaceProps> = ({
       },
       { replace: false }
     );
-  }, [activeTab.metadata?.workspace, openPreview, panel]);
+  }, [effectiveProjectRoot, openPreview, panel]);
 
   if (!selectedArtifact) {
     return <div className='science-workspace-empty'>No Science artifact is available for this preview.</div>;
@@ -873,8 +1174,11 @@ const ScienceArtifactWorkspace: React.FC<ScienceArtifactWorkspaceProps> = ({
     return (
       <AnnotationOverlay
         artifact={selectedArtifact}
+        conversationId={panel.conversationId}
         enabled={isImageArtifact(selectedArtifact, activeTab)}
         filePath={activeTab.metadata?.file_path || getArtifactPath(selectedArtifact)}
+        projectRoot={effectiveProjectRoot}
+        runId={panel.runId}
       >
         <div className='science-workspace-preview__standard'>{previewContent}</div>
       </AnnotationOverlay>
@@ -885,15 +1189,34 @@ const ScienceArtifactWorkspace: React.FC<ScienceArtifactWorkspaceProps> = ({
     <section className='science-artifact-layer' data-testid='science-artifact-workspace'>
       <div className='science-artifact-layer__content'>
         <main className='science-artifact-layer__viewer'>{renderPreview()}</main>
-        <InspectorPane
+        <ScienceArtifactActionMenu
           artifact={selectedArtifact}
-          evidenceById={evidenceById}
+          onOpenDetails={() => setDetailsVisible(true)}
           onOpenFile={onOpenFile}
           onOpenFiles={openFiles}
-          reportTitle={panel.report.title}
-          projectRoot={panel.projectRoot}
-          gitRef={panel.git}
         />
+        <Modal
+          visible={detailsVisible}
+          title='Artifact 详情'
+          footer={null}
+          alignCenter
+          getPopupContainer={() => document.body}
+          className='science-artifact-details-modal'
+          style={{ width: 'min(860px, calc(100vw - 40px))' }}
+          unmountOnExit
+          onCancel={() => setDetailsVisible(false)}
+        >
+          <InspectorPane
+            artifact={selectedArtifact}
+            evidenceById={evidenceById}
+            onOpenFile={onOpenFile}
+            onOpenFiles={openFiles}
+            reportTitle={panel.report.title}
+            projectRoot={effectiveProjectRoot}
+            gitRef={panel.git}
+            variant='modal'
+          />
+        </Modal>
       </div>
     </section>
   );

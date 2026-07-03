@@ -68,6 +68,10 @@ const reduceNotificationState = (
 ): UpdateNotificationState => updateNotificationReducer(current, event).state;
 
 const RELEASES_PAGE_URL = 'https://github.com/ResearAI/OpenScience/releases';
+const STARTUP_UPDATE_CHECK_DELAY_MS = 4500;
+
+const hasInstallableUpdatePackage = (outcome: AvailableOutcome): boolean =>
+  Boolean(outcome.autoUpdateAvailable || outcome.updateInfo?.recommendedAsset);
 
 export const useUpdateNotificationController = () => {
   const { t } = useTranslation();
@@ -75,6 +79,7 @@ export const useUpdateNotificationController = () => {
   const stateRef = useRef(state);
   const restoreDownloadedPendingRef = useRef(true);
   const pendingAutoAvailableRef = useRef<AutoUpdateStatus | null>(null);
+  const startupCheckStartedRef = useRef(false);
 
   useEffect(() => {
     stateRef.current = state;
@@ -166,6 +171,38 @@ export const useUpdateNotificationController = () => {
       autoUpdateInfo: outcome.autoUpdateInfo,
     });
   }, []);
+
+  const checkForUpdatesOnStartup = useCallback(async () => {
+    if (startupCheckStartedRef.current) return;
+    startupCheckStartedRef.current = true;
+
+    const current = stateRef.current;
+    if (current.visible || current.status === 'downloading' || current.status === 'downloaded') {
+      return;
+    }
+
+    const outcome = await runUpdateCheck({
+      includePrerelease: getIncludePrerelease(),
+      fallbackVersion: __APP_VERSION__,
+      checkFailedLabel: t('update.checkFailed'),
+    });
+
+    if (outcome.kind === 'available' && hasInstallableUpdatePackage(outcome)) {
+      presentAvailableOutcome(outcome);
+    } else if (outcome.kind === 'error') {
+      console.warn('Startup update check skipped:', outcome.message);
+    }
+  }, [presentAvailableOutcome, t]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void checkForUpdatesOnStartup();
+    }, STARTUP_UPDATE_CHECK_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [checkForUpdatesOnStartup]);
 
   const restoreDownloadedUpdate = useCallback(async () => {
     try {

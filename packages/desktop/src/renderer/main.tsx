@@ -82,6 +82,7 @@ import { registerPwa } from './services/registerPwa';
 import { mutate as swrMutate } from 'swr';
 import { ipcBridge } from '@/common';
 import { isCodexCompactionMemoryText } from '@/common/chat/codexMemory';
+import { isLeaderAgentBetaEnabled } from '@/common/config/betaTesting';
 import { DETECTED_AGENTS_SWR_KEY, fetchDetectedAgents } from './utils/model/agentTypes';
 import { repairAllCronJobTimeZonesOnce } from '@renderer/pages/cron/repairCronJobTimeZone';
 
@@ -94,6 +95,7 @@ import { ConversationHistoryProvider } from './hooks/context/ConversationHistory
 import HOC from './utils/ui/HOC';
 import type { BackendStartupFailureInfo } from '@/common/types/platform/electron';
 import type { IConversationTurnCompletedEvent, IRuntimeStatusEvent, RuntimeFailureKind } from '@/common/adapter/ipcBridge';
+import type { ITeamChildTurnEvent } from '@/common/types/team/teamTypes';
 import {
   InstallationIntegrityContent,
   InstallationIntegrityModalHost,
@@ -129,6 +131,35 @@ const arcoLocales: Record<string, typeof enUS> = {
   'ja-JP': jaJP,
   'ko-KR': koKRComplete,
   'en-US': enUS,
+};
+
+const LarkProjectTeamBridgeListener: React.FC = () => {
+  const handledTurnKeysRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    return ipcBridge.team.childTurnCompleted.on((event: ITeamChildTurnEvent) => {
+      if (!isLeaderAgentBetaEnabled(configService.get('features.betaTesting'))) return;
+      const key = `${event.team_run_id}:${event.slot_id}:${event.turn_id}`;
+      if (handledTurnKeysRef.current.has(key)) return;
+      handledTurnKeysRef.current.add(key);
+      void ipcBridge.larkProjectAgent.handleTeamChildTurnCompleted
+        .invoke({
+          team_id: event.team_id,
+          team_run_id: event.team_run_id,
+          slot_id: event.slot_id,
+          role: event.role,
+          conversation_id: event.conversation_id,
+          turn_id: event.turn_id,
+          status: event.status,
+        })
+        .catch((error) => {
+          console.warn('[LarkProjectAgent] failed to consume Team child turn completion', error);
+          handledTurnKeysRef.current.delete(key);
+        });
+    });
+  }, []);
+
+  return null;
 };
 
 const INSTALLATION_INTEGRITY_FAILURES = new Set<RuntimeFailureKind>([
@@ -282,6 +313,7 @@ const AppProviders: React.FC<PropsWithChildren> = ({ children }) =>
           React.Fragment,
           null,
           React.createElement(RuntimeFailureDialogs, null),
+          React.createElement(LarkProjectTeamBridgeListener, null),
           React.createElement(CodexMemoryEventListener, null),
           children
         )

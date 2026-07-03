@@ -8,6 +8,7 @@ import { Typography, Button, Switch, Message } from '@arco-design/web-react';
 import { BookOpen, Branch, ChartLine, Code, Download, Experiment, Folder, Github, Right, World } from '@icon-park/react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import classNames from 'classnames';
 import { useSettingsViewMode } from '../settingsViewContext';
 import { isElectronDesktop, openExternalUrl } from '@/renderer/utils/platform';
@@ -20,6 +21,9 @@ import {
   type UpdateReadyState,
 } from '@/renderer/components/settings/updateReadyState';
 import DeepScientistWordmark from '@/renderer/components/icons/DeepScientistWordmark';
+import westlakeUniversityLogo from '@/renderer/assets/logos/institutions/westlake-university.png';
+import zhongguancunCollegeLogo from '@/renderer/assets/logos/institutions/zhongguancun-college.png';
+import zhongguancunAiInstituteLogo from '@/renderer/assets/logos/institutions/zhongguancun-ai-institute.png';
 
 // __APP_VERSION__ is injected by electron.vite.config.ts `define:` from the
 // repo-root package.json. The previous `import packageJson from
@@ -37,6 +41,13 @@ type HighlightItem = {
   icon: React.ReactNode;
 };
 
+type InstitutionPartner = {
+  name: string;
+  logo: string;
+  imageClassName?: string;
+  invertLogo?: boolean;
+};
+
 const DEEPSCIENTIST_REPO_URL = 'https://github.com/ResearAI/OpenScience';
 const DEEPSCIENTIST_DOCS_URL = 'https://github.com/ResearAI/OpenScience/tree/main/docs/en';
 const DEEPSCIENTIST_QUICK_START_URL = 'https://github.com/ResearAI/OpenScience/blob/main/docs/en/00_QUICK_START.md';
@@ -45,8 +56,28 @@ const DEEPSCIENTIST_WEBSITE_URL = 'https://deepscientist.cc/openscience/';
 const DEEPSCIENTIST_DOWNLOAD_URL = 'https://deepscientist.cc/openscience/';
 const OPENSCIENCE_COMMERCIAL_EMAIL = 'resear.ai@gmail.com';
 
+const institutionPartners: InstitutionPartner[] = [
+  {
+    name: 'Westlake University',
+    logo: westlakeUniversityLogo,
+    imageClassName: 'max-h-58px max-w-[92%]',
+  },
+  {
+    name: 'Zhongguancun College',
+    logo: zhongguancunCollegeLogo,
+    imageClassName: 'max-h-44px max-w-[86%]',
+  },
+  {
+    name: 'Zhongguancun Institute of Artificial Intelligence',
+    logo: zhongguancunAiInstituteLogo,
+    imageClassName: 'max-h-40px max-w-[94%]',
+    invertLogo: true,
+  },
+];
+
 const AboutModalContent: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const viewMode = useSettingsViewMode();
   const isPageMode = viewMode === 'page';
   const isElectron = isElectronDesktop();
@@ -107,6 +138,10 @@ const AboutModalContent: React.FC = () => {
     }
   };
 
+  const openOnboarding = () => {
+    navigate(`/onboarding?reopen=1&next=${encodeURIComponent('/settings/about')}`);
+  };
+
   const highlights: HighlightItem[] = [
     {
       title: t('settings.aboutHighlightLocalFirstTitle'),
@@ -142,6 +177,14 @@ const AboutModalContent: React.FC = () => {
       description: t('settings.aboutLinkQuickStartDesc'),
       url: DEEPSCIENTIST_QUICK_START_URL,
       icon: <Right theme='outline' size='16' />,
+    },
+    {
+      title: t('settings.aboutLinkOnboarding', { defaultValue: '重新打开教程' }),
+      description: t('settings.aboutLinkOnboardingDesc', {
+        defaultValue: '重新查看语言、模式、运行器、信息收集和 PaperClip 绑定引导。',
+      }),
+      onClick: openOnboarding,
+      icon: <BookOpen theme='outline' size='18' />,
     },
     {
       title: t('settings.aboutLinkGithub'),
@@ -305,6 +348,43 @@ const AboutModalContent: React.FC = () => {
             >
               {OPENSCIENCE_COMMERCIAL_EMAIL}
             </Button>
+          </section>
+
+          <section className='mt-18px'>
+            <div className='mb-9px text-left'>
+              <Typography.Text className='block text-13px font-semibold text-t-primary leading-18px'>
+                {t('settings.aboutPartnerTitle')}
+              </Typography.Text>
+              <Typography.Text className='block text-12px text-t-tertiary leading-18px mt-3px'>
+                {t('settings.aboutPartnerDesc')}
+              </Typography.Text>
+            </div>
+            <div className='flex flex-col gap-10px'>
+              <div className='flex justify-center'>
+                <div className='w-full sm:w-1/2 h-92px rounded-12px border border-border-2 bg-white px-18px py-14px flex items-center justify-center shadow-[0_8px_28px_rgba(15,23,42,0.06)]'>
+                  <img
+                    src={institutionPartners[0].logo}
+                    alt={institutionPartners[0].name}
+                    className={classNames('object-contain', institutionPartners[0].imageClassName)}
+                  />
+                </div>
+              </div>
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-10px'>
+                {institutionPartners.slice(1).map((partner) => (
+                  <div
+                    key={partner.name}
+                    className='h-82px rounded-12px border border-border-2 bg-white px-16px py-13px flex items-center justify-center shadow-[0_8px_28px_rgba(15,23,42,0.06)]'
+                  >
+                    <img
+                      src={partner.logo}
+                      alt={partner.name}
+                      className={classNames('object-contain', partner.imageClassName)}
+                      style={partner.invertLogo ? { filter: 'invert(1)' } : undefined}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </section>
         </div>
       </div>

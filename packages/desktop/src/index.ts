@@ -481,11 +481,10 @@ const createWindow = ({ showOnReady = true }: { showOnReady?: boolean } = {}): v
         autoUpdaterService.setBeforeQuitAndInstall(async () => {
           await backendManager.stop();
         });
-        // Check for updates after 3 seconds delay
-        // 3秒后检查更新
-        setTimeout(() => {
-          void autoUpdaterService.checkForUpdatesAndNotify();
-        }, 3000);
+        // Startup update discovery is owned by the renderer notification controller.
+        // It merges GitHub Release discovery with the auto-updater feed so users
+        // still see a prompt when GitHub has a newer packaged build but the CDN
+        // mirror metadata has not caught up yet.
       })
       .catch((error) => {
         console.error('[App] Failed to initialize autoUpdaterService:', error);

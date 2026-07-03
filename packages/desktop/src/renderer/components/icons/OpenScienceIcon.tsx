@@ -47,10 +47,10 @@ const ICON_FILE_STEMS = {
   modeDeposition: 'mode-deposition',
   modeGoal: 'mode-goal',
   modeMedicalEvidence: 'mode-medical-evidence',
-  modeScience: 'mode-science',
-  newProject: 'new-project',
+  modeScience: 'scientific-research-mode',
+  newProject: 'scientific-research-mode',
   remoteJob: 'remote-job',
-  researchProject: 'research-project',
+  researchProject: 'scientific-research-mode',
   reviewFailed: 'review-failed',
   reviewPassed: 'review-passed',
   reviewWarning: 'review-warning',
@@ -74,7 +74,7 @@ const ICON_FILE_STEMS = {
   settingsMotion: 'settings-motion',
   settingsPaperclipApi: 'settings-paperclip-api',
   settingsPermission: 'settings-permission',
-  settingsScience: 'settings-science',
+  settingsScience: 'scientific-research-mode',
   settingsSkills: 'settings-skills',
 } as const;
 

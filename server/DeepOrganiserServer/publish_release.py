@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Publish electron-builder artifacts into the DeepOrganiser update directory."""
+"""Publish electron-builder artifacts into the OpenScience update directory."""
 
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import os
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,10 +15,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 UPDATES_DIR = ROOT / "data" / "updates"
 MANIFEST_PATH = UPDATES_DIR / "manifest.json"
-PRODUCT_NAME = "DeepOrganiser"
-BASE_URL = "https://deepscientist.cc/DeepOrganiser"
+PRODUCT_NAME = os.environ.get("DEEPORGANISER_PRODUCT_NAME", "OpenScience")
+BASE_URL = os.environ.get("DEEPORGANISER_BASE_URL", "https://deepscientist.cc/openscience").rstrip("/")
 CHANNEL_PATTERNS = ("latest*.yml",)
-ARTIFACT_EXTENSIONS = {".dmg", ".zip", ".exe", ".msi", ".deb", ".rpm", ".AppImage", ".blockmap"}
+ARTIFACT_EXTENSIONS = {".dmg", ".zip", ".exe", ".msi", ".deb", ".rpm", ".appimage", ".blockmap"}
 
 
 def now_iso() -> str:
@@ -60,7 +61,7 @@ def copy_if_file(src: Path, dst: Path) -> bool:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Publish DeepOrganiser desktop release artifacts.")
+    parser = argparse.ArgumentParser(description="Publish OpenScience desktop release artifacts.")
     parser.add_argument("--version", required=True, help="Release version, for example 0.0.2")
     parser.add_argument("--from", dest="source", required=True, help="Directory containing electron-builder outputs")
     parser.add_argument("--notes", default="", help="Release notes shown on the download page")
@@ -76,7 +77,7 @@ def main() -> None:
 
     copied = []
     for item in source.iterdir():
-        if item.is_file() and item.suffix in ARTIFACT_EXTENSIONS:
+        if item.is_file() and item.suffix.lower() in ARTIFACT_EXTENSIONS:
             target = version_dir / item.name
             copy_if_file(item, target)
             copied.append({"name": item.name, "size": target.stat().st_size, "sha256": sha256(target)})

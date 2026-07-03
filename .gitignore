@@ -174,6 +174,7 @@ wiki/
 # Local design docs and screenshots
 desdoc/
 .deeporganiser-lark-smoke/
+local-tests/
 
 # Local kanban (协作工作簿，不入库)
 kanban/
@@ -213,6 +214,8 @@ resources/hub
 dist-server/
 # Local release/update packages are generated artifacts and can exceed GitHub pack limits.
 server/DeepOrganiserServer/data/updates/
+server/DeepOrganiserServer/data/*.sqlite3
+server/DeepOrganiserServer/data/*.sqlite3-*
 .omc/
 .superset/
 .claude/teams/

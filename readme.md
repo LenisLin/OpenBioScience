@@ -46,6 +46,22 @@ It combines **Science Mode** for general research with a stricter **Medical Evid
 
 > Not a single answer. A durable research record: evidence, code, figures, notebooks, manuscripts, and every step needed to reproduce, review, and defend the result.
 
+## Capability map
+
+OpenScience is a full research workspace, not a single-purpose assistant. Science Mode currently includes **352 default scientific skills** across **10+ research directions**, with working paths for evidence search, local analysis, project memory, review, and export.
+
+<p align="center">
+  <img src="./resources/readme/openscience-capability-map.png" alt="OpenScience capability map across research modes, scientific domains, evidence, analysis, and artifacts" width="100%" />
+</p>
+
+| Layer | What OpenScience covers |
+|---|---|
+| Research modes | Science Mode, Medical Evidence Mode, Goal Mode, Knowledge Distillation Mode |
+| Disciplines | life sciences, chemistry, drug discovery, structural biology, genomics, single-cell, engineering computation, data science, social science, econometrics, causal inference |
+| Evidence sources | PubMed, ChEMBL, GEO, AlphaFold, and routed access to 20+ scientific database families |
+| Outputs | evidence reports, figures, tables, notebooks, manuscripts, code logs, project records |
+| Local-first workflow | local files, local agents, local project folders, optional model/provider configuration |
+
 | Core idea | What the user gets |
 |---|---|
 | Research projects, not loose chats | A folder-backed workspace for sources, data, scripts, outputs, comments, and exports |

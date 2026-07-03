@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenScience Admin</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #fbfaf7;
+        --panel: rgba(255, 255, 255, 0.88);
+        --ink: #161513;
+        --muted: rgba(22, 21, 19, 0.62);
+        --faint: rgba(22, 21, 19, 0.42);
+        --line: rgba(22, 21, 19, 0.1);
+        --line-strong: rgba(22, 21, 19, 0.18);
+        --gold: #b79b4a;
+        --brown: #76441f;
+        --green: #3f8a62;
+        --blue: #536f8f;
+        --red: #aa4a3a;
+        --shadow: 0 24px 80px rgba(25, 20, 16, 0.1);
+        --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+        --serif: Georgia, "Times New Roman", "Songti SC", STSong, serif;
+        --mono: "SFMono-Regular", "JetBrains Mono", Consolas, ui-monospace, monospace;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 12% 12%, rgba(183, 155, 74, 0.18), transparent 28%),
+          radial-gradient(circle at 88% 18%, rgba(83, 111, 143, 0.12), transparent 32%),
+          linear-gradient(180deg, #fbfaf7 0%, #fff8f1 58%, #fffdf9 100%);
+        font-family: var(--sans);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button, input, select { font: inherit; }
+      button { cursor: pointer; }
+      .shell { width: min(1440px, calc(100vw - 48px)); margin: 0 auto; padding: 28px 0 64px; }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        min-height: 64px;
+        padding: 0 4px 22px;
+        border-bottom: 1px solid var(--line);
+      }
+      .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+      .brand img { width: 214px; height: auto; object-fit: contain; }
+      .brand small { display: block; color: var(--muted); margin-top: 4px; }
+      .top-actions { display: flex; align-items: center; gap: 10px; }
+      .ghost-btn, .primary-btn {
+        min-height: 38px;
+        padding: 0 16px;
+        border-radius: 999px;
+        border: 1px solid var(--line-strong);
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--ink);
+      }
+      .primary-btn {
+        border-color: rgba(22, 21, 19, 0.92);
+        background: #171615;
+        color: white;
+      }
+      .ghost-btn:hover { background: white; }
+
+      .login-wrap {
+        min-height: calc(100vh - 140px);
+        display: grid;
+        place-items: center;
+      }
+      .login-card {
+        width: min(960px, 100%);
+        display: grid;
+        grid-template-columns: 1fr 430px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.76);
+        box-shadow: var(--shadow);
+      }
+      .login-copy {
+        padding: 56px;
+        background:
+          linear-gradient(135deg, rgba(183, 155, 74, 0.18), transparent 52%),
+          rgba(255, 253, 249, 0.72);
+      }
+      .login-copy h1 {
+        margin: 26px 0 16px;
+        font: 700 clamp(38px, 5vw, 68px) / 0.95 var(--serif);
+        letter-spacing: -0.01em;
+      }
+      .login-copy p { max-width: 480px; color: var(--muted); font-size: 18px; line-height: 1.7; }
+      .security-list { display: grid; gap: 12px; margin-top: 34px; }
+      .security-list span { display: flex; align-items: center; gap: 10px; color: rgba(22, 21, 19, 0.72); }
+      .security-list i {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--green);
+        box-shadow: 0 0 0 5px rgba(63, 138, 98, 0.12);
+      }
+      .login-form { padding: 56px 44px; background: white; }
+      .login-form h2 { margin: 0 0 8px; font-size: 25px; }
+      .login-form p { margin: 0 0 28px; color: var(--muted); line-height: 1.55; }
+      .field { display: grid; gap: 8px; margin-bottom: 16px; }
+      .field label { font-weight: 700; font-size: 14px; color: rgba(22, 21, 19, 0.74); }
+      .field input {
+        width: 100%;
+        height: 48px;
+        padding: 0 14px;
+        border: 1px solid var(--line-strong);
+        border-radius: 14px;
+        outline: none;
+        background: #fffdf9;
+      }
+      .field input:focus { border-color: rgba(183, 155, 74, 0.82); box-shadow: 0 0 0 4px rgba(183, 155, 74, 0.14); }
+      .login-error { min-height: 24px; margin: 8px 0 16px; color: var(--red); font-weight: 700; }
+      .login-form .primary-btn { width: 100%; min-height: 50px; border-radius: 14px; }
+
+      .dashboard { display: none; }
+      .dashboard.is-visible { display: block; }
+      .hero-row {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 22px;
+        padding: 32px 0 22px;
+      }
+      .summary-card, .panel {
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: var(--panel);
+        box-shadow: 0 18px 56px rgba(25, 20, 16, 0.07);
+      }
+      .summary-card { padding: 32px; }
+      .summary-card h1 {
+        margin: 0;
+        font: 700 clamp(38px, 4vw, 62px) / 1 var(--serif);
+      }
+      .summary-card p { color: var(--muted); font-size: 17px; line-height: 1.65; max-width: 720px; }
+      .status-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-top: 28px;
+      }
+      .stat {
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.7);
+      }
+      .stat strong { display: block; font-size: 34px; line-height: 1; }
+      .stat span { display: block; margin-top: 8px; color: var(--muted); }
+
+      .panel { padding: 24px; min-width: 0; }
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+      .panel-head h2 { margin: 0; font-size: 20px; }
+      .panel-head p { margin: 4px 0 0; color: var(--muted); }
+      .chart-list { display: grid; gap: 14px; }
+      .bar-row { display: grid; grid-template-columns: 150px 1fr 56px; align-items: center; gap: 12px; }
+      .bar-label { overflow: hidden; color: rgba(22, 21, 19, 0.76); text-overflow: ellipsis; white-space: nowrap; }
+      .bar-track { height: 12px; overflow: hidden; border-radius: 999px; background: rgba(22, 21, 19, 0.06); }
+      .bar-fill { height: 100%; width: 0%; border-radius: inherit; background: linear-gradient(90deg, var(--gold), var(--green)); transition: width 600ms ease; }
+      .bar-count { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 22px; }
+      .table-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .table-tools select { height: 36px; border: 1px solid var(--line); border-radius: 999px; background: white; padding: 0 12px; }
+      .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 18px; background: rgba(255, 255, 255, 0.58); }
+      table { width: 100%; min-width: 760px; border-collapse: collapse; }
+      th, td { padding: 13px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+      th { position: sticky; top: 0; z-index: 1; background: #fffdf9; color: rgba(22, 21, 19, 0.58); font-size: 12px; text-transform: uppercase; }
+      td { color: rgba(22, 21, 19, 0.78); }
+      td code { font-family: var(--mono); font-size: 12px; color: rgba(22, 21, 19, 0.64); }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: rgba(83, 111, 143, 0.1);
+        color: #405b78;
+        font-weight: 700;
+        font-size: 12px;
+      }
+      .pill.ok { background: rgba(63, 138, 98, 0.12); color: var(--green); }
+      .pill.off { background: rgba(22, 21, 19, 0.06); color: var(--faint); }
+      .muted { color: var(--muted); }
+      .mono { font-family: var(--mono); font-size: 12px; }
+      .empty { padding: 32px; color: var(--muted); text-align: center; }
+      .notice {
+        display: none;
+        margin-top: 16px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(170, 74, 58, 0.08);
+        color: var(--red);
+      }
+      .notice.is-visible { display: block; }
+
+      @media (max-width: 980px) {
+        .shell { width: min(100vw - 28px, 920px); }
+        .login-card, .hero-row, .grid { grid-template-columns: 1fr; }
+        .login-copy, .login-form { padding: 34px 28px; }
+        .status-strip { grid-template-columns: 1fr; }
+        .brand img { width: 180px; }
+        .topbar { align-items: flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <img src="openscience-wordmark.png" alt="OpenScience" />
+          <div>
+            <strong>Admin Console</strong>
+            <small>Anonymous telemetry and update status</small>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="ghost-btn" id="refreshButton" type="button" hidden>刷新</button>
+          <button class="ghost-btn" id="logoutButton" type="button" hidden>退出</button>
+        </div>
+      </header>
+
+      <section class="login-wrap" id="loginView">
+        <div class="login-card">
+          <div class="login-copy">
+            <img src="openscience-wordmark.png" alt="OpenScience" width="260" />
+            <h1>安全查看运行状态</h1>
+            <p>后台只展示匿名客户端、更新状态和授权开关。不会展示用户姓名、邮箱、真实 IP、文件路径、prompt 或文档正文。</p>
+            <div class="security-list">
+              <span><i></i>HttpOnly 会话 Cookie</span>
+              <span><i></i>登录失败限流</span>
+              <span><i></i>CSV / JSON 导出需登录</span>
+            </div>
+          </div>
+          <form class="login-form" id="loginForm">
+            <h2>登录后台</h2>
+            <p>请输入服务器环境变量中配置的管理员账号与密码。</p>
+            <div class="field">
+              <label for="username">账号</label>
+              <input id="username" name="username" autocomplete="username" required />
+            </div>
+            <div class="field">
+              <label for="password">密码</label>
+              <input id="password" name="password" type="password" autocomplete="current-password" required />
+            </div>
+            <div class="login-error" id="loginError"></div>
+            <button class="primary-btn" type="submit">进入后台</button>
+          </form>
+        </div>
+      </section>
+
+      <main class="dashboard" id="dashboardView">
+        <section class="hero-row">
+          <div class="summary-card">
+            <h1>OpenScience 运行概览</h1>
+            <p>这里用于观察发布包更新、匿名安装实例和客户端更新路径是否健康。所有信息都以安装实例为粒度，不保存个人身份信息。</p>
+            <div class="status-strip">
+              <div class="stat">
+                <strong id="totalInstallations">0</strong>
+                <span>匿名客户端</span>
+              </div>
+              <div class="stat">
+                <strong id="totalEvents">0</strong>
+                <span>事件记录</span>
+              </div>
+              <div class="stat">
+                <strong id="latestVersion">-</strong>
+                <span>当前发布版本</span>
+              </div>
+            </div>
+            <div class="notice" id="notice"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>平台分布</h2>
+                <p>按系统和架构汇总</p>
+              </div>
+            </div>
+            <div class="chart-list" id="platformChart"></div>
+          </div>
+        </section>
+
+        <section class="grid">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>事件排行</h2>
+                <p>最近累计最多的匿名事件</p>
+              </div>
+            </div>
+            <div class="chart-list" id="eventChart"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>更新状态</h2>
+                <p>客户端检查更新与下载状态</p>
+              </div>
+            </div>
+            <div class="chart-list" id="updateChart"></div>
+          </div>
+        </section>
+
+        <section class="panel" style="margin-top:22px">
+          <div class="panel-head">
+            <div>
+              <h2>匿名客户端</h2>
+              <p>每一行代表一个安装实例，不代表真实个人。</p>
+            </div>
+            <div class="table-tools">
+              <button class="ghost-btn" id="exportInstallationsCsv" type="button">下载客户端 CSV</button>
+              <button class="ghost-btn" id="exportInstallationsJson" type="button">下载 JSON</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>客户端</th>
+                  <th>平台</th>
+                  <th>版本</th>
+                  <th>更新状态</th>
+                  <th>授权</th>
+                  <th>事件数</th>
+                  <th>最近活跃</th>
+                </tr>
+              </thead>
+              <tbody id="installationRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" style="margin-top:22px">
+          <div class="panel-head">
+            <div>
+              <h2>最近事件</h2>
+              <p>仅展示清洗后的事件名和安全属性。</p>
+            </div>
+            <div class="table-tools">
+              <button class="ghost-btn" id="exportEventsCsv" type="button">下载事件 CSV</button>
+              <button class="ghost-btn" id="exportEventsJson" type="button">下载 JSON</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>时间</th>
+                  <th>客户端</th>
+                  <th>事件</th>
+                  <th>类别</th>
+                  <th>平台</th>
+                  <th>属性</th>
+                </tr>
+              </thead>
+              <tbody id="eventRows"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const basePath = (() => {
+        const path = location.pathname;
+        const adminIndex = path.indexOf('/admin');
+        return adminIndex >= 0 ? path.slice(0, adminIndex) : '';
+      })();
+      const api = (path) => `${basePath}${path}`;
+      const state = { summary: null, installations: [], events: [], status: null };
+
+      function fmtDate(value) {
+        if (!value) return '-';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return value;
+        return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'short', timeStyle: 'medium' }).format(date);
+      }
+
+      function showNotice(text) {
+        const el = $('notice');
+        el.textContent = text || '';
+        el.classList.toggle('is-visible', Boolean(text));
+      }
+
+      async function request(path, options = {}) {
+        const response = await fetch(api(path), {
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+          ...options,
+        });
+        if (response.status === 401) {
+          showLogin();
+          throw new Error('请先登录后台');
+        }
+        const data = await response.json();
+        if (!response.ok || data.ok === false) {
+          throw new Error(data.error || `Request failed: ${response.status}`);
+        }
+        return data;
+      }
+
+      function showLogin() {
+        $('loginView').style.display = 'grid';
+        $('dashboardView').classList.remove('is-visible');
+        $('logoutButton').hidden = true;
+        $('refreshButton').hidden = true;
+      }
+
+      function showDashboard() {
+        $('loginView').style.display = 'none';
+        $('dashboardView').classList.add('is-visible');
+        $('logoutButton').hidden = false;
+        $('refreshButton').hidden = false;
+      }
+
+      function renderBarChart(container, rows, labelFn, valueFn) {
+        const el = $(container);
+        el.innerHTML = '';
+        if (!rows.length) {
+          el.innerHTML = '<div class="empty">暂无数据</div>';
+          return;
+        }
+        const max = Math.max(...rows.map(valueFn), 1);
+        rows.slice(0, 10).forEach((row) => {
+          const count = valueFn(row);
+          const item = document.createElement('div');
+          item.className = 'bar-row';
+          item.innerHTML = `
+            <div class="bar-label" title="${escapeHtml(labelFn(row))}">${escapeHtml(labelFn(row))}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${Math.max(4, (count / max) * 100)}%"></div></div>
+            <div class="bar-count">${count}</div>
+          `;
+          el.appendChild(item);
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      function boolPill(value, label) {
+        if (value === true) return `<span class="pill ok">${label}</span>`;
+        if (value === false) return `<span class="pill off">${label} 关闭</span>`;
+        return `<span class="pill off">${label} 未知</span>`;
+      }
+
+      function renderSummary() {
+        const summary = state.summary || {};
+        const totals = summary.totals || {};
+        $('totalInstallations').textContent = totals.installations ?? 0;
+        $('totalEvents').textContent = totals.events ?? 0;
+        $('latestVersion').textContent = state.status?.latestVersion ? `v${state.status.latestVersion}` : '-';
+        renderBarChart('platformChart', summary.platforms || [], (row) => `${row.platform || 'unknown'} · ${row.arch || 'unknown'}`, (row) => row.count || 0);
+        renderBarChart('eventChart', summary.events || [], (row) => row.name || 'unknown', (row) => row.count || 0);
+        renderBarChart('updateChart', summary.updates || [], (row) => `${row.last_status || 'unknown'} · ${row.platform || 'unknown'}`, (row) => row.count || 0);
+      }
+
+      function renderInstallations() {
+        const tbody = $('installationRows');
+        tbody.innerHTML = '';
+        if (!state.installations.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="empty">暂无客户端记录</td></tr>';
+          return;
+        }
+        state.installations.forEach((row) => {
+          const tr = document.createElement('tr');
+          const update = row.update_available === true ? '有新版本' : row.update_available === false ? '已是最新' : row.last_status || '-';
+          tr.innerHTML = `
+            <td><strong>${escapeHtml(row.installation_label)}</strong><br><code>${escapeHtml(row.installation_id)}</code></td>
+            <td>${escapeHtml(row.platform || '-') }<br><span class="muted">${escapeHtml(row.arch || '-')}</span></td>
+            <td>${escapeHtml(row.app_version || '-') }<br><span class="muted">latest ${escapeHtml(row.latest_version || '-')}</span></td>
+            <td><span class="pill">${escapeHtml(update)}</span><br><span class="muted">${escapeHtml(row.last_error || '')}</span></td>
+            <td>${boolPill(row.consent_update, '更新')} ${boolPill(row.consent_usage, '使用')} ${boolPill(row.consent_diagnostics, '诊断')}</td>
+            <td>${Number(row.event_count || 0)}</td>
+            <td>${fmtDate(row.last_seen_at)}<br><span class="muted">首次 ${fmtDate(row.first_seen_at)}</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function renderEvents() {
+        const tbody = $('eventRows');
+        tbody.innerHTML = '';
+        if (!state.events.length) {
+          tbody.innerHTML = '<tr><td colspan="6" class="empty">暂无事件记录</td></tr>';
+          return;
+        }
+        state.events.forEach((row) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${fmtDate(row.received_at || row.event_time)}</td>
+            <td><strong>${escapeHtml(row.installation_label)}</strong><br><code>${escapeHtml(row.installation_id)}</code></td>
+            <td>${escapeHtml(row.event_name)}</td>
+            <td><span class="pill">${escapeHtml(row.event_category)}</span></td>
+            <td>${escapeHtml(row.platform || '-')}<br><span class="muted">${escapeHtml(row.arch || '-')}</span></td>
+            <td><code>${escapeHtml(JSON.stringify(row.properties || {}))}</code></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function loadDashboard() {
+        showNotice('');
+        const [status, summary, installations, events] = await Promise.all([
+          fetch(api('/api/status')).then((r) => r.json()).catch(() => null),
+          request('/api/admin/telemetry/summary'),
+          request('/api/admin/telemetry/installations?limit=200'),
+          request('/api/admin/telemetry/events?limit=200'),
+        ]);
+        state.status = status;
+        state.summary = summary;
+        state.installations = installations.installations || [];
+        state.events = events.events || [];
+        renderSummary();
+        renderInstallations();
+        renderEvents();
+      }
+
+      function downloadExport(type, format) {
+        window.location.href = api(`/api/admin/telemetry/export?type=${encodeURIComponent(type)}&format=${encodeURIComponent(format)}`);
+      }
+
+      async function bootstrap() {
+        try {
+          const session = await request('/api/admin/session');
+          if (session.authenticated) {
+            showDashboard();
+            await loadDashboard();
+          } else {
+            showLogin();
+          }
+        } catch {
+          showLogin();
+        }
+      }
+
+      $('loginForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        $('loginError').textContent = '';
+        const username = $('username').value;
+        const password = $('password').value;
+        try {
+          await request('/api/admin/login', {
+            method: 'POST',
+            body: JSON.stringify({ username, password }),
+          });
+          $('password').value = '';
+          showDashboard();
+          await loadDashboard();
+        } catch (error) {
+          $('loginError').textContent = error.message || '登录失败';
+        }
+      });
+
+      $('logoutButton').addEventListener('click', async () => {
+        await request('/api/admin/logout', { method: 'POST', body: JSON.stringify({}) }).catch(() => null);
+        showLogin();
+      });
+      $('refreshButton').addEventListener('click', () => loadDashboard().catch((error) => showNotice(error.message)));
+      $('exportInstallationsCsv').addEventListener('click', () => downloadExport('installations', 'csv'));
+      $('exportInstallationsJson').addEventListener('click', () => downloadExport('installations', 'json'));
+      $('exportEventsCsv').addEventListener('click', () => downloadExport('events', 'csv'));
+      $('exportEventsJson').addEventListener('click', () => downloadExport('events', 'json'));
+
+      bootstrap();
+    </script>
+  </body>
+</html>

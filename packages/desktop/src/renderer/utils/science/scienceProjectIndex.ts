@@ -9,6 +9,8 @@ import {
   SCIENCE_PANEL_SCHEMA,
   type ScienceArtifact,
   type ScienceArtifactFileProvenanceRecord,
+  type ScienceArtifactGitFile,
+  type ScienceArtifactGitRef,
   type ScienceArtifactSnapshotIncludePath,
   type SciencePanelData,
 } from '@/common/chat/science';
@@ -47,6 +49,11 @@ export interface ScienceProjectIndex {
 const isAbsolutePath = (value: string): boolean => /^([a-zA-Z]:[\\/]|\/|\\\\)/u.test(value);
 
 const normalizePath = (value: string): string => value.replace(/\\/g, '/').replace(/\/+/g, '/');
+const normalizeComparablePath = (value?: string): string =>
+  normalizePath(String(value || ''))
+    .replace(/^\.\/+/u, '')
+    .replace(/\/$/u, '')
+    .toLowerCase();
 
 export const getFileNameFromSciencePath = (value: string): string => {
   const normalized = normalizePath(value);
@@ -73,6 +80,62 @@ export const resolveSciencePath = (workspace: string, maybePath?: string): strin
   return normalizePath(`${workspace.replace(/\/$/u, '')}/${trimmed.replace(/^\.?\//u, '')}`);
 };
 
+export const resolveSciencePreviewPath = (workspace?: string, maybePath?: string): string | undefined => {
+  if (!maybePath) return undefined;
+  const trimmed = maybePath.trim();
+  if (!trimmed) return undefined;
+  if (isAbsolutePath(trimmed) || !workspace) return normalizePath(trimmed);
+  return resolveSciencePath(workspace, trimmed);
+};
+
+const artifactMatchesGitFile = (artifact: ScienceArtifact | undefined, file: ScienceArtifactGitFile): boolean => {
+  if (!artifact) return true;
+  if (!file.artifactId) return true;
+  if (file.artifactId !== artifact.id) return false;
+  return file.artifactVersion == null || artifact.version == null || file.artifactVersion === artifact.version;
+};
+
+const storedPathFromGitFile = (
+  git: ScienceArtifactGitRef | undefined,
+  file: ScienceArtifactGitFile
+): string | undefined => {
+  if (file.mode !== 'copied' || !file.storedPath) return undefined;
+  if (isAbsolutePath(file.storedPath)) return normalizePath(file.storedPath);
+  if (!git?.repoPath) return undefined;
+  return normalizePath(`${git.repoPath.replace(/\/$/u, '')}/${file.storedPath.replace(/^\/+/u, '')}`);
+};
+
+export const resolveScienceArtifactStoredPath = (
+  workspace: string | undefined,
+  panel: SciencePanelData | undefined,
+  maybePath: string | undefined,
+  artifact?: ScienceArtifact
+): string | undefined => {
+  if (!maybePath || !panel) return undefined;
+  const directPath = resolveSciencePreviewPath(workspace || panel.projectRoot, maybePath);
+  const keys = new Set<string>(
+    [maybePath, directPath, workspace ? toWorkspaceRelativePath(workspace, directPath) : undefined]
+      .filter((item): item is string => Boolean(item))
+      .map(normalizeComparablePath)
+  );
+  if (keys.size === 0) return undefined;
+
+  const gitRefs: Array<ScienceArtifactGitRef | undefined> = [artifact?.git, panel.git];
+  for (const git of gitRefs) {
+    for (const file of git?.files || []) {
+      if (!artifactMatchesGitFile(artifact, file)) continue;
+      const fileKeys = [file.path, file.relativePath]
+        .filter((item): item is string => Boolean(item))
+        .map(normalizeComparablePath);
+      if (!fileKeys.some((key) => keys.has(key))) continue;
+      const storedPath = storedPathFromGitFile(git, file);
+      if (storedPath) return storedPath;
+    }
+  }
+
+  return undefined;
+};
+
 const isSciencePanelData = (value: unknown): value is SciencePanelData => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const candidate = value as Partial<SciencePanelData>;
@@ -96,7 +159,9 @@ const safeParseFileRecords = (raw: string | null): ScienceArtifactFileProvenance
     return Array.isArray(parsed.files)
       ? parsed.files.filter(
           (item): item is ScienceArtifactFileProvenanceRecord =>
-            Boolean(item) && typeof item === 'object' && typeof (item as ScienceArtifactFileProvenanceRecord).path === 'string'
+            Boolean(item) &&
+            typeof item === 'object' &&
+            typeof (item as ScienceArtifactFileProvenanceRecord).path === 'string'
         )
       : [];
   } catch {
@@ -160,11 +225,13 @@ export async function loadScienceProjectIndex(workspace: string, limitRuns = 12)
     : [];
   const fileRecordsByKey = new Map<string, ScienceArtifactFileProvenanceRecord>();
   for (const record of fileRecords) {
-    [record.path, record.relativePath].filter((item): item is string => Boolean(item)).forEach((item) => {
-      fileRecordsByKey.set(normalizePath(item), record);
-      const resolved = resolveSciencePath(workspace, item);
-      if (resolved) fileRecordsByKey.set(normalizePath(resolved), record);
-    });
+    [record.path, record.relativePath]
+      .filter((item): item is string => Boolean(item))
+      .forEach((item) => {
+        fileRecordsByKey.set(normalizePath(item), record);
+        const resolved = resolveSciencePath(workspace, item);
+        if (resolved) fileRecordsByKey.set(normalizePath(resolved), record);
+      });
   }
   const enrichRef = (ref: ScienceArtifactFileRef): ScienceArtifactFileRef => {
     const record =

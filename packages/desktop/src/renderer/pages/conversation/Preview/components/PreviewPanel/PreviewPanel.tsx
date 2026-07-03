@@ -14,6 +14,7 @@ import { usePreviewContext } from '../../context/PreviewContext';
 import { useLocalFilePreview } from '../../hooks/useLocalFilePreview';
 import { useResizableSplit } from '@/renderer/hooks/ui/useResizableSplit';
 import { Input, Link, Modal } from '@arco-design/web-react';
+import { IconFile } from '@arco-design/web-react/icon';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import DiffPreview from '../viewers/DiffViewer';
 import ExcelPreview from '../viewers/ExcelViewer';
@@ -108,6 +109,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     tabs,
     activeTabId,
     activeTab,
+    openPreview,
     closeTab,
     switchTab,
     closePreview,
@@ -126,6 +128,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
         (science.artifactVersion == null || artifact.version === science.artifactVersion)
     );
   }, [activeTab?.metadata?.science]);
+  const activeSciencePanel = activeTab?.metadata?.science?.panel;
 
   // 视图状态 / View states
   const [viewMode, setViewMode] = useState<'source' | 'preview'>('preview');
@@ -237,10 +240,42 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
   const openPlainFilePreview = useCallback(
     (filePath: string) => {
-      void openLocalFilePreview(filePath);
+      const science = activeTab?.metadata?.science;
+      const workspace = activeTab?.metadata?.workspace || science?.panel.projectRoot;
+      void openLocalFilePreview(
+        filePath,
+        undefined,
+        science
+          ? {
+              workspace,
+              science,
+            }
+          : {
+              workspace,
+            }
+      );
     },
-    [openLocalFilePreview]
+    [activeTab?.metadata?.science, activeTab?.metadata?.workspace, openLocalFilePreview]
   );
+
+  const handleOpenScienceFiles = useCallback(() => {
+    const panel = activeTab?.metadata?.science?.panel;
+    if (!panel) return;
+    const workspace = activeTab?.metadata?.workspace || panel.projectRoot;
+    openPreview(
+      '',
+      'science_files',
+      {
+        title: 'Files',
+        workspace,
+        science: {
+          panel,
+          artifactId: 'files',
+        },
+      },
+      { replace: false }
+    );
+  }, [activeTab?.metadata?.science?.panel, activeTab?.metadata?.workspace, openPreview]);
 
   // 处理关闭tab / Handle close tab
   const handleCloseTab = useCallback(
@@ -503,7 +538,9 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
       setProvenanceState({
         visible: true,
         loading: false,
-        error: t('preview.provenanceUnavailable', { defaultValue: 'No Science project provenance is available for this file.' }),
+        error: t('preview.provenanceUnavailable', {
+          defaultValue: 'No Science project provenance is available for this file.',
+        }),
       });
       return;
     }
@@ -560,9 +597,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
         className='preview-provenance-modal'
       >
         {provenanceState.loading ? (
-          <div className='preview-provenance-empty'>
-            {t('common.loading', { defaultValue: 'Loading...' })}
-          </div>
+          <div className='preview-provenance-empty'>{t('common.loading', { defaultValue: 'Loading...' })}</div>
         ) : provenanceState.error ? (
           <div className='preview-provenance-empty'>{provenanceState.error}</div>
         ) : (
@@ -572,9 +607,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 {t('preview.provenanceSource', { defaultValue: 'Source' })}
               </div>
               <div className='preview-provenance__title'>{sourceTitle}</div>
-              <div className={`preview-provenance__status preview-provenance__status--${status}`}>
-                {statusLabel}
-              </div>
+              <div className={`preview-provenance__status preview-provenance__status--${status}`}>{statusLabel}</div>
             </div>
 
             <div className='preview-provenance__grid'>
@@ -592,7 +625,11 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
               </div>
               <div>
                 <span>{t('preview.provenanceCommit', { defaultValue: 'Snapshot' })}</span>
-                <strong>{record?.shortCommit || record?.commit?.slice(0, 8) || t('preview.provenanceNoSnapshot', { defaultValue: 'none' })}</strong>
+                <strong>
+                  {record?.shortCommit ||
+                    record?.commit?.slice(0, 8) ||
+                    t('preview.provenanceNoSnapshot', { defaultValue: 'none' })}
+                </strong>
               </div>
             </div>
 
@@ -679,15 +716,22 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
       return metadata?.science?.panel ? (
         <ScienceReportPreviewPanel panel={metadata.science.panel} />
       ) : (
-        <div className='flex flex-1 items-center justify-center text-13px text-t-secondary'>Science report is unavailable.</div>
+        <div className='flex flex-1 items-center justify-center text-13px text-t-secondary'>
+          Science report is unavailable.
+        </div>
       );
     }
 
     if (content_type === 'science_files') {
       return metadata?.science?.panel ? (
-        <ScienceFilesView panel={metadata.science.panel} workspace={metadata.workspace || metadata.science.panel.projectRoot} />
+        <ScienceFilesView
+          panel={metadata.science.panel}
+          workspace={metadata.workspace || metadata.science.panel.projectRoot}
+        />
       ) : (
-        <div className='flex flex-1 items-center justify-center text-13px text-t-secondary'>Science files are unavailable.</div>
+        <div className='flex flex-1 items-center justify-center text-13px text-t-secondary'>
+          Science files are unavailable.
+        </div>
       );
     }
 
@@ -905,7 +949,9 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
         />
       );
     } else if (content_type === 'molecular_structure') {
-      if (isKetcherPreviewCandidate(activeScienceArtifact, metadata?.file_name || metadata?.title, metadata?.file_path)) {
+      if (
+        isKetcherPreviewCandidate(activeScienceArtifact, metadata?.file_name || metadata?.title, metadata?.file_path)
+      ) {
         return (
           <KetcherViewer
             content={content}
@@ -1007,6 +1053,19 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
           previewLayoutMode={previewLayoutMode}
           onPreviewLayoutModeChange={onPreviewLayoutModeChange}
           onRequestHalfPanel={onRequestHalfPanel}
+          rightExtra={
+            activeSciencePanel && content_type !== 'science_files' ? (
+              <button
+                type='button'
+                className='preview-tabs__iconButton'
+                onClick={handleOpenScienceFiles}
+                title='Open Science files'
+                aria-label='Open Science files'
+              >
+                <IconFile style={{ fontSize: 14, color: 'currentColor' }} />
+              </button>
+            ) : null
+          }
         />
 
         {/* 工具栏（URL 类型不显示工具栏，因为不需要下载/编辑等功能）/ Toolbar (hidden for URL type as it doesn't need download/edit features) */}
@@ -1014,35 +1073,35 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
           content_type !== 'science_report' &&
           content_type !== 'science_files' &&
           !metadata?.missingFile && (
-          <PreviewToolbar
-            content_type={content_type}
-            isMarkdown={isMarkdown}
-            isHTML={isHTML}
-            viewMode={viewMode}
-            isSplitScreenEnabled={isSplitScreenEnabled}
-            showOpenInSystemButton={showOpenInSystemButton}
-            historyTarget={historyTarget}
-            snapshotSaving={snapshotSaving}
-            onViewModeChange={(mode) => {
-              setViewMode(mode);
-              setIsSplitScreenEnabled(false); // 切换视图模式时关闭分屏 / Disable split when switching view mode
-            }}
-            onSplitScreenToggle={() => setIsSplitScreenEnabled(!isSplitScreenEnabled)}
-            onSaveSnapshot={handleSaveSnapshot}
-            onRefreshHistory={refreshHistory}
-            renderHistoryDropdown={renderHistoryDropdown}
-            onOpenInSystem={handleOpenInSystem}
-            onDownload={handleDownload}
-            onRename={handleRenameRequest}
-            onShowProvenance={handleShowProvenance}
-            canRename={canRenamePreviewFile}
-            canShowProvenance={canShowScienceProvenance}
-            inspectMode={inspectMode}
-            onInspectModeToggle={() => setInspectMode(!inspectMode)}
-            leftExtra={toolbarExtras?.left}
-            rightExtra={toolbarExtras?.right}
-          />
-        )}
+            <PreviewToolbar
+              content_type={content_type}
+              isMarkdown={isMarkdown}
+              isHTML={isHTML}
+              viewMode={viewMode}
+              isSplitScreenEnabled={isSplitScreenEnabled}
+              showOpenInSystemButton={showOpenInSystemButton}
+              historyTarget={historyTarget}
+              snapshotSaving={snapshotSaving}
+              onViewModeChange={(mode) => {
+                setViewMode(mode);
+                setIsSplitScreenEnabled(false); // 切换视图模式时关闭分屏 / Disable split when switching view mode
+              }}
+              onSplitScreenToggle={() => setIsSplitScreenEnabled(!isSplitScreenEnabled)}
+              onSaveSnapshot={handleSaveSnapshot}
+              onRefreshHistory={refreshHistory}
+              renderHistoryDropdown={renderHistoryDropdown}
+              onOpenInSystem={handleOpenInSystem}
+              onDownload={handleDownload}
+              onRename={handleRenameRequest}
+              onShowProvenance={handleShowProvenance}
+              canRename={canRenamePreviewFile}
+              canShowProvenance={canShowScienceProvenance}
+              inspectMode={inspectMode}
+              onInspectModeToggle={() => setInspectMode(!inspectMode)}
+              leftExtra={toolbarExtras?.left}
+              rightExtra={toolbarExtras?.right}
+            />
+          )}
 
         {metadata?.truncated && (
           <div className='sticky top-0 z-1 px-16px py-10px text-12px bg-warning-1 text-warning-7 border-b border-warning-3'>

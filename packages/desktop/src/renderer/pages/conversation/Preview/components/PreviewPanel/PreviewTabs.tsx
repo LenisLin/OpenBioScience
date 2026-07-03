@@ -89,6 +89,7 @@ interface PreviewTabsProps {
   previewLayoutMode?: 'split' | 'fullscreen';
   onPreviewLayoutModeChange?: (mode: 'split' | 'fullscreen') => void;
   onRequestHalfPanel?: () => void;
+  rightExtra?: React.ReactNode;
 }
 
 /**
@@ -113,6 +114,7 @@ const PreviewTabs: React.FC<PreviewTabsProps> = ({
   previewLayoutMode = 'split',
   onPreviewLayoutModeChange,
   onRequestHalfPanel,
+  rightExtra,
 }) => {
   const { t } = useTranslation();
   const { left: showLeftFade, right: showRightFade } = tabFadeState;
@@ -157,8 +159,9 @@ const PreviewTabs: React.FC<PreviewTabsProps> = ({
           )}
         </div>
 
-        {(onRequestHalfPanel || onPreviewLayoutModeChange || onClosePanel) && (
+        {(rightExtra || onRequestHalfPanel || onPreviewLayoutModeChange || onClosePanel) && (
           <div className='flex items-center h-full px-8px gap-4px flex-shrink-0 rounded-tr-[16px]'>
+            {rightExtra}
             {onRequestHalfPanel ? (
               <button
                 type='button'
@@ -194,13 +197,9 @@ const PreviewTabs: React.FC<PreviewTabsProps> = ({
               </button>
             ) : null}
             {onClosePanel ? (
-            <div
-              className='preview-tabs__iconButton'
-              onClick={onClosePanel}
-              title={t('preview.collapsePanel')}
-            >
-              <IconShrink style={{ fontSize: 14, color: iconColors.secondary }} />
-            </div>
+              <div className='preview-tabs__iconButton' onClick={onClosePanel} title={t('preview.collapsePanel')}>
+                <IconShrink style={{ fontSize: 14, color: iconColors.secondary }} />
+              </div>
             ) : null}
           </div>
         )}

@@ -35,6 +35,22 @@ OpenScience 借鉴 Claude Science 强调的方向：科学 AI 不应该只是聊
 | 做对的流程能否留下来 | 使用知识沉淀模式，把对话、项目材料和 artifact 转成可复用的本地 skill |
 | 能否接入现有工具 | 复用本地文件、已有脚本、模型服务和 coding agent 工作流 |
 
+## 能力地图
+
+OpenScience 不是单一用途助手，而是面向多学科科研的完整工作台。Science Mode 当前包含 **352 个默认科研 skills**，覆盖 **10+ 学科方向**，并把证据检索、本地分析、项目记录、审查和导出连接成同一个工作流。
+
+<p align="center">
+  <img src="../../resources/readme/openscience-capability-map.png" alt="OpenScience 多学科能力地图" width="100%" />
+</p>
+
+| 层级 | OpenScience 覆盖内容 |
+|---|---|
+| 工作模式 | 科学研究模式、医学循证模式、目标模式、知识沉淀模式 |
+| 学科方向 | 生命科学、化学、药物发现、结构生物学、基因组学、单细胞、工程计算、数据科学、社会科学、计量经济学、因果推断 |
+| 证据来源 | PubMed、ChEMBL、GEO、AlphaFold，以及可路由的 20+ 科研数据库族 |
+| 输出结果 | 循证报告、图表、表格、Notebook、手稿、代码日志、项目记录 |
+| 本地优先 | 本地文件、本地 agent、本地项目文件夹，以及可选的模型/Provider 配置 |
+
 ---
 
 ## 不同学科可以怎么用

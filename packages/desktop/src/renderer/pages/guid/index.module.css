@@ -19,10 +19,28 @@
   width: clamp(var(--app-min-width, 360px), calc(100% - 32px), 1480px);
 }
 
+.guidLayoutLeaderAgentOpen {
+  width: clamp(var(--app-min-width, 360px), calc(100% - 32px), 1240px);
+}
+
 .guidSpectacleStage {
   position: relative;
   width: 100%;
   min-width: 0;
+}
+
+.guidSpectacleStageLeaderAgentOpen {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.46fr) minmax(420px, 1fr);
+  align-items: stretch;
+  gap: 14px;
+}
+
+.guidSpectacleLeft {
+  min-width: 0;
+  width: 100%;
+  align-self: stretch;
+  z-index: 1;
 }
 
 .guidSpectacleStagePreviewOpen {
@@ -562,7 +580,8 @@
   width: 100%;
 }
 
-.skillDepositionContextBadge {
+.skillDepositionContextBadge,
+.leaderAgentContextBadge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -580,14 +599,24 @@
   box-shadow: none;
 }
 
-.skillDepositionContextBadge :global(svg) {
+.leaderAgentContextBadge {
+  color: color-mix(in srgb, rgb(61, 72, 87) 72%, var(--color-text-2));
+}
+
+.skillDepositionContextBadge :global(svg),
+.leaderAgentContextBadge :global(svg) {
   opacity: 0.72;
 }
 
-.skillDepositionContextBadgeHint {
+.skillDepositionContextBadgeHint,
+.leaderAgentContextBadgeHint {
   color: color-mix(in srgb, rgb(63, 88, 82) 58%, var(--color-text-3));
   font-size: 11px;
   font-weight: 500;
+}
+
+.leaderAgentContextBadgeHint {
+  color: color-mix(in srgb, rgb(70, 78, 92) 68%, var(--color-text-3));
 }
 
 .skillDepositionContextBadgeClose {
@@ -913,6 +942,14 @@
 
 :global([data-theme='dark']) .skillDepositionContextBadgeHint {
   color: color-mix(in srgb, rgb(166, 196, 186) 54%, var(--color-text-3));
+}
+
+:global([data-theme='dark']) .leaderAgentContextBadge {
+  color: color-mix(in srgb, rgb(185, 195, 212) 62%, var(--color-text-2));
+}
+
+:global([data-theme='dark']) .leaderAgentContextBadgeHint {
+  color: color-mix(in srgb, rgb(166, 176, 194) 58%, var(--color-text-3));
 }
 
 /* 方案E：模型 + 权限各自独立 tb-btn，中间有竖线分隔 */

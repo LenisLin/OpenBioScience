@@ -435,7 +435,7 @@ const ScienceSettings: React.FC = () => {
             </div>
           </div>
 
-          <div className='grid grid-cols-1 gap-12px md:grid-cols-2'>
+          <div className='grid grid-cols-1 gap-12px'>
             <label className='flex items-center justify-between gap-12px rounded-8px bg-1 px-12px py-10px'>
               <span>
                 <span className='block text-13px font-650 text-t-primary'>
@@ -468,7 +468,7 @@ const ScienceSettings: React.FC = () => {
             </label>
           </div>
 
-          <div className='mt-12px grid grid-cols-1 gap-12px md:grid-cols-2'>
+          <div className='mt-12px grid grid-cols-1 gap-12px'>
             <div className='flex flex-col gap-10px rounded-8px bg-1 p-12px'>
               <div className='flex flex-wrap items-start justify-between gap-8px'>
                 <span>
@@ -489,7 +489,7 @@ const ScienceSettings: React.FC = () => {
                 </Tag>
               </div>
 
-              <div className='grid grid-cols-1 gap-8px sm:grid-cols-2 lg:grid-cols-5'>
+              <div className='grid grid-cols-1 gap-8px'>
                 {skillPackCards.map((card) => (
                   <div
                     key={card.label}
@@ -504,7 +504,7 @@ const ScienceSettings: React.FC = () => {
                 ))}
               </div>
 
-              <div className='grid grid-cols-1 gap-8px sm:grid-cols-3'>
+              <div className='grid grid-cols-1 gap-8px'>
                 <div className='rounded-8px bg-[rgba(83,112,103,0.08)] px-10px py-8px'>
                   <div className='text-11px font-650 text-t-primary'>{t('settings.science.policyQuarantined')}</div>
                   <div className='mt-3px text-18px font-750 text-[rgb(71,96,89)]'>

@@ -51,6 +51,9 @@ const SystemModalContent: React.FC = () => {
   const [agentIdleTimeout, setAgentIdleTimeout] = useState<number>(5);
   const [saveUploadToWorkspace, setSaveUploadToWorkspace] = useState(false);
   const [autoPreviewOfficeFiles, setAutoPreviewOfficeFiles] = useState(true);
+  const [telemetryUpdateEnabled, setTelemetryUpdateEnabled] = useState(true);
+  const [telemetryUsageEnabled, setTelemetryUsageEnabled] = useState(false);
+  const [telemetryDiagnosticsEnabled, setTelemetryDiagnosticsEnabled] = useState(false);
 
   useEffect(() => {
     if (!isDesktop) {
@@ -91,6 +94,24 @@ const SystemModalContent: React.FC = () => {
     setCronNotificationEnabled(configService.get('system.cronNotificationEnabled') ?? false);
     setSaveUploadToWorkspace(configService.get('upload.saveToWorkspace') ?? false);
     setAutoPreviewOfficeFiles(configService.get('system.autoPreviewOfficeFiles') ?? true);
+    setTelemetryUpdateEnabled(configService.get('telemetry.updateEnabled') ?? true);
+    setTelemetryUsageEnabled(configService.get('telemetry.usageEnabled') ?? false);
+    setTelemetryDiagnosticsEnabled(configService.get('telemetry.diagnosticsEnabled') ?? false);
+    if (isDesktop) {
+      ipcBridge.telemetry.getSettings
+        .invoke()
+        .then((result) => {
+          if (result.success && result.data) {
+            setTelemetryUpdateEnabled(result.data.consent.update);
+            setTelemetryUsageEnabled(result.data.consent.usage);
+            setTelemetryDiagnosticsEnabled(result.data.consent.diagnostics);
+            configService.setLocal('telemetry.updateEnabled', result.data.consent.update);
+            configService.setLocal('telemetry.usageEnabled', result.data.consent.usage);
+            configService.setLocal('telemetry.diagnosticsEnabled', result.data.consent.diagnostics);
+          }
+        })
+        .catch(() => {});
+    }
     const pt = configService.get('acp.promptTimeout');
     if (pt && pt > 0) setPromptTimeout(pt);
     const ait = configService.get('acp.agentIdleTimeout');
@@ -237,6 +258,60 @@ const SystemModalContent: React.FC = () => {
     });
   }, []);
 
+  const persistTelemetryConsent = useCallback(
+    (partial: { diagnostics?: boolean; update?: boolean; usage?: boolean }, rollback: () => void) => {
+      if (!isDesktop) {
+        configService.setBatch({
+          ...(partial.update !== undefined ? { 'telemetry.updateEnabled': partial.update } : {}),
+          ...(partial.usage !== undefined ? { 'telemetry.usageEnabled': partial.usage } : {}),
+          ...(partial.diagnostics !== undefined ? { 'telemetry.diagnosticsEnabled': partial.diagnostics } : {}),
+        }).catch(rollback);
+        return;
+      }
+
+      ipcBridge.telemetry.setConsent
+        .invoke(partial)
+        .then((result) => {
+          if (!result.success || !result.data) {
+            rollback();
+            return;
+          }
+          configService.setLocal('telemetry.updateEnabled', result.data.consent.update);
+          configService.setLocal('telemetry.usageEnabled', result.data.consent.usage);
+          configService.setLocal('telemetry.diagnosticsEnabled', result.data.consent.diagnostics);
+        })
+        .catch(rollback);
+    },
+    [isDesktop]
+  );
+
+  const handleTelemetryUpdateEnabledChange = useCallback(
+    (checked: boolean) => {
+      const previous = telemetryUpdateEnabled;
+      setTelemetryUpdateEnabled(checked);
+      persistTelemetryConsent({ update: checked }, () => setTelemetryUpdateEnabled(previous));
+    },
+    [persistTelemetryConsent, telemetryUpdateEnabled]
+  );
+
+  const handleTelemetryUsageEnabledChange = useCallback(
+    (checked: boolean) => {
+      const previous = telemetryUsageEnabled;
+      setTelemetryUsageEnabled(checked);
+      persistTelemetryConsent({ usage: checked }, () => setTelemetryUsageEnabled(previous));
+    },
+    [persistTelemetryConsent, telemetryUsageEnabled]
+  );
+
+  const handleTelemetryDiagnosticsEnabledChange = useCallback(
+    (checked: boolean) => {
+      const previous = telemetryDiagnosticsEnabled;
+      setTelemetryDiagnosticsEnabled(checked);
+      persistTelemetryConsent({ diagnostics: checked }, () => setTelemetryDiagnosticsEnabled(previous));
+    },
+    [persistTelemetryConsent, telemetryDiagnosticsEnabled]
+  );
+
   // Get system directory info
   const { data: systemInfo } = useSWR('system.dir.info', () => ipcBridge.application.systemInfo.invoke());
 
@@ -324,6 +399,35 @@ const SystemModalContent: React.FC = () => {
       label: t('settings.autoPreviewOfficeFiles'),
       description: t('settings.autoPreviewOfficeFilesDesc'),
       component: <Switch checked={autoPreviewOfficeFiles} onChange={handleAutoPreviewOfficeFilesChange} />,
+    },
+  ];
+
+  const telemetryItems = [
+    {
+      key: 'telemetryUpdate',
+      label: t('settings.telemetry.updateEnabled', { defaultValue: '更新状态同步' }),
+      description: t('settings.telemetry.updateEnabledDesc', {
+        defaultValue: '仅同步版本、平台、更新检查和下载状态，用于判断更新是否可用。',
+      }),
+      component: <Switch checked={telemetryUpdateEnabled} onChange={handleTelemetryUpdateEnabledChange} />,
+    },
+    {
+      key: 'telemetryUsage',
+      label: t('settings.telemetry.usageEnabled', { defaultValue: '匿名使用统计' }),
+      description: t('settings.telemetry.usageEnabledDesc', {
+        defaultValue: '记录模式选择和 artifact 类型等匿名事件，不上传科研内容。',
+      }),
+      component: <Switch checked={telemetryUsageEnabled} onChange={handleTelemetryUsageEnabledChange} />,
+    },
+    {
+      key: 'telemetryDiagnostics',
+      label: t('settings.telemetry.diagnosticsEnabled', { defaultValue: '诊断详情' }),
+      description: t('settings.telemetry.diagnosticsEnabledDesc', {
+        defaultValue: '允许发送脱敏后的启动和错误摘要，帮助定位安装与更新问题。',
+      }),
+      component: (
+        <Switch checked={telemetryDiagnosticsEnabled} onChange={handleTelemetryDiagnosticsEnabledChange} />
+      ),
     },
   ];
 
@@ -433,6 +537,26 @@ const SystemModalContent: React.FC = () => {
                 />
               )}
             </Form>
+          </div>
+
+          <div className='px-[12px] md:px-[32px] py-16px bg-2 rd-16px space-y-8px'>
+            <div className='px-12px'>
+              <div className='text-15px font-600 text-1'>
+                {t('settings.telemetry.title', { defaultValue: '隐私与诊断' })}
+              </div>
+              <div className='mt-4px text-12px text-t-secondary leading-5'>
+                {t('settings.telemetry.description', {
+                  defaultValue: 'OpenScience 只同步匿名运行状态。科研内容、文件正文、提示词和账号信息不会通过此通道上传。',
+                })}
+              </div>
+            </div>
+            <div className='w-full flex flex-col divide-y divide-border-2'>
+              {telemetryItems.map((item) => (
+                <PreferenceRow key={item.key} label={item.label} description={item.description}>
+                  {item.component}
+                </PreferenceRow>
+              ))}
+            </div>
           </div>
 
           {/* Voice input (speech-to-text) settings */}

@@ -58,8 +58,7 @@
 .science-report-cardHeader button,
 .science-report-artifactRef,
 .science-report-artifactItem,
-.science-report-cardArtifacts button,
-.science-evidence-open {
+.science-report-cardArtifacts button {
   font: inherit;
   cursor: pointer;
 }
@@ -94,6 +93,26 @@
 .science-report-cardHeader button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
+}
+
+.science-report-exportNotice {
+  margin-top: 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-fill-2) 68%, transparent);
+  padding: 6px 8px;
+  color: var(--color-text-2);
+  font-size: 11.5px;
+  line-height: 17px;
+  overflow-wrap: anywhere;
+}
+
+.science-report-exportNotice--error {
+  color: var(--color-text-1);
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--color-text-2) 34%, transparent);
+}
+
+.science-report-exportNotice--success {
+  color: var(--color-text-2);
 }
 
 .science-report-gitBadge {
@@ -215,7 +234,7 @@
   --medical-evidence-blue: var(--color-text-2);
   --medical-evidence-warm: var(--color-text-2);
   --medical-evidence-red: var(--color-text-2);
-  --medical-evidence-highlight: color-mix(in srgb, var(--color-fill-2) 74%, transparent);
+  --medical-evidence-highlight: color-mix(in srgb, #d7a84a 38%, transparent);
   --medical-evidence-highlight-table: color-mix(in srgb, var(--color-fill-2) 60%, transparent);
 }
 
@@ -288,7 +307,7 @@
 }
 
 .science-report-emphasis {
-  --medical-evidence-highlight: color-mix(in srgb, var(--color-fill-2) 74%, transparent);
+  --medical-evidence-highlight: color-mix(in srgb, #d7a84a 38%, transparent);
 }
 
 .science-report-artifactRef {
@@ -381,17 +400,78 @@
   color: var(--color-text-2);
 }
 
-.science-evidence-open {
-  margin-top: 8px;
-  border: 1px solid color-mix(in srgb, var(--science-report-blue) 24%, transparent);
-  border-radius: 6px;
+.science-evidence-reference__typeBadge {
+  color: var(--color-text-2);
+}
+
+.science-evidence-reference {
   background: transparent;
-  padding: 4px 7px;
-  color: var(--science-report-blue);
-  font-size: 11.5px;
-  font-weight: 680;
-  line-height: 16px;
-  overflow-wrap: anywhere;
+}
+
+.science-evidence-reference--openable {
+  cursor: pointer;
+}
+
+.science-evidence-reference--openable:hover {
+  background: transparent;
+}
+
+.science-evidence-reference--openable:hover .medical-evidence-reference__heading h4 {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.science-evidence-reference--openable:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-text-2) 24%, transparent);
+  outline-offset: 4px;
+}
+
+.science-evidence-report .science-evidence-reference .medical-evidence-reference__index,
+.science-evidence-report .science-evidence-reference .medical-evidence-qualityBadge,
+.science-evidence-report .science-evidence-reference .medical-evidence-reference__paperclip {
+  background: transparent;
+}
+
+.science-evidence-report .science-evidence-reference .medical-evidence-reference__index {
+  border-color: transparent;
+}
+
+.science-evidence-strength--high {
+  color: var(--color-text-1);
+}
+
+.science-evidence-strength--moderate {
+  color: var(--color-text-2);
+}
+
+.science-evidence-strength--low,
+.science-evidence-strength--blocked {
+  color: var(--color-text-3);
+}
+
+.science-evidence-reference__sourceButton {
+  max-width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease;
+}
+
+.science-evidence-reference__sourceButton:hover {
+  background: transparent;
+  color: var(--color-text-1);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.science-evidence-reference__sourceButton--static {
+  cursor: default;
+  text-decoration: none;
 }
 
 .science-evidence-supporting {
@@ -455,9 +535,43 @@
   margin-top: 8px;
 }
 
+.science-evidence-reference__details {
+  margin-top: 7px;
+  color: var(--color-text-3);
+  font-size: 11.5px;
+  line-height: 17px;
+}
+
+.science-evidence-reference__details summary {
+  width: fit-content;
+  cursor: pointer;
+  color: var(--color-text-3);
+  font-weight: 680;
+}
+
+.science-evidence-reference__details div {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.science-evidence-reference__details code {
+  border-radius: 5px;
+  background: var(--color-fill-1);
+  padding: 4px 6px;
+  color: var(--color-text-2);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .science-evidence-chainSection {
   border-top: 1px solid var(--medical-evidence-rule);
-  padding-top: 18px;
+  padding-top: 14px;
+}
+
+.science-evidence-chainSection__body {
+  display: grid;
+  gap: 0;
 }
 
 .science-evidence-chain,

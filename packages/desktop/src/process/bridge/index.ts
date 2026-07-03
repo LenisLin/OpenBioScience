@@ -12,6 +12,7 @@ import { initWindowControlsBridge } from './windowControlsBridge';
 import { initNotificationBridge } from './notificationBridge';
 import { initWebuiBridge } from './webuiBridge';
 import { initThemeBridge } from './themeBridge';
+import { initTelemetryBridge } from './telemetryBridge';
 import { initLarkAutomationBridge } from './larkAutomationBridge';
 import { initLarkProjectAgentBridge } from './larkProjectAgentBridge';
 import { initNativeWebPanelBridge } from './nativeWebPanelBridge';
@@ -20,6 +21,7 @@ import { initUserInputBridge } from './userInputBridge';
 import { initMedicalEvidenceReportBridge } from './medicalEvidenceReportBridge';
 import { initMedicalEvidenceSettingsBridge } from './medicalEvidenceSettingsBridge';
 import { initScienceArtifactArchiveBridge } from './scienceArtifactArchiveBridge';
+import { initScienceArtifactReportBridge } from './scienceArtifactReportBridge';
 import { initScienceLatexBridge } from './scienceLatexBridge';
 import { initComputeHostsBridge } from './computeHostsBridge';
 
@@ -30,6 +32,7 @@ export function initAllBridges(_deps: BridgeDependencies = {}): void {
   initApplicationBridge();
   initWindowControlsBridge();
   initUpdateBridge();
+  initTelemetryBridge();
   initSystemSettingsBridge();
   initNotificationBridge();
   initWebuiBridge();
@@ -41,6 +44,7 @@ export function initAllBridges(_deps: BridgeDependencies = {}): void {
   initMedicalEvidenceReportBridge();
   initMedicalEvidenceSettingsBridge();
   initComputeHostsBridge();
+  initScienceArtifactReportBridge();
   initScienceArtifactArchiveBridge();
   initScienceLatexBridge();
   initUserInputBridge();
@@ -52,6 +56,7 @@ export {
   initNotificationBridge,
   initSystemSettingsBridge,
   initThemeBridge,
+  initTelemetryBridge,
   initUpdateBridge,
   initWindowControlsBridge,
   initWebuiBridge,
@@ -62,6 +67,7 @@ export {
   initMedicalEvidenceReportBridge,
   initMedicalEvidenceSettingsBridge,
   initComputeHostsBridge,
+  initScienceArtifactReportBridge,
   initScienceArtifactArchiveBridge,
   initScienceLatexBridge,
   initUserInputBridge,

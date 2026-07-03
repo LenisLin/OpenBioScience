@@ -16,7 +16,7 @@ import type {
 import { ipcBridge } from '@/common';
 import { useConversationContextSafe } from '@/renderer/hooks/context/ConversationContext';
 import OpenScienceIcon, { type OpenScienceIconName } from '@/renderer/components/icons/OpenScienceIcon';
-import { collectSciencePanelFiles } from '@/renderer/utils/science/scienceProjectIndex';
+import { collectSciencePanelFiles, resolveSciencePreviewPath } from '@/renderer/utils/science/scienceProjectIndex';
 import { useLocalFilePreview } from '../../Preview/hooks/useLocalFilePreview';
 import { usePreviewContext } from '../../Preview/context/PreviewContext';
 import classNames from 'classnames';
@@ -39,6 +39,12 @@ const getArtifactPreviewPath = (artifact?: ScienceArtifact): string | undefined 
 
 const getEvidencePreviewPath = (evidence?: ScienceEvidenceItem): string | undefined =>
   evidence?.path || evidence?.region?.filePath;
+
+const isEvidenceOpenable = (evidence?: ScienceEvidenceItem): boolean =>
+  Boolean(getEvidencePreviewPath(evidence) || evidence?.url);
+
+const shouldIgnoreEvidenceCardOpen = (target: EventTarget | null): boolean =>
+  target instanceof HTMLElement && Boolean(target.closest('button, a, input, textarea, select, summary, details'));
 
 const unique = (values: Array<string | undefined>): string[] => {
   const seen = new Set<string>();
@@ -238,9 +244,13 @@ const scrollToEvidence = (id: string) => {
   window.setTimeout(() => element.classList.remove('medical-evidence-card--jumped'), 2200);
 };
 
-const isEvidenceToken = (value: string): boolean => {
-  if (!value.startsWith('E') || value.length < 2) return false;
-  return Array.from(value.slice(1)).every((char) => {
+const isEvidenceToken = (value: string, evidenceById?: Map<string, ScienceEvidenceItem>): boolean => {
+  const trimmed = value.trim();
+  if (evidenceById?.has(trimmed)) return true;
+  if (/^ev_[0-9A-Za-z_.-]+$/u.test(trimmed)) return true;
+  if (!/^E(?:\d[0-9A-Za-z_.-]*|[-_.][0-9A-Za-z_.-]+)$/u.test(trimmed)) return false;
+  if (!trimmed.startsWith('E') || trimmed.length < 2) return false;
+  return Array.from(trimmed.slice(1)).every((char) => {
     const code = char.charCodeAt(0);
     return (
       (code >= 48 && code <= 57) ||
@@ -251,6 +261,25 @@ const isEvidenceToken = (value: string): boolean => {
       char === '-'
     );
   });
+};
+
+const evidenceTokensFromBracket = (
+  value: string,
+  evidenceById: Map<string, ScienceEvidenceItem>
+): string[] | undefined => {
+  const tokens = value
+    .split(/[,\s]+/u)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  if (!tokens.length) return undefined;
+  if (!tokens.every((token) => isEvidenceToken(token, evidenceById))) return undefined;
+  return tokens;
+};
+
+const trimTrailingTextWhitespace = (nodes: React.ReactNode[]): void => {
+  const lastIndex = nodes.length - 1;
+  if (lastIndex < 0 || typeof nodes[lastIndex] !== 'string') return;
+  nodes[lastIndex] = (nodes[lastIndex] as string).replace(/\s+$/u, '');
 };
 
 const ScienceCitation: React.FC<{
@@ -293,7 +322,7 @@ const renderInlineEvidenceText = (
   let index = 0;
   while (index < text.length) {
     const boldIndex = text.indexOf('**', index);
-    const citationIndex = text.indexOf('[E', index);
+    const citationIndex = text.indexOf('[', index);
     const nextIndex =
       boldIndex >= 0 && citationIndex >= 0 ? Math.min(boldIndex, citationIndex) : Math.max(boldIndex, citationIndex);
 
@@ -321,10 +350,19 @@ const renderInlineEvidenceText = (
 
     const endIndex = text.indexOf(']', citationIndex + 2);
     const candidate = endIndex >= 0 ? text.slice(citationIndex + 1, endIndex) : '';
-    if (endIndex >= 0 && isEvidenceToken(candidate)) {
-      cited.add(candidate);
+    const discoveredTokens = endIndex >= 0 ? evidenceTokensFromBracket(candidate, evidenceById) : undefined;
+    if (discoveredTokens?.length) {
+      discoveredTokens.forEach((token) => cited.add(token));
+      trimTrailingTextWhitespace(nodes);
       nodes.push(
-        <ScienceCitation key={`cite-${citationIndex}-${candidate}`} id={candidate} evidenceById={evidenceById} />
+        <span
+          key={`inline-citations-${citationIndex}`}
+          className='medical-evidence-citationList science-report-citationList'
+        >
+          {discoveredTokens.map((id) => (
+            <ScienceCitation key={id} id={id} evidenceById={evidenceById} />
+          ))}
+        </span>
       );
       index = endIndex + 1;
       continue;
@@ -429,6 +467,7 @@ const ScienceEvidenceReference: React.FC<{
   onOpenEvidence: (evidence: ScienceEvidenceItem) => void;
 }> = ({ evidence, evidenceById, index, onOpenEvidence }) => {
   const previewPath = getEvidencePreviewPath(evidence);
+  const openable = isEvidenceOpenable(evidence);
   const sourceLocation = pathLabel(previewPath) || evidence.virtualPath || evidence.url;
   const metaItems = unique([
     evidence.database?.name,
@@ -451,11 +490,31 @@ const ScienceEvidenceReference: React.FC<{
     evidence.database?.params ? `params: ${JSON.stringify(evidence.database.params)}` : undefined,
   ]);
 
+  const openEvidenceFromCard = useCallback(
+    (event: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
+      if (!openable || shouldIgnoreEvidenceCardOpen(event.target)) return;
+      if ('key' in event) {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+      }
+      onOpenEvidence(evidence);
+    },
+    [evidence, onOpenEvidence, openable]
+  );
+
   return (
     <article
       id={`science-evidence-${evidence.id}`}
-      className='medical-evidence-reference science-evidence-reference'
+      className={classNames(
+        'medical-evidence-reference science-evidence-reference',
+        openable && 'science-evidence-reference--openable'
+      )}
       style={{ animationDelay: `${Math.min(index * 30, 150)}ms` }}
+      role={openable ? 'button' : undefined}
+      tabIndex={openable ? 0 : undefined}
+      aria-label={openable ? `Open evidence source for ${evidence.title}` : undefined}
+      onClick={openEvidenceFromCard}
+      onKeyDown={openEvidenceFromCard}
     >
       <div className='medical-evidence-reference__index'>{evidence.id}</div>
       <div className='medical-evidence-reference__body'>
@@ -494,14 +553,25 @@ const ScienceEvidenceReference: React.FC<{
         </div>
         {evidence.summary ? <p>{evidence.summary}</p> : null}
         {sourceLocation ? (
-          <button
-            type='button'
-            className='medical-evidence-reference__paperclip science-evidence-reference__sourceButton'
-            onClick={() => onOpenEvidence(evidence)}
-          >
-            <OpenScienceIcon name='artifactProvenance' size={12} visualScale={1.06} />
-            <span>{sourceLocation}</span>
-          </button>
+          openable ? (
+            <button
+              type='button'
+              className='medical-evidence-reference__paperclip science-evidence-reference__sourceButton'
+              title={previewPath ? 'Open evidence file' : 'Open source URL'}
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpenEvidence(evidence);
+              }}
+            >
+              <OpenScienceIcon name='artifactProvenance' size={12} visualScale={1.06} />
+              <span>{sourceLocation}</span>
+            </button>
+          ) : (
+            <span className='medical-evidence-reference__paperclip science-evidence-reference__sourceButton science-evidence-reference__sourceButton--static'>
+              <OpenScienceIcon name='artifactProvenance' size={12} visualScale={1.06} />
+              <span>{sourceLocation}</span>
+            </span>
+          )
         ) : null}
         {evidence.supportingEvidenceIds?.length ? (
           <div className='science-evidence-supporting'>
@@ -512,7 +582,7 @@ const ScienceEvidenceReference: React.FC<{
           </div>
         ) : null}
         {technicalDetails.length ? (
-          <details className='science-evidence-reference__details'>
+          <details className='science-evidence-reference__details' onClick={(event) => event.stopPropagation()}>
             <summary>Technical details</summary>
             <div>
               {technicalDetails.map((item) => (
@@ -707,11 +777,13 @@ export const ScienceReportPreviewPanel: React.FC<{ panel: SciencePanelData }> = 
     (artifact: ScienceArtifact) => {
       const filePath = getArtifactPreviewPath(artifact);
       if (!filePath) return;
+      const resolvedPath = resolveSciencePreviewPath(workspace, filePath) || filePath;
       void openLocalFilePreview(
-        filePath,
+        resolvedPath,
         undefined,
         {
           title: artifact.title,
+          workspace,
           science: {
             panel,
             artifactId: artifact.id,
@@ -722,21 +794,22 @@ export const ScienceReportPreviewPanel: React.FC<{ panel: SciencePanelData }> = 
         { replace: true }
       );
     },
-    [openLocalFilePreview, panel]
+    [openLocalFilePreview, panel, workspace]
   );
 
   const openEvidence = useCallback(
     (evidence: ScienceEvidenceItem) => {
       const filePath = getEvidencePreviewPath(evidence);
       if (filePath) {
-        void openLocalFilePreview(filePath, undefined, { title: evidence.title }, { replace: true });
+        const resolvedPath = resolveSciencePreviewPath(workspace, filePath) || filePath;
+        void openLocalFilePreview(resolvedPath, undefined, { title: evidence.title, workspace }, { replace: false });
         return;
       }
       if (evidence.url && typeof window !== 'undefined') {
         window.open(evidence.url, '_blank', 'noopener,noreferrer');
       }
     },
-    [openLocalFilePreview]
+    [openLocalFilePreview, workspace]
   );
 
   const openFiles = useCallback(() => {
@@ -934,11 +1007,13 @@ export const ScienceReportPanel: React.FC<{ panel: SciencePanelData }> = ({ pane
         openReport();
         return;
       }
+      const resolvedPath = resolveSciencePreviewPath(workspace, filePath) || filePath;
       void openLocalFilePreview(
-        filePath,
+        resolvedPath,
         undefined,
         {
           title: artifact.title,
+          workspace,
           science: {
             panel,
             artifactId: artifact.id,
@@ -949,7 +1024,7 @@ export const ScienceReportPanel: React.FC<{ panel: SciencePanelData }> = ({ pane
         { replace: true }
       );
     },
-    [openLocalFilePreview, openReport, panel]
+    [openLocalFilePreview, openReport, panel, workspace]
   );
 
   const openFiles = useCallback(() => {
@@ -1040,13 +1115,6 @@ export const ScienceReportPanel: React.FC<{ panel: SciencePanelData }> = ({ pane
       {exportNotice ? (
         <div className={`science-report-exportNotice science-report-exportNotice--${exportNotice.tone}`}>
           {exportNotice.text}
-        </div>
-      ) : null}
-      {panel.git?.shortCommit ? (
-        <div className='science-report-gitBadge'>
-          <OpenScienceIcon name='artifactVersion' size={13} visualScale={1.05} />
-          tracked snapshot <code>{panel.git.shortCommit}</code>
-          {panel.git.status ? <span>{panel.git.status}</span> : null}
         </div>
       ) : null}
       {panel.summary || panel.question ? (

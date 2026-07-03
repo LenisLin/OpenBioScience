@@ -6,6 +6,7 @@
 
 import type { SpeechToTextConfig } from '@/common/types/provider/speech';
 import type { LEGACY_APP_NAMESPACE } from '@/common/config/legacyIdentifiers';
+import type { BetaTestingConfig } from '@/common/config/betaTesting';
 import type { Theme } from '@/common/theme/types';
 import type { LabSkillDepositionConversationExtra } from '@/common/chat/labSkillDeposition';
 import type { MedicalEvidenceConversationExtra } from '@/common/chat/medicalEvidence';
@@ -90,6 +91,7 @@ export interface IConfigStorageRefer {
   'tools.scienceArtifact'?: ScienceArtifactConfig;
   'tools.compute'?: ComputeConfig;
   'tools.speechToText'?: SpeechToTextConfig;
+  'features.betaTesting'?: BetaTestingConfig;
   // 是否在粘贴文件到工作区时询问确认（true = 不再询问）
   'workspace.pasteConfirm'?: boolean;
   // 上传的文件是否保存到工作区目录（true = 保存到工作区，false = 保存到缓存目录）
@@ -106,6 +108,11 @@ export interface IConfigStorageRefer {
   'system.keepAwake'?: boolean;
   // Automatically preview newly created Office files in the current workspace
   'system.autoPreviewOfficeFiles'?: boolean;
+  // Privacy-preserving OpenScience telemetry switches. Update telemetry is
+  // limited to version/platform/update status; usage and diagnostics are opt-in.
+  'telemetry.updateEnabled'?: boolean;
+  'telemetry.usageEnabled'?: boolean;
+  'telemetry.diagnosticsEnabled'?: boolean;
   // Telegram assistant default model / Telegram 助手默认模型
   'assistant.telegram.defaultModel'?: {
     id: string;

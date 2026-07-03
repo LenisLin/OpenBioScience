@@ -29,6 +29,11 @@ import type {
   MedicalEvidenceReportSaveRequest,
   MedicalEvidenceReportSaveResult,
 } from '@/deepscientist_lark/medical_evidence_reports/types';
+import type {
+  ScienceArtifactReportListResult,
+  ScienceArtifactReportSaveRequest,
+  ScienceArtifactReportSaveResult,
+} from '@/deepscientist_lark/science_artifact_reports/types';
 import { bridge } from '@office-ai/platform';
 import type { OpenDialogOptions } from 'electron';
 import type {
@@ -105,6 +110,13 @@ import type {
   UpdateDownloadRequest,
   UpdateDownloadResult,
 } from '../update/updateTypes';
+import type {
+  TelemetryConsentSettings,
+  TelemetryFlushResult,
+  TelemetrySettingsSnapshot,
+  TelemetryTrackRequest,
+  TelemetryTrackResult,
+} from '../telemetry/telemetryTypes';
 import type { Theme } from '@/common/theme/types';
 import type { ProtocolDetectionRequest, ProtocolDetectionResponse } from '../utils/protocolDetector';
 import { LEGACY_LOCAL_RUNTIME_ID, isLegacyLocalRuntimeAgent } from '../config/legacyIdentifiers';
@@ -1605,6 +1617,20 @@ export const medicalEvidenceReports = {
   changed: bridge.buildEmitter<{ conversationId: string; reportId?: string }>('medical-evidence-reports:changed'),
 };
 
+// ---------------------------------------------------------------------------
+// Science artifact reports — durable Electron-local structured report store
+// ---------------------------------------------------------------------------
+
+export const scienceArtifactReports = {
+  list: bridge.buildProvider<ScienceArtifactReportListResult, { conversationId: string }>(
+    'science-artifact-reports:list'
+  ),
+  save: bridge.buildProvider<ScienceArtifactReportSaveResult, ScienceArtifactReportSaveRequest>(
+    'science-artifact-reports:save'
+  ),
+  changed: bridge.buildEmitter<{ conversationId: string; reportId?: string }>('science-artifact-reports:changed'),
+};
+
 export interface MedicalEvidenceSettingsTestConnectionRequest {
   paperclipApiKey?: string;
   paperclipBaseUrl?: string;
@@ -1688,6 +1714,15 @@ export const autoUpdate = {
   cancelDownload: bridge.buildProvider<IBridgeResponse, void>('auto-update.download.cancel'),
   quitAndInstall: bridge.buildProvider<void, void>('auto-update.quit-and-install'),
   status: bridge.buildEmitter<AutoUpdateStatus>('auto-update.status'),
+};
+
+export const telemetry = {
+  getSettings: bridge.buildProvider<IBridgeResponse<TelemetrySettingsSnapshot>, void>('telemetry:get-settings'),
+  setConsent: bridge.buildProvider<IBridgeResponse<TelemetrySettingsSnapshot>, Partial<TelemetryConsentSettings>>(
+    'telemetry:set-consent'
+  ),
+  track: bridge.buildProvider<IBridgeResponse<TelemetryTrackResult>, TelemetryTrackRequest>('telemetry:track'),
+  flush: bridge.buildProvider<IBridgeResponse<TelemetryFlushResult>, void>('telemetry:flush'),
 };
 
 // ---------------------------------------------------------------------------

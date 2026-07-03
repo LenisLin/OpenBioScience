@@ -175,14 +175,21 @@ const UpdateNotificationCard: React.FC = () => {
       );
     }
     if (state.status === 'available') {
+      const canDownload = state.autoUpdateAvailable || Boolean(state.updateInfo?.recommendedAsset);
       return (
         <>
           <Button size='small' className={ACTION_BTN_CLASS} onClick={() => actions.dismiss('later')}>
             {t('update.later')}
           </Button>
-          <Button type='primary' size='small' className={ACTION_BTN_CLASS} onClick={actions.startDownload}>
-            {t('update.downloadButton')}
-          </Button>
+          {canDownload ? (
+            <Button type='primary' size='small' className={ACTION_BTN_CLASS} onClick={actions.startDownload}>
+              {t(state.autoUpdateAvailable ? 'update.downloadAndInstall' : 'update.downloadButton')}
+            </Button>
+          ) : state.releasePageUrl ? (
+            <Button type='primary' size='small' className={ACTION_BTN_CLASS} onClick={actions.openReleasePage}>
+              {t('update.goToRelease')}
+            </Button>
+          ) : null}
         </>
       );
     }

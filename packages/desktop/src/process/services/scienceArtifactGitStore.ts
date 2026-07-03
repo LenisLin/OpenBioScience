@@ -146,7 +146,11 @@ const readJson = <T>(filePath: string, fallback: T): T => {
 
 const writeJsonl = (filePath: string, values: unknown[]): void => {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, values.map((value) => JSON.stringify(value)).join('\n') + (values.length ? '\n' : ''), 'utf8');
+  fs.writeFileSync(
+    filePath,
+    values.map((value) => JSON.stringify(value)).join('\n') + (values.length ? '\n' : ''),
+    'utf8'
+  );
 };
 
 const appendJsonl = (filePath: string, values: unknown[]): void => {
@@ -222,9 +226,7 @@ const ensureLocalGitIdentity = (repoPath: string): void => {
 
 const updateOpenScienceGitignore = (openScienceRoot: string): void => {
   const gitignorePath = path.join(openScienceRoot, '.gitignore');
-  const lines = fs.existsSync(gitignorePath)
-    ? fs.readFileSync(gitignorePath, 'utf8').split(/\r?\n/u)
-    : [];
+  const lines = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, 'utf8').split(/\r?\n/u) : [];
   const required = [`/${ARTIFACT_REPO_DIR}/`, '/exports/'];
   let changed = false;
   for (const item of required) {
@@ -247,7 +249,8 @@ export function ensureScienceProject(projectRoot?: string): ScienceProjectInfo |
 
   const existing = readJson<Partial<ScienceProjectInfo> & JsonRecord>(projectPath, {});
   const createdAt = typeof existing.createdAt === 'number' ? existing.createdAt : now();
-  const projectId = typeof existing.projectId === 'string' && existing.projectId ? existing.projectId : stableProjectId(resolvedRoot);
+  const projectId =
+    typeof existing.projectId === 'string' && existing.projectId ? existing.projectId : stableProjectId(resolvedRoot);
   const project: ScienceProjectInfo = {
     projectId,
     projectRoot: resolvedRoot,
@@ -474,10 +477,7 @@ const materializeIncludePath = (
   return [materializeFile(project, runRoot, artifact, include, resolved, resolved, maxCopyBytes)];
 };
 
-const groupFilesForArtifact = (
-  files: ScienceArtifactGitFile[],
-  artifact: ScienceArtifact
-): ScienceArtifactGitFile[] =>
+const groupFilesForArtifact = (files: ScienceArtifactGitFile[], artifact: ScienceArtifact): ScienceArtifactGitFile[] =>
   files.filter(
     (item) =>
       item.artifactId === artifact.id &&
@@ -485,7 +485,9 @@ const groupFilesForArtifact = (
   );
 
 const normalizeComparablePath = (value?: string): string =>
-  toPosix(String(value || '').trim()).replace(/\/+/gu, '/').replace(/^\.\//u, '');
+  toPosix(String(value || '').trim())
+    .replace(/\/+/gu, '/')
+    .replace(/^\.\//u, '');
 
 const fileRecordKey = (record: Pick<ScienceArtifactFileProvenanceRecord, 'relativePath' | 'path'>): string =>
   normalizeComparablePath(record.relativePath || record.path);
@@ -502,9 +504,7 @@ const evidenceIdsForFile = (
   file: ScienceArtifactGitFile
 ): string[] => {
   const paths = new Set(
-    [file.relativePath, file.path]
-      .filter((item): item is string => Boolean(item))
-      .map(normalizeComparablePath)
+    [file.relativePath, file.path].filter((item): item is string => Boolean(item)).map(normalizeComparablePath)
   );
   const ids = new Set<string>();
   artifact?.evidenceIds?.forEach((id) => ids.add(id));
@@ -525,9 +525,7 @@ const provenanceNodeIdsForFile = (
   file: ScienceArtifactGitFile
 ): string[] => {
   const paths = new Set(
-    [file.relativePath, file.path]
-      .filter((item): item is string => Boolean(item))
-      .map(normalizeComparablePath)
+    [file.relativePath, file.path].filter((item): item is string => Boolean(item)).map(normalizeComparablePath)
   );
   const ids = new Set<string>();
   artifact?.provenanceNodeIds?.forEach((id) => ids.add(id));
@@ -619,13 +617,13 @@ const updateFileIndex = (
     projectId: project.projectId,
     projectRoot: project.projectRoot,
     updatedAt: now(),
-    files: [...byKey.values()]
-      .toSorted((left, right) => (right.timestamp || 0) - (left.timestamp || 0))
-      .slice(0, 2000),
+    files: [...byKey.values()].toSorted((left, right) => (right.timestamp || 0) - (left.timestamp || 0)).slice(0, 2000),
   });
   appendJsonl(
     fileLedgerPath(project),
-    records.map((record) => Object.assign({ schema: FILE_LEDGER_SCHEMA }, record, { status: statusForRecord(project, record) }))
+    records.map((record) =>
+      Object.assign({ schema: FILE_LEDGER_SCHEMA }, record, { status: statusForRecord(project, record) })
+    )
   );
 };
 
@@ -636,7 +634,9 @@ const updateProjectIndex = (
 ): void => {
   const indexPath = path.join(project.openScienceRoot, SCIENCE_ARTIFACTS_DIR, 'project-index.json');
   const previous = readJson<JsonRecord>(indexPath, {});
-  const runs = Array.isArray(previous.runs) ? previous.runs.filter((item) => (item as JsonRecord).runId !== panel.runId) : [];
+  const runs = Array.isArray(previous.runs)
+    ? previous.runs.filter((item) => (item as JsonRecord).runId !== panel.runId)
+    : [];
   runs.unshift({
     runId: panel.runId,
     title: panel.report?.title || panel.question,
@@ -646,7 +646,9 @@ const updateProjectIndex = (
     latestCommit: gitRef.commit,
     shortCommit: gitRef.shortCommit,
   });
-  const artifacts = Array.isArray(previous.artifacts) ? previous.artifacts.filter((item) => (item as JsonRecord).runId !== panel.runId) : [];
+  const artifacts = Array.isArray(previous.artifacts)
+    ? previous.artifacts.filter((item) => (item as JsonRecord).runId !== panel.runId)
+    : [];
   artifacts.unshift(
     ...panel.artifacts.map((artifact) => ({
       runId: panel.runId,
@@ -669,9 +671,7 @@ const updateProjectIndex = (
   });
 };
 
-export function commitScienceArtifactSnapshot(
-  request: ScienceArtifactSnapshotRequest
-): ScienceArtifactSnapshotResult {
+export function commitScienceArtifactSnapshot(request: ScienceArtifactSnapshotRequest): ScienceArtifactSnapshotResult {
   const project = ensureScienceArtifactRepo(request.projectRoot);
   if (!project) {
     return {
@@ -745,7 +745,12 @@ export function commitScienceArtifactSnapshot(
   );
 
   for (const artifact of panel.artifacts) {
-    const artifactRoot = path.join(runRoot, 'artifacts', safeSegment(artifact.id, 'artifact'), `v${artifact.version || 1}`);
+    const artifactRoot = path.join(
+      runRoot,
+      'artifacts',
+      safeSegment(artifact.id, 'artifact'),
+      `v${artifact.version || 1}`
+    );
     writeJson(path.join(artifactRoot, 'artifact.json'), artifact);
     writeJson(path.join(artifactRoot, 'files.json'), groupFilesForArtifact(files, artifact));
   }
@@ -770,7 +775,12 @@ export function commitScienceArtifactSnapshot(
   }
   const commit = gitHead(project.artifactRepoPath);
   const shortCommit = commit ? commit.slice(0, 7) : undefined;
-  const changedFiles = gitOutput(project.artifactRepoPath, ['show', '--name-only', '--pretty=format:', commit || 'HEAD'])
+  const changedFiles = gitOutput(project.artifactRepoPath, [
+    'show',
+    '--name-only',
+    '--pretty=format:',
+    commit || 'HEAD',
+  ])
     ?.split(/\r?\n/u)
     .map((item) => item.trim())
     .filter(Boolean);
@@ -804,13 +814,21 @@ export function resolveScienceArtifactFileProvenance(
   const relativePath = relativeToProject(project.projectRoot, resolvedPath);
   const keys = new Set([normalizeComparablePath(filePath), normalizeComparablePath(resolvedPath)]);
   if (relativePath) keys.add(normalizeComparablePath(relativePath));
+  if (isInside(project.artifactRepoPath, resolvedPath)) {
+    keys.add(normalizeComparablePath(toPosix(path.relative(project.artifactRepoPath, resolvedPath))));
+  }
 
   const index = readJson<{ files?: ScienceArtifactFileProvenanceRecord[] }>(fileIndexPath(project), {});
   const indexedFiles = index.files || [];
   let matchedByHash = false;
   let currentHash: string | undefined;
   const recordByPath = indexedFiles
-    .filter((item) => keys.has(fileRecordKey(item)) || keys.has(normalizeComparablePath(item.path)))
+    .filter(
+      (item) =>
+        keys.has(fileRecordKey(item)) ||
+        keys.has(normalizeComparablePath(item.path)) ||
+        keys.has(normalizeComparablePath(item.storedPath))
+    )
     .toSorted((left, right) => (right.timestamp || 0) - (left.timestamp || 0))[0];
   if (!recordByPath && fs.existsSync(resolvedPath)) {
     try {
@@ -850,6 +868,7 @@ export function resolveScienceArtifactFileProvenance(
       (item) =>
         keys.has(fileRecordKey(item)) ||
         keys.has(normalizeComparablePath(item.path)) ||
+        keys.has(normalizeComparablePath(item.storedPath)) ||
         (matchedByHash && Boolean(currentHash) && item.sha256 === currentHash)
     )
     .toSorted((left, right) => (right.timestamp || 0) - (left.timestamp || 0))
@@ -877,9 +896,7 @@ export function resolveScienceArtifactFileProvenance(
   };
 }
 
-export function listScienceArtifactHistory(
-  request: ScienceArtifactHistoryRequest
-): ScienceArtifactHistoryResult {
+export function listScienceArtifactHistory(request: ScienceArtifactHistoryRequest): ScienceArtifactHistoryResult {
   const project = ensureScienceArtifactRepo(request.projectRoot);
   if (!project || !fs.existsSync(path.join(project.artifactRepoPath, '.git'))) {
     return { ok: false, project, items: [], error: 'Science artifact repository is unavailable.' };
@@ -895,9 +912,21 @@ export function listScienceArtifactHistory(
     pathspec.push('--', target);
   }
   const format = '%H%x1f%h%x1f%ad%x1f%s';
-  const result = git(project.artifactRepoPath, ['log', '--date=iso-strict', `--pretty=format:${format}`, `-n${limit}`, ...pathspec]);
+  const result = git(project.artifactRepoPath, [
+    'log',
+    '--date=iso-strict',
+    `--pretty=format:${format}`,
+    `-n${limit}`,
+    ...pathspec,
+  ]);
   if (result.status !== 0) {
-    return { ok: false, project, head: gitHead(project.artifactRepoPath), items: [], error: result.stderr || result.stdout };
+    return {
+      ok: false,
+      project,
+      head: gitHead(project.artifactRepoPath),
+      items: [],
+      error: result.stderr || result.stdout,
+    };
   }
   const items = String(result.stdout || '')
     .split(/\r?\n/u)
@@ -905,7 +934,9 @@ export function listScienceArtifactHistory(
     .map((line) => {
       const [commit, shortCommit, authoredAt, subject] = line.split('\x1f');
       const changedFiles =
-        gitOutput(project.artifactRepoPath, ['show', '--name-only', '--pretty=format:', commit, ...pathspec])?.split(/\r?\n/u).filter(Boolean) || [];
+        gitOutput(project.artifactRepoPath, ['show', '--name-only', '--pretty=format:', commit, ...pathspec])
+          ?.split(/\r?\n/u)
+          .filter(Boolean) || [];
       return {
         commit,
         shortCommit,
@@ -929,7 +960,9 @@ const readGitJson = <T>(repoPath: string, commit: string, objectPath: string): T
 
 const panelToMarkdown = (panel: SciencePanelData, options: { includeHeader?: boolean } = {}): string => {
   const includeHeader = options.includeHeader !== false;
-  const lines: string[] = includeHeader ? [`# ${panel.report.title || panel.question}`, '', `Run: \`${panel.runId}\``, ''] : [];
+  const lines: string[] = includeHeader
+    ? [`# ${panel.report.title || panel.question}`, '', `Run: \`${panel.runId}\``, '']
+    : [];
   if (panel.summary) lines.push(panel.summary, '');
   for (const section of panel.report.sections) {
     lines.push(`## ${section.heading}`, '');
@@ -940,7 +973,11 @@ const panelToMarkdown = (panel: SciencePanelData, options: { includeHeader?: boo
         lines.push('');
       }
       if (block.type === 'checklist') {
-        block.items.forEach((item) => lines.push(`- [${item.status === 'done' || item.status === 'passed' ? 'x' : ' '}] ${item.label}${item.detail ? `: ${item.detail}` : ''}`));
+        block.items.forEach((item) =>
+          lines.push(
+            `- [${item.status === 'done' || item.status === 'passed' ? 'x' : ' '}] ${item.label}${item.detail ? `: ${item.detail}` : ''}`
+          )
+        );
         lines.push('');
       }
       if ('artifactId' in block) lines.push(`- Artifact: \`${block.artifactId}\``, '');
@@ -949,14 +986,18 @@ const panelToMarkdown = (panel: SciencePanelData, options: { includeHeader?: boo
   if (panel.artifacts.length) {
     lines.push('## Artifacts', '');
     panel.artifacts.forEach((artifact) => {
-      lines.push(`- \`${artifact.id}\` v${artifact.version}: ${artifact.title}${artifact.primaryPath ? ` (${artifact.primaryPath})` : ''}`);
+      lines.push(
+        `- \`${artifact.id}\` v${artifact.version}: ${artifact.title}${artifact.primaryPath ? ` (${artifact.primaryPath})` : ''}`
+      );
     });
     lines.push('');
   }
   if (panel.evidence.length) {
     lines.push('## Reference Evidence', '');
     panel.evidence.forEach((evidence) => {
-      lines.push(`- [${evidence.id}] ${evidence.title}${evidence.path ? ` — ${evidence.path}` : evidence.url ? ` — ${evidence.url}` : ''}`);
+      lines.push(
+        `- [${evidence.id}] ${evidence.title}${evidence.path ? ` — ${evidence.path}` : evidence.url ? ` — ${evidence.url}` : ''}`
+      );
       if (evidence.summary) lines.push(`  - ${evidence.summary}`);
     });
     lines.push('');
@@ -970,11 +1011,7 @@ const panelToMarkdown = (panel: SciencePanelData, options: { includeHeader?: boo
 };
 
 const escapeHtml = (value: string): string =>
-  value
-    .replace(/&/gu, '&amp;')
-    .replace(/</gu, '&lt;')
-    .replace(/>/gu, '&gt;')
-    .replace(/"/gu, '&quot;');
+  value.replace(/&/gu, '&amp;').replace(/</gu, '&lt;').replace(/>/gu, '&gt;').replace(/"/gu, '&quot;');
 
 const renderInlineHtml = (value: string): string =>
   escapeHtml(value)
@@ -983,7 +1020,10 @@ const renderInlineHtml = (value: string): string =>
 
 const sourceTypeLabel = (value: string): string => value.replace(/_/gu, ' ');
 
-const renderReportBlockHtml = (panel: SciencePanelData, block: SciencePanelData['report']['sections'][number]['blocks'][number]): string => {
+const renderReportBlockHtml = (
+  panel: SciencePanelData,
+  block: SciencePanelData['report']['sections'][number]['blocks'][number]
+): string => {
   if (block.type === 'paragraph') return `<p>${renderInlineHtml(block.text)}</p>`;
   if (block.type === 'bullet_list') {
     return [
@@ -1072,7 +1112,10 @@ const panelToHtml = (panel: SciencePanelData): string => {
           '<section class="report-section warning-section">',
           '<h2>Provenance Warnings</h2>',
           '<ul class="report-list">',
-          ...panel.graphWarnings.map((warning) => `<li><strong>${escapeHtml(warning.severity)}</strong>: ${renderInlineHtml(warning.message)}</li>`),
+          ...panel.graphWarnings.map(
+            (warning) =>
+              `<li><strong>${escapeHtml(warning.severity)}</strong>: ${renderInlineHtml(warning.message)}</li>`
+          ),
           '</ul>',
           '</section>',
         ].join('\n')
@@ -1227,9 +1270,7 @@ const panelToLatex = (panel: SciencePanelData): string => {
   return lines.join('\n');
 };
 
-export function exportScienceArtifactSnapshot(
-  request: ScienceArtifactExportRequest
-): ScienceArtifactExportResult {
+export function exportScienceArtifactSnapshot(request: ScienceArtifactExportRequest): ScienceArtifactExportResult {
   const project = ensureScienceArtifactRepo(request.projectRoot);
   if (!project || !fs.existsSync(path.join(project.artifactRepoPath, '.git'))) {
     return { ok: false, project, files: [], error: 'Science artifact repository is unavailable.' };
@@ -1238,7 +1279,8 @@ export function exportScienceArtifactSnapshot(
   if (!sourceCommit) return { ok: false, project, files: [], error: 'No Science artifact commit is available.' };
   const runSegment = safeSegment(request.runId, 'run');
   const panel = readGitJson<SciencePanelData>(project.artifactRepoPath, sourceCommit, `runs/${runSegment}/panel.json`);
-  if (!panel) return { ok: false, project, files: [], error: `Run ${request.runId} is not available at commit ${sourceCommit}.` };
+  if (!panel)
+    return { ok: false, project, files: [], error: `Run ${request.runId} is not available at commit ${sourceCommit}.` };
 
   const exportId = `export_${Date.now().toString(36)}_${sourceCommit.slice(0, 7)}`;
   const exportDir = path.join(project.openScienceRoot, 'exports', runSegment, exportId);
@@ -1322,8 +1364,7 @@ export function exportScienceArtifactSnapshot(
       contentHash: file.contentHash,
     })),
     completeness: exportTypes.has('run_bundle') ? 'complete_with_pointers' : 'partial',
-    note:
-      'This export is generated from a frozen OpenScience artifact git snapshot. Large files may be represented by pointers in the artifact repo.',
+    note: 'This export is generated from a frozen OpenScience artifact git snapshot. Large files may be represented by pointers in the artifact repo.',
   };
   if (exportTypes.has('manifest')) {
     writeExportFile('manifest', path.join(exportDir, 'export-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);

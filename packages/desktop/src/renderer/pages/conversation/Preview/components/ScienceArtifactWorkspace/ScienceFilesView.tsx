@@ -15,6 +15,7 @@ import {
   collectSciencePanelFiles,
   getFileNameFromSciencePath,
   loadScienceProjectIndex,
+  resolveScienceArtifactStoredPath,
   resolveSciencePath,
   toWorkspaceRelativePath,
   type ScienceProjectIndex,
@@ -107,12 +108,14 @@ const makeScienceItems = (
     sourcePanel: SciencePanelData,
     group: string
   ) => {
-    const key = makeFileId(ref.path, ref.role, ref.artifactId);
+    const sourcePath = ref.relativePath || ref.displayPath || ref.path;
+    const path = resolveScienceArtifactStoredPath(workspace, sourcePanel, sourcePath, ref.artifact) || ref.path;
+    const key = makeFileId(path, ref.role, ref.artifactId);
     if (items.has(key)) return;
     items.set(key, {
       id: key,
-      name: getFileNameFromSciencePath(ref.path),
-      path: ref.path,
+      name: getFileNameFromSciencePath(sourcePath),
+      path,
       relativePath: ref.relativePath || toWorkspaceRelativePath(workspace, ref.path),
       role: ref.role,
       group,
@@ -126,7 +129,9 @@ const makeScienceItems = (
     });
   };
 
-  collectSciencePanelFiles(workspace, panel).forEach((ref) => addRef(ref, panel, panel.report.title || 'Current report'));
+  collectSciencePanelFiles(workspace, panel).forEach((ref) =>
+    addRef(ref, panel, panel.report.title || 'Current report')
+  );
   index?.runs.forEach((run) => {
     run.artifacts.forEach((ref) => addRef(ref, run.panel, run.title || run.runId));
   });

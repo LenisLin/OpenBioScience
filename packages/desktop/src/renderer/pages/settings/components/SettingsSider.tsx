@@ -23,6 +23,7 @@ export const BUILTIN_TAB_IDS = [
   'appearance',
   'webui',
   'lark-automation',
+  'beta',
   'pet',
   'diagnostics',
   'system',
@@ -128,6 +129,12 @@ const SettingsSider: React.FC<{ collapsed?: boolean; tooltipEnabled?: boolean }>
         label: t('settings.larkAutomation.title', { defaultValue: 'Collaboration automation' }),
         icon: <Api />,
         path: 'lark-automation',
+      },
+      beta: {
+        id: 'beta',
+        label: t('settings.betaTesting.title', { defaultValue: 'Beta Testing' }),
+        icon: <OpenScienceIcon name='settingsMotion' size={20} />,
+        path: 'beta',
       },
       pet: { id: 'pet', label: t('pet.desktopPet'), icon: <Cat />, path: 'pet' },
       diagnostics: {

@@ -1,12 +1,12 @@
 # Build Scripts Documentation
 
-This directory contains scripts for building and packaging DeepOrganiser across different platforms and architectures.
+This directory contains scripts for building and packaging OpenScience across different platforms and architectures.
 
 ## Scripts Overview
 
 | Script                    | Lines | Purpose                                         |
 | ------------------------- | ----- | ----------------------------------------------- |
-| `build-with-builder.js`   | 116   | Coordinates Electron Forge and electron-builder |
+| `build-with-builder.js`   | 116   | Coordinates electron-vite and electron-builder |
 | `rebuildNativeModules.js` | 219   | **Unified native module rebuild utility**       |
 | `beforeBuild.js`          | 38    | Pre-packaging native module rebuild hook        |
 | `afterPack.js`            | 67    | Post-packaging verification (Linux only)        |
@@ -23,7 +23,10 @@ npm run dist:*
     ↓
 build-with-builder.js
     ↓
-    ├─→ Electron Forge (webpack compilation)
+    ├─→ electron-vite (main/preload/renderer compilation)
+    ├─→ build builtin MCP server bundles
+    ├─→ prepare bundled OpenScience Core runtime
+    ├─→ prepare offline Hub resources
     ↓
 electron-builder
     ↓
@@ -95,6 +98,26 @@ npm run dist:win
 # Build for Linux
 npm run dist:linux
 ```
+
+The repo root also exposes explicit Bun commands:
+
+```bash
+bun run build-mac:arm64
+bun run build-mac:x64
+bun run build-win:x64
+bun run build-win:arm64
+bun run build-deb
+```
+
+Release-quality packages should normally be built on native CI runners:
+
+| Target | Recommended runner |
+| ------ | ------------------ |
+| macOS DMG/ZIP | macOS |
+| Windows NSIS/ZIP | Windows with Visual Studio 2022 Build Tools |
+| Linux DEB | Ubuntu/Debian |
+
+The build step requires a matching OpenScience Core runtime under `resources/bundled-deeporganiser-core/<platform>-<arch>/`. `build-with-builder.js` prepares it automatically from the pinned `deepOrganiserCoreVersion` in the repo-root `package.json`, or from `DEEPORGANISER_CORE_VERSION` / `DEEPORGANISER_CORE_RUN_ID` when those variables are set.
 
 ### Manual native module rebuild
 

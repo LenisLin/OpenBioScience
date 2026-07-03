@@ -40,6 +40,18 @@ Important actions:
 7. Use `snapshot` after meaningful file-producing steps, before final publish
    or export, and after user annotation fixes.
 
+For artifacts from an earlier conversation in the same research project:
+
+1. Call `science_artifact(action="list", payload={"scope":"project"}, projectRoot=<authorized root>)`.
+2. Identify the source `runId`, artifact `id`, and `version`.
+3. Call `science_artifact(action="get", runId=<source runId>, target={"kind":"artifact","id":<id>,"version":<version>}, projectRoot=<authorized root>)`.
+4. Use the returned `revision` as `baseRevision` for `patch` or `version`.
+5. Prefer `version` when visible scientific content or source files changed; use
+   `patch` only for metadata, viewer configuration, labels, pages, report text,
+   or provenance corrections.
+6. Do not silently recreate a duplicate artifact in the current run when a
+   same-project artifact already exists and the user's intent is to modify it.
+
 ## Snapshot SOP
 
 OpenScience keeps one artifact git ledger per research project under
@@ -93,6 +105,21 @@ preview, inspector, code, log, LaTeX editor, compiled PDF, notebook, evidence
 ledger, provenance panes, or native scientific viewers.
 
 Do not close user-opened pages unless explicitly authorized.
+
+## Report Text Rules
+
+When creating or patching a report page/panel:
+
+- Use concise Markdown bold for decisive conclusion phrases, for example
+  `**this run supports the negative control but not the main claim**`.
+- Do not bold whole paragraphs, methods logs, or long caveat lists.
+- Put supporting evidence ids in the block/item `evidenceIds` array, not as
+  literal `[E2]`, `[ev_file]`, or `[ev_a, ev_b]` text inside `summary`, `text`,
+  `label`, `detail`, captions, table cells, or report prose. The UI renders
+  clickable anchors automatically from structured fields.
+- Keep Reference Evidence entries short; detailed query parameters, identifier
+  conversions, and warnings belong in evidence metadata/provenance, not in the
+  main reading flow.
 
 ## Native Viewer Payload Rules
 

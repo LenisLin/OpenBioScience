@@ -118,11 +118,13 @@ const sanitizeTabsForPersistence = (input: PreviewTab[]): PreviewTab[] => {
   return input
     .filter((tab) => PERSISTABLE_CONTENT_TYPES.has(tab.content_type))
     .filter((tab) => tab.content.length <= MAX_PERSISTED_TAB_CONTENT_LENGTH)
-    .map((tab) => Object.assign({}, tab, {
-      metadata: stripVolatileMetadata(tab.metadata),
-      isDirty: false,
-      originalContent: tab.content,
-    }));
+    .map((tab) =>
+      Object.assign({}, tab, {
+        metadata: stripVolatileMetadata(tab.metadata),
+        isDirty: false,
+        originalContent: tab.content,
+      })
+    );
 };
 
 const parsePersistedTabs = (value: unknown): PreviewTab[] => {
@@ -141,10 +143,12 @@ const parsePersistedTabs = (value: unknown): PreviewTab[] => {
     })
     .filter((tab) => PERSISTABLE_CONTENT_TYPES.has(tab.content_type))
     .filter((tab) => tab.content.length <= MAX_PERSISTED_TAB_CONTENT_LENGTH)
-    .map((tab) => Object.assign({}, tab, {
-      originalContent: typeof tab.originalContent === 'string' ? tab.originalContent : tab.content,
-      isDirty: false,
-    }));
+    .map((tab) =>
+      Object.assign({}, tab, {
+        originalContent: typeof tab.originalContent === 'string' ? tab.originalContent : tab.content,
+        isDirty: false,
+      })
+    );
 };
 
 // 从 localStorage 恢复状态 / Restore state from localStorage
@@ -248,6 +252,16 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const normalizedFileName = normalize(meta?.file_name);
       const normalizedTitle = normalize(meta?.title);
       const normalizedFilePath = normalize(meta?.file_path);
+      const normalizedScienceKey = normalize(
+        meta?.science
+          ? [
+              meta.science.panel.conversationId,
+              meta.science.panel.runId,
+              meta.science.artifactId,
+              meta.science.artifactVersion ?? '',
+            ].join(':')
+          : undefined
+      );
 
       return (
         tabList.find((tab) => {
@@ -255,6 +269,18 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
           const tabFileName = normalize(tab.metadata?.file_name);
           const tabTitle = normalize(tab.metadata?.title);
           const tabFilePath = normalize(tab.metadata?.file_path);
+          const tabScienceKey = normalize(
+            tab.metadata?.science
+              ? [
+                  tab.metadata.science.panel.conversationId,
+                  tab.metadata.science.panel.runId,
+                  tab.metadata.science.artifactId,
+                  tab.metadata.science.artifactVersion ?? '',
+                ].join(':')
+              : undefined
+          );
+
+          if (normalizedScienceKey && tabScienceKey && normalizedScienceKey === tabScienceKey) return true;
 
           // 优先通过 file_path 匹配（最可靠）/ Prefer matching by file_path (most reliable)
           if (normalizedFilePath && tabFilePath && normalizedFilePath === tabFilePath) return true;

@@ -79,6 +79,12 @@ export function getBuiltinSettingsNavItems(isDesktop: boolean, t: TranslateFn): 
       icon: <Api theme='outline' size='16' />,
       path: 'lark-automation',
     },
+    beta: {
+      id: 'beta',
+      label: t('settings.betaTesting.title', { defaultValue: 'Beta Testing' }),
+      icon: <OpenScienceIcon name='settingsMotion' size={16} />,
+      path: 'beta',
+    },
     pet: { id: 'pet', label: t('pet.desktopPet'), icon: <Cat theme='outline' size='16' />, path: 'pet' },
     diagnostics: {
       id: 'diagnostics',

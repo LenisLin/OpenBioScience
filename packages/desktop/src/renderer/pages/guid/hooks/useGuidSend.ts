@@ -5,10 +5,7 @@
  */
 
 import { ipcBridge } from '@/common';
-import {
-  buildMedicalEvidenceConversationExtra,
-  buildMedicalEvidenceModePrompt,
-} from '@/common/chat/medicalEvidence';
+import { buildMedicalEvidenceConversationExtra, buildMedicalEvidenceModePrompt } from '@/common/chat/medicalEvidence';
 import { normalizeMedicalEvidenceSources } from '@/common/chat/medicalEvidenceDefaults';
 import {
   buildLabSkillDepositionConversationExtra,
@@ -50,6 +47,7 @@ import { mutate as swrMutate } from 'swr';
 import { getConversationCreateErrorMessage } from '@/renderer/pages/conversation/utils/conversationCreateError';
 import type { AcpModelInfo, AvailableAgent, EffectiveAgentInfo } from '../types';
 import { getPreferredThoughtLevel } from './agentSelectionUtils';
+import type { GuidLarkProjectContext } from '../components/GuidLarkProjectPanel';
 import {
   createLoopGoalState,
   buildLoopGoalKickoffPrompt,
@@ -62,6 +60,68 @@ import {
   normalizeGuidAgentBackend,
   resolveGuidCapabilityMode,
 } from '../utils/modeCapabilities';
+
+function buildLarkProjectContextPrompt(context: GuidLarkProjectContext): string {
+  const focusedTask = context.focusedTask;
+  const basePrompt =
+    context.role === 'leader'
+      ? context.leaderPrompt?.trim() ||
+        [
+          '# Lark Project Leader Context',
+          '',
+          `Project tasklist: ${context.tasklistName}`,
+          `Tasklist GUID: ${context.tasklistGuid}`,
+          '',
+          'You are the leader Agent for this Lark project tasklist. Treat the whole tasklist as the project scope and help move it forward in an organized way.',
+          'First align with the project owner on goals, participants, responsibilities, milestones, and approval boundaries.',
+          'Before explicit approval, do not create, assign, modify, close, or delete Lark tasks. Keep the work in planning and coordination mode.',
+        ].join('\n')
+      : [
+          '# Lark Project Context',
+          '',
+          `Project tasklist: ${context.tasklistName}`,
+          `Tasklist GUID: ${context.tasklistGuid}`,
+          '',
+          'You are entering this Lark project as a regular project Agent, not as the leader Agent. Use the project tasklist as shared context. Do not take over project orchestration unless the user explicitly asks you to become the leader Agent.',
+        ].join('\n');
+  if (!focusedTask) return basePrompt;
+  return [
+    basePrompt,
+    '',
+    '# Focused Lark Task',
+    '',
+    context.role === 'leader'
+      ? 'The leader Agent remains responsible for the whole Lark tasklist. The following task is only a user-selected focus item and should be treated as additional context, not as a narrowed assignment.'
+      : 'The following task is a user-selected focus item inside the project tasklist. Treat it as additional context, not as an automatic assignment unless the user asks you to work on it.',
+    '',
+    `Task: ${focusedTask.summary}`,
+    `Task GUID: ${focusedTask.guid}`,
+    focusedTask.dueAt ? `Due: ${focusedTask.dueAt}` : undefined,
+    focusedTask.url ? `URL: ${focusedTask.url}` : undefined,
+    focusedTask.completed !== undefined ? `Completed: ${focusedTask.completed ? 'yes' : 'no'}` : undefined,
+    focusedTask.isAgentTask !== undefined ? `Agent Task: ${focusedTask.isAgentTask ? 'yes' : 'no'}` : undefined,
+    '',
+    '## Task Description',
+    focusedTask.description?.trim() || '(No description provided.)',
+  ]
+    .filter((line): line is string => typeof line === 'string')
+    .join('\n');
+}
+
+async function attachLarkProjectConversation(
+  context: GuidLarkProjectContext | undefined,
+  conversationId: string
+): Promise<void> {
+  if (!context?.tasklistGuid) return;
+  await ipcBridge.larkProjectAgent.attachConversation.invoke({
+    conversationId,
+    role: context.role,
+    tasklistGuid: context.tasklistGuid,
+    tasklistName: context.tasklistName,
+    bindingId: context.bindingId,
+    replaceExistingLeader: false,
+  });
+}
 
 const appendPrompt = (...parts: Array<string | undefined>): string | undefined => {
   const value = parts
@@ -84,6 +144,7 @@ const withLabSkillConversationEnv = (
   conversationId: string | undefined
 ): ISessionMcpServer | undefined => {
   if (!server || !conversationId) return server;
+  if (server.transport.type !== 'stdio') return server;
   return {
     ...server,
     transport: {
@@ -273,6 +334,7 @@ export type GuidSendDeps = {
   assistantDefaultMcpIds?: string[];
   currentEffectiveAgentInfo: EffectiveAgentInfo;
   isGoogleAuth: boolean;
+  larkProjectContext?: GuidLarkProjectContext;
   loopGoal?: LoopGoalState;
   isLoopGoalMode?: boolean;
   onLoopGoalSent?: () => void;
@@ -334,6 +396,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     selectedMcpServerIds,
     assistantDefaultMcpIds,
     currentEffectiveAgentInfo: _currentEffectiveAgentInfo,
+    larkProjectContext,
     loopGoal,
     isLoopGoalMode,
     onLoopGoalSent,
@@ -363,6 +426,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const hasMedicalEvidenceMode = activeCapabilityMode === 'medical-evidence';
     const hasSkillDepositionMode = activeCapabilityMode === 'skill-deposition';
     const hasScienceMode = activeCapabilityMode === 'science';
+    const hasLarkProjectContext = Boolean(larkProjectContext?.tasklistGuid);
     const hasLoopGoal =
       !hasMedicalEvidenceMode &&
       !hasSkillDepositionMode &&
@@ -377,10 +441,17 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const conversationName =
       (loopGoalForCreate ? summarizeLoopGoal(loopGoalForCreate.goal) : undefined) ||
       trimmedInput ||
+      larkProjectContext?.tasklistName ||
+      (hasLarkProjectContext ? t('guid.larkProject.defaultConversationName') : undefined) ||
       t('conversation.newConversation', { defaultValue: 'New conversation' });
     const initialUserInput = loopGoalForCreate
       ? buildLoopGoalKickoffPrompt(loopGoalForCreate, hasLoopGoal ? trimmedInput : undefined, localeKey)
-      : trimmedInput || input;
+      : trimmedInput ||
+        (hasLarkProjectContext
+          ? larkProjectContext?.role === 'leader'
+            ? t('guid.larkProject.leaderInitialPrompt', { tasklistName: larkProjectContext!.tasklistName })
+            : t('guid.larkProject.agentInitialPrompt', { tasklistName: larkProjectContext!.tasklistName })
+          : input);
     const isCustomWorkspace = !!dir;
     const finalWorkspace = dir || '';
     const plannedConversationId = hasSkillDepositionMode ? `lab_skill_${uuid(16)}` : undefined;
@@ -527,12 +598,28 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       disabled_builtin_skill_ids: excludeBuiltinSkills,
       mcp_ids: assistantOverrideMcpIds,
     };
+    const larkProjectPrompt = hasLarkProjectContext ? buildLarkProjectContextPrompt(larkProjectContext!) : undefined;
     const combinedPresetContext = appendPrompt(
+      larkProjectPrompt,
       sciencePrompt,
       medicalEvidencePrompt,
       labSkillDepositionPrompt,
       computeContext?.prompt
     );
+    const larkProjectExtra =
+      hasLarkProjectContext && larkProjectPrompt
+        ? {
+            context: larkProjectPrompt,
+            context_file_name:
+              larkProjectContext!.role === 'leader' ? 'lark-project-leader.md' : 'lark-project-context.md',
+            lark_project_binding_id: larkProjectContext!.bindingId,
+            lark_project_tasklist_guid: larkProjectContext!.tasklistGuid,
+            lark_project_tasklist_name: larkProjectContext!.tasklistName,
+            lark_project_role: larkProjectContext!.role,
+            lark_project_focused_task_guid: larkProjectContext!.focusedTask?.guid,
+            lark_project_focused_task_title: larkProjectContext!.focusedTask?.summary,
+          }
+        : {};
     const medicalEvidenceExtra = hasMedicalEvidenceMode
       ? {
           medical_evidence: buildMedicalEvidenceConversationExtra(medicalEvidenceSources, medicalEvidenceStrictAnchors),
@@ -601,6 +688,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
           mcp_statuses: loadedMcpStatusesForSnapshot,
           session_mcp_servers: selectedSessionMcpServersWithMedicalEvidence,
           ...(loopGoalForCreate ? { loop_goal: loopGoalForCreate } : {}),
+          ...larkProjectExtra,
           ...medicalEvidenceExtra,
           ...scienceExtra,
           ...labSkillDepositionExtra,
@@ -618,6 +706,10 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
           return;
         }
 
+        await attachLarkProjectConversation(larkProjectContext, conversation.id).catch((error) => {
+          console.warn('[Guid] Failed to attach Lark project conversation:', error);
+        });
+
         if (isCustomWorkspace) {
           updateWorkspaceTime(finalWorkspace);
         }
@@ -631,7 +723,13 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
 
         emitter.emit('chat.history.refresh');
 
-        if (trimmedInput || hasLoopGoal || shouldCreateLoopGoalFromInput || files.length > 0) {
+        if (
+          trimmedInput ||
+          hasLarkProjectContext ||
+          hasLoopGoal ||
+          shouldCreateLoopGoalFromInput ||
+          files.length > 0
+        ) {
           const initialMessage = {
             input: initialUserInput,
             files: files.length > 0 ? files : undefined,
@@ -660,6 +758,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     selectedAcpModel,
     currentAcpCachedModelInfo,
     current_model,
+    larkProjectContext,
     loopGoal,
     isLoopGoalMode,
     onLoopGoalSent,
@@ -723,7 +822,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
 
   // Calculate button disabled state
   const hasSendableLoopGoal = !isMedicalEvidenceMode && Boolean(loopGoal?.goal.trim());
-  const isButtonDisabled = loading || (!input.trim() && !hasSendableLoopGoal);
+  const isButtonDisabled = loading || (!input.trim() && !larkProjectContext?.tasklistGuid && !hasSendableLoopGoal);
 
   return {
     handleSend,

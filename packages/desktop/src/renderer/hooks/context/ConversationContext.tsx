@@ -46,6 +46,11 @@ export interface ConversationContextValue {
   hideSendBox?: boolean;
 
   /**
+   * Whether this conversation is running in OpenScience Science Mode.
+   */
+  isScienceMode?: boolean;
+
+  /**
    * Loaded skill names for this conversation (snapshot from conversation.extra.skills).
    * Surfaced inside the SendBox `+` menu so users can review/jump to active skills.
    */

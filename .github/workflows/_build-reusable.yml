@@ -658,8 +658,8 @@ jobs:
             out/*.msi
             out/*.dmg
             out/*.deb
-            out/DeepOrganiser-*-win32-*.zip
-            out/DeepOrganiser-*-mac-*.zip
+            out/OpenScience-*-win*.zip
+            out/OpenScience-*-mac*.zip
             out/*.yml
           if-no-files-found: warn
           retention-days: 7

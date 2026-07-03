@@ -18,6 +18,7 @@ import fs from 'fs';
 import path from 'path';
 import { parse } from 'semver';
 import { recordAutoUpdateQuitAndInstall, recordAutoUpdateStatus } from './autoUpdateDiagnostics';
+import { trackTelemetryEvent } from './telemetry/telemetryClient';
 import { buildCdnFeedOptions } from './updateFeed';
 import { legacyEnvName } from '@/common/config/legacyIdentifiers';
 
@@ -402,6 +403,19 @@ class AutoUpdaterService extends EventEmitter {
       currentAppVersion: app.getVersion(),
       userDataPath: app.getPath('userData'),
     });
+    void trackTelemetryEvent({
+      category: 'update',
+      name: 'auto_update.status',
+      properties: {
+        currentVersion: app.getVersion(),
+        error: status.error,
+        progressPercent: status.progress?.percent,
+        status: status.status,
+        targetVersion: status.version,
+        totalBytes: status.progress?.total,
+        transferredBytes: status.progress?.transferred,
+      },
+    });
 
     // Emit to internal listeners (for testing and extensibility)
     this.emit('update-status', status);
@@ -646,6 +660,13 @@ class AutoUpdaterService extends EventEmitter {
     recordAutoUpdateQuitAndInstall({
       currentAppVersion: app.getVersion(),
       userDataPath: app.getPath('userData'),
+    });
+    void trackTelemetryEvent({
+      category: 'update',
+      name: 'auto_update.quit_and_install',
+      properties: {
+        currentVersion: app.getVersion(),
+      },
     });
     // On macOS, autoUpdater.quitAndInstall() closes all windows but the
     // 'window-all-closed' handler does NOT call app.quit() (standard macOS

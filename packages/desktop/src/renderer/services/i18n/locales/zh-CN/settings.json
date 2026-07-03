@@ -153,6 +153,23 @@
     "vendorAutoEmpiricalDesc": "作为社科/实证研究技能池：计量、因果推断、复现包、引用核查、调查 codebook、质性分析和 AER 风格论文流水线。",
     "vendorNatureSkillsDesc": "作为 Nature 风格科研交付技能池：论文精读、写作、图件、引用、数据可用性、审稿回复、PPT，以及需要受限执行的专利导向草拟。"
   },
+  "betaTesting": {
+    "title": "Beta 测试",
+    "description": "这里放置还在打磨中的 OpenScience 能力。启用后，设置页、新会话加号菜单和会话右侧工作区会开放对应的实验入口。",
+    "enabledHint": "Beta 测试已启用。实验功能会出现在入口中，但仍建议先在小项目中验证流程。",
+    "disabledHint": "Beta 测试默认关闭。关闭时，实验入口会被隐藏，已有普通会话不受影响。",
+    "leaderAgentTitle": "负责人 Agent",
+    "leaderAgentDesc": "把 Lark / 飞书任务清单接回 OpenScience：先由负责人 Agent 与你确认目标、成员、里程碑和边界，再把项目上下文注入新会话，后续可在会话右侧持续查看任务清单。",
+    "experimental": "实验中",
+    "projectAgentRuntime": "项目 Agent 服务",
+    "larkAutomationRuntime": "Lark 自动化",
+    "openProjects": "打开负责人 Agent",
+    "openAutomationSettings": "配置 Lark 自动化",
+    "statusReady": "可用",
+    "statusNeedsSetup": "需配置",
+    "statusError": "异常",
+    "statusChecking": "检查中"
+  },
   "skillsHub": {
     "title": "技能中心",
     "description": "集中管理 AI 智能体技能。一次安装，全助手通用。",
@@ -810,6 +827,8 @@
   "aboutVersion": "版本 {{version}}",
   "aboutBadgeLocalFirst": "本地分析",
   "aboutBadgeOpenSource": "证据支撑",
+  "aboutPartnerTitle": "共建机构",
+  "aboutPartnerDesc": "OpenScience 由科研社区与合作机构共同推动。",
   "aboutHighlightLocalFirstTitle": "证据搜索",
   "aboutHighlightLocalFirstDesc": "搜索论文、监管文档、临床试验和科研摘要，并让每个结论都能回到对应来源。",
   "aboutHighlightResearchLoopTitle": "真实分析",

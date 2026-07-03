@@ -8,6 +8,7 @@ import type { IConversationArtifact } from '@/common/adapter/ipcBridge';
 import { ipcBridge } from '@/common';
 import type { CodexMemoryDetail, CodexMemoryRecord } from '@/deepscientist_lark/codex_memory/types';
 import type { MedicalEvidenceReportRecord } from '@/deepscientist_lark/medical_evidence_reports/types';
+import type { ScienceArtifactReportRecord } from '@/deepscientist_lark/science_artifact_reports/types';
 import {
   latestMedicalEvidencePanel,
   summarizeMedicalEvidenceRuntime,
@@ -72,6 +73,7 @@ import { useAutoScroll } from './useAutoScroll';
 import { useAutoPreviewOfficeFiles } from '@/renderer/hooks/file/useAutoPreviewOfficeFiles';
 import { useLocalFilePreview } from '@/renderer/pages/conversation/Preview/hooks/useLocalFilePreview';
 import { usePreviewContext } from '@/renderer/pages/conversation/Preview';
+import { resolveSciencePreviewPath } from '@/renderer/utils/science/scienceProjectIndex';
 import SelectionReplyButton from './components/SelectionReplyButton';
 import { isCodexConversationRuntime } from '@/renderer/pages/conversation/utils/agentBackend';
 
@@ -200,6 +202,11 @@ const getMedicalEvidencePanelKey = (panel: MedicalEvidencePanelData): string =>
 const getSciencePanelKey = (panel: SciencePanelData): string =>
   `${panel.schema}:${panel.runId}:${panel.generatedAt ?? ''}:${panel.artifacts.length}:${panel.evidence.length}:${panel.report.sections.length}`;
 
+const getScienceReportPreviewKey = (conversationId: string | undefined, panel: SciencePanelData): string =>
+  `science-report:${conversationId || panel.conversationId || 'unknown'}:${panel.runId}:${getSciencePanelKey(panel)}`;
+
+const getSciencePanelUpdatedAt = (panel: SciencePanelData): number => panel.generatedAt ?? 0;
+
 const getLabSkillDepositionPanelKey = (panel: LabSkillDepositionPanelData): string =>
   `${panel.schema}:${panel.sessionId}:${panel.generatedAt ?? ''}:${panel.sources.length}:${panel.claims?.length ?? 0}:${panel.report.sections.length}`;
 
@@ -208,6 +215,9 @@ const getStoredMedicalEvidencePanelKey = (
   textMessageId?: string,
   sourceMessageId?: string
 ): string => `${textMessageId ?? ''}:${sourceMessageId ?? ''}:${getMedicalEvidencePanelKey(panel)}`;
+
+const getStoredSciencePanelKey = (panel: SciencePanelData, textMessageId?: string, sourceMessageId?: string): string =>
+  `${textMessageId ?? ''}:${sourceMessageId ?? ''}:${getSciencePanelKey(panel)}`;
 
 const isEmptyAssistantText = (message: TMessage): boolean =>
   message.type === 'text' && message.position === 'left' && !message.content.content.trim();
@@ -753,7 +763,30 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
   const [selectedMemoryDetail, setSelectedMemoryDetail] = useState<CodexMemoryDetail | undefined>();
   const [memoryDetailLoading, setMemoryDetailLoading] = useState(false);
   const [medicalEvidenceReports, setMedicalEvidenceReports] = useState<MedicalEvidenceReportRecord[]>([]);
+  const [scienceArtifactReports, setScienceArtifactReports] = useState<ScienceArtifactReportRecord[]>([]);
   const handledScienceDisplayKeysRef = useRef<Set<string> | null>(null);
+  const restoredSciencePreviewKeyRef = useRef<string>('');
+
+  const openScienceReportPreview = React.useCallback(
+    (panel: SciencePanelData, replace = false) => {
+      const conversationId = conversationContext?.conversation_id || panel.conversationId;
+      const panelForPreview = panel.conversationId || !conversationId ? panel : { ...panel, conversationId };
+      openPreview(
+        '',
+        'science_report',
+        {
+          title: panelForPreview.report.title || panelForPreview.question || 'Science report',
+          workspace: panelForPreview.projectRoot || conversationContext?.workspace,
+          science: {
+            panel: panelForPreview,
+            artifactId: 'report',
+          },
+        },
+        { replace }
+      );
+    },
+    [conversationContext?.conversation_id, conversationContext?.workspace, openPreview]
+  );
 
   const loadCodexMemories = React.useCallback(async (): Promise<void> => {
     if (!isCodexRuntime || !conversationContext?.conversation_id) {
@@ -814,6 +847,40 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
       disposeChanged();
     };
   }, [conversationContext?.conversation_id, loadMedicalEvidenceReports]);
+
+  const loadScienceArtifactReports = React.useCallback(async (): Promise<void> => {
+    if (!conversationContext?.conversation_id) {
+      setScienceArtifactReports([]);
+      return;
+    }
+    const result = await ipcBridge.scienceArtifactReports.list.invoke({
+      conversationId: conversationContext.conversation_id,
+    });
+    if (result.ok) setScienceArtifactReports(result.reports);
+  }, [conversationContext?.conversation_id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const conversationId = conversationContext?.conversation_id;
+    if (!conversationId) {
+      setScienceArtifactReports([]);
+      return;
+    }
+    ipcBridge.scienceArtifactReports.list
+      .invoke({ conversationId })
+      .then((result) => {
+        if (!cancelled && result.ok) setScienceArtifactReports(result.reports);
+      })
+      .catch(() => {});
+    const disposeChanged = ipcBridge.scienceArtifactReports.changed.on((event) => {
+      if (event.conversationId !== conversationId || cancelled) return;
+      loadScienceArtifactReports().catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+      disposeChanged();
+    };
+  }, [conversationContext?.conversation_id, loadScienceArtifactReports]);
 
   const openCodexMemory = React.useCallback(
     async (memory: CodexMemoryRecord) => {
@@ -1101,8 +1168,15 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
     }
     flush();
 
+    for (const report of scienceArtifactReports) {
+      if (!report.textMessageId) continue;
+      if (!panelsByTextId.has(report.textMessageId)) {
+        panelsByTextId.set(report.textMessageId, report.panel);
+      }
+    }
+
     return panelsByTextId;
-  }, [list]);
+  }, [list, scienceArtifactReports]);
 
   const sciencePanelByRenderableItemId = useMemo(() => {
     const panelsByItemId = new Map<string, SciencePanelData>();
@@ -1116,14 +1190,56 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
         renderedPanelKeys.add(getSciencePanelKey(panel));
       }
     }
+    for (const report of scienceArtifactReports) {
+      if (!report.sourceMessageId) continue;
+      const panelKey = getSciencePanelKey(report.panel);
+      if (renderedPanelKeys.has(panelKey)) continue;
+      panelsByItemId.set(report.sourceMessageId, report.panel);
+      renderedPanelKeys.add(panelKey);
+    }
     return panelsByItemId;
-  }, [renderableList, resultSciencePanelByTextId]);
+  }, [renderableList, resultSciencePanelByTextId, scienceArtifactReports]);
+
+  const latestRestorableSciencePanel = useMemo(() => {
+    const candidates: Array<{ panel: SciencePanelData; updatedAt: number }> = [];
+    for (const report of scienceArtifactReports) {
+      candidates.push({
+        panel: report.panel,
+        updatedAt: report.updatedAt || report.createdAt || getSciencePanelUpdatedAt(report.panel),
+      });
+    }
+    for (const panel of resultSciencePanelByTextId.values()) {
+      candidates.push({ panel, updatedAt: getSciencePanelUpdatedAt(panel) });
+    }
+    for (const panel of sciencePanelByRenderableItemId.values()) {
+      candidates.push({ panel, updatedAt: getSciencePanelUpdatedAt(panel) });
+    }
+    candidates.sort((a, b) => a.updatedAt - b.updatedAt);
+    return candidates.at(-1)?.panel;
+  }, [resultSciencePanelByTextId, scienceArtifactReports, sciencePanelByRenderableItemId]);
 
   useEffect(() => {
-    const toolMessages = list.filter((message): message is IMessageToolGroup | IMessageAcpToolCall | IMessageToolCall => {
-      if (message.hidden || message.type === 'available_commands' || message.position === 'right') return false;
-      return isToolMessage(message);
-    });
+    if (!conversationContext?.isScienceMode || !conversationContext.conversation_id || !latestRestorableSciencePanel) {
+      return;
+    }
+    const restoreKey = getScienceReportPreviewKey(conversationContext.conversation_id, latestRestorableSciencePanel);
+    if (restoredSciencePreviewKeyRef.current === restoreKey) return;
+    restoredSciencePreviewKeyRef.current = restoreKey;
+    openScienceReportPreview(latestRestorableSciencePanel, false);
+  }, [
+    conversationContext?.conversation_id,
+    conversationContext?.isScienceMode,
+    latestRestorableSciencePanel,
+    openScienceReportPreview,
+  ]);
+
+  useEffect(() => {
+    const toolMessages = list.filter(
+      (message): message is IMessageToolGroup | IMessageAcpToolCall | IMessageToolCall => {
+        if (message.hidden || message.type === 'available_commands' || message.position === 'right') return false;
+        return isToolMessage(message);
+      }
+    );
     const targets = extractSciencePayloadsFromTools(toolMessages)
       .map(resolveScienceDisplayTarget)
       .filter((target): target is ScienceDisplayTarget => Boolean(target));
@@ -1144,12 +1260,14 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
       handled.add(key);
 
       if (target.kind === 'artifact') {
+        const workspace = target.panel.projectRoot || conversationContext?.workspace;
+        const resolvedPath = resolveSciencePreviewPath(workspace, target.path) || target.path;
         void openLocalFilePreview(
-          target.path,
+          resolvedPath,
           undefined,
           {
             title: target.artifact.title,
-            workspace: target.panel.projectRoot || conversationContext?.workspace,
+            workspace,
             science: {
               panel: target.panel,
               artifactId: target.artifact.id,
@@ -1162,21 +1280,9 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
         return;
       }
 
-      openPreview(
-        '',
-        'science_report',
-        {
-          title: target.panel.report.title || target.panel.question || 'Science report',
-          workspace: target.panel.projectRoot || conversationContext?.workspace,
-          science: {
-            panel: target.panel,
-            artifactId: 'report',
-          },
-        },
-        { replace: true }
-      );
+      openScienceReportPreview(target.panel, true);
     });
-  }, [conversationContext?.workspace, list, openLocalFilePreview, openPreview]);
+  }, [conversationContext?.workspace, list, openLocalFilePreview, openScienceReportPreview]);
 
   useEffect(() => {
     const conversationId = conversationContext?.conversation_id;
@@ -1219,6 +1325,49 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
     medicalEvidencePanelByRenderableItemId,
     medicalEvidenceReports,
     resultMedicalEvidencePanelByTextId,
+  ]);
+
+  useEffect(() => {
+    const conversationId = conversationContext?.conversation_id;
+    if (!conversationId) return;
+    const existingKeys = new Set(
+      scienceArtifactReports.map((report) =>
+        getStoredSciencePanelKey(report.panel, report.textMessageId, report.sourceMessageId)
+      )
+    );
+    const saves: Array<{ textMessageId?: string; sourceMessageId?: string; panel: SciencePanelData }> = [];
+    for (const [textMessageId, panel] of resultSciencePanelByTextId) {
+      const key = getStoredSciencePanelKey(panel, textMessageId);
+      if (!existingKeys.has(key)) {
+        existingKeys.add(key);
+        saves.push({ textMessageId, panel });
+      }
+    }
+    for (const [sourceMessageId, panel] of sciencePanelByRenderableItemId) {
+      const key = getStoredSciencePanelKey(panel, undefined, sourceMessageId);
+      if (!existingKeys.has(key)) {
+        existingKeys.add(key);
+        saves.push({ sourceMessageId, panel });
+      }
+    }
+    if (!saves.length) return;
+    void Promise.all(
+      saves.map((item) =>
+        ipcBridge.scienceArtifactReports.save.invoke({
+          conversationId,
+          textMessageId: item.textMessageId,
+          sourceMessageId: item.sourceMessageId,
+          panel: item.panel,
+        })
+      )
+    ).catch((error) => {
+      console.warn('[MessageList] Failed to persist science artifact report:', error);
+    });
+  }, [
+    conversationContext?.conversation_id,
+    resultSciencePanelByTextId,
+    scienceArtifactReports,
+    sciencePanelByRenderableItemId,
   ]);
 
   // An AI reply can be split into several messages (thinking / multiple text /

@@ -76,7 +76,9 @@ const ChatLayout: React.FC<{
   const isMobile = Boolean(layout?.isMobile);
 
   // Preview panel state
-  const { isOpen: isPreviewOpen, closePreview } = usePreviewContext();
+  const { isOpen: isPreviewOpen, closePreview, activeTab } = usePreviewContext();
+  const isScienceArtifactWorkspacePreview = Boolean(isPreviewOpen && activeTab?.metadata?.science?.workspaceView);
+  const effectiveWorkspaceEnabled = workspaceEnabled && !isScienceArtifactWorkspacePreview;
   const [previewLayoutMode, setPreviewLayoutMode] = useState<PreviewLayoutMode>(() => {
     try {
       const stored = localStorage.getItem('chat-preview-layout-mode');
@@ -88,7 +90,7 @@ const ChatLayout: React.FC<{
 
   // --- Hook A: workspace collapse ---
   const { rightSiderCollapsed, setRightSiderCollapsed } = useWorkspaceCollapse({
-    workspaceEnabled,
+    workspaceEnabled: effectiveWorkspaceEnabled,
     isMobile,
     conversation_id,
     preferenceKey: workspacePreferenceKey ?? conversation_id,
@@ -154,7 +156,7 @@ const ChatLayout: React.FC<{
     containerWidth,
     workspaceWidthPx: workspaceWidthPxPref,
     chatSplitRatio: 60, // placeholder; only dynamicChatMinRatio/dynamicChatMaxRatio are used here
-    workspaceEnabled,
+    workspaceEnabled: effectiveWorkspaceEnabled,
     isDesktop,
     isPreviewOpen,
     rightSiderCollapsed,
@@ -179,7 +181,7 @@ const ChatLayout: React.FC<{
     containerWidth,
     workspaceWidthPx: workspaceWidthPxPref,
     chatSplitRatio,
-    workspaceEnabled,
+    workspaceEnabled: effectiveWorkspaceEnabled,
     isDesktop,
     isPreviewOpen,
     rightSiderCollapsed,
@@ -189,7 +191,7 @@ const ChatLayout: React.FC<{
   // --- Hook E: layout constraints ---
   useLayoutConstraints({
     containerWidth,
-    workspaceEnabled,
+    workspaceEnabled: effectiveWorkspaceEnabled,
     isDesktop,
     isPreviewOpen,
     rightSiderCollapsed,
@@ -251,7 +253,7 @@ const ChatLayout: React.FC<{
       </FlexFullContainer>
       <div className='flex items-center gap-12px shrink-0'>
         {props.headerExtra}
-        {isWindowsRuntime && workspaceEnabled && (
+        {isWindowsRuntime && effectiveWorkspaceEnabled && (
           <button
             type='button'
             className='workspace-header__toggle'
@@ -367,7 +369,7 @@ const ChatLayout: React.FC<{
             )}
           </div>
         </div>
-        {workspaceEnabled && !layout?.isMobile && (
+        {effectiveWorkspaceEnabled && !layout?.isMobile && (
           <div
             className={classNames('!bg-1 relative chat-layout-right-sider layout-sider')}
             style={{
@@ -400,7 +402,7 @@ const ChatLayout: React.FC<{
         )}
 
         {/* Mobile workspace overlay: backdrop + fixed panel + floating collapse handle */}
-        {workspaceEnabled && layout?.isMobile && (
+        {effectiveWorkspaceEnabled && layout?.isMobile && (
           <MobileWorkspaceOverlay
             rightSiderCollapsed={rightSiderCollapsed}
             setRightSiderCollapsed={setRightSiderCollapsed}
@@ -414,7 +416,7 @@ const ChatLayout: React.FC<{
         )}
 
         {/* Desktop expand button when workspace is collapsed */}
-        {!isMacRuntime && !isWindowsRuntime && workspaceEnabled && rightSiderCollapsed && !layout?.isMobile && (
+        {!isMacRuntime && !isWindowsRuntime && effectiveWorkspaceEnabled && rightSiderCollapsed && !layout?.isMobile && (
           <DesktopWorkspaceToggle />
         )}
       </div>

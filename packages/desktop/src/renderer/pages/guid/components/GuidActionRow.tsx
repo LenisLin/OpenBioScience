@@ -73,6 +73,7 @@ type GuidActionRowProps = {
   isSkillDepositionMode?: boolean;
   onStartSkillDepositionMode?: () => void;
   onOpenCollaborationMode?: () => void;
+  onOpenLeaderAgentMode?: () => void;
 
   // Send button
   loading: boolean;
@@ -117,6 +118,7 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
   isSkillDepositionMode,
   onStartSkillDepositionMode,
   onOpenCollaborationMode,
+  onOpenLeaderAgentMode,
   hidePresetTag = false,
   loading,
   isButtonDisabled,
@@ -208,6 +210,9 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
         } else if (key === 'collaboration') {
           setIsPlusDropdownOpen(false);
           onOpenCollaborationMode?.();
+        } else if (key === 'leader-agent') {
+          setIsPlusDropdownOpen(false);
+          onOpenLeaderAgentMode?.();
         }
       }}
     >
@@ -247,6 +252,14 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
           <div className='flex items-center gap-8px' data-testid='collaboration-menu-item'>
             <CollaborationIcon name='message' size={18} />
             <span>{t('guid.collaboration.menuLabel', { defaultValue: 'Collaboration Mode' })}</span>
+          </div>
+        </Menu.Item>
+      ) : null}
+      {onOpenLeaderAgentMode ? (
+        <Menu.Item key='leader-agent'>
+          <div className='flex items-center gap-8px' data-testid='leader-agent-menu-item'>
+            <CollaborationIcon name='project' size={18} />
+            <span>{t('guid.larkProject.leaderMenuLabel', { defaultValue: 'Leader Agent' })}</span>
           </div>
         </Menu.Item>
       ) : null}

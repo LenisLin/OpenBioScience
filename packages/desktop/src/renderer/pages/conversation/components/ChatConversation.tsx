@@ -8,6 +8,7 @@ import { ipcBridge } from '@/common';
 import { isLabSkillDepositionConversationExtra } from '@/common/chat/labSkillDeposition';
 import { isMedicalEvidenceConversationExtra } from '@/common/chat/medicalEvidence';
 import { isScienceConversationExtra } from '@/common/chat/science';
+import { isLeaderAgentBetaEnabled } from '@/common/config/betaTesting';
 import { LEGACY_LOCAL_RUNTIME_ID } from '@/common/config/legacyIdentifiers';
 import type { IConversationMcpStatus, TChatConversation } from '@/common/config/storage';
 import { uuid } from '@/common/utils';
@@ -26,7 +27,9 @@ import { emitter } from '../../../utils/emitter';
 import AcpChat from '../platforms/acp/AcpChat';
 import ChatLayout from './ChatLayout';
 import ChatSlider from './ChatSlider.tsx';
+import LarkLeaderProjectPanel from './LarkLeaderProjectPanel';
 import AcpModelSelector from '@/renderer/components/agent/AcpModelSelector';
+import { useConfig } from '@/renderer/hooks/config/useConfig';
 import { getConversationOrNull } from '@/renderer/pages/conversation/utils/conversationCache';
 import { getConversationCreateErrorMessage } from '@/renderer/pages/conversation/utils/conversationCreateError';
 import GoogleModelSelector from '../platforms/gemini/GoogleModelSelector';
@@ -48,11 +51,22 @@ type CollaborationConversationExtra = {
   lark_im_chat_id?: string;
 };
 
+type LarkProjectConversationExtra = CollaborationConversationExtra & {
+  lark_project_tasklist_guid?: string;
+  lark_project_tasklist_name?: string;
+  lark_project_role?: 'leader' | 'agent';
+};
+
 const getCollaborationExtra = (conversation: TChatConversation | undefined): CollaborationConversationExtra =>
   (conversation?.extra ?? {}) as CollaborationConversationExtra;
 
+const getLarkProjectExtra = (conversation: TChatConversation | undefined): LarkProjectConversationExtra =>
+  (conversation?.extra ?? {}) as LarkProjectConversationExtra;
+
 const isLarkImConversation = (conversation: TChatConversation | undefined): boolean =>
   Boolean(getCollaborationExtra(conversation).lark_im_chat_id);
+
+const LARK_PROJECT_WORKSPACE_WIDTH_PX = 390;
 
 const normalizeLegacyLocalRuntimeConversation = (
   conversation: TChatConversation | undefined
@@ -177,6 +191,14 @@ const ChatConversation: React.FC<{
   const conversation = normalizeLegacyLocalRuntimeConversation(rawConversation);
   const { t } = useTranslation();
   const workspaceEnabled = Boolean(conversation?.extra?.workspace) && !isLarkImConversation(conversation);
+  const [betaTestingConfig] = useConfig('features.betaTesting');
+  const leaderAgentBetaEnabled = isLeaderAgentBetaEnabled(betaTestingConfig);
+  const larkProjectExtra = getLarkProjectExtra(conversation);
+  const larkProjectPanelEnabled = Boolean(
+    leaderAgentBetaEnabled &&
+      larkProjectExtra.lark_project_tasklist_guid &&
+      larkProjectExtra.lark_project_role === 'leader'
+  );
   const layout = useLayoutContext();
   const isMobile = Boolean(layout?.isMobile);
   const { loopGoal, updateLoopGoal } = useConversationLoopGoal(conversation);
@@ -338,9 +360,28 @@ const ChatConversation: React.FC<{
       title={conversation?.name}
       {...chatLayoutProps}
       headerExtra={headerExtraNode}
-      siderTitle={sliderTitle}
-      sider={<ChatSlider conversation={conversation} />}
-      workspaceEnabled={workspaceEnabled}
+      siderTitle={
+        larkProjectPanelEnabled ? (
+          <div className='flex items-center justify-between'>
+            <span className='text-16px font-bold text-t-primary'>{t('common.collaboration.projects.title')}</span>
+          </div>
+        ) : (
+          sliderTitle
+        )
+      }
+      sider={
+        larkProjectPanelEnabled ? (
+          <LarkLeaderProjectPanel
+            tasklistGuid={larkProjectExtra.lark_project_tasklist_guid!}
+            tasklistName={larkProjectExtra.lark_project_tasklist_name}
+          />
+        ) : (
+          <ChatSlider conversation={conversation} />
+        )
+      }
+      workspaceEnabled={workspaceEnabled || larkProjectPanelEnabled}
+      workspaceDefaultWidthPx={larkProjectPanelEnabled ? LARK_PROJECT_WORKSPACE_WIDTH_PX : undefined}
+      workspaceWidthStorageKey={larkProjectPanelEnabled ? 'chat-lark-project-panel-width-px' : undefined}
       workspacePath={conversation?.extra?.workspace}
       isTemporaryWorkspace={
         (conversation?.extra as { is_temporary_workspace?: boolean } | undefined)?.is_temporary_workspace

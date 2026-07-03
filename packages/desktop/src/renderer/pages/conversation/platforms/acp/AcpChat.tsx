@@ -85,6 +85,7 @@ const AcpChat: React.FC<{
         backend,
         cron_job_id,
         hideSendBox,
+        isScienceMode,
         loadedSkills,
         loadedMcpServers,
         loadedMcpStatuses,

@@ -95,6 +95,7 @@ export type CollaborationIconName =
   | 'handoff'
   | 'humanMember'
   | 'imageUpload'
+  | 'leaderAgent'
   | 'listener'
   | 'memory'
   | 'message'
@@ -109,6 +110,7 @@ export type CollaborationIconName =
   | 'secretKey'
   | 'sendComment'
   | 'syncFeedback'
+  | 'taskAutomation'
   | 'taskDetail'
   | 'taskPage'
   | 'tasklist'
@@ -145,6 +147,7 @@ const ICON_ASSETS: Record<CollaborationIconName, IconAsset> = {
   handoff: { light: handoffIcon, dark: handoffIconDark },
   humanMember: { light: humanMemberIcon, dark: humanMemberIconDark },
   imageUpload: { light: imageUploadIcon, dark: imageUploadIconDark },
+  leaderAgent: { light: humanMemberIcon, dark: humanMemberIconDark },
   listener: { light: listenerIcon, dark: listenerIconDark },
   memory: { light: memoryIcon, dark: memoryIconDark },
   message: { light: messageIcon, dark: messageIconDark },
@@ -159,6 +162,7 @@ const ICON_ASSETS: Record<CollaborationIconName, IconAsset> = {
   secretKey: { light: secretKeyIcon, dark: secretKeyIconDark },
   sendComment: { light: sendCommentIcon, dark: sendCommentIconDark },
   syncFeedback: { light: syncFeedbackIcon, dark: syncFeedbackIconDark },
+  taskAutomation: { light: runtimeIcon, dark: runtimeIconDark },
   taskDetail: { light: taskDetailIcon, dark: taskDetailIconDark },
   taskPage: { light: taskPageIcon, dark: taskPageIconDark },
   tasklist: { light: tasklistIcon, dark: tasklistIconDark },

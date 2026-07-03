@@ -23,6 +23,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import semver from 'semver';
 import { autoUpdaterService } from '../services/autoUpdaterService';
+import { trackTelemetryEvent } from '../services/telemetry/telemetryClient';
 import { getUpdateBaseUrl } from '../services/updateFeed';
 
 /** Lazily loads i18n to avoid pulling in initStorage chain at module load time */
@@ -353,6 +354,18 @@ const emitProgress = (evt: UpdateDownloadProgressEvent) => {
   ipcBridge.update.downloadProgress.emit(evt);
 };
 
+const trackUpdateTelemetry = (name: string, properties?: Record<string, unknown>) => {
+  void trackTelemetryEvent({
+    category: 'update',
+    name,
+    properties: {
+      arch: process.arch,
+      platform: process.platform,
+      ...properties,
+    },
+  });
+};
+
 const cleanupManualDownload = (downloadId: string) => {
   downloads.delete(downloadId);
   const activeKey = manualDownloadKeysById.get(downloadId);
@@ -517,6 +530,10 @@ const startDownloadInBackground = async (
       return;
     }
     if (finalResult.ok) {
+      trackUpdateTelemetry('update.manual_download_completed', {
+        downloadedBytes: finalResult.receivedBytes,
+        totalBytes: finalResult.totalBytes,
+      });
       emitProgress({
         downloadId,
         status: 'completed',
@@ -528,6 +545,11 @@ const startDownloadInBackground = async (
         file_path,
       });
     } else {
+      trackUpdateTelemetry(finalResult.isAbort ? 'update.manual_download_cancelled' : 'update.manual_download_failed', {
+        downloadedBytes: finalResult.receivedBytes,
+        error: finalResult.message,
+        totalBytes: finalResult.totalBytes,
+      });
       emitProgress({
         downloadId,
         status: finalResult.isAbort ? 'cancelled' : 'error',
@@ -584,6 +606,13 @@ export function initUpdateBridge(): void {
 
         const currentSemver = semver.valid(currentVersion) || semver.coerce(currentVersion)?.version;
         if (!currentSemver) {
+          trackUpdateTelemetry('update.manual_check_completed', {
+            currentVersion,
+            includePrerelease,
+            repo,
+            success: true,
+            updateAvailable: false,
+          });
           return { success: true, data: { currentVersion, updateAvailable: false } };
         }
 
@@ -592,10 +621,25 @@ export function initUpdateBridge(): void {
           .toSorted((a, b) => semver.rcompare(a.version, b.version))[0];
 
         if (!latest) {
+          trackUpdateTelemetry('update.manual_check_completed', {
+            currentVersion,
+            includePrerelease,
+            repo,
+            success: true,
+            updateAvailable: false,
+          });
           return { success: true, data: { currentVersion, updateAvailable: false } };
         }
 
         const updateAvailable = semver.gt(latest.version, currentSemver);
+        trackUpdateTelemetry('update.manual_check_completed', {
+          currentVersion,
+          includePrerelease,
+          latestVersion: latest.version,
+          repo,
+          success: true,
+          updateAvailable,
+        });
         return {
           success: true,
           data: {
@@ -605,7 +649,12 @@ export function initUpdateBridge(): void {
           },
         };
       } catch (err: unknown) {
-        return { success: false, msg: err instanceof Error ? err.message : String(err) };
+        const message = err instanceof Error ? err.message : String(err);
+        trackUpdateTelemetry('update.manual_check_failed', {
+          error: message,
+          success: false,
+        });
+        return { success: false, msg: message };
       }
     }
   );
@@ -643,6 +692,9 @@ export function initUpdateBridge(): void {
         downloads.set(downloadId, { abortController, file_path: targetPath });
         activeManualDownloads.set(activeKey, { downloadId, file_path: targetPath });
         manualDownloadKeysById.set(downloadId, activeKey);
+        trackUpdateTelemetry('update.manual_download_started', {
+          ext: path.extname(baseName).toLowerCase(),
+        });
 
         // Start background download, but return immediately so the UI stays responsive.
         void startDownloadInBackground(downloadId, params.url, targetPath, abortController, params.fallbackUrl);
@@ -669,6 +721,7 @@ export function initUpdateBridge(): void {
 
         cancelledManualDownloadIds.add(downloadId);
         activeDownload.abortController.abort();
+        trackUpdateTelemetry('update.manual_download_cancelled', {});
         emitProgress({
           downloadId,
           status: 'cancelled',
@@ -700,6 +753,13 @@ export function initUpdateBridge(): void {
 
         const result = await autoUpdaterService.checkForUpdates();
         if (result.success && result.updateInfo) {
+          trackUpdateTelemetry('auto_update.check_completed', {
+            currentVersion: app.getVersion(),
+            includePrerelease,
+            latestVersion: result.updateInfo.version,
+            success: true,
+            updateAvailable: true,
+          });
           // autoUpdaterService.checkForUpdates() only returns updateInfo when
           // electron-updater confirms isUpdateAvailable, so we can trust it directly.
           return {
@@ -714,19 +774,46 @@ export function initUpdateBridge(): void {
             },
           };
         }
+        trackUpdateTelemetry(result.success ? 'auto_update.check_completed' : 'auto_update.check_failed', {
+          currentVersion: app.getVersion(),
+          error: result.error,
+          includePrerelease,
+          success: result.success,
+          updateAvailable: false,
+        });
         return { success: result.success, msg: result.error };
       } catch (err: unknown) {
-        return { success: false, msg: err instanceof Error ? err.message : String(err) };
+        const message = err instanceof Error ? err.message : String(err);
+        trackUpdateTelemetry('auto_update.check_failed', {
+          currentVersion: app.getVersion(),
+          error: message,
+          success: false,
+        });
+        return { success: false, msg: message };
       }
     }
   );
 
   ipcBridge.autoUpdate.download.provider(async (): Promise<{ success: boolean; msg?: string }> => {
     try {
+      trackUpdateTelemetry('auto_update.download_requested', {
+        currentVersion: app.getVersion(),
+      });
       const result = await autoUpdaterService.downloadUpdate();
+      trackUpdateTelemetry(result.success ? 'auto_update.download_request_completed' : 'auto_update.download_request_failed', {
+        currentVersion: app.getVersion(),
+        error: result.error,
+        success: result.success,
+      });
       return { success: result.success, msg: result.error };
     } catch (err: unknown) {
-      return { success: false, msg: err instanceof Error ? err.message : String(err) };
+      const message = err instanceof Error ? err.message : String(err);
+      trackUpdateTelemetry('auto_update.download_request_failed', {
+        currentVersion: app.getVersion(),
+        error: message,
+        success: false,
+      });
+      return { success: false, msg: message };
     }
   });
 
@@ -748,14 +835,28 @@ export function initUpdateBridge(): void {
   ipcBridge.autoUpdate.cancelDownload.provider(async (): Promise<{ success: boolean; msg?: string }> => {
     try {
       const result = await autoUpdaterService.cancelDownload();
+      trackUpdateTelemetry('auto_update.download_cancel_requested', {
+        currentVersion: app.getVersion(),
+        error: result.error,
+        success: result.success,
+      });
       return { success: result.success, msg: result.error };
     } catch (err: unknown) {
-      return { success: false, msg: err instanceof Error ? err.message : String(err) };
+      const message = err instanceof Error ? err.message : String(err);
+      trackUpdateTelemetry('auto_update.download_cancel_failed', {
+        currentVersion: app.getVersion(),
+        error: message,
+        success: false,
+      });
+      return { success: false, msg: message };
     }
   });
 
   ipcBridge.autoUpdate.quitAndInstall.provider(async (): Promise<void> => {
     try {
+      trackUpdateTelemetry('auto_update.quit_and_install_requested', {
+        currentVersion: app.getVersion(),
+      });
       await autoUpdaterService.quitAndInstall();
     } catch (err: unknown) {
       console.error('quitAndInstall failed:', err);

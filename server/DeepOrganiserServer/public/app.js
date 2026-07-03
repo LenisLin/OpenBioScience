@@ -265,6 +265,43 @@ const translations = {
       title: "像研究项目一样工作，而不是像聊天记录一样结束。",
       subtitle: "证据、代码、图表、手稿和审查意见都会留下来。",
     },
+    capabilitySwap: {
+      kicker: "能力堆栈",
+      title: "把科研过程组织成可交付的成果。",
+      subtitle: "证据、代码、图表、笔记和手稿保留在同一个研究项目里，每个结果都能重新打开、检查和继续推进。",
+      cards: [
+        {
+          label: "证据",
+          title: "证据变得可用",
+          text: "来源、段落和结论绑定在一起。",
+          keywords: ["文献", "引用", "来源"],
+        },
+        {
+          label: "分析",
+          title: "在本地运行分析",
+          text: "读取文件，运行代码，生成图表。",
+          keywords: ["数据", "代码", "图表"],
+        },
+        {
+          label: "成果",
+          title: "结果保留来路",
+          text: "计划、证据、代码和报告形成记录。",
+          keywords: ["Artifact", "历史", "复现"],
+        },
+        {
+          label: "学科",
+          title: "覆盖多学科研究",
+          text: "350+ skills 支持从分子到因果推断。",
+          keywords: ["10+ 方向", "350+ skills", "Science Mode"],
+        },
+        {
+          label: "审查",
+          title: "交付前先检查",
+          text: "引用、数字、图表步骤和边界可核查。",
+          keywords: ["审查", "边界", "交付"],
+        },
+      ],
+    },
     client: {
       sidebarTask: "科研任务",
       sidebarArtifacts: "Artifact",
@@ -521,6 +558,43 @@ const translations = {
       kicker: "PROJECT EXAMPLES",
       title: "Work like a research project, not a chat transcript.",
       subtitle: "Evidence, code, figures, manuscripts, and review notes remain in the record.",
+    },
+    capabilitySwap: {
+      kicker: "CAPABILITY STACK",
+      title: "Research work, organized as artifacts.",
+      subtitle: "Evidence, code, figures, notes, and manuscripts stay in one project record. Each result can be reopened, checked, and continued.",
+      cards: [
+        {
+          label: "Evidence",
+          title: "Evidence becomes usable",
+          text: "Sources, passages, and claims stay linked.",
+          keywords: ["Papers", "Citations", "Sources"],
+        },
+        {
+          label: "Analysis",
+          title: "Run analysis locally",
+          text: "Read files, run code, and generate figures.",
+          keywords: ["Data", "Code", "Figures"],
+        },
+        {
+          label: "Artifacts",
+          title: "Results keep their path",
+          text: "Plans, evidence, code, and reports form a record.",
+          keywords: ["Artifacts", "History", "Reproduce"],
+        },
+        {
+          label: "Domains",
+          title: "Built for many sciences",
+          text: "350+ skills support molecules through causal inference.",
+          keywords: ["10+ domains", "350+ skills", "Science Mode"],
+        },
+        {
+          label: "Review",
+          title: "Check before delivery",
+          text: "Citations, numbers, figure steps, and boundaries remain inspectable.",
+          keywords: ["Review", "Boundaries", "Delivery"],
+        },
+      ],
     },
     client: {
       sidebarTask: "Research",
@@ -1126,6 +1200,10 @@ const state = {
   status: null,
   platform: detectPlatform(),
   verbIndex: 0,
+  capabilitySwapIndex: 0,
+  capabilitySwapTimer: null,
+  capabilitySwapPaused: true,
+  capabilitySwapVisible: false,
 };
 
 function resolveInitialLanguage() {
@@ -1183,6 +1261,7 @@ function applyTranslations() {
   renderSourceWorks();
   renderFeatureKeywords();
   renderCapabilityMarquee();
+  renderCapabilitySwap();
   renderArtifacts();
   renderReviews();
   renderStatus();
@@ -1263,6 +1342,188 @@ function renderCapabilityMarquee() {
     });
     row.style.setProperty("--marquee-offset", rowIndex === 0 ? "0px" : "-120px");
   });
+}
+
+function capabilitySwapCards() {
+  const cards = t("capabilitySwap.cards");
+  return Array.isArray(cards) && cards.length ? cards : translations.en.capabilitySwap.cards;
+}
+
+function renderCapabilitySwap() {
+  const cardRoot = document.getElementById("capabilitySwapCards");
+  const dotRoot = document.getElementById("capabilitySwapDots");
+  if (!cardRoot || !dotRoot) return;
+  const cards = capabilitySwapCards();
+  const activeIndex = Math.min(state.capabilitySwapIndex, Math.max(0, cards.length - 1));
+
+  cardRoot.innerHTML = "";
+  dotRoot.innerHTML = "";
+  cards.forEach((card, index) => {
+    const article = document.createElement("article");
+    article.className = "capability-swap-card";
+    article.dataset.index = String(index);
+    article.dataset.visual = ["evidence", "analysis", "artifact", "domains", "review"][index % 5];
+    article.innerHTML = `
+      <div class="capability-swap-card__head">
+        <img src="${iconSrc(capabilitySwapIcon(index))}" alt="" loading="lazy" decoding="async" />
+        <span>${escapeHtml(card.label)}</span>
+      </div>
+      <div>
+        <h3>${escapeHtml(card.title)}</h3>
+        <p>${escapeHtml(card.text)}</p>
+      </div>
+      ${capabilitySwapVisual(index, card.keywords || [])}
+    `;
+    cardRoot.appendChild(article);
+
+    const dot = document.createElement("button");
+    dot.className = "capability-swap-dot";
+    dot.type = "button";
+    dot.setAttribute("aria-label", `${index + 1}. ${card.label}`);
+    dot.addEventListener("click", () => {
+      setCapabilitySwapIndex(index);
+      restartCapabilitySwap();
+    });
+    dotRoot.appendChild(dot);
+  });
+
+  setCapabilitySwapIndex(activeIndex);
+}
+
+function capabilitySwapIcon(index) {
+  return ["source-search", "code-run", "artifact-history", "scientific-research-mode", "review-check"][index % 5];
+}
+
+function capabilitySwapVisual(index, keywords) {
+  const chips = keywords
+    .map((keyword) => `<span>${escapeHtml(keyword)}</span>`)
+    .join("");
+  if (index === 0) {
+    return `
+      <div class="capability-card-visual capability-card-visual--evidence">
+        <div class="source-stack">
+          <span><img src="${iconSrc("evidence-papers")}" alt="" />11M+</span>
+          <span><img src="${iconSrc("evidence-regulatory")}" alt="" />225K+</span>
+          <span><img src="${iconSrc("evidence-trials")}" alt="" />1M+</span>
+        </div>
+        <div class="claim-card">
+          <b>Claim</b>
+          <p>linked to source passages</p>
+          <em>E1 · E2 · E3</em>
+        </div>
+        <div class="capability-keywords">${chips}</div>
+      </div>
+    `;
+  }
+  if (index === 1) {
+    return `
+      <div class="capability-card-visual capability-card-visual--analysis">
+        <div class="mini-table"><span></span><span></span><span></span><span></span><b></b><b></b><b></b><b></b></div>
+        <pre>run_analysis(data)\nplot.figure()</pre>
+        <div class="mini-chart"><i></i><i></i><i></i><i></i></div>
+        <div class="capability-keywords">${chips}</div>
+      </div>
+    `;
+  }
+  if (index === 2) {
+    return `
+      <div class="capability-card-visual capability-card-visual--artifact">
+        ${["protocol.md", "evidence.json", "analysis.py", "figure.svg", "report.docx"].map((file) => `<span><b></b>${escapeHtml(file)}</span>`).join("")}
+        <div class="capability-keywords">${chips}</div>
+      </div>
+    `;
+  }
+  if (index === 3) {
+    return `
+      <div class="capability-card-visual capability-card-visual--domains">
+        <strong>350+</strong>
+        <div>${["Life science", "Drug discovery", "Engineering", "Social science", "Causal inference"].map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>
+        <div class="capability-keywords">${chips}</div>
+      </div>
+    `;
+  }
+  return `
+    <div class="capability-card-visual capability-card-visual--review">
+      ${["Citations checked", "Numbers traced", "Figure steps logged", "Boundaries stated"].map((item) => `<span><b></b>${escapeHtml(item)}</span>`).join("")}
+      <div class="capability-keywords">${chips}</div>
+    </div>
+  `;
+}
+
+function setCapabilitySwapIndex(index) {
+  const cards = [...document.querySelectorAll(".capability-swap-card")];
+  if (!cards.length) return;
+  const data = capabilitySwapCards();
+  state.capabilitySwapIndex = ((index % cards.length) + cards.length) % cards.length;
+  cards.forEach((card, cardIndex) => {
+    const position = (cardIndex - state.capabilitySwapIndex + cards.length) % cards.length;
+    card.dataset.position = String(position);
+    card.classList.toggle("is-active", position === 0);
+  });
+
+  document.querySelectorAll(".capability-swap-dot").forEach((dot, dotIndex) => {
+    const active = dotIndex === state.capabilitySwapIndex;
+    dot.classList.toggle("is-active", active);
+    dot.setAttribute("aria-current", active ? "true" : "false");
+  });
+
+  const indexLabel = document.getElementById("capabilitySwapIndex");
+  const cardLabel = document.getElementById("capabilitySwapLabel");
+  if (indexLabel) indexLabel.textContent = String(state.capabilitySwapIndex + 1).padStart(2, "0");
+  if (cardLabel) cardLabel.textContent = data[state.capabilitySwapIndex]?.label || "";
+}
+
+function startCapabilitySwap() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  state.capabilitySwapPaused = false;
+  if (state.capabilitySwapTimer) return;
+  state.capabilitySwapTimer = window.setInterval(() => {
+    if (!state.capabilitySwapPaused && state.capabilitySwapVisible) {
+      setCapabilitySwapIndex(state.capabilitySwapIndex + 1);
+    }
+  }, 2800);
+}
+
+function stopCapabilitySwap() {
+  state.capabilitySwapPaused = true;
+  if (state.capabilitySwapTimer) {
+    window.clearInterval(state.capabilitySwapTimer);
+    state.capabilitySwapTimer = null;
+  }
+}
+
+function restartCapabilitySwap() {
+  stopCapabilitySwap();
+  if (state.capabilitySwapVisible) startCapabilitySwap();
+}
+
+function setupCapabilitySwap() {
+  const stage = document.getElementById("capabilitySwap");
+  if (!stage) return;
+  stage.addEventListener("mouseenter", stopCapabilitySwap);
+  stage.addEventListener("mouseleave", () => {
+    if (state.capabilitySwapVisible) startCapabilitySwap();
+  });
+  stage.addEventListener("focusin", stopCapabilitySwap);
+  stage.addEventListener("focusout", () => {
+    if (state.capabilitySwapVisible) startCapabilitySwap();
+  });
+
+  if (!("IntersectionObserver" in window)) {
+    state.capabilitySwapVisible = true;
+    startCapabilitySwap();
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      state.capabilitySwapVisible = Boolean(entry?.isIntersecting);
+      if (state.capabilitySwapVisible) startCapabilitySwap();
+      else stopCapabilitySwap();
+    },
+    { threshold: [0.32, 0.62] },
+  );
+  observer.observe(stage);
 }
 
 function renderReviews() {
@@ -1642,4 +1903,5 @@ setupVerbTicker();
 setupSpotlightCards();
 setupScrollTone();
 applyTranslations();
+setupCapabilitySwap();
 loadStatus();

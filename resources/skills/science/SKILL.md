@@ -33,7 +33,11 @@ manuscripts, or scientific claims.
    notebooks, manuscripts, PDFs, HTML pages, native viewer objects, or run
    bundles.
 6. Snapshot files needed for inspection or reproducibility.
-7. Publish a Science report in the existing Preview frame.
+7. Write the Science report with short Markdown-bold conclusion phrases; put
+   evidence ids only in `evidenceIds` arrays, not as literal `[E3]` or
+   `[ev_file]` text inside the sentence. Bold only the conclusion phrase, not
+   whole paragraphs.
+8. Publish a Science report in the existing Preview frame.
 
 ## Claim Discipline
 
@@ -48,6 +52,10 @@ Computed claims need linked inputs, code, command/log, output artifact, and
 environment whenever those exist. A viewer rendering is not evidence by itself;
 claims about function, binding, causality, mechanism, or significance need
 database, literature, computation, validation, or user-input evidence.
+In report prose, keep decisive conclusions visibly anchored by writing the
+decisive phrase in Markdown bold and attaching supporting ids through the
+block/item `evidenceIds` field. Do not manually append literal evidence markers
+inside the prose; the UI renders clickable anchors automatically.
 
 ## Artifact Discipline
 
