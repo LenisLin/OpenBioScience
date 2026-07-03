@@ -327,9 +327,28 @@ The fastest path is the packaged app from [GitHub Releases](https://github.com/R
 | Windows             | `OpenScience-*-x64.exe`     |
 | Linux               | `OpenScience-*-linux-*.deb` |
 
-After installation, open OpenScience. No app-level login is required: the app opens directly to the home page. Create or reopen a research project, then start with **Science Mode**, **Medical Evidence Mode**, **Goal Mode**, or **Knowledge Distillation Mode**.
+After installation, open OpenScience. No app-level login is required: the app opens directly to the home page. The desktop app also starts a local WebUI by default, so the same workspace can be opened from a browser on this computer from **Settings -> Remote Connection -> WebUI**. Create or reopen a research project, then start with **Science Mode**, **Medical Evidence Mode**, **Goal Mode**, or **Knowledge Distillation Mode**.
 
 Before the first real agent run, open **Settings** and configure at least one model provider, local model endpoint, or coding agent such as Claude Code, Codex, Qwen Code, or another supported local CLI. If a packaged release is not available yet, use the source workflow below.
+
+On Linux, the release package is a Debian package:
+
+```bash
+sudo apt install ./OpenScience-*-linux-*.deb
+OpenScience
+```
+
+For a browser-only or headless Linux session, start WebUI explicitly. Local-only access is enough on a workstation; add `--remote` only when you want to reach it from another device or through an SSH tunnel:
+
+```bash
+# Local browser on the same machine.
+OpenScience --webui --port 25808
+
+# Server / LAN access.
+OpenScience --webui --remote --port 25808
+```
+
+Open `http://localhost:25808` for local access, or `http://<server-ip>:25808` when remote access is enabled and your firewall allows the port.
 
 ### Option 2: run from source
 
@@ -350,10 +369,22 @@ bun run playwright:install
 
 OpenScience's Electron tests and app preview panes can run without this extra download. The copied Playwright MCP configuration connects to the app's local Chrome DevTools endpoint instead of launching its own browser.
 
-For a clean browser/WebUI run that does not reuse your desktop data directory:
+When the desktop app is running, WebUI is available by default from the app's WebUI settings. For a clean browser/WebUI development run that does not reuse your desktop data directory:
 
 ```bash
 DEEPORGANISER_DATA_DIR=/tmp/openscience-webui-clean bun run webui -- --port 25809
+```
+
+For a Linux server or container where no Electron window is needed, use:
+
+```bash
+DEEPORGANISER_DATA_DIR=/var/lib/openscience-webui bun run webui:remote -- --port 25809
+```
+
+Then open `http://localhost:25809` locally, or forward the port with SSH:
+
+```bash
+ssh -L 25809:127.0.0.1:25809 user@your-linux-host
 ```
 
 The WebUI startup path automatically syncs the bundled OpenScience skills and built-in MCP catalog. You should not run `bun run skills:science:materialize` during a normal install; that script is for maintainers regenerating the vendored science skill pack.
@@ -398,7 +429,7 @@ macOS signing/notarization is optional for local testing, but release builds sho
 If you are not comfortable with terminal setup, paste this prompt into Claude Code, Codex, or another local coding agent:
 
 ```text
-Please install and run OpenScience on this computer. The repository is https://github.com/ResearAI/OpenScience. First check whether git, bun, and at least one local coding agent such as Codex CLI, Claude Code, or OpenCode are available. If something is missing, tell me exactly what to install. Then clone the repository, run `bun install --frozen-lockfile`, and start the desktop app with `bun run start`. For a clean browser run, use `DEEPORGANISER_DATA_DIR=/tmp/openscience-webui-clean bun run webui -- --port 25809`. Do not run `bun run skills:science:materialize` unless I am maintaining the vendored skill pack. Do not delete or overwrite any existing personal files. If there are dependency, permission, port, Electron, or native-module problems, diagnose them step by step and fix them when safe. When OpenScience starts successfully, tell me that it opens without an app-level login, then show me where to configure model/API keys or local coding agents in Settings.
+Please install and run OpenScience on this computer. The repository is https://github.com/ResearAI/OpenScience. First check whether git, bun, and at least one local coding agent such as Codex CLI, Claude Code, or OpenCode are available. If something is missing, tell me exactly what to install. Then clone the repository, run `bun install --frozen-lockfile`, and start the desktop app with `bun run start`. The desktop app should expose WebUI by default through Settings -> Remote Connection -> WebUI. For a clean browser run, use `DEEPORGANISER_DATA_DIR=/tmp/openscience-webui-clean bun run webui -- --port 25809`; on a Linux server use `DEEPORGANISER_DATA_DIR=/var/lib/openscience-webui bun run webui:remote -- --port 25809` and, if needed, forward the port with `ssh -L 25809:127.0.0.1:25809 user@host`. Do not run `bun run skills:science:materialize` unless I am maintaining the vendored skill pack. Do not delete or overwrite any existing personal files. If there are dependency, permission, port, Electron, or native-module problems, diagnose them step by step and fix them when safe. When OpenScience starts successfully, tell me that it opens without an app-level login, then show me where to configure model/API keys or local coding agents in Settings.
 ```
 
 ### A full workflow — from question to artifact

@@ -1,6 +1,6 @@
-# DeepOrganiser WebUI Mode - Startup Guide
+# OpenScience WebUI Mode - Startup Guide
 
-DeepOrganiser supports WebUI mode, allowing you to access the application through a web browser. This guide covers how to start WebUI mode on all supported platforms.
+OpenScience includes WebUI mode, allowing you to access the workspace through a web browser. In current desktop builds, local WebUI is started by default and can be inspected from **Settings -> Remote Connection -> WebUI**. This guide covers explicit WebUI startup for development, servers, and remote access.
 
 ## Table of Contents
 
@@ -16,13 +16,18 @@ DeepOrganiser supports WebUI mode, allowing you to access the application throug
 
 ## What is WebUI Mode?
 
-WebUI mode starts DeepOrganiser with an embedded web server, allowing you to:
+WebUI mode starts OpenScience with an embedded web server, allowing you to:
 
 - Access the application through any modern web browser
-- Use DeepOrganiser from remote devices on the same network (with `--remote` flag)
+- Use OpenScience from remote devices on the same network (with the `--remote` flag)
 - Run the application headless on servers
 
-Default access URL: `http://localhost:3000` (port may vary, check the application output)
+Default access URL:
+
+- Packaged app: `http://localhost:25808`
+- Source/development run: `http://localhost:25809`
+
+If the port is occupied, OpenScience may use the next available port. Check the WebUI settings page or terminal output.
 
 ---
 
@@ -34,10 +39,10 @@ Open **Command Prompt** or **PowerShell** and run:
 
 ```cmd
 # Using full path
-"C:\Program Files\DeepOrganiser\DeepOrganiser.exe" --webui
+"C:\Program Files\OpenScience\OpenScience.exe" --webui
 
-# Or if DeepOrganiser is in your PATH
-DeepOrganiser.exe --webui
+# Or if OpenScience is in your PATH
+OpenScience.exe --webui
 ```
 
 ### Method 2: Create a Desktop Shortcut
@@ -45,19 +50,19 @@ DeepOrganiser.exe --webui
 1. Right-click on desktop → **New** → **Shortcut**
 2. Enter target location:
    ```
-   "C:\Program Files\DeepOrganiser\DeepOrganiser.exe" --webui
+   "C:\Program Files\OpenScience\OpenScience.exe" --webui
    ```
-3. Name it **DeepOrganiser WebUI**
+3. Name it **OpenScience WebUI**
 4. Click **Finish**
 5. Double-click the shortcut to launch
 
 ### Method 3: Create a Batch File
 
-Create `start-deeporganiser-webui.bat`:
+Create `start-openscience-webui.bat`:
 
 ```batch
 @echo off
-"C:\Program Files\DeepOrganiser\DeepOrganiser.exe" --webui
+"C:\Program Files\OpenScience\OpenScience.exe" --webui
 pause
 ```
 
@@ -73,26 +78,26 @@ Open **Terminal** and run:
 
 ```bash
 # Using full path
-/Applications/DeepOrganiser.app/Contents/MacOS/DeepOrganiser --webui
+/Applications/OpenScience.app/Contents/MacOS/OpenScience --webui
 
 # Or using open command
-open -a DeepOrganiser --args --webui
+open -a OpenScience --args --webui
 ```
 
 ### Method 2: Create Shell Script
 
-Create `start-deeporganiser-webui.sh`:
+Create `start-openscience-webui.sh`:
 
 ```bash
 #!/bin/bash
-/Applications/DeepOrganiser.app/Contents/MacOS/DeepOrganiser --webui
+/Applications/OpenScience.app/Contents/MacOS/OpenScience --webui
 ```
 
 Make it executable and run:
 
 ```bash
-chmod +x start-deeporganiser-webui.sh
-./start-deeporganiser-webui.sh
+chmod +x start-openscience-webui.sh
+./start-openscience-webui.sh
 ```
 
 ### Method 3: Create Automator Application
@@ -102,15 +107,15 @@ chmod +x start-deeporganiser-webui.sh
 3. Add **Run Shell Script** action
 4. Enter:
    ```bash
-   /Applications/DeepOrganiser.app/Contents/MacOS/DeepOrganiser --webui
+   /Applications/OpenScience.app/Contents/MacOS/OpenScience --webui
    ```
-5. Save as **DeepOrganiser WebUI.app**
+5. Save as **OpenScience WebUI.app**
 6. Double-click to launch
 
 ### Method 4: Add to Dock
 
 1. Create an Automator app (Method 3)
-2. Drag **DeepOrganiser WebUI.app** to your Dock
+2. Drag **OpenScience WebUI.app** to your Dock
 3. Click the Dock icon to start WebUI mode anytime
 
 ---
@@ -123,32 +128,28 @@ chmod +x start-deeporganiser-webui.sh
 
 ```bash
 # Using system path
-deeporganiser --webui
+OpenScience --webui
 
 # Or using full path
-/opt/DeepOrganiser/deeporganiser --webui
+/opt/OpenScience/OpenScience --webui
 ```
 
-#### For AppImage
+For remote LAN/server access:
 
 ```bash
-# Make AppImage executable (first time only)
-chmod +x DeepOrganiser-*.AppImage
-
-# Run with --webui flag
-./DeepOrganiser-*.AppImage --webui
+OpenScience --webui --remote --port 25808
 ```
 
 ### Method 2: Create Desktop Entry
 
-Create `~/.local/share/applications/deeporganiser-webui.desktop`:
+Create `~/.local/share/applications/openscience-webui.desktop`:
 
 ```ini
 [Desktop Entry]
-Name=DeepOrganiser WebUI
-Comment=Start DeepOrganiser in WebUI mode
-Exec=/opt/DeepOrganiser/deeporganiser --webui
-Icon=deeporganiser
+Name=OpenScience WebUI
+Comment=Start OpenScience in WebUI mode
+Exec=/opt/OpenScience/OpenScience --webui
+Icon=openscience
 Terminal=false
 Type=Application
 Categories=Utility;Office;
@@ -157,45 +158,45 @@ Categories=Utility;Office;
 Make it executable:
 
 ```bash
-chmod +x ~/.local/share/applications/deeporganiser-webui.desktop
+chmod +x ~/.local/share/applications/openscience-webui.desktop
 ```
 
 The launcher will appear in your application menu.
 
 ### Method 3: Create Shell Script
 
-Create `~/bin/start-deeporganiser-webui.sh`:
+Create `~/bin/start-openscience-webui.sh`:
 
 ```bash
 #!/bin/bash
-/opt/DeepOrganiser/deeporganiser --webui
+/opt/OpenScience/OpenScience --webui
 ```
 
 Make it executable:
 
 ```bash
-chmod +x ~/bin/start-deeporganiser-webui.sh
+chmod +x ~/bin/start-openscience-webui.sh
 ```
 
 Run it:
 
 ```bash
-start-deeporganiser-webui.sh
+start-openscience-webui.sh
 ```
 
 ### Method 4: Systemd Service (Background)
 
-Create `/etc/systemd/system/deeporganiser-webui.service`:
+Create `/etc/systemd/system/openscience-webui.service`:
 
 ```ini
 [Unit]
-Description=DeepOrganiser WebUI Service
+Description=OpenScience WebUI Service
 After=network.target
 
 [Service]
 Type=simple
 User=YOUR_USERNAME
-ExecStart=/opt/DeepOrganiser/deeporganiser --webui --remote
+ExecStart=/opt/OpenScience/OpenScience --webui --remote
 Restart=on-failure
 RestartSec=10
 
@@ -207,24 +208,24 @@ Enable and start the service:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable deeporganiser-webui.service
-sudo systemctl start deeporganiser-webui.service
+sudo systemctl enable openscience-webui.service
+sudo systemctl start openscience-webui.service
 
 # Check status
-sudo systemctl status deeporganiser-webui.service
+sudo systemctl status openscience-webui.service
 ```
 
 ---
 
 ## Android (Termux)
 
-**Important Note**: Electron desktop mode is **not supported** on Android. However, you can run DeepOrganiser in WebUI mode using Termux with a prooted Linux environment.
+**Important Note**: Electron desktop mode is **not supported** on Android. However, you can run OpenScience in WebUI mode using Termux with a prooted Linux environment.
 
-> **Community Contribution**: This guide is contributed by [@Manamama](https://github.com/Manamama). Special thanks for making DeepOrganiser accessible on Android devices! 🙏
+> **Community Contribution**: This guide is contributed by [@Manamama](https://github.com/Manamama). Special thanks for making OpenScience accessible on Android devices! 🙏
 >
-> **Original Tutorial**: [Running DeepOrganiser WebUI on Android via Termux + Proot Ubuntu](https://gist.github.com/Manamama/b4f903c279b5e73bdad4c2c0a58d5ddd)
+> **Original Tutorial**: [Running OpenScience WebUI on Android via Termux + Proot Ubuntu](https://gist.github.com/Manamama/b4f903c279b5e73bdad4c2c0a58d5ddd)
 >
-> **Related Issues**: [#217 - Android Support Discussion](https://github.com/ResearAI/DeepOrganiser/issues/217)
+> **Related Issues**: [#217 - Android Support Discussion](https://github.com/ResearAI/OpenScience/issues/217)
 
 ### Prerequisites
 
@@ -281,28 +282,28 @@ apt install -y \
     libcups2
 ```
 
-#### 4. Download and Install DeepOrganiser
+#### 4. Download and Install OpenScience
 
 ```bash
 # Download the ARM64 .deb package (replace VERSION with the actual version)
-# Check latest version at: https://github.com/ResearAI/DeepOrganiser/releases
-wget https://github.com/ResearAI/DeepOrganiser/releases/download/vVERSION/DeepOrganiser_VERSION_arm64.deb
+# Check latest version at: https://github.com/ResearAI/OpenScience/releases
+wget https://github.com/ResearAI/OpenScience/releases/download/vVERSION/OpenScience_VERSION_arm64.deb
 
 # Example (replace VERSION with the release tag, e.g. v1.5.2):
-wget https://github.com/ResearAI/DeepOrganiser/releases/download/vVERSION/DeepOrganiser_VERSION_arm64.deb
+wget https://github.com/ResearAI/OpenScience/releases/download/vVERSION/OpenScience_VERSION_arm64.deb
 
 # Install the package
-apt install -y ./DeepOrganiser_*.deb
+apt install -y ./OpenScience_*.deb
 
 # Verify installation
-which DeepOrganiser
+which OpenScience
 ```
 
-#### 5. Launch DeepOrganiser WebUI
+#### 5. Launch OpenScience WebUI
 
 ```bash
-# Start DeepOrganiser in WebUI mode with no-sandbox flag
-DeepOrganiser --no-sandbox --webui
+# Start OpenScience in WebUI mode with no-sandbox flag
+OpenScience --no-sandbox --webui
 ```
 
 **Important**: The `--no-sandbox` flag is required in Termux/proot environments.
@@ -331,11 +332,11 @@ These errors are related to D-Bus and X server, which are not needed for WebUI m
 
 ### Remote Access on LAN
 
-To access DeepOrganiser from other devices on your local network:
+To access OpenScience from other devices on your local network:
 
 ```bash
 # Start with --remote flag
-DeepOrganiser --no-sandbox --webui --remote
+OpenScience --no-sandbox --webui --remote
 
 # Find your Android device's IP address
 # In Termux (outside proot):
@@ -352,23 +353,23 @@ If port 25808 is occupied:
 
 ```bash
 # Specify a different port
-DeepOrganiser --no-sandbox --webui --port 8080
+OpenScience --no-sandbox --webui --port 8080
 ```
 
 #### Permission Denied Errors
 
 ```bash
 # Ensure the binary has execute permissions
-chmod +x /opt/DeepOrganiser/deeporganiser
+chmod +x /opt/OpenScience/OpenScience
 ```
 
 #### Out of Memory
 
-DeepOrganiser requires sufficient RAM. Close other apps if you encounter memory issues.
+OpenScience requires sufficient RAM. Close other apps if you encounter memory issues.
 
 #### Cannot Access from Browser
 
-1. Check if DeepOrganiser is running: look for "Server started" message
+1. Check if OpenScience is running: look for "Server started" message
 2. Try using Termux's built-in browser or Chrome
 3. Clear browser cache
 
@@ -377,32 +378,32 @@ DeepOrganiser requires sufficient RAM. Close other apps if you encounter memory 
 1. **Use a lightweight browser** - Chrome or Firefox Focus recommended
 2. **Close background apps** - Free up RAM for better performance
 3. **Use WiFi** - More stable than mobile data for remote access
-4. **Keep device charged** - Running DeepOrganiser consumes battery
+4. **Keep device charged** - Running OpenScience consumes battery
 
 ### Tested Environment
 
 - **Device**: Android 14
 - **Termux Version**: 0.118.0
-- **DeepOrganiser Version**: Latest release (e.g. 1.5.2)
+- **OpenScience Version**: Latest release (e.g. 1.5.2)
 - **Proot-distro**: Ubuntu (latest)
 
 ### Creating a Startup Script
 
-For convenience, create a script to launch DeepOrganiser quickly:
+For convenience, create a script to launch OpenScience quickly:
 
 ```bash
 # Create script in Ubuntu (proot)
-cat > ~/start-deeporganiser.sh << 'EOF'
+cat > ~/start-openscience.sh << 'EOF'
 #!/bin/bash
-echo "Starting DeepOrganiser WebUI..."
-DeepOrganiser --no-sandbox --webui --remote
+echo "Starting OpenScience WebUI..."
+OpenScience --no-sandbox --webui --remote
 EOF
 
 # Make executable
-chmod +x ~/start-deeporganiser.sh
+chmod +x ~/start-openscience.sh
 
 # Run anytime
-./start-deeporganiser.sh
+./start-openscience.sh
 ```
 
 ### Quick Start Command (One-liner)
@@ -410,7 +411,7 @@ chmod +x ~/start-deeporganiser.sh
 From Termux main shell:
 
 ```bash
-proot-distro login ubuntu -- bash -c "DeepOrganiser --no-sandbox --webui --remote"
+proot-distro login ubuntu -- bash -c "OpenScience --no-sandbox --webui --remote"
 ```
 
 ### Feedback and Improvements
@@ -418,7 +419,7 @@ proot-distro login ubuntu -- bash -c "DeepOrganiser --no-sandbox --webui --remot
 If you encounter issues or have suggestions for improving Android support:
 
 1. Check the [original community guide](https://gist.github.com/Manamama/b4f903c279b5e73bdad4c2c0a58d5ddd)
-2. Report issues at [GitHub Issues #217](https://github.com/ResearAI/DeepOrganiser/issues/217)
+2. Report issues at [GitHub Issues #217](https://github.com/ResearAI/OpenScience/issues/217)
 3. Share your experience to help other Android users!
 
 ---
@@ -430,19 +431,19 @@ To allow access from other devices on your network, use the `--remote` flag:
 ### Windows
 
 ```cmd
-DeepOrganiser.exe --webui --remote
+OpenScience.exe --webui --remote
 ```
 
 ### macOS
 
 ```bash
-/Applications/DeepOrganiser.app/Contents/MacOS/DeepOrganiser --webui --remote
+/Applications/OpenScience.app/Contents/MacOS/OpenScience --webui --remote
 ```
 
 ### Linux
 
 ```bash
-deeporganiser --webui --remote
+OpenScience --webui --remote
 ```
 
 **Security Note**: Remote mode allows network access. Use only on trusted networks. Consider setting up authentication and firewall rules for production use.
@@ -467,7 +468,7 @@ ip addr show
 
 Look for `inet` address (e.g., `192.168.1.100`).
 
-Access from other devices: `http://YOUR_IP_ADDRESS:3000`
+Access from other devices: `http://YOUR_IP_ADDRESS:25808`
 
 ---
 
@@ -475,7 +476,7 @@ Access from other devices: `http://YOUR_IP_ADDRESS:3000`
 
 ### Port Already in Use
 
-If port 3000 is already in use, the application will automatically try the next available port. Check the console output for the actual port number.
+If port 25808 is already in use, the application will automatically try the next available port. Check the console output for the actual port number.
 
 ### Cannot Access from Browser
 
@@ -494,17 +495,17 @@ If port 3000 is already in use, the application will automatically try the next 
 
 ```cmd
 # Allow through Windows Firewall
-netsh advfirewall firewall add rule name="DeepOrganiser WebUI" dir=in action=allow protocol=TCP localport=3000
+netsh advfirewall firewall add rule name="OpenScience WebUI" dir=in action=allow protocol=TCP localport=25808
 ```
 
 **Linux (UFW):**
 
 ```bash
-sudo ufw allow 3000/tcp
+sudo ufw allow 25808/tcp
 ```
 
 **macOS:**
-Go to **System Preferences** → **Security & Privacy** → **Firewall** → **Firewall Options** → Add DeepOrganiser
+Go to **System Preferences** → **Security & Privacy** → **Firewall** → **Firewall Options** → Add OpenScience
 
 ### Application Not Found
 
@@ -513,21 +514,21 @@ Go to **System Preferences** → **Security & Privacy** → **Firewall** → **F
 **Windows:**
 
 ```cmd
-where DeepOrganiser.exe
+where OpenScience.exe
 ```
 
 **macOS:**
 
 ```bash
-mdfind -name "DeepOrganiser.app"
+mdfind -name "OpenScience.app"
 ```
 
 **Linux:**
 
 ```bash
-which deeporganiser
+which OpenScience
 # or
-find /opt -name "deeporganiser" 2>/dev/null
+find /opt -name "OpenScience" 2>/dev/null
 ```
 
 ### View Logs
@@ -535,13 +536,13 @@ find /opt -name "deeporganiser" 2>/dev/null
 **Windows (PowerShell):**
 
 ```powershell
-& "C:\Program Files\DeepOrganiser\DeepOrganiser.exe" --webui 2>&1 | Tee-Object -FilePath deeporganiser.log
+& "C:\Program Files\OpenScience\OpenScience.exe" --webui 2>&1 | Tee-Object -FilePath openscience.log
 ```
 
 **macOS/Linux:**
 
 ```bash
-/path/to/deeporganiser --webui 2>&1 | tee deeporganiser.log
+/path/to/OpenScience --webui 2>&1 | tee openscience.log
 ```
 
 ---
@@ -561,10 +562,10 @@ export DEEPORGANISER_ALLOW_REMOTE=true
 export DEEPORGANISER_HOST=0.0.0.0
 
 # Then start the application
-deeporganiser --webui
+OpenScience --webui
 
 # You can also pass the port directly via CLI
-deeporganiser --webui --port 8080
+OpenScience --webui --port 8080
 ```
 
 ---
@@ -575,9 +576,9 @@ From v1.5.0+, you can store persistent WebUI preferences in `webui.config.json` 
 
 | Platform | Location                                                            |
 | -------- | ------------------------------------------------------------------- |
-| Windows  | `%APPDATA%/DeepOrganiser/webui.config.json`                     |
-| macOS    | `~/Library/Application Support/DeepOrganiser/webui.config.json` |
-| Linux    | `~/.config/DeepOrganiser/webui.config.json`                     |
+| Windows  | `%APPDATA%/OpenScience/webui.config.json`                     |
+| macOS    | `~/Library/Application Support/OpenScience/webui.config.json` |
+| Linux    | `~/.config/OpenScience/webui.config.json`                     |
 
 Example file:
 
@@ -614,33 +615,33 @@ If you forgot your admin password in WebUI mode, you can reset it using the `--r
 
 ```cmd
 # Using full path
-"C:\Program Files\DeepOrganiser\DeepOrganiser.exe" --resetpass
+"C:\Program Files\OpenScience\OpenScience.exe" --resetpass
 
 # Or for a specific user
-"C:\Program Files\DeepOrganiser\DeepOrganiser.exe" --resetpass username
+"C:\Program Files\OpenScience\OpenScience.exe" --resetpass username
 ```
 
 **macOS:**
 
 ```bash
 # Using full path
-/Applications/DeepOrganiser.app/Contents/MacOS/DeepOrganiser --resetpass
+/Applications/OpenScience.app/Contents/MacOS/OpenScience --resetpass
 
 # Or for a specific user
-/Applications/DeepOrganiser.app/Contents/MacOS/DeepOrganiser --resetpass username
+/Applications/OpenScience.app/Contents/MacOS/OpenScience --resetpass username
 ```
 
 **Linux:**
 
 ```bash
 # Using system path
-deeporganiser --resetpass
+OpenScience --resetpass
 
 # Or for a specific user
-deeporganiser --resetpass username
+OpenScience --resetpass username
 
 # Or using full path
-/opt/DeepOrganiser/deeporganiser --resetpass
+/opt/OpenScience/OpenScience --resetpass
 ```
 
 ### What happens when you run --resetpass:
@@ -678,7 +679,7 @@ npm run resetpass -- username
 - [Main README](../readme.md)
 - [中文说明](./readme/readme_ch.md)
 - [日本語ドキュメント](./readme/readme_jp.md)
-- [GitHub Issues](https://github.com/ResearAI/DeepOrganiser/issues)
+- [GitHub Issues](https://github.com/ResearAI/OpenScience/issues)
 
 ---
 
@@ -687,13 +688,13 @@ npm run resetpass -- username
 If you encounter any issues:
 
 1. Check the [Troubleshooting](#troubleshooting) section
-2. Search [existing issues](https://github.com/ResearAI/DeepOrganiser/issues)
-3. Create a [new issue](https://github.com/ResearAI/DeepOrganiser/issues/new) with:
+2. Search [existing issues](https://github.com/ResearAI/OpenScience/issues)
+3. Create a [new issue](https://github.com/ResearAI/OpenScience/issues/new) with:
    - Your OS and version
-   - DeepOrganiser version
+   - OpenScience version
    - Steps to reproduce
    - Error messages or logs
 
 ---
 
-**Happy using DeepOrganiser in WebUI mode!** 🚀
+**Happy using OpenScience in WebUI mode!** 🚀

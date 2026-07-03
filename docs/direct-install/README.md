@@ -37,23 +37,33 @@ If `Open Anyway` does not appear, double-click OpenScience once more to trigger 
 
 ## Linux
 
-1. Download the package for your distribution, such as a `.deb` package or a Linux executable.
-2. On Debian / Ubuntu, you can install a `.deb` package with:
+1. Download the `.deb` package for your Linux architecture from Releases.
+2. On Debian / Ubuntu, install it with:
 
    ```bash
    sudo apt install ./OpenScience-*.deb
    ```
 
-3. If you downloaded an executable file, grant execute permission first:
+3. Launch OpenScience from your application menu, or from a terminal:
 
    ```bash
-   chmod +x OpenScience-*
+   OpenScience
    ```
 
-4. If your desktop environment blocks the app, allow it from file properties, the software center, or your system security settings.
+4. The desktop app starts the local WebUI by default. Open **Settings -> Remote Connection -> WebUI** to copy the browser URL.
+5. For a browser-only or headless Linux run, start WebUI explicitly:
+
+   ```bash
+   OpenScience --webui --port 25808
+   OpenScience --webui --remote --port 25808
+   ```
+
+   Use the first command for local browser access. Use `--remote` only when another device, reverse proxy, or SSH tunnel needs to reach the WebUI.
+6. If your desktop environment blocks the app, allow it from file properties, the software center, or your system security settings.
 
 ## Security Notes
 
 - Prefer GitHub Releases. Avoid installers from unknown sources.
 - macOS, Windows, and some Linux desktop environments may block unsigned, newly released, or uncommon apps. In those cases, the user must explicitly allow the app in system security settings.
+- WebUI listens locally by default. Enable remote access only on trusted networks or behind a tunnel/reverse proxy you control.
 - If the app still cannot launch, download the latest release again, then check system security settings, antivirus quarantine, and executable permissions.

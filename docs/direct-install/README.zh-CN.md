@@ -37,23 +37,33 @@
 
 ## Linux
 
-1. 从 Releases 下载适合系统的安装包，例如 `.deb` 或 Linux 可执行包。
+1. 从 Releases 下载适合当前 Linux 架构的 `.deb` 安装包。
 2. Debian / Ubuntu 用户可以使用：
 
    ```bash
    sudo apt install ./OpenScience-*.deb
    ```
 
-3. 如果下载的是可执行文件，需要先授予执行权限：
+3. 从应用菜单启动 OpenScience，或者在终端运行：
 
    ```bash
-   chmod +x OpenScience-*
+   OpenScience
    ```
 
-4. 如果系统安全策略阻止运行，请在文件属性、软件中心或系统安全设置中允许来自该文件的应用运行。
+4. 桌面应用默认会启动本机 WebUI。进入**设置 -> 远程连接 -> WebUI**，即可复制浏览器访问地址。
+5. 如果你希望只用浏览器访问，或在无图形 Linux 服务器上运行，可以显式启动 WebUI：
+
+   ```bash
+   OpenScience --webui --port 25808
+   OpenScience --webui --remote --port 25808
+   ```
+
+   第一条用于本机浏览器访问。只有需要其他设备、反向代理或 SSH 隧道访问时，才使用 `--remote`。
+6. 如果系统安全策略阻止运行，请在文件属性、软件中心或系统安全设置中允许来自该文件的应用运行。
 
 ## 安全提示
 
 - 请优先从 GitHub Releases 下载，不要使用来源不明的安装包。
 - macOS、Windows 和部分 Linux 桌面环境都会对未完全签名或新发布的软件做安全拦截；这类拦截通常需要用户在系统安全设置里手动确认。
+- WebUI 默认只用于本机访问。只有在可信网络、SSH 隧道或自己控制的反向代理后面，才建议开启远程访问。
 - 如果安装后无法启动，先重新下载最新版，再检查系统安全设置、杀毒软件隔离区和文件执行权限。
