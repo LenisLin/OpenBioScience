@@ -5,6 +5,7 @@ Documentation is organized by reader intent, not by document type.
 | Directory                       | For whom                 | What lives here                                                                                                               |
 | ------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
 | [`guides/`](guides)             | Users & operators        | How to deploy, test, and run the product. Server deployment, WebUI, Hub testing, CDP debugging.                               |
+| [`direct-install/`](direct-install) | End users                | Direct desktop installation guide in [English](direct-install/README.md) and [中文](direct-install/README.zh-CN.md), including macOS Privacy & Security handling for unsigned or newly released builds. |
 | [`contributing/`](contributing) | Contributors             | Dev environment setup, file-structure conventions, PR automation workflow.                                                    |
 | [`architecture/`](architecture) | Engineers & architects   | System architecture overview, subsystem deep-dives (ACP, queue, team mode), and supporting research notes.                    |
 | [`specs/`](specs)               | Engineering-driven specs | Feature design docs, requirements, implementation plans (ACP rewrite, extension market, remote agent, wake prompt, PR notes). |
@@ -14,6 +15,7 @@ Documentation is organized by reader intent, not by document type.
 ## Quick pointers
 
 - New to the project? Start with [`architecture/overview.md`](architecture/overview.md).
+- Installing the desktop app directly? See [`direct-install/README.md`](direct-install/README.md) or [`direct-install/README.zh-CN.md`](direct-install/README.zh-CN.md).
 - Setting up a dev environment? See [`contributing/development.md`](contributing/development.md).
 - Writing code? The entry point for code-style, linting, formatting, and commit rules is [`AGENTS.md`](../AGENTS.md) at the repo root.
 - Deploying a server? [`guides/deploy-server.md`](guides/deploy-server.md).
