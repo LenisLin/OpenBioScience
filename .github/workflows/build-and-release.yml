@@ -293,6 +293,24 @@ jobs:
         shell: bash
         run: bash scripts/prepare-release-assets.sh build-artifacts release-assets
 
+      - name: Remove stale draft release for tag
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          TAG_NAME: ${{ steps.version.outputs.tag_name }}
+        run: |
+          existing_draft="$(gh release view "$TAG_NAME" --json isDraft --jq '.isDraft' 2>/dev/null || true)"
+
+          if [ "$existing_draft" = "true" ]; then
+            echo "Removing existing draft release for $TAG_NAME so this run publishes a clean asset set."
+            gh release delete "$TAG_NAME" --yes
+          elif [ "$existing_draft" = "false" ]; then
+            echo "::error::Release $TAG_NAME already exists and is not a draft; refusing to overwrite it."
+            exit 1
+          else
+            echo "No existing release found for $TAG_NAME."
+          fi
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
