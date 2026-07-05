@@ -226,10 +226,10 @@ const buildCatalogFallbackSkills = (paths?: SkillPaths): SkillInfo[] => {
         : name === LAB_SKILL_DEPOSITION_SKILL_NAME
           ? 'Knowledge deposition mode skill for turning conversations, artifacts, and lab notes into reusable SOPs.'
           : modeTags.includes('science-default')
-            ? 'Default OpenScience Science Mode router skill.'
+            ? 'Default OpenBioScience Science Mode router skill.'
             : modeTags.includes('medical-evidence')
               ? 'Default medical evidence mode skill.'
-              : 'Materialized OpenScience Science skill from the bundled scientific skill pack.';
+              : 'Materialized OpenBioScience Science skill from the bundled scientific skill pack.';
     return {
       name,
       description,
@@ -315,13 +315,13 @@ const buildCatalogFallbackMarkdown = (skill: SkillInfo, t: SettingsT): string =>
     skill.description ||
       t('skills.catalogFallbackDescription', {
         defaultValue:
-          'This skill is listed in the OpenScience built-in skill catalog, but the current runtime has not returned the full SKILL.md content yet.',
+          'This skill is listed in the OpenBioScience built-in skill catalog, but the current runtime has not returned the full SKILL.md content yet.',
       }),
     '',
     '## Runtime Status',
     '',
-    '- This row is shown from the OpenScience mode skill catalog.',
-    '- If the full source preview is unavailable, restart OpenScience/WebUI so `resources/skills` is synced into the runtime `builtin-skills` directory.',
+    '- This row is shown from the OpenBioScience mode skill catalog.',
+    '- If the full source preview is unavailable, restart OpenBioScience/WebUI so `resources/skills` is synced into the runtime `builtin-skills` directory.',
     `- Expected runtime path: \`${getSkillMarkdownPath(skill) || skill.location}\``,
     '',
     skill.modeTags.length ? '## Mode Tags' : undefined,

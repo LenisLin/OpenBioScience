@@ -1,6 +1,6 @@
 {
   "welcome": {
-    "title": "OpenScience hilft dir beim Forschen",
+    "title": "OpenBioScience hilft dir beim Forschen",
     "placeholder": "Nachricht senden, Dateien hochladen, Ordner öffnen oder geplante Aufgabe erstellen...",
     "linkFolder": "Ordner öffnen",
     "newConversation": "Neuer Chat",
@@ -12,10 +12,10 @@
     "clearWorkspace": "Ordner entfernen",
     "openFolder": "Ordner öffnen",
     "none": "Keiner",
-    "quickActionsTitle": "Was kann OpenScience?",
+    "quickActionsTitle": "Was kann OpenBioScience?",
     "quickActionFeedback": "Feedback oder Vorschläge?",
-    "quickActionStar": "Gefällt dir OpenScience? Gib uns einen Stern!",
-    "skillsMarket": "OpenScience Skills-Markt",
+    "quickActionStar": "Gefällt dir OpenBioScience? Gib uns einen Stern!",
+    "skillsMarket": "OpenBioScience Skills-Markt",
     "skillsMarketDesc": "Community-Skills auf Abruf suchen und aktivieren. Einmal konfigurieren, für alle Agenten verfügbar.",
     "skillsMarketDetails": "Mehr anzeigen >>"
   },

@@ -1,13 +1,13 @@
 {
-  "pageTitle": "OpenScience - Sign In",
-  "brand": "OpenScience",
+  "pageTitle": "OpenBioScience - Sign In",
+  "brand": "OpenBioScience",
   "brandEdition": "Open Research Workspace",
   "editorialEyebrow": "Open science, organized from the first question",
   "editorialTitle": "Make research evidence easy to continue.",
-  "editorialSubtitle": "OpenScience keeps questions, files, tasks, and agent work in one calm workspace, so every result can be traced, discussed, and continued.",
+  "editorialSubtitle": "OpenBioScience keeps questions, files, tasks, and agent work in one calm workspace, so every result can be traced, discussed, and continued.",
   "petTitle": "Workspace awake",
   "petSubtitle": "Keeping evidence, people, and next steps aligned.",
-  "designPrinciplesLabel": "OpenScience operating notes",
+  "designPrinciplesLabel": "OpenBioScience operating notes",
   "principles": {
     "oneTitle": "Shared evidence",
     "oneBody": "Files, notes, tasks, and decisions stay connected to the question they came from.",
@@ -17,7 +17,7 @@
     "threeBody": "Agents help with routine work while people keep judgment, authorship, and review in view."
   },
   "cardKicker": "OPEN WORKSPACE",
-  "cardTitle": "Enter OpenScience",
+  "cardTitle": "Enter OpenBioScience",
   "subtitle": "Continue projects, tasks, and agent conversations in one place",
   "username": "Username",
   "usernamePlaceholder": "Enter your username",

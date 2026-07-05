@@ -49,7 +49,6 @@ const DEFAULT_SCIENCE_SKILL_IDS = [
   'openscience-biomodels',
   'openscience-singlecell',
   'openscience-compute',
-  'openscience-empirical',
 ];
 const DEFAULT_RESEARCH_EVIDENCE_DOMAINS = [
   'pubmed',
@@ -231,10 +230,10 @@ function readJsonFile<T>(filePath: string, fallback: T): T {
   }
 }
 
-function syncOpenScienceSkills(workDir: string): void {
+function syncOpenBioScienceSkills(workDir: string): void {
   const sourceRoot = path.join(repoRoot, 'resources', 'skills');
   if (!fs.existsSync(sourceRoot)) {
-    console.warn(`[webui] OpenScience skills source not found: ${sourceRoot}`);
+    console.warn(`[webui] OpenBioScience skills source not found: ${sourceRoot}`);
     return;
   }
 
@@ -273,7 +272,7 @@ function syncOpenScienceSkills(workDir: string): void {
       2
     )}\n`
   );
-  console.log(`[webui] OpenScience skills synced: ${skillNames.length}`);
+  console.log(`[webui] OpenBioScience skills synced: ${skillNames.length}`);
 }
 
 function builtinMcpScriptPath(scriptName: string): string | undefined {
@@ -423,7 +422,7 @@ async function bootstrapStandaloneMcpCatalog(backendPort: number): Promise<void>
     });
 
     if (missing.length === 0 && changed.length === 0) {
-      console.log('[webui] OpenScience MCP catalog already present');
+      console.log('[webui] OpenBioScience MCP catalog already present');
       return;
     }
 
@@ -432,7 +431,7 @@ async function bootstrapStandaloneMcpCatalog(backendPort: number): Promise<void>
         method: 'POST',
         body: JSON.stringify({ servers: missing }),
       });
-      console.log(`[webui] OpenScience MCP catalog imported: ${missing.map((server) => server.name).join(', ')}`);
+      console.log(`[webui] OpenBioScience MCP catalog imported: ${missing.map((server) => server.name).join(', ')}`);
     }
 
     for (const server of changed) {
@@ -450,10 +449,10 @@ async function bootstrapStandaloneMcpCatalog(backendPort: number): Promise<void>
       });
     }
     if (changed.length > 0) {
-      console.log(`[webui] OpenScience MCP catalog updated: ${changed.map((server) => server.name).join(', ')}`);
+      console.log(`[webui] OpenBioScience MCP catalog updated: ${changed.map((server) => server.name).join(', ')}`);
     }
   } catch (error) {
-    console.warn('[webui] could not bootstrap OpenScience MCP catalog:', error);
+    console.warn('[webui] could not bootstrap OpenBioScience MCP catalog:', error);
   }
 }
 
@@ -533,16 +532,16 @@ async function main(): Promise<void> {
     },
   });
 
-  syncOpenScienceSkills(workDir);
+  syncOpenBioScienceSkills(workDir);
   await bootstrapStandaloneMcpCatalog(handle.backendPort);
 
   console.log('');
-  console.log('DeepOrganiser WebUI is ready');
+  console.log('OpenBioScience WebUI is ready');
   console.log(`  Local  : ${handle.localUrl}`);
   if (handle.networkUrl) console.log(`  Network: ${handle.networkUrl}`);
 
   console.log('');
-  console.log('OpenScience WebUI uses no app-level login.');
+  console.log('OpenBioScience WebUI uses no app-level login.');
   console.log('Configure models, API keys, and local coding agents from Settings after opening the page.');
 
   if (autoOpenBrowser) {

@@ -1,6 +1,6 @@
 {
   "welcome": {
-    "title": "OpenScience помогает исследовать",
+    "title": "OpenBioScience помогает исследовать",
     "placeholder": "Отправьте сообщение, загрузите файлы, откройте папку или создайте запланированную задачу...",
     "linkFolder": "Открыть папку",
     "newConversation": "Новый чат",
@@ -12,10 +12,10 @@
     "clearWorkspace": "Удалить проект",
     "openFolder": "Открыть папку",
     "none": "Нет",
-    "quickActionsTitle": "Что умеет OpenScience?",
+    "quickActionsTitle": "Что умеет OpenBioScience?",
     "quickActionFeedback": "Сообщить о проблеме",
     "quickActionStar": "Нравится? Поставьте нам звезду!",
-    "skillsMarket": "Маркет навыков OpenScience",
+    "skillsMarket": "Маркет навыков OpenBioScience",
     "skillsMarketDesc": "Находите и активируйте навыки сообщества по запросу. Настройте один раз — доступно для всех агентов.",
     "skillsMarketDetails": "Подробнее >>"
   },

@@ -2,8 +2,9 @@
   "name": "@openscience/web-cli",
   "version": "1.9.26",
   "private": true,
-  "description": "OpenScience WebUI CLI - standalone web runtime (no Electron)",
+  "description": "OpenBioScience WebUI CLI - standalone web runtime (no Electron)",
   "bin": {
+    "openbioscience-web": "./bin/openbioscience-web.js",
     "openscience-web": "./bin/openscience-web.js"
   },
   "type": "module",

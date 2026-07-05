@@ -6,6 +6,7 @@ import { useAuth } from '@renderer/hooks/context/AuthContext';
 import { useConfig } from '@renderer/hooks/config/useConfig';
 import ScheduledTasksErrorBoundary from '@renderer/pages/cron/ScheduledTasksPage/ScheduledTasksErrorBoundary';
 import { shouldShowOnboarding } from '@renderer/pages/onboarding/onboardingState';
+import { APP_DISPLAY_NAME } from '@/renderer/utils/brand';
 const Conversation = React.lazy(() => import('@renderer/pages/conversation'));
 const Guid = React.lazy(() => import('@renderer/pages/guid'));
 const Onboarding = React.lazy(() => import('@renderer/pages/onboarding'));
@@ -43,7 +44,7 @@ const TitleSync: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
-    document.title = 'OpenScience';
+    document.title = APP_DISPLAY_NAME;
   }, [location.pathname]);
 
   return null;

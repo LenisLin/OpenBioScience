@@ -1,11 +1,11 @@
 {
-  "name": "OpenScience",
+  "name": "OpenBioScience",
   "version": "0.1.2",
-  "description": "OpenScience organizes research questions, evidence, tasks, and agent work into a traceable collaboration workspace.",
+  "description": "OpenBioScience organizes research questions, evidence, tasks, and agent work into a traceable collaboration workspace.",
   "keywords": [],
   "license": "AGPL-3.0-only",
   "author": {
-    "name": "OpenScience",
+    "name": "OpenBioScience",
     "email": "resear.ai@gmail.com"
   },
   "workspaces": [
@@ -276,5 +276,5 @@
   "patchedDependencies": {
     "7zip-bin@5.2.0": "patches/7zip-bin@5.2.0.patch"
   },
-  "productName": "OpenScience"
+  "productName": "OpenBioScience"
 }

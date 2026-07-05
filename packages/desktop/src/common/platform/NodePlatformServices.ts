@@ -29,7 +29,7 @@ const _pkg = (() => {
       version?: string;
     };
   } catch {
-    return { name: 'OpenScience', version: '0.0.0' };
+    return { name: 'OpenBioScience', version: '0.0.0' };
   }
 })();
 
@@ -42,7 +42,7 @@ export class NodePlatformServices implements IPlatformServices {
     getAppPath: (): string | null => process.cwd(),
     isPackaged: () => process.env.IS_PACKAGED === 'true',
     getSystemPath: (_name: 'desktop' | 'home' | 'downloads'): string | null => null,
-    getName: () => _pkg.name ?? 'OpenScience',
+    getName: () => _pkg.name ?? 'OpenBioScience',
     getVersion: () => _pkg.version ?? '0.0.0',
     needsCliSafeSymlinks: () => false,
   };

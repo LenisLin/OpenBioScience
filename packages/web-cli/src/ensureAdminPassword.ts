@@ -3,7 +3,7 @@
  * Copyright 2025 DeepOrganiser (deepscientist.cc)
  * SPDX-License-Identifier: Apache-2.0
  *
- * OpenScience no longer requires an app-level WebUI login. This compatibility
+ * OpenBioScience no longer requires an app-level WebUI login. This compatibility
  * helper is kept so older CLI startup code can call the same function without
  * seeding or printing an administrator password.
  */
@@ -27,5 +27,5 @@ export async function ensureAdminPassword(
   _opts: EnsureAdminPasswordOptions,
   deps: EnsureAdminPasswordDeps
 ): Promise<void> {
-  deps.log('[openscience-web] OpenScience WebUI uses no app-level login; open the URL directly.');
+  deps.log('[openbioscience-web] OpenBioScience WebUI uses no app-level login; open the URL directly.');
 }

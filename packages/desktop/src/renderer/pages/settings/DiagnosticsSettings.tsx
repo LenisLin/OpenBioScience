@@ -91,7 +91,7 @@ const DiagnosticsSettings: React.FC = () => {
               <p className='mt-6px mb-0 max-w-760px text-13px leading-20px text-t-secondary'>
                 {t('settings.diagnostics.description', {
                   defaultValue:
-                    'Checks local OpenScience installation, runtime resources, update records, and key paths. The information is shown only to the current user and is not sent automatically.',
+                    'Checks local OpenBioScience installation, runtime resources, update records, and key paths. The information is shown only to the current user and is not sent automatically.',
                 })}
               </p>
             </div>
@@ -111,7 +111,7 @@ const DiagnosticsSettings: React.FC = () => {
           content={
             requiredMissing.length > 0
               ? t('settings.diagnostics.requiredMissing', {
-                  defaultValue: 'Required resources are missing. Download and reinstall the latest OpenScience release.',
+                  defaultValue: 'Required resources are missing. Download and reinstall the latest OpenBioScience release.',
                 })
               : t('settings.diagnostics.ready', { defaultValue: 'Required resources check passed.' })
           }

@@ -61,10 +61,10 @@
   "more": "Mais",
   "refresh": "Atualizar",
   "readOnly": "Somente leitura",
-  "tray.showWindow": "Mostrar OpenScience",
+  "tray.showWindow": "Mostrar OpenBioScience",
   "tray.newChat": "Novo Chat",
   "tray.closeToTray": "Ocultar na Bandeja",
-  "tray.about": "Sobre o OpenScience",
+  "tray.about": "Sobre o OpenBioScience",
   "tray.restart": "Reiniciar Aplicativo",
   "tray.quit": "Sair",
   "tray.runningTasks": "Tarefas em Execução",
@@ -75,22 +75,22 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "Este sistema não é suportado pelo backend integrado",
-      "description": "O OpenScience abriu, mas o backend local do OpenScience Core não pode ser executado nesta versão do Linux. Por favor, atualize para uma distribuição Linux suportada e reinicie o OpenScience.",
+      "description": "O OpenBioScience abriu, mas o backend local do OpenBioScience Core não pode ser executado nesta versão do Linux. Por favor, atualize para uma distribuição Linux suportada e reinicie o OpenBioScience.",
       "requiredVersions": "Símbolos de runtime necessários: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "A instalação do OpenScience está incompleta",
-      "description": "Esta instalação está faltando recursos locais necessários, portanto o OpenScience Core não pode ser iniciado. Por favor, baixe e reinstale a versão mais recente do OpenScience.",
+      "title": "A instalação do OpenBioScience está incompleta",
+      "description": "Esta instalação está faltando recursos locais necessários, portanto o OpenBioScience Core não pode ser iniciado. Por favor, baixe e reinstale a versão mais recente do OpenBioScience.",
       "downloadLatest": "Baixar mais recente",
       "sendDiagnostics": "Enviar diagnósticos",
       "diagnosticsSent": "Diagnósticos enviados",
       "diagnosticsReportSuccess": "Relatório de diagnóstico enviado",
       "diagnosticsReportFailed": "Falha ao enviar o relatório de diagnóstico",
-      "runtimeComponentDescription": "Esta instalação não tem os componentes de runtime integrados necessários, portanto {{resource}} não pode iniciar. Reinstale o pacote mais recente do OpenScience. Se isso continuar após a reinstalação, verifique se algum software de segurança ou antivírus colocou componentes do OpenScience em quarentena."
+      "runtimeComponentDescription": "Esta instalação não tem os componentes de runtime integrados necessários, portanto {{resource}} não pode iniciar. Reinstale o pacote mais recente do OpenBioScience. Se isso continuar após a reinstalação, verifique se algum software de segurança ou antivírus colocou componentes do OpenBioScience em quarentena."
     },
     "packageArchitectureMismatch": {
-      "title": "OpenScience package architecture mismatch",
-      "description": "This OpenScience package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
+      "title": "OpenBioScience package architecture mismatch",
+      "description": "This OpenBioScience package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
     }
   },
   "fileAttach.addFiles": "Adicionar arquivos",

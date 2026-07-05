@@ -9,7 +9,6 @@ import {
   SCIENCE_COMPUTE_SKILL_NAME,
   SCIENCE_CORE_SKILL_NAME,
   SCIENCE_DATABASES_SKILL_NAME,
-  SCIENCE_EMPIRICAL_SKILL_NAME,
   SCIENCE_ONBOARDING_SKILL_NAME,
   SCIENCE_SINGLECELL_SKILL_NAME,
   SCIENCE_VENDOR_CATALOG_SKILL_NAME,
@@ -58,8 +57,8 @@ describe('OpenScience materialized Science skill pack', () => {
     expect(manifest.counts.total).toBe(SCIENCE_SKILL_PACK_COUNTS.total);
     expect(manifest.counts.byPack.deepscientist).toBe(SCIENCE_SKILL_PACK_COUNTS.deepscientist);
     expect(manifest.counts.byPack.kdense).toBe(SCIENCE_SKILL_PACK_COUNTS.kdense);
-    expect(manifest.counts.byPack.autoEmpirical).toBe(SCIENCE_SKILL_PACK_COUNTS.autoEmpirical);
-    expect(manifest.counts.byPackAvailable?.autoEmpirical).toBe(SCIENCE_SKILL_PACK_COUNTS.autoEmpiricalAvailable);
+    expect(manifest.counts.byPack.autoEmpirical).toBeUndefined();
+    expect(manifest.counts.byPackAvailable?.autoEmpirical).toBeUndefined();
     expect(manifest.counts.quarantinedScripts).toBe(SCIENCE_SKILL_PACK_COUNTS.quarantinedScripts);
     expect(manifest.counts.restrictedDefault).toBe(SCIENCE_SKILL_PACK_COUNTS.restrictedDefault);
     expect(manifest.counts.clinicalBoundary).toBe(SCIENCE_SKILL_PACK_COUNTS.clinicalBoundary);
@@ -77,23 +76,20 @@ describe('OpenScience materialized Science skill pack', () => {
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_BIOMODELS_SKILL_NAME);
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_SINGLECELL_SKILL_NAME);
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_COMPUTE_SKILL_NAME);
-    expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_EMPIRICAL_SKILL_NAME);
+    expect(DEFAULT_SCIENCE_SKILL_IDS).not.toContain('openscience-empirical');
     expect(DEFAULT_SCIENCE_SKILL_IDS).not.toContain('ds-review');
     expect(DEFAULT_SCIENCE_SKILL_IDS).not.toContain('kdense-database-lookup');
     expect(DEFAULT_SCIENCE_SKILL_IDS).not.toContain('aer-statspai-skill');
   });
 
-  it('keeps the AERS router lightweight while preserving catalog references', () => {
-    const routerPath = path.join(repoRoot, 'resources/skills/aer-auto-empirical-research-skills');
-    expect(fs.existsSync(path.join(routerPath, 'SKILL.md'))).toBe(true);
-    expect(fs.existsSync(path.join(routerPath, 'references', 'aers-skills.json'))).toBe(true);
-    expect(fs.existsSync(path.join(routerPath, 'references', 'TAXONOMY.md'))).toBe(true);
-    expect(fs.existsSync(path.join(routerPath, 'skills'))).toBe(false);
-
-    const aersSkills = manifest.skills.filter((skill) => skill.packId === 'autoEmpirical');
-    expect(aersSkills.length).toBe(SCIENCE_SKILL_PACK_COUNTS.autoEmpirical);
-    expect(aersSkills.length).toBeGreaterThan(0);
-    expect(aersSkills.every((skill) => skill.license === 'CC-BY-SA-4.0')).toBe(true);
+  it('prunes non-biomedical generated and handwritten skill packs', () => {
+    const ids = manifest.skills.map((skill) => skill.id);
+    expect(ids.some((id) => id.startsWith('aer-'))).toBe(false);
+    expect(ids).not.toContain('nature-paper-to-patent');
+    expect(manifest.skills.some((skill) => skill.packId === 'autoEmpirical')).toBe(false);
+    expect(fs.existsSync(path.join(repoRoot, 'resources/skills/empirical'))).toBe(false);
+    expect(fs.existsSync(path.join(repoRoot, 'resources/skills/science-vendor-catalog'))).toBe(false);
+    expect(fs.existsSync(path.join(repoRoot, 'resources/skills/vendor/auto-empirical-research-skills'))).toBe(false);
   });
 
   it('ships Workflow as an independent built-in stage router', () => {
@@ -110,7 +106,7 @@ describe('OpenScience materialized Science skill pack', () => {
   });
 
   it('ships compact OpenScience domain routers that merge leaf skill packs', () => {
-    const routerDirs = ['onboarding', 'writing', 'databases', 'biomodels', 'singlecell', 'compute', 'empirical'];
+    const routerDirs = ['onboarding', 'writing', 'databases', 'biomodels', 'singlecell', 'compute'];
     for (const dir of routerDirs) {
       const skillPath = path.join(repoRoot, 'resources', 'skills', dir, 'SKILL.md');
       expect(fs.existsSync(skillPath)).toBe(true);
@@ -151,12 +147,20 @@ describe('OpenScience materialized Science skill pack', () => {
     expect(ids.size).toBe(manifest.counts.total);
   });
 
+  it('keeps biomedical materialized skills available', () => {
+    expect(SCIENCE_MATERIALIZED_SKILL_IDS).toContain('kdense-scanpy');
+    expect(SCIENCE_MATERIALIZED_SKILL_IDS).toContain('kdense-rdkit');
+    expect(SCIENCE_MATERIALIZED_SKILL_IDS).toContain('kdense-pyhealth');
+    expect(SCIENCE_MATERIALIZED_SKILL_IDS).toContain('kdense-clinical-decision-support');
+    expect(SCIENCE_MATERIALIZED_SKILL_IDS).toContain('nature-literature-pipeline');
+  });
+
   it('upgrades legacy catalog-only defaults to the materialized pack', () => {
     const normalized = normalizeScienceDefaultSkillIds(LEGACY_SCIENCE_DEFAULT_SKILL_IDS);
     expect(normalized).toEqual([...DEFAULT_SCIENCE_SKILL_IDS]);
     expect(normalized).toContain('openscience-writing');
     expect(normalized).toContain('openscience-databases');
-    expect(normalized).toContain('openscience-empirical');
+    expect(normalized).not.toContain('openscience-empirical');
   });
 
   it('upgrades the previous materialized-leaf default to compact routers', () => {

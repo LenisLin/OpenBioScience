@@ -26,6 +26,7 @@ import {
   rememberFeishuWorkspaceOrigin,
 } from './collaborationConfig';
 import { useTranslation } from 'react-i18next';
+import { APP_DISPLAY_NAME } from '@/renderer/utils/brand';
 
 type WizardStage = 'web' | 'auth' | 'app';
 
@@ -35,8 +36,6 @@ const STAGE_ICON_BY_STAGE: Record<WizardStage, CollaborationIconName> = {
   app: 'createApp',
   auth: 'auth',
 };
-const APP_DISPLAY_NAME = 'OpenScience';
-
 interface FeishuConnectionWizardModalProps {
   visible: boolean;
   loginUrl: string;
@@ -951,7 +950,7 @@ const AuthorizationWebPanel: React.FC<{
             <div className='text-13px font-650 text-t-primary truncate'>{verifying ? verifyingText : body}</div>
             {targetAppId || targetProfileName || targetAppName ? (
               <div className='mt-2px text-11px text-t-tertiary truncate'>
-                {targetAppLabel}: {targetAppName || targetAppId || 'OpenScience'}
+                {targetAppLabel}: {targetAppName || targetAppId || APP_DISPLAY_NAME}
                 {targetProfileName ? ` · ${profileLabel}: ${targetProfileName}` : ''}
               </div>
             ) : null}
@@ -977,7 +976,7 @@ const AuthorizationTargetInfo: React.FC<{
     <div className='mt-16px rd-8px border border-border-1 bg-fill-1 px-14px py-11px text-left'>
       <div className='text-12px text-t-tertiary'>{targetAppLabel}</div>
       <div className='mt-4px text-14px font-650 text-t-primary truncate'>
-        {appName || appId || 'OpenScience'}
+        {appName || appId || APP_DISPLAY_NAME}
       </div>
       {appName && appId ? <div className='mt-4px text-12px text-t-tertiary truncate'>App ID: {appId}</div> : null}
       {profileName ? (

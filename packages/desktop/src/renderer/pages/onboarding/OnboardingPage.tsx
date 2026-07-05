@@ -522,7 +522,7 @@ const OnboardingPage: React.FC = () => {
     <main className='onboarding-page'>
       <div className='onboarding-shell'>
         <header className='onboarding-header'>
-          <DeepScientistWordmark aria-label='OpenScience' variant='sidebar' className='onboarding-header__logo' />
+          <DeepScientistWordmark aria-label='OpenBioScience' variant='sidebar' className='onboarding-header__logo' />
           <button type='button' className='onboarding-header__skip' onClick={handleSkip}>
             {labels.skipTutorial}
           </button>

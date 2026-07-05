@@ -61,10 +61,10 @@
   "more": "更多",
   "refresh": "刷新",
   "readOnly": "只读",
-  "tray.showWindow": "显示 OpenScience",
+  "tray.showWindow": "显示 OpenBioScience",
   "tray.newChat": "新建对话",
   "tray.closeToTray": "隐藏到托盘",
-  "tray.about": "关于 OpenScience",
+  "tray.about": "关于 OpenBioScience",
   "tray.restart": "重启应用",
   "tray.quit": "退出",
   "tray.runningTasks": "运行中的任务",
@@ -75,22 +75,22 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "当前系统不支持内置后端",
-      "description": "OpenScience 已打开，但本地运行组件无法在当前 Linux 版本上运行。请升级到受支持的 Linux 发行版后重启 OpenScience。",
+      "description": "OpenBioScience 已打开，但本地运行组件无法在当前 Linux 版本上运行。请升级到受支持的 Linux 发行版后重启 OpenBioScience。",
       "requiredVersions": "需要的运行时符号：{{versions}}"
     },
     "incompleteInstallation": {
-      "title": "OpenScience 安装不完整",
-      "description": "当前安装缺少必要的本地资源，OpenScience 的本地运行组件无法启动。请下载并重新安装最新版 OpenScience；如果重新安装后仍然出现，请检查系统安全软件或杀毒软件是否隔离了 OpenScience 组件。",
+      "title": "OpenBioScience 安装不完整",
+      "description": "当前安装缺少必要的本地资源，OpenBioScience 的本地运行组件无法启动。请下载并重新安装最新版 OpenBioScience；如果重新安装后仍然出现，请检查系统安全软件或杀毒软件是否隔离了 OpenBioScience 组件。",
       "downloadLatest": "下载最新版",
       "sendDiagnostics": "发送诊断报告",
       "diagnosticsSent": "诊断报告已发送",
       "diagnosticsReportSuccess": "诊断报告已发送",
       "diagnosticsReportFailed": "诊断报告发送失败",
-      "runtimeComponentDescription": "当前安装缺少必要的内置运行组件，{{resource}} 无法启动。请重新安装最新版 OpenScience；如果重新安装后仍然出现，请检查系统安全软件或杀毒软件是否隔离了 OpenScience 组件。"
+      "runtimeComponentDescription": "当前安装缺少必要的内置运行组件，{{resource}} 无法启动。请重新安装最新版 OpenBioScience；如果重新安装后仍然出现，请检查系统安全软件或杀毒软件是否隔离了 OpenBioScience 组件。"
     },
     "packageArchitectureMismatch": {
-      "title": "OpenScience 安装包架构不匹配",
-      "description": "当前 OpenScience 安装包是 {{packageArch}}，但这台 Mac 是 {{deviceArch}}。你可能下载了错误的安装包，请重新下载并安装 {{expectedArch}} 版本。"
+      "title": "OpenBioScience 安装包架构不匹配",
+      "description": "当前 OpenBioScience 安装包是 {{packageArch}}，但这台 Mac 是 {{deviceArch}}。你可能下载了错误的安装包，请重新下载并安装 {{expectedArch}} 版本。"
     }
   },
   "fileAttach.addFiles": "添加文件",
@@ -114,7 +114,7 @@
     "minute_short": "分",
     "second_short": "秒"
   },
-  "loadingOpenScience": "正在载入 OpenScience...",
+  "loadingOpenScience": "正在载入 OpenBioScience...",
   "collaboration": {
     "title": "协作功能",
     "projectTitle": "多人协作项目",
@@ -155,16 +155,16 @@
         "loading": "正在打开登录页面..."
       },
       "auth": {
-        "title": "授权 OpenScience",
-        "subtitle": "右侧会打开 OpenScience 应用的预授权页面，确认同意后系统自动验证。",
+        "title": "授权 OpenBioScience",
+        "subtitle": "右侧会打开 OpenBioScience 应用的预授权页面，确认同意后系统自动验证。",
         "steps": [
-          "打开 OpenScience 授权页",
+          "打开 OpenBioScience 授权页",
           "用当前账号同意权限",
           "系统自动验证完成"
         ],
         "start": "重新生成授权链接",
         "needsApp": "需要先创建应用配置，请先完成上一阶段。",
-        "needsAppDesc": "授权链接会固定基于第 2 步创建或绑定的 OpenScience 应用生成。请先完成第 2 步，系统检测到 App ID 后会自动继续授权。",
+        "needsAppDesc": "授权链接会固定基于第 2 步创建或绑定的 OpenBioScience 应用生成。请先完成第 2 步，系统检测到 App ID 后会自动继续授权。",
         "needsWeb": "需要先完成网页登录",
         "needsWebDesc": "请先完成第 1 步网页登录。网页会话可用后，系统才能把后续应用创建和授权流程连起来。",
         "goWeb": "去网页登录",
@@ -184,24 +184,24 @@
         "profileRequired": "请先选择一个配置。",
         "user": "用户",
         "tokenStatus": "授权状态",
-        "opening": "正在生成 OpenScience 授权页面...",
-        "verifying": "已打开 OpenScience 授权页面，等待同意并自动验证。",
+        "opening": "正在生成 OpenBioScience 授权页面...",
+        "verifying": "已打开 OpenBioScience 授权页面，等待同意并自动验证。",
         "retry": "重新打开授权"
       },
       "app": {
         "title": "创建绑定应用",
-        "subtitle": "先创建或绑定 OpenScience 应用，后续授权会固定基于这个应用发起。",
+        "subtitle": "先创建或绑定 OpenBioScience 应用，后续授权会固定基于这个应用发起。",
         "steps": [
-          "创建 OpenScience",
+          "创建 OpenBioScience",
           "检测 App ID",
           "保存到 Channels"
         ],
         "appName": "应用名称",
         "appNameHint": "建议保持这个名称，便于在开发者后台识别当前系统。",
-        "setupHint": "系统会直接打开创建流程。应用名称使用 OpenScience，完成后系统会自动检测 App ID。",
-        "create": "创建 OpenScience 应用",
+        "setupHint": "系统会直接打开创建流程。应用名称使用 OpenBioScience，完成后系统会自动检测 App ID。",
+        "create": "创建 OpenBioScience 应用",
         "currentApp": "已检测到当前应用",
-        "createPanelTitle": "创建 OpenScience 应用",
+        "createPanelTitle": "创建 OpenBioScience 应用",
         "createPanelDesc": "点击下方按钮后，系统会直接进入创建流程，不需要在开放平台页面里寻找入口。",
         "sync": "保存到 Channels",
         "refresh": "检查状态",

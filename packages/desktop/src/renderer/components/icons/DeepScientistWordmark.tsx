@@ -6,8 +6,7 @@
 
 import React from 'react';
 
-import wordmarkDark from '@/renderer/assets/openscience-wordmark-dark.png';
-import wordmarkLight from '@/renderer/assets/openscience-wordmark.png';
+import { APP_DISPLAY_NAME } from '@/renderer/utils/brand';
 
 type DeepScientistWordmarkProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   label?: string;
@@ -17,7 +16,7 @@ type DeepScientistWordmarkProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>
 
 const DeepScientistWordmark: React.FC<DeepScientistWordmarkProps> = ({
   className,
-  label = 'OpenScience',
+  label = APP_DISPLAY_NAME,
   wrapperClassName,
   variant: _variant,
   'aria-hidden': ariaHidden,
@@ -29,29 +28,18 @@ const DeepScientistWordmark: React.FC<DeepScientistWordmarkProps> = ({
 }) => {
   const isHidden = ariaHidden === true || ariaHidden === 'true';
   const resolvedAlt = isHidden ? '' : (alt ?? ariaLabel ?? label);
-  const sharedImageProps = {
-    ...props,
-    title,
-  };
 
   return (
-    <span className={['deepscientist-wordmark', wrapperClassName].filter(Boolean).join(' ')}>
-      <img
-        aria-hidden={ariaHidden}
-        alt={resolvedAlt}
-        className={['deepscientist-wordmark__light', className].filter(Boolean).join(' ')}
-        draggable={draggable}
-        src={wordmarkLight}
-        {...sharedImageProps}
-      />
-      <img
-        aria-hidden='true'
-        alt=''
-        className={['deepscientist-wordmark__dark', className].filter(Boolean).join(' ')}
-        draggable={draggable}
-        src={wordmarkDark}
-        {...sharedImageProps}
-      />
+    <span
+      {...props}
+      aria-hidden={ariaHidden}
+      aria-label={isHidden ? undefined : resolvedAlt}
+      className={['deepscientist-wordmark', className, wrapperClassName].filter(Boolean).join(' ')}
+      draggable={draggable}
+      role={isHidden ? undefined : 'img'}
+      title={title}
+    >
+      {label}
     </span>
   );
 };

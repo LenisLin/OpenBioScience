@@ -33,8 +33,6 @@ export const SCIENCE_SINGLECELL_SKILL_NAME = 'openscience-singlecell';
 export const SCIENCE_SINGLECELL_SKILL_PATH = 'resources/skills/singlecell/SKILL.md';
 export const SCIENCE_COMPUTE_SKILL_NAME = 'openscience-compute';
 export const SCIENCE_COMPUTE_SKILL_PATH = 'resources/skills/compute/SKILL.md';
-export const SCIENCE_EMPIRICAL_SKILL_NAME = 'openscience-empirical';
-export const SCIENCE_EMPIRICAL_SKILL_PATH = 'resources/skills/empirical/SKILL.md';
 export const SCIENCE_VENDOR_CATALOG_SKILL_NAME = 'openscience-science-vendor-catalog';
 export const SCIENCE_VENDOR_CATALOG_SKILL_PATH = 'resources/skills/science-vendor-catalog/SKILL.md';
 
@@ -54,7 +52,6 @@ export const DEFAULT_SCIENCE_SKILL_IDS = [
   SCIENCE_BIOMODELS_SKILL_NAME,
   SCIENCE_SINGLECELL_SKILL_NAME,
   SCIENCE_COMPUTE_SKILL_NAME,
-  SCIENCE_EMPIRICAL_SKILL_NAME,
 ] as const;
 
 export function normalizeScienceDefaultSkillIds(skillIds?: readonly string[]): string[] {
@@ -859,8 +856,8 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     `- Core discipline: ${SCIENCE_CORE_SKILL_NAME}. Artifact protocol: ${SCIENCE_ARTIFACT_SKILL_NAME}.`,
     `- First project setup: ${SCIENCE_ONBOARDING_SKILL_NAME}; use only when no onboarding profile exists or the user explicitly asks to update it.`,
     `- Research stage routing: ${SCIENCE_WORKFLOW_SKILL_NAME}; use it to choose ds-* workflow stages without replacing artifact/evidence rules.`,
-    `- Domain routers loaded by default: ${SCIENCE_WRITING_SKILL_NAME}, ${SCIENCE_DATABASES_SKILL_NAME}, ${SCIENCE_BIOMODELS_SKILL_NAME}, ${SCIENCE_SINGLECELL_SKILL_NAME}, ${SCIENCE_COMPUTE_SKILL_NAME}, ${SCIENCE_EMPIRICAL_SKILL_NAME}.`,
-    '- Router skills choose narrow leaf skills such as ds-*, kdense-*, aer-*, and later sciagent-* only when the task needs them. Record selected leaf skills as `skill_use` if they affect a visible result.',
+    `- Domain routers loaded by default: ${SCIENCE_WRITING_SKILL_NAME}, ${SCIENCE_DATABASES_SKILL_NAME}, ${SCIENCE_BIOMODELS_SKILL_NAME}, ${SCIENCE_SINGLECELL_SKILL_NAME}, ${SCIENCE_COMPUTE_SKILL_NAME}.`,
+    '- Router skills choose narrow biomedical leaf skills such as ds-*, kdense-*, nature-*, and later sciagent-* only when the task needs them. Record selected leaf skills as `skill_use` if they affect a visible result.',
     '- Vendored catalogs are migration/source indexes, not runtime evidence. Concrete outputs still need evidence, artifact, claim, provenance, and snapshot records.',
     '',
     '## Final Answer',
@@ -877,11 +874,9 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     `- Use ${SCIENCE_BIOMODELS_SKILL_NAME}: ${SCIENCE_BIOMODELS_SKILL_PATH}.`,
     `- Use ${SCIENCE_SINGLECELL_SKILL_NAME}: ${SCIENCE_SINGLECELL_SKILL_PATH}.`,
     `- Use ${SCIENCE_COMPUTE_SKILL_NAME}: ${SCIENCE_COMPUTE_SKILL_PATH}.`,
-    `- Use ${SCIENCE_EMPIRICAL_SKILL_NAME}: ${SCIENCE_EMPIRICAL_SKILL_PATH}.`,
     `- Default Science skill pack manifest: ${SCIENCE_SKILL_PACK_MANIFEST_PATH}.`,
-    `- Materialized external leaf skills remain discoverable through routers: ${SCIENCE_SKILL_PACK_COUNTS.total} total; ${SCIENCE_SKILL_PACK_COUNTS.deepscientist} DeepScientist, ${SCIENCE_SKILL_PACK_COUNTS.kdense} K-Dense, ${SCIENCE_SKILL_PACK_COUNTS.autoEmpirical} Auto-Empirical Research Skills, and ${SCIENCE_SKILL_PACK_COUNTS.natureSkills} Nature Skills.`,
+    `- Materialized external leaf skills remain discoverable through routers: ${SCIENCE_SKILL_PACK_COUNTS.total} total; ${SCIENCE_SKILL_PACK_COUNTS.deepscientist} DeepScientist, ${SCIENCE_SKILL_PACK_COUNTS.kdense} K-Dense biomedical skills, and ${SCIENCE_SKILL_PACK_COUNTS.natureSkills} Nature Skills.`,
     `- Safety policy summary: ${SCIENCE_SKILL_PACK_COUNTS.quarantinedScripts} script-bearing skills are quarantined by default; ${SCIENCE_SKILL_PACK_COUNTS.restrictedDefault} skills require explicit authorization for restricted contexts.`,
-    `- Migration-only catalog, when provenance debugging is needed: ${SCIENCE_VENDOR_CATALOG_SKILL_NAME}: ${SCIENCE_VENDOR_CATALOG_SKILL_PATH}.`,
   ].join('\n');
 
 export const isScienceConversationExtra = (extra: unknown): extra is { science: ScienceConversationExtra } => {

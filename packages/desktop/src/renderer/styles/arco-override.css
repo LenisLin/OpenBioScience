@@ -44,6 +44,13 @@ body[arco-theme='dark'] {
 .deepscientist-wordmark {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  color: var(--color-text-0);
+  font-size: 24px;
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .deepscientist-wordmark img {
@@ -110,6 +117,11 @@ body[arco-theme='dark'] .deepscientist-wordmark__dark,
 html[data-theme='dark'] .agent-status-icon__dark,
 body[arco-theme='dark'] .agent-status-icon__dark {
   display: block !important;
+}
+
+.deepscientist-wordmark__dark,
+.deepscientist-wordmark__light {
+  color: inherit;
 }
 
 .agent-status-icon--spin {

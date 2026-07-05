@@ -1,6 +1,6 @@
 {
   "welcome": {
-    "title": "OpenScience te ayuda a investigar",
+    "title": "OpenBioScience te ayuda a investigar",
     "placeholder": "Send a message, upload files, open a folder, or create a scheduled task...",
     "linkFolder": "Open Folder",
     "newConversation": "New Chat",
@@ -12,10 +12,10 @@
     "clearWorkspace": "Remove project",
     "openFolder": "Open Folder",
     "none": "None",
-    "quickActionsTitle": "What can OpenScience do?",
+    "quickActionsTitle": "What can OpenBioScience do?",
     "quickActionFeedback": "Report Issue",
     "quickActionStar": "Like us? Give us a star!",
-    "skillsMarket": "OpenScience Skills Market",
+    "skillsMarket": "OpenBioScience Skills Market",
     "skillsMarketDesc": "Search and activate community Skills on demand. Configure once, available for all agents.",
     "skillsMarketDetails": "View More >>"
   },

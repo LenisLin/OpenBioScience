@@ -61,10 +61,10 @@
   "more": "Більше",
   "refresh": "Оновити",
   "readOnly": "Лише читання",
-  "tray.showWindow": "Показати OpenScience",
+  "tray.showWindow": "Показати OpenBioScience",
   "tray.newChat": "Новий чат",
   "tray.closeToTray": "Згорнути в трей",
-  "tray.about": "Про OpenScience",
+  "tray.about": "Про OpenBioScience",
   "tray.restart": "Перезапустити програму",
   "tray.quit": "Вийти",
   "tray.runningTasks": "Запущені завдання",
@@ -75,22 +75,22 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "Ця система не підтримується вбудованим backend",
-      "description": "OpenScience відкрився, але локальний backend OpenScience Core не може працювати в цій версії Linux. Оновіться до підтримуваного дистрибутива Linux і перезапустіть OpenScience.",
+      "description": "OpenBioScience відкрився, але локальний backend OpenBioScience Core не може працювати в цій версії Linux. Оновіться до підтримуваного дистрибутива Linux і перезапустіть OpenBioScience.",
       "requiredVersions": "Потрібні символи середовища виконання: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "Встановлення OpenScience неповне",
-      "description": "У цьому встановленні бракує потрібних локальних ресурсів, тому OpenScience Core не може запуститися. Завантажте та перевстановіть останню версію OpenScience. Якщо проблема повториться після перевстановлення, перевірте, чи захисне або антивірусне ПЗ не помістило OpenScience Core у карантин.",
+      "title": "Встановлення OpenBioScience неповне",
+      "description": "У цьому встановленні бракує потрібних локальних ресурсів, тому OpenBioScience Core не може запуститися. Завантажте та перевстановіть останню версію OpenBioScience. Якщо проблема повториться після перевстановлення, перевірте, чи захисне або антивірусне ПЗ не помістило OpenBioScience Core у карантин.",
       "downloadLatest": "Завантажити останню версію",
       "sendDiagnostics": "Надіслати діагностику",
       "diagnosticsSent": "Діагностику надіслано",
       "diagnosticsReportSuccess": "Діагностичний звіт надіслано",
       "diagnosticsReportFailed": "Не вдалося надіслати діагностичний звіт",
-      "runtimeComponentDescription": "У цій інсталяції бракує потрібних вбудованих компонентів середовища виконання, тому {{resource}} не може запуститися. Перевстановіть найновіший пакет OpenScience. Якщо проблема повториться після перевстановлення, перевірте, чи не помістило програмне забезпечення безпеки або антивірус компоненти OpenScience у карантин."
+      "runtimeComponentDescription": "У цій інсталяції бракує потрібних вбудованих компонентів середовища виконання, тому {{resource}} не може запуститися. Перевстановіть найновіший пакет OpenBioScience. Якщо проблема повториться після перевстановлення, перевірте, чи не помістило програмне забезпечення безпеки або антивірус компоненти OpenBioScience у карантин."
     },
     "packageArchitectureMismatch": {
-      "title": "OpenScience package architecture mismatch",
-      "description": "This OpenScience package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
+      "title": "OpenBioScience package architecture mismatch",
+      "description": "This OpenBioScience package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
     }
   },
   "fileAttach.addFiles": "Додати файли",

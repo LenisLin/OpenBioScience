@@ -223,7 +223,7 @@ const AboutModalContent: React.FC = () => {
         <div className={classNames('flex flex-col mx-auto', isPageMode ? 'max-w-720px' : 'max-w-560px')}>
           <section className='flex flex-col items-center text-center pb-22px pt-4px'>
             <Typography.Title
-              aria-label='OpenScience'
+              aria-label='OpenBioScience'
               heading={3}
               className='flex justify-center mb-10px leading-none w-full'
             >

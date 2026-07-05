@@ -198,7 +198,7 @@ const ScienceSettings: React.FC = () => {
   const skillPackCards = useMemo(
     () => [
       {
-        label: 'OpenScience Core',
+        label: 'OpenBioScience Core',
         value: 2,
         detail: t('settings.science.skillPackCoreDesc'),
       },
@@ -216,11 +216,6 @@ const ScienceSettings: React.FC = () => {
         label: 'K-Dense',
         value: SCIENCE_SKILL_PACK_COUNTS.kdense,
         detail: t('settings.science.vendorKDenseDesc'),
-      },
-      {
-        label: 'Auto-Empirical',
-        value: SCIENCE_SKILL_PACK_COUNTS.autoEmpirical,
-        detail: t('settings.science.vendorAutoEmpiricalDesc'),
       },
       {
         label: 'Nature Skills',
@@ -623,21 +618,6 @@ const ScienceSettings: React.FC = () => {
               <Tag size='small' className='mt-8px'>
                 {SCIENCE_SKILL_PACK_COUNTS.kdense} skills
               </Tag>
-            </div>
-            <div className='rounded-8px bg-1 px-12px py-10px'>
-              <div className='text-13px font-650 text-t-primary'>Auto-Empirical Research Skills</div>
-              <div className='mt-4px text-12px leading-18px text-t-secondary'>
-                {t('settings.science.vendorAutoEmpiricalDesc')}
-              </div>
-              <div className='mt-8px flex flex-wrap gap-6px'>
-                <Tag size='small'>
-                  {SCIENCE_SKILL_PACK_COUNTS.autoEmpirical} selected /{' '}
-                  {SCIENCE_SKILL_PACK_COUNTS.autoEmpiricalAvailable} cataloged
-                </Tag>
-                <Tag size='small' color='orange'>
-                  CC BY-SA 4.0
-                </Tag>
-              </div>
             </div>
             <div className='rounded-8px bg-1 px-12px py-10px'>
               <div className='text-13px font-650 text-t-primary'>Yuan1z0825/nature-skills</div>

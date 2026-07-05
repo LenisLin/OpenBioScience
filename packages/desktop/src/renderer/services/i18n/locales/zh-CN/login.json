@@ -1,13 +1,13 @@
 {
-  "pageTitle": "OpenScience - 登录",
-  "brand": "OpenScience",
+  "pageTitle": "OpenBioScience - 登录",
+  "brand": "OpenBioScience",
   "brandEdition": "开放科研工作台",
   "editorialEyebrow": "开放科研，从第一个问题开始有序",
   "editorialTitle": "让研究证据清晰可续。",
-  "editorialSubtitle": "OpenScience 把问题、文件、任务和 Agent 工作放进同一个安静工作区，让每个结果都能追溯、讨论，并继续推进。",
+  "editorialSubtitle": "OpenBioScience 把问题、文件、任务和 Agent 工作放进同一个安静工作区，让每个结果都能追溯、讨论，并继续推进。",
   "petTitle": "工作区已就绪",
   "petSubtitle": "帮你对齐证据、协作与下一步。",
-  "designPrinciplesLabel": "OpenScience 工作提示",
+  "designPrinciplesLabel": "OpenBioScience 工作提示",
   "principles": {
     "oneTitle": "证据连接问题",
     "oneBody": "文件、记录、任务和判断都能回到最初的问题。",
@@ -17,7 +17,7 @@
     "threeBody": "Agent 处理琐碎推进，人保留判断、署名和审阅。"
   },
   "cardKicker": "OPEN WORKSPACE",
-  "cardTitle": "进入 OpenScience",
+  "cardTitle": "进入 OpenBioScience",
   "subtitle": "继续证据、任务和对话，不丢失研究脉络",
   "username": "用户名",
   "usernamePlaceholder": "请输入用户名",

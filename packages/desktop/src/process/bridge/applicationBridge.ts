@@ -198,8 +198,8 @@ function collectAppDiagnostics(): IAppDiagnosticsReport {
         path.join(resourcesPath, 'app.asar.unpacked'),
         isPackagedResourceRequired
       ),
-      checkPath('OpenScience app icon', path.join(resourcesPath, 'app.png'), isPackagedResourceRequired),
-      checkPath('OpenScience logo', path.join(resourcesPath, 'openscience-logo.svg'), isPackagedResourceRequired),
+      checkPath('OpenBioScience app icon', path.join(resourcesPath, 'app.png'), isPackagedResourceRequired),
+      checkPath('OpenBioScience logo', path.join(resourcesPath, 'openbioscience-logo.svg'), isPackagedResourceRequired),
       checkPath('PWA assets', path.join(resourcesPath, 'pwa'), false),
       checkPath('Assistant hub assets', path.join(resourcesPath, 'hub'), false),
       checkPath('User data directory', userDataPath, true),

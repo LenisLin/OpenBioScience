@@ -1,10 +1,10 @@
 appId: cc.deepscientist.deeporganiser
-productName: OpenScience
-executableName: OpenScience
-copyright: Copyright © 2026 OpenScience
+productName: OpenBioScience
+executableName: OpenBioScience
+copyright: Copyright © 2026 OpenBioScience
 
 protocols:
-  - name: OpenScience Protocol
+  - name: OpenBioScience Protocol
     schemes:
       - deeporganiser
 
@@ -109,7 +109,7 @@ extraResources:
     to: .
   - from: resources/app.png
     to: app.png
-  # OpenScience Core binary (pre-compiled per platform/arch, ships its own managed runtime)
+  # DeepOrganiser Core binary (pre-compiled per platform/arch, ships its own managed runtime)
   - from: resources/bundled-deeporganiser-core
     to: bundled-deeporganiser-core
   - from: resources/hub
@@ -181,13 +181,13 @@ linux:
   icon: resources/app.png
   artifactName: ${productName}-${version}-${os}-${arch}.${ext}
   category: Utility
-  maintainer: OpenScience
+  maintainer: OpenBioScience
   vendor: ResearAI
   synopsis: ${description}
   description: ${description}
   desktop:
     entry:
-      Name: OpenScience
+      Name: OpenBioScience
       Comment: ${description}
       Icon: deeporganiser
       Categories: Office;Utility;
@@ -237,6 +237,6 @@ electronDownload:
 publish:
   provider: github
   owner: ResearAI
-  repo: OpenScience
+  repo: OpenBioScience
   publishAutoUpdate: true
   releaseType: release

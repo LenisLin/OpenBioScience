@@ -19,36 +19,110 @@ const MIN_MATERIALIZED_SKILL_FLOOR = 50;
 const NATURE_SHARED_DEST = path.join(SKILLS_ROOT, '_shared');
 const NATURE_SHARED_MARKER = '.openscience-nature-shared-generated';
 
-const AUTO_EMPIRICAL_DEFAULT_SKILL_PREFIXES = [
-  'skills/00-Full-empirical-analysis-skill_StatsPAI/',
-  'skills/00.1-Full-empirical-analysis-skill_Python/',
-  'skills/00.2-Full-empirical-analysis-skill_Stata/',
-  'skills/00.3-Full-empirical-analysis-skill_R/',
-  'skills/10-Jill0099-causal-inference-mixtape/',
-  'skills/14-luischanci-claude-code-research-starter/',
-  'skills/15-Felpix-Studios-social-science-research/',
-  'skills/18-jusi-aalto-stata-accounting-research/',
-  'skills/39-vincentarelbundock-marginaleffects/',
-  'skills/40-py-econometrics-pyfixest/',
-  'skills/41-sticerd-eee-sewage-econometrics-check/',
-  'skills/50-brycewang-aer-skills/',
-  'skills/51-pymc-labs-CausalPy/',
-  'skills/52-keemanxp-slr-prisma/',
-  'skills/53-keemanxp-thematic-analysis-skill/',
-  'skills/59-shiquda-openalex-skill/',
-  'skills/61-phdemotions-research-methods/',
-  'skills/62-PHY041-claude-skill-citation-checker/',
-  'skills/63-tondevrel-scientific-agent-skills/',
-  'skills/64-tmonk-mcp-stata/',
-  'skills/66-zheng-siyao-empirical-research-skills/',
-  'skills/67-econfin-workflow-toolkit/',
-  'skills/68-research-productivity-skills/',
-  'skills/69-Paper-WorkFlow/',
-];
+const KDENSE_BIOMEDICAL_SKILL_IDS = new Set([
+  'kdense-anndata',
+  'kdense-benchling-integration',
+  'kdense-biopython',
+  'kdense-bioservices',
+  'kdense-bulk-rnaseq',
+  'kdense-cellxgene-census',
+  'kdense-citation-management',
+  'kdense-clinical-decision-support',
+  'kdense-clinical-reports',
+  'kdense-cobrapy',
+  'kdense-dask',
+  'kdense-database-lookup',
+  'kdense-datamol',
+  'kdense-deepchem',
+  'kdense-deeptools',
+  'kdense-depmap',
+  'kdense-diffdock',
+  'kdense-dnanexus-integration',
+  'kdense-esm',
+  'kdense-etetoolkit',
+  'kdense-experimental-design',
+  'kdense-flowio',
+  'kdense-geniml',
+  'kdense-gget',
+  'kdense-ginkgo-cloud-lab',
+  'kdense-glycoengineering',
+  'kdense-gtars',
+  'kdense-histolab',
+  'kdense-hypothesis-generation',
+  'kdense-imaging-data-commons',
+  'kdense-iso-13485-certification',
+  'kdense-labarchive-integration',
+  'kdense-lamindb',
+  'kdense-latchbio-integration',
+  'kdense-literature-review',
+  'kdense-matchms',
+  'kdense-matplotlib',
+  'kdense-medchem',
+  'kdense-molecular-dynamics',
+  'kdense-molfeat',
+  'kdense-neurokit2',
+  'kdense-neuropixels-analysis',
+  'kdense-nextflow',
+  'kdense-omero-integration',
+  'kdense-onekgpd',
+  'kdense-opentrons-integration',
+  'kdense-optimize-for-gpu',
+  'kdense-pacsomatic',
+  'kdense-paper-lookup',
+  'kdense-pathml',
+  'kdense-pathway-enrichment',
+  'kdense-peer-review',
+  'kdense-phylogenetics',
+  'kdense-polars',
+  'kdense-polars-bio',
+  'kdense-primekg',
+  'kdense-protocolsio-integration',
+  'kdense-pydeseq2',
+  'kdense-pydicom',
+  'kdense-pyhealth',
+  'kdense-pylabrobot',
+  'kdense-pyopenms',
+  'kdense-pysam',
+  'kdense-pytdc',
+  'kdense-pytorch-lightning',
+  'kdense-rdkit',
+  'kdense-research-grants',
+  'kdense-research-lookup',
+  'kdense-scanpy',
+  'kdense-scholar-evaluation',
+  'kdense-scientific-critical-thinking',
+  'kdense-scientific-schematics',
+  'kdense-scientific-slides',
+  'kdense-scientific-visualization',
+  'kdense-scientific-writing',
+  'kdense-scikit-bio',
+  'kdense-scikit-learn',
+  'kdense-scikit-survival',
+  'kdense-scvelo',
+  'kdense-scvi-tools',
+  'kdense-seaborn',
+  'kdense-statistical-analysis',
+  'kdense-statistical-power',
+  'kdense-statsmodels',
+  'kdense-tiledbvcf',
+  'kdense-torchdrug',
+  'kdense-transformers',
+  'kdense-treatment-plans',
+  'kdense-umap-learn',
+  'kdense-zarr-python',
+]);
 
-const isAutoEmpiricalDefaultSkill = (relativeSkillPath) =>
-  relativeSkillPath === 'SKILL.md' ||
-  AUTO_EMPIRICAL_DEFAULT_SKILL_PREFIXES.some((prefix) => relativeSkillPath.startsWith(prefix));
+const NATURE_BIOMEDICAL_EXCLUDED_SKILL_IDS = new Set(['nature-paper-to-patent']);
+
+const isKDenseBiomedicalSkill = (relativeSkillPath) => {
+  const dirName = relativeSkillPath.split('/').at(-2);
+  return Boolean(dirName && KDENSE_BIOMEDICAL_SKILL_IDS.has(`kdense-${normalizeSkillName(dirName)}`));
+};
+
+const isNatureBiomedicalSkill = (relativeSkillPath) => {
+  const dirName = relativeSkillPath.split('/').at(-2);
+  return Boolean(dirName && !NATURE_BIOMEDICAL_EXCLUDED_SKILL_IDS.has(normalizeSkillName(dirName)));
+};
 
 const SOURCES = [
   {
@@ -71,23 +145,10 @@ const SOURCES = [
     sourceVersion: 'repository snapshot',
     sourceRef: '0807ddb',
     repositoryLicense: 'MIT',
-    defaultPriority: 55,
-  },
-  {
-    packId: 'autoEmpirical',
-    prefix: 'aer',
-    label: 'Auto-Empirical Research Skills',
-    root: path.join(SKILLS_ROOT, 'vendor', 'auto-empirical-research-skills'),
-    sourceUrl: 'https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills',
-    sourceVersion: 'repository snapshot',
-    sourceRef: 'e42d97d',
-    repositoryLicense: 'CC-BY-SA-4.0',
-    forceRepositoryLicense: true,
-    catalogPath: 'catalog/skills.json',
     selection:
-      'Curated default selection: root router, first-party/full empirical pipelines, causal/econometrics, replication, citation, open-science, social-science, and productivity skills. Large duplicate/general collections remain vendored and discoverable through the router.',
-    includeSkillFile: (relativeSkillPath) => isAutoEmpiricalDefaultSkill(relativeSkillPath),
-    defaultPriority: 52,
+      'Biomedical and biomedical-research foundation allowlist only: omics, clinical, molecular, chemistry, laboratory integration, biomedical databases, statistics, literature, and scientific communication skills.',
+    includeSkillFile: (relativeSkillPath) => isKDenseBiomedicalSkill(relativeSkillPath),
+    defaultPriority: 55,
   },
   {
     packId: 'natureSkills',
@@ -100,7 +161,8 @@ const SOURCES = [
     sourceRef: 'c91df241a7a963ea151687ac669c5534404f53e5',
     repositoryLicense: 'Apache-2.0',
     selection:
-      'All top-level nature-* skills are included, including nature-paper-to-patent. Shared fragments from skills/_shared are preserved under resources/skills/_shared for relative references.',
+      'Research writing, literature, data, figure, proposal, review, and response skills are included. Non-biomedical intellectual-property conversion skills are excluded. Shared fragments from skills/_shared are preserved under resources/skills/_shared for relative references.',
+    includeSkillFile: (relativeSkillPath) => isNatureBiomedicalSkill(relativeSkillPath),
     defaultPriority: 74,
   },
 ];
@@ -311,7 +373,6 @@ function classifyExecutionPolicy({ packId, hasScripts, risk, domainTags, id }) {
   if (id === 'kdense-database-lookup' || id === 'kdense-paper-lookup' || id === 'kdense-citation-management') {
     return 'active_default';
   }
-  if (id === 'aer-auto-empirical-research-skills') return 'active_default';
   if (packId === 'deepscientist') return 'active_default';
   if (domainTags.includes('clinical')) return 'restricted_default';
   if (domainTags.includes('lab-integration') || domainTags.includes('remote-compute')) return 'restricted_default';
@@ -321,13 +382,7 @@ function classifyExecutionPolicy({ packId, hasScripts, risk, domainTags, id }) {
 
 function priorityFor(source, policy, id, domainTags) {
   if (id === 'ds-science') return 95;
-  if (id === 'aer-auto-empirical-research-skills') return 88;
   if (source.packId === 'deepscientist') return policy === 'quarantined_script' ? 70 : source.defaultPriority;
-  if (source.packId === 'autoEmpirical' && id.includes('statspai')) return 78;
-  if (source.packId === 'autoEmpirical' && id.includes('full-empirical')) return 76;
-  if (source.packId === 'autoEmpirical' && id.includes('paper-workflow')) return 72;
-  if (source.packId === 'autoEmpirical' && domainTags.includes('causal-inference')) return 64;
-  if (source.packId === 'autoEmpirical' && domainTags.includes('econometrics')) return 62;
   if (source.packId === 'natureSkills' && id === 'nature-paper-to-patent') return 34;
   if (source.packId === 'natureSkills' && id === 'nature-downloader') return 30;
   if (source.packId === 'natureSkills' && policy === 'restricted_default') return 58;
@@ -395,16 +450,6 @@ function syncNatureSharedDirectory() {
   );
 }
 
-function existingManifestSkillCount() {
-  if (!fs.existsSync(MANIFEST_PATH)) return 0;
-  try {
-    const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'));
-    return Number(manifest?.counts?.total || 0);
-  } catch {
-    return 0;
-  }
-}
-
 function collectSkillPlan() {
   const planned = [];
   const sourceStats = {};
@@ -428,8 +473,7 @@ function collectSkillPlan() {
 
 function assertSafeSkillPlan(planned, sourceStats) {
   if (process.env.OPENSCIENCE_MATERIALIZE_ALLOW_SMALL === '1') return;
-  const existingCount = existingManifestSkillCount();
-  const minimumExpected = Math.max(MIN_MATERIALIZED_SKILL_FLOOR, Math.floor(existingCount * 0.8));
+  const minimumExpected = MIN_MATERIALIZED_SKILL_FLOOR;
   if (planned.length >= minimumExpected) return;
 
   const sourceSummary = SOURCES.map((source) => {
@@ -454,35 +498,6 @@ function copySkillDirectory(srcDir, destDir) {
   });
 }
 
-function copyFileIfExists(src, dest) {
-  if (!fs.existsSync(src)) return false;
-  fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.copyFileSync(src, dest);
-  return true;
-}
-
-function isLightweightRouterSkill(source, skillPath) {
-  return source.packId === 'autoEmpirical' && path.dirname(skillPath) === source.root;
-}
-
-function copyLightweightRouterSkill(source, destDir) {
-  fs.mkdirSync(destDir, { recursive: true });
-  const referencesDir = path.join(destDir, 'references');
-  fs.mkdirSync(referencesDir, { recursive: true });
-  copyFileIfExists(path.join(source.root, 'catalog', 'skills.json'), path.join(referencesDir, 'aers-skills.json'));
-  copyFileIfExists(
-    path.join(source.root, 'catalog', 'skills-enriched.json'),
-    path.join(referencesDir, 'aers-skills-enriched.json')
-  );
-  copyFileIfExists(
-    path.join(source.root, 'catalog', 'provenance.json'),
-    path.join(referencesDir, 'aers-provenance.json')
-  );
-  for (const doc of ['TAXONOMY.md', 'SKILL_CATALOG.md', 'GOLDEN_WORKFLOWS.md', 'INSTALL.md']) {
-    copyFileIfExists(path.join(source.root, 'docs', doc), path.join(referencesDir, doc));
-  }
-}
-
 function buildAdapterPreamble({
   source,
   originalName,
@@ -499,11 +514,9 @@ function buildAdapterPreamble({
       ? 'deepscientist'
       : source.packId === 'kdense'
         ? 'k-dense'
-        : source.packId === 'autoEmpirical'
-          ? 'auto-empirical'
-          : source.packId === 'natureSkills'
-            ? 'nature-skills'
-            : 'custom';
+        : source.packId === 'natureSkills'
+          ? 'nature-skills'
+          : 'custom';
   const lines = [
     `<!-- ${GENERATED_MARKER}; source=${sourceRelativePath} -->`,
     '',
@@ -568,7 +581,6 @@ function buildAdapterPreamble({
 
 function materializeSkill(source, skillPath, seenIds) {
   const srcDir = path.dirname(skillPath);
-  const lightweightRouter = isLightweightRouterSkill(source, skillPath);
   const raw = fs.readFileSync(skillPath, 'utf8');
   const { attrs, body } = parseFrontmatter(raw);
   const originalName = source.packId === 'natureSkills' ? path.basename(srcDir) : attrs.name || path.basename(srcDir);
@@ -587,7 +599,7 @@ function materializeSkill(source, skillPath, seenIds) {
 
   const destDir = path.join(SKILLS_ROOT, id);
   const sourceRelativePath = toPosix(path.relative(ROOT, srcDir));
-  const hasScripts = lightweightRouter ? false : hasExecutableFiles(srcDir);
+  const hasScripts = hasExecutableFiles(srcDir);
   const combinedForClassification = `${id}\n${originalName}\n${originalDescription}\n${body.slice(0, 12000)}`;
   let domainTags = classifyDomains(combinedForClassification);
   if (id === 'nature-paper-to-patent' && !domainTags.includes('patent')) {
@@ -604,11 +616,7 @@ function materializeSkill(source, skillPath, seenIds) {
   const license = source.forceRepositoryLicense ? source.repositoryLicense : attrs.license || source.repositoryLicense;
   const priority = priorityFor(source, executionPolicy, id, domainTags);
 
-  if (lightweightRouter) {
-    copyLightweightRouterSkill(source, destDir);
-  } else {
-    copySkillDirectory(srcDir, destDir);
-  }
+  copySkillDirectory(srcDir, destDir);
 
   const materializedDescription = truncateDescription(
     `${originalDescription} OpenScience: record concrete outputs through science_artifact provenance.`
@@ -679,9 +687,6 @@ function annotateConflicts(skills) {
           packId: other.packId,
           sourcePath: other.sourcePath,
         }));
-      if (skill.packId === 'autoEmpirical' && bucket.some((other) => other.packId !== 'autoEmpirical')) {
-        skill.priority = Math.min(skill.priority, 48);
-      }
     }
   }
 }
@@ -749,9 +754,7 @@ function writeGeneratedTs(manifest) {
     `  total: ${manifest.counts.total},`,
     `  deepscientist: ${manifest.counts.byPack.deepscientist || 0},`,
     `  kdense: ${manifest.counts.byPack.kdense || 0},`,
-    `  autoEmpirical: ${manifest.counts.byPack.autoEmpirical || 0},`,
     `  natureSkills: ${manifest.counts.byPack.natureSkills || 0},`,
-    `  autoEmpiricalAvailable: ${manifest.counts.byPackAvailable.autoEmpirical || 0},`,
     `  quarantinedScripts: ${manifest.counts.quarantinedScripts},`,
     `  restrictedDefault: ${manifest.counts.restrictedDefault},`,
     `  clinicalBoundary: ${manifest.counts.clinicalBoundary},`,

@@ -127,7 +127,7 @@ describe('static-server', () => {
     const r = await fetch(`${handle.localUrl}/api/auth/user`);
     expect(r.status).toBe(200);
     const json = (await r.json()) as { user: { username: string } };
-    expect(json.user.username).toBe('OpenScience');
+    expect(json.user.username).toBe('OpenBioScience');
   });
 
   it('/logout is handled locally in no-login mode', async () => {

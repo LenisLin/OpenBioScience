@@ -9,8 +9,8 @@ import { openBrowserUrl, shouldAutoOpenBrowser } from './browser.js';
 import { ensureAdminPassword } from './ensureAdminPassword.js';
 
 // bundled layout:
-//   openscience-web/
-//   ├── openscience-web                ← bun-compiled standalone binary (process.execPath)
+//   openbioscience-web/
+//   ├── openbioscience-web             ← bun-compiled standalone binary (process.execPath)
 //   ├── package.json             ← for runtime version lookup
 //   ├── bundled-deeporganiser-core/<plat-arch>/deeporganiser-core[.exe]
 //   └── static/                  ← SPA assets
@@ -20,11 +20,16 @@ import { ensureAdminPassword } from './ensureAdminPassword.js';
 // sibling files. In dev (tsx/node), process.execPath is the node/bun binary,
 // so fall back to import.meta.url there.
 function resolveCliRoot(): string {
-  // Heuristic: if the executable path ends in "openscience-web" or "openscience-web.exe",
+  // Heuristic: if the executable path ends in "openbioscience-web" or "openscience-web",
   // treat it as the packaged single-file binary and return its directory.
   const exe = process.execPath;
   const exeName = path.basename(exe).toLowerCase();
-  if (exeName === 'openscience-web' || exeName === 'openscience-web.exe') {
+  if (
+    exeName === 'openbioscience-web' ||
+    exeName === 'openbioscience-web.exe' ||
+    exeName === 'openscience-web' ||
+    exeName === 'openscience-web.exe'
+  ) {
     return path.dirname(exe);
   }
   // Dev mode (tsx/node/bun running from source): use import.meta.url
@@ -145,17 +150,17 @@ async function runStart(flags: Map<string, string | true>): Promise<void> {
   });
 
   if (!fs.existsSync(staticDir)) {
-    console.error(`[openscience-web] static dir not found: ${staticDir}`);
+    console.error(`[openbioscience-web] static dir not found: ${staticDir}`);
     console.error(`  hint: pass --static-dir <path> pointing to the SPA build output`);
     process.exit(1);
   }
 
-  console.log(`[openscience-web] version    : ${version}`);
-  console.log(`[openscience-web] data dir   : ${dataDir}`);
-  console.log(`[openscience-web] log dir    : ${logDir}`);
-  console.log(`[openscience-web] static dir : ${staticDir}`);
-  console.log(`[openscience-web] backend bin: ${backendBin}`);
-  console.log(`[openscience-web] launching  : port=${port} allowRemote=${allowRemote}`);
+  console.log(`[openbioscience-web] version    : ${version}`);
+  console.log(`[openbioscience-web] data dir   : ${dataDir}`);
+  console.log(`[openbioscience-web] log dir    : ${logDir}`);
+  console.log(`[openbioscience-web] static dir : ${staticDir}`);
+  console.log(`[openbioscience-web] backend bin: ${backendBin}`);
+  console.log(`[openbioscience-web] launching  : port=${port} allowRemote=${allowRemote}`);
 
   const backendAvailable = fs.existsSync(backendBin);
 
@@ -179,15 +184,15 @@ async function runStart(flags: Map<string, string | true>): Promise<void> {
     currentHandle = handle;
 
     console.log('');
-    console.log('OpenScience WebUI (frontend only) is ready');
+    console.log('OpenBioScience WebUI (frontend only) is ready');
     console.log(`  Local  : ${handle.localUrl}`);
     if (handle.networkUrl) console.log(`  Network: ${handle.networkUrl}`);
     if (autoOpenBrowser) {
       const openResult = openBrowserUrl(handle.localUrl);
       if (openResult.ok) {
-        console.log(`[openscience-web] opened ${handle.localUrl} in your browser.`);
+        console.log(`[openbioscience-web] opened ${handle.localUrl} in your browser.`);
       } else {
-        console.warn(`[openscience-web] could not open the browser automatically: ${openResult.reason}`);
+        console.warn(`[openbioscience-web] could not open the browser automatically: ${openResult.reason}`);
       }
     }
     console.log('');
@@ -219,7 +224,7 @@ async function runStart(flags: Map<string, string | true>): Promise<void> {
     currentHandle = handle;
 
     console.log('');
-    console.log('OpenScience WebUI is ready');
+    console.log('OpenBioScience WebUI is ready');
     console.log(`  Local  : ${handle.localUrl}`);
     if (handle.networkUrl) console.log(`  Network: ${handle.networkUrl}`);
 
@@ -237,9 +242,9 @@ async function runStart(flags: Map<string, string | true>): Promise<void> {
     if (autoOpenBrowser) {
       const openResult = openBrowserUrl(handle.localUrl);
       if (openResult.ok) {
-        console.log(`[openscience-web] opened ${handle.localUrl} in your browser.`);
+        console.log(`[openbioscience-web] opened ${handle.localUrl} in your browser.`);
       } else {
-        console.warn(`[openscience-web] could not open the browser automatically: ${openResult.reason}`);
+        console.warn(`[openbioscience-web] could not open the browser automatically: ${openResult.reason}`);
       }
     }
 
@@ -251,11 +256,11 @@ async function runStart(flags: Map<string, string | true>): Promise<void> {
   const shutdown = async (signal: string): Promise<void> => {
     if (shuttingDown) return;
     shuttingDown = true;
-    console.log(`\n[openscience-web] received ${signal}, stopping...`);
+    console.log(`\n[openbioscience-web] received ${signal}, stopping...`);
     try {
       if (currentHandle) await currentHandle.stop();
     } catch (err) {
-      console.error('[openscience-web] stop failed:', err);
+      console.error('[openbioscience-web] stop failed:', err);
     }
     process.exit(0);
   };
@@ -264,7 +269,7 @@ async function runStart(flags: Map<string, string | true>): Promise<void> {
 }
 
 async function runResetPassword(_flags: Map<string, string | true>): Promise<void> {
-  console.log('[openscience-web] OpenScience WebUI uses no app-level login; resetpass is no longer required.');
+  console.log('[openbioscience-web] OpenBioScience WebUI uses no app-level login; resetpass is no longer required.');
 }
 
 async function main(): Promise<void> {
@@ -276,7 +281,7 @@ async function main(): Promise<void> {
   }
 
   if (command === '--help' || command === 'help' || command === '-h') {
-    console.log(`Usage: openscience-web <command> [options]
+    console.log(`Usage: openbioscience-web <command> [options]
 
 Commands:
   start              Start the WebUI (default)
@@ -308,7 +313,7 @@ Environment variables:
 
   if (command !== 'start') {
     console.error(`Unknown command: ${command}`);
-    console.error('Usage: openscience-web [start|resetpass|version|help]');
+    console.error('Usage: openbioscience-web [start|resetpass|version|help]');
     process.exit(1);
   }
 
@@ -316,7 +321,7 @@ Environment variables:
 }
 
 main().catch((err: Error) => {
-  console.error('[openscience-web] fatal:', err.message);
+  console.error('[openbioscience-web] fatal:', err.message);
   if (currentHandle) void currentHandle.stop().catch(() => undefined);
   process.exit(1);
 });

@@ -62,7 +62,7 @@ const AppearanceModalContent: React.FC = () => {
           {/* 主题画廊 / Theme Gallery */}
           <SettingsSection
             title={t('settings.theme')}
-            description={t('settings.cssTheme.selectOrCustomize', { defaultValue: 'Choose how OpenScience looks.' })}
+            description={t('settings.cssTheme.selectOrCustomize', { defaultValue: 'Choose how OpenBioScience looks.' })}
             icon='theme'
           >
             <CssThemeSettings />

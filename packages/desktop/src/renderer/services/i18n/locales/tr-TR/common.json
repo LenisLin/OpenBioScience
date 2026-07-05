@@ -61,10 +61,10 @@
   "more": "Daha Fazla",
   "refresh": "Yenile",
   "readOnly": "Salt okunur",
-  "tray.showWindow": "OpenScience'yi Göster",
+  "tray.showWindow": "OpenBioScience'yi Göster",
   "tray.newChat": "Yeni Sohbet",
   "tray.closeToTray": "Tepsiye Gizle",
-  "tray.about": "OpenScience Hakkında",
+  "tray.about": "OpenBioScience Hakkında",
   "tray.restart": "Uygulamayı Yeniden Başlat",
   "tray.quit": "Çıkış",
   "tray.runningTasks": "Çalışan Görevler",
@@ -75,22 +75,22 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "Bu sistem paketlenmiş backend tarafından desteklenmiyor",
-      "description": "OpenScience açıldı, ancak yerel OpenScience Core backend bu Linux sürümünde çalışamaz. Desteklenen bir Linux dağıtımına yükseltip OpenScience'yi yeniden başlatın.",
+      "description": "OpenBioScience açıldı, ancak yerel OpenBioScience Core backend bu Linux sürümünde çalışamaz. Desteklenen bir Linux dağıtımına yükseltip OpenBioScience'yi yeniden başlatın.",
       "requiredVersions": "Gerekli çalışma zamanı sembolleri: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "OpenScience kurulumu eksik",
-      "description": "Bu kurulumda gerekli yerel kaynaklar eksik, bu yüzden OpenScience Core başlatılamıyor. Lütfen en son OpenScience sürümünü indirip yeniden kurun. Yeniden kurulumdan sonra sorun tekrarlarsa güvenlik veya antivirüs yazılımının OpenScience Core'u karantinaya alıp almadığını kontrol edin.",
+      "title": "OpenBioScience kurulumu eksik",
+      "description": "Bu kurulumda gerekli yerel kaynaklar eksik, bu yüzden OpenBioScience Core başlatılamıyor. Lütfen en son OpenBioScience sürümünü indirip yeniden kurun. Yeniden kurulumdan sonra sorun tekrarlarsa güvenlik veya antivirüs yazılımının OpenBioScience Core'u karantinaya alıp almadığını kontrol edin.",
       "downloadLatest": "Son sürümü indir",
       "sendDiagnostics": "Tanı raporu gönder",
       "diagnosticsSent": "Tanı raporu gönderildi",
       "diagnosticsReportSuccess": "Tanı raporu gönderildi",
       "diagnosticsReportFailed": "Tanı raporu gönderilemedi",
-      "runtimeComponentDescription": "Bu kurulumda gerekli yerleşik çalışma zamanı bileşenleri eksik olduğu için {{resource}} başlatılamıyor. En son OpenScience paketini yeniden yükleyin. Yeniden yükledikten sonra da devam ederse güvenlik veya antivirüs yazılımının OpenScience bileşenlerini karantinaya alıp almadığını kontrol edin."
+      "runtimeComponentDescription": "Bu kurulumda gerekli yerleşik çalışma zamanı bileşenleri eksik olduğu için {{resource}} başlatılamıyor. En son OpenBioScience paketini yeniden yükleyin. Yeniden yükledikten sonra da devam ederse güvenlik veya antivirüs yazılımının OpenBioScience bileşenlerini karantinaya alıp almadığını kontrol edin."
     },
     "packageArchitectureMismatch": {
-      "title": "OpenScience package architecture mismatch",
-      "description": "This OpenScience package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
+      "title": "OpenBioScience package architecture mismatch",
+      "description": "This OpenBioScience package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
     }
   },
   "fileAttach.addFiles": "Dosya ekle",

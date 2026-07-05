@@ -268,19 +268,26 @@
 }
 
 .researchHeroWordmark {
-  height: 55px;
-  width: 196px;
+  height: auto;
+  width: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transform: translateY(5px);
+  flex: 0 0 auto;
+  transform: none;
 }
 
 .researchHeroWordmarkImage {
-  width: 196px;
-  height: 55px;
-  object-fit: contain;
-  display: block;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  color: var(--color-text-0);
+  display: inline-flex;
+  align-items: baseline;
+  white-space: nowrap;
 }
 
 .researchHeroPrefix {
@@ -356,14 +363,15 @@
   }
 
   .researchHeroWordmark {
-    height: 44px;
-    width: 160px;
-    transform: translateY(3px);
+    flex-basis: 100%;
+    transform: none;
   }
 
   .researchHeroWordmarkImage {
-    width: 160px;
-    height: 44px;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    justify-content: center;
   }
 
   .researchHeroPhrase {

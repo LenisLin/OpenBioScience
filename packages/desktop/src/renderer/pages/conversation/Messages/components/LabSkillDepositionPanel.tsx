@@ -698,7 +698,7 @@ export const LabSkillDepositionPanel: React.FC<{ panel: LabSkillDepositionPanelD
           <div className='lab-skill-titleline'>
             <span className='lab-skill-kicker'>
               <OpenScienceIcon name='depositionReport' size={15} visualScale={1.08} />
-              OpenScience 沉淀报告
+              OpenBioScience 沉淀报告
             </span>
             <span className={`lab-skill-status lab-skill-status--${panel.status}`}>{panel.status}</span>
           </div>

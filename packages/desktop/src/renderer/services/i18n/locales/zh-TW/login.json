@@ -1,13 +1,13 @@
 {
-  "pageTitle": "OpenScience - 登入",
-  "brand": "OpenScience",
+  "pageTitle": "OpenBioScience - 登入",
+  "brand": "OpenBioScience",
   "brandEdition": "開放科研工作台",
   "editorialEyebrow": "開放科研，從第一個問題開始有序",
   "editorialTitle": "讓研究證據清晰可續。",
-  "editorialSubtitle": "OpenScience 把問題、文件、任務和 Agent 工作放進同一個安靜工作區，讓每個結果都能追溯、討論，並繼續推進。",
+  "editorialSubtitle": "OpenBioScience 把問題、文件、任務和 Agent 工作放進同一個安靜工作區，讓每個結果都能追溯、討論，並繼續推進。",
   "petTitle": "工作區已就緒",
   "petSubtitle": "幫你對齊證據、協作與下一步。",
-  "designPrinciplesLabel": "OpenScience 工作提示",
+  "designPrinciplesLabel": "OpenBioScience 工作提示",
   "principles": {
     "oneTitle": "證據連接問題",
     "oneBody": "文件、記錄、任務和判斷都能回到最初的問題。",
@@ -17,7 +17,7 @@
     "threeBody": "Agent 處理瑣碎推進，人保留判斷、署名和審閱。"
   },
   "cardKicker": "OPEN WORKSPACE",
-  "cardTitle": "進入 OpenScience",
+  "cardTitle": "進入 OpenBioScience",
   "subtitle": "繼續證據、任務和對話，不丟失研究脈絡",
   "username": "使用者名稱",
   "usernamePlaceholder": "請輸入使用者名稱",

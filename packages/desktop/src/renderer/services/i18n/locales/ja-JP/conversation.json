@@ -1,6 +1,6 @@
 {
   "welcome": {
-    "title": "OpenScience が研究を支援します",
+    "title": "OpenBioScience が研究を支援します",
     "placeholder": "メッセージの送信、ファイルの追加、フォルダーの追加、またはスケジュールタスクの作成...",
     "linkFolder": "フォルダを追加",
     "newConversation": "新しいチャット",
@@ -12,10 +12,10 @@
     "clearWorkspace": "プロジェクトを解除",
     "openFolder": "Open Folder",
     "none": "None",
-    "quickActionsTitle": "OpenScience で何ができる？",
+    "quickActionsTitle": "OpenBioScience で何ができる？",
     "quickActionFeedback": "問題を報告",
     "quickActionStar": "気に入った？スターをください！",
-    "skillsMarket": "OpenScience Skills Market",
+    "skillsMarket": "OpenBioScience Skills Market",
     "skillsMarketDesc": "コミュニティ Skills をオンデマンドで検索・有効化。一度設定すれば、すべてのAgentで利用可能。",
     "skillsMarketDetails": "詳細 >>"
   },

@@ -1059,8 +1059,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 type='button'
                 className='preview-tabs__iconButton'
                 onClick={handleOpenScienceFiles}
-                title='Open Science files'
-                aria-label='Open Science files'
+                title='OpenBioScience files'
+                aria-label='OpenBioScience files'
               >
                 <IconFile style={{ fontSize: 14, color: 'currentColor' }} />
               </button>

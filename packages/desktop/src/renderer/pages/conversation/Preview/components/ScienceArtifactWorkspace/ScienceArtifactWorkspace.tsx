@@ -949,7 +949,7 @@ const InspectorPane: React.FC<{
             type='button'
             className='science-workspace-dialogHeader__files'
             onClick={onOpenFiles}
-            aria-label='Open Science files'
+            aria-label='OpenBioScience files'
           >
             <OpenScienceIcon name='artifactDataset' size={15} visualScale={1.05} />
             <span>Files</span>
@@ -1009,8 +1009,8 @@ const InspectorPane: React.FC<{
             type='button'
             className='science-workspace-inspector__historyFab'
             onClick={onOpenFiles}
-            aria-label='Open Science files'
-            title='Open Science files'
+            aria-label='OpenBioScience files'
+            title='OpenBioScience files'
           >
             <OpenScienceIcon name='artifactDataset' size={15} visualScale={1.05} />
             <span>Files</span>

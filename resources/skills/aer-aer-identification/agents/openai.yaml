@@ -1,4 +1,0 @@
-interface:
-  display_name: "AER Identification"
-  short_description: "Stress-test causal identification"
-  default_prompt: "Use $aer-identification to stress-test this manuscript causal identification strategy."

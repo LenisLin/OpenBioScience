@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { APP_DISPLAY_NAME } from '@/renderer/utils/brand';
 
 type AuthStatus = 'checking' | 'authenticated' | 'unauthenticated';
 
@@ -42,7 +43,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 const LOCAL_AUTH_USER: AuthUser = {
   id: 'local_user',
-  username: 'OpenScience',
+  username: APP_DISPLAY_NAME,
 };
 
 // Clear expired auth cache including cookies and localStorage

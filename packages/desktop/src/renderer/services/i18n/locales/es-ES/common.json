@@ -61,10 +61,10 @@
   "more": "More",
   "refresh": "Refresh",
   "readOnly": "Read only",
-  "tray.showWindow": "Show OpenScience",
+  "tray.showWindow": "Show OpenBioScience",
   "tray.newChat": "New Chat",
   "tray.closeToTray": "Hide to Tray",
-  "tray.about": "About OpenScience",
+  "tray.about": "About OpenBioScience",
   "tray.restart": "Restart App",
   "tray.quit": "Quit",
   "tray.runningTasks": "Running Tasks",
@@ -75,22 +75,22 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "This system is not supported by the bundled backend",
-      "description": "OpenScience opened, but the local OpenScience Core backend cannot run on this Linux version. Please upgrade to a supported Linux distribution and restart OpenScience.",
+      "description": "OpenBioScience opened, but the local OpenBioScience Core backend cannot run on this Linux version. Please upgrade to a supported Linux distribution and restart OpenBioScience.",
       "requiredVersions": "Required runtime symbols: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "OpenScience installation is incomplete",
-      "description": "This installation is missing required local resources, so OpenScience Core cannot start. Please download and reinstall the latest OpenScience. If the issue returns after reinstalling, check whether security or antivirus software quarantined OpenScience Core.",
+      "title": "OpenBioScience installation is incomplete",
+      "description": "This installation is missing required local resources, so OpenBioScience Core cannot start. Please download and reinstall the latest OpenBioScience. If the issue returns after reinstalling, check whether security or antivirus software quarantined OpenBioScience Core.",
       "downloadLatest": "Download latest",
       "sendDiagnostics": "Send diagnostics",
       "diagnosticsSent": "Diagnostics sent",
       "diagnosticsReportSuccess": "Diagnostics report sent",
       "diagnosticsReportFailed": "Failed to send diagnostics report",
-      "runtimeComponentDescription": "This installation is missing required bundled runtime components, so {{resource}} cannot start. Reinstall the latest OpenScience package. If it still happens after reinstalling, check whether security or antivirus software quarantined OpenScience components."
+      "runtimeComponentDescription": "This installation is missing required bundled runtime components, so {{resource}} cannot start. Reinstall the latest OpenBioScience package. If it still happens after reinstalling, check whether security or antivirus software quarantined OpenBioScience components."
     },
     "packageArchitectureMismatch": {
-      "title": "OpenScience package architecture mismatch",
-      "description": "This OpenScience package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
+      "title": "OpenBioScience package architecture mismatch",
+      "description": "This OpenBioScience package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
     }
   },
   "fileAttach.addFiles": "Add files",
@@ -114,7 +114,7 @@
     "minute_short": "m",
     "second_short": "s"
   },
-  "loadingOpenScience": "Cargando OpenScience...",
+  "loadingOpenScience": "Cargando OpenBioScience...",
   "collaboration": {
     "title": "Colaboración",
     "projectTitle": "Proyectos de equipo",
@@ -137,7 +137,7 @@
       "openLink": "Abrir enlace",
       "waiting": "Esperando confirmación",
       "connected": "Conectado",
-      "footerHint": "Después de iniciar sesión, crear la app y autorizarla, OpenScience volverá automáticamente a la página de colaboración actual.",
+      "footerHint": "Después de iniciar sesión, crear la app y autorizarla, OpenBioScience volverá automáticamente a la página de colaboración actual.",
       "floatingHintTitle": "Inicia sesión para usar el modo de colaboración",
       "stages": [
         "Inicio web",
@@ -155,8 +155,8 @@
         "loading": "Abriendo página de inicio de sesión..."
       },
       "auth": {
-        "title": "Autorizar OpenScience",
-        "subtitle": "La página de autorización se abre a la derecha. Aprueba el acceso con tu cuenta actual y OpenScience lo verificará automáticamente.",
+        "title": "Autorizar OpenBioScience",
+        "subtitle": "La página de autorización se abre a la derecha. Aprueba el acceso con tu cuenta actual y OpenBioScience lo verificará automáticamente.",
         "steps": [
           "Abre la página de autorización",
           "Aprueba los permisos con tu cuenta",
@@ -164,7 +164,7 @@
         ],
         "start": "Regenerar enlace",
         "needsApp": "Crea o vincula una app primero",
-        "needsAppDesc": "La autorización debe usar la app OpenScience creada o vinculada en el paso 2. Completa primero el paso 2; cuando se detecte un App ID, OpenScience podrá continuar.",
+        "needsAppDesc": "La autorización debe usar la app OpenBioScience creada o vinculada en el paso 2. Completa primero el paso 2; cuando se detecte un App ID, OpenBioScience podrá continuar.",
         "needsWeb": "Primero debes iniciar sesión en la web",
         "needsWebDesc": "Completa el inicio web del paso 1 para que la configuración de la app y la autorización usen la misma sesión web.",
         "goWeb": "Ir al inicio web",
@@ -175,7 +175,7 @@
         "targetApp": "Objeto autorizado",
         "profile": "Profile",
         "chooseProfileTitle": "Elige una configuración",
-        "chooseProfileDesc": "Elige un perfil existente. OpenScience lo guardará como destino de automatización de colaboración y generará una nueva página de autorización.",
+        "chooseProfileDesc": "Elige un perfil existente. OpenBioScience lo guardará como destino de automatización de colaboración y generará una nueva página de autorización.",
         "noProfiles": "No se encontraron perfiles. Crea una app primero.",
         "refreshProfiles": "Actualizar perfiles",
         "authorizeSelected": "Usar este perfil",
@@ -184,24 +184,24 @@
         "profileRequired": "Elige un perfil primero.",
         "user": "Usuario",
         "tokenStatus": "Estado de autorización",
-        "opening": "Creando la página de autorización de OpenScience...",
+        "opening": "Creando la página de autorización de OpenBioScience...",
         "verifying": "La autorización está abierta. Esperando aprobación y verificación automática.",
         "retry": "Reiniciar autorización"
       },
       "app": {
         "title": "Crear app vinculada",
-        "subtitle": "Crea o vincula primero la app OpenScience. La autorización se emitirá mediante esta app.",
+        "subtitle": "Crea o vincula primero la app OpenBioScience. La autorización se emitirá mediante esta app.",
         "steps": [
-          "Crear OpenScience",
+          "Crear OpenBioScience",
           "Detectar App ID",
           "Guardar en Channels"
         ],
         "appName": "Nombre de la app",
         "appNameHint": "Mantén este nombre para reconocerla fácilmente en la consola de desarrollador.",
-        "setupHint": "OpenScience abre directamente el flujo de configuración. Usa OpenScience como nombre de la app; el App ID se detectará automáticamente después.",
-        "create": "Crear app OpenScience",
+        "setupHint": "OpenBioScience abre directamente el flujo de configuración. Usa OpenBioScience como nombre de la app; el App ID se detectará automáticamente después.",
+        "create": "Crear app OpenBioScience",
         "currentApp": "App actual detectada",
-        "createPanelTitle": "Crear app OpenScience",
+        "createPanelTitle": "Crear app OpenBioScience",
         "createPanelDesc": "Pulsa el botón de abajo para entrar directamente al flujo de creación; no necesitas buscar la entrada en la consola de desarrollador.",
         "sync": "Guardar en Channels",
         "refresh": "Comprobar estado",

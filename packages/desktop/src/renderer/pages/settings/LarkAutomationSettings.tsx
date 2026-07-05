@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 OpenScience
+ * Copyright 2026 OpenBioScience
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -229,7 +229,7 @@ const LarkAutomationSettings: React.FC = () => {
           {status?.bindingReady && status.binding ? (
             <div className='rd-8px border border-border-1 bg-bg-1 p-12px text-12px text-t-secondary leading-20px'>
               <span className='font-650 text-t-primary'>{t('settings.larkAutomation.status.boundPrefix')}</span>
-              {status.binding.appName || 'OpenScience'}
+              {status.binding.appName || 'OpenBioScience'}
               {status.binding.appId ? ` · App ID: ${status.binding.appId}` : ''}
               {status.binding.profileName ? ` · Profile: ${status.binding.profileName}` : ''}
               {status.binding.userName ? ` · ${t('settings.larkAutomation.status.boundUser', { name: status.binding.userName })}` : ''}

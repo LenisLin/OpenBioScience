@@ -88,8 +88,8 @@ annotation, editing, or reproducibility:
 - genome tracks: IGV with indexes and reference/QC evidence;
 - single-cell/spatial workspaces: Vitessce only after conversion/configuration;
 - alignments: MSA viewer with parser/format validation;
-- empirical outputs: regression tables, model diagnostics, causal DAGs,
-  codebooks, maps, qualitative coding ledgers, or replication packages.
+- biomedical statistical outputs: survival models, differential-expression
+  tables, model diagnostics, clinical summaries, and validation reports.
 
 Exact payload shapes live in `openscience-science-artifact`.
 
@@ -105,8 +105,6 @@ Exact payload shapes live in `openscience-science-artifact`.
   scVI/scGPT, and Vitessce workflows.
 - `openscience-compute` routes environment, remote compute, GPU/HPC, Modal, and
   package setup decisions.
-- `openscience-empirical` routes social-science, econometrics, causal,
-  survey/qualitative, and replication-package work.
 
 Record selected external leaf skills as `skill_use` when they affect a visible
 result. Clinical advice, diagnosis, treatment, patient-facing reports, and

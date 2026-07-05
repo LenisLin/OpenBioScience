@@ -14,21 +14,20 @@ rebuttal, or presentation material.
 Prefer one narrow route:
 
 - Literature scouting/review: `ds-scout`, `ds-write`,
-  `kdense-literature-review`, `kdense-paper-lookup`, AERS
-  `aer-lit-review-*`, `aer-literature-survey-generator`.
+  `kdense-literature-review`, `kdense-paper-lookup`,
+  `kdense-citation-management`.
 - Manuscript architecture: `ds-paper-outline`, `ds-write`,
-  `ds-nature-polishing`, `ds-nature-data`, AERS `aer-paper-*`.
-- Independent review/rebuttal: `ds-review`, `ds-rebuttal`, AERS
-  `aer-referee-report`, `aer-paper-referee-revise`,
-  `aer-reference-verify`, `aer-citation-fidelity`.
+  `ds-nature-polishing`, `ds-nature-data`, `nature-writing`,
+  `nature-polishing`.
+- Independent review/rebuttal: `ds-review`, `ds-rebuttal`,
+  `nature-reviewer`, `nature-response`, `kdense-peer-review`.
 - Figures and tables: `ds-nature-figure`, `ds-figure-polish`,
   `ds-paper-plot` as a quarantined template reference, `kdense-matplotlib`,
-  `kdense-seaborn`, `kdense-scientific-visualization`,
-  AERS `aer-figure`, `aer-latex-table`.
-- PDF and format work: `kdense-pdf`, `kdense-docx`, `kdense-pptx`,
-  `kdense-markitdown`, AERS `aer-md-to-docx`, `aer-compile-latex`.
+  `kdense-seaborn`, `kdense-scientific-visualization`.
+- PDF and format work: use the normal file/runtime tools and register source,
+  conversion logs, and outputs as artifacts.
 - Slides/posters: `ds-nature-paper2ppt`, `kdense-scientific-slides`,
-  `kdense-latex-posters`, AERS `aer-create-talk`, `aer-marp-*`.
+  `nature-paper2ppt`.
 - JimLiu science-skills equivalents, when materialized later:
   `literature-review`, `pdf-explore`, `figure-style`, `figure-composer`,
   `paper-narrative`, `indication-dossier`.

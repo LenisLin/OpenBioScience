@@ -2,7 +2,7 @@
  * WebUI static server.
  *
  * Serves out/renderer/ as the SPA and reverse-proxies /api/*, /ws, and
- * /api/stt/stream to DeepOrganiser Core. OpenScience hides the app-level
+ * /api/stt/stream to DeepOrganiser Core. OpenBioScience hides the app-level
  * login flow, so the WebUI host answers auth status probes locally while the
  * rest of the API remains proxied to the backend. /ws and /api/stt/stream are
  * WebSocket/stream upgrades spliced at TCP level; /api/stt/stream is the STT
@@ -80,7 +80,7 @@ function sendNoLoginAuthResponse(req: IncomingMessage, res: ServerResponse): boo
       success: true,
       user: {
         id: 'local_user',
-        username: 'OpenScience',
+        username: 'OpenBioScience',
       },
     });
     return true;
@@ -192,7 +192,7 @@ export async function startStaticServer(opts: StaticServerOptions): Promise<Stat
       }
 
       // /api/* — reverse proxy to backend. Auth status endpoints are handled
-      // above because OpenScience no longer asks users to sign in before use.
+      // above because OpenBioScience no longer asks users to sign in before use.
       if (req.url.startsWith('/api/') || req.url.startsWith('/api?')) {
         forwardToBackend(req, res, opts.backendPort);
         return;

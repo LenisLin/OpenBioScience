@@ -37,7 +37,7 @@ const OnboardingStepper: React.FC<OnboardingStepperProps> = ({
   const isLastStep = currentStep >= steps.length;
 
   return (
-    <section className='onboarding-stepper' aria-label='OpenScience onboarding'>
+    <section className='onboarding-stepper' aria-label='OpenBioScience onboarding'>
       <div className='onboarding-stepper__rail' aria-label='Tutorial progress'>
         {steps.map((step, index) => {
           const stepNumber = index + 1;

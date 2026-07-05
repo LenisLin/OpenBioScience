@@ -547,7 +547,7 @@ const SystemModalContent: React.FC = () => {
               <div className='mt-4px text-12px text-t-secondary leading-5'>
                 {t('settings.telemetry.description', {
                   defaultValue:
-                    'OpenScience 每周同步匿名运行状态和系统硬件摘要。科研内容、文件正文、提示词和账号信息不会通过此通道上传。',
+                    'OpenBioScience 每周同步匿名运行状态和系统硬件摘要。科研内容、文件正文、提示词和账号信息不会通过此通道上传。',
                 })}
               </div>
             </div>

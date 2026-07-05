@@ -24,10 +24,9 @@ outside this skill.
 ## Merge Map
 
 - General paper lookup: `ds-alphaxiv-paper-lookup`, `kdense-paper-lookup`,
-  AERS `aer-openalex`, `aer-arxiv`, `aer-unpaywall-api`.
+  `kdense-literature-review`, `kdense-citation-management`.
 - Broad database routing: `kdense-database-lookup`,
-  `kdense-research-lookup`, `kdense-bgpt-paper-search`,
-  `kdense-exa-search`.
+  `kdense-research-lookup`.
 - Biology/genomics: `kdense-cellxgene-census`, `kdense-gget`,
   `kdense-bioservices`, `kdense-onekgpd`, `kdense-tiledbvcf`,
   `kdense-depmap`, `kdense-primekg`.

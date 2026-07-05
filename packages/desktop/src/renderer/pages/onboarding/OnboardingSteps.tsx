@@ -323,7 +323,7 @@ export const LanguageStep: React.FC<LanguageStepProps> = ({ language, locale, on
 
   return (
     <div className='onboarding-step onboarding-language-step'>
-      <div className='onboarding-step__eyebrow'>{en ? 'Welcome to OpenScience' : '欢迎使用 OpenScience'}</div>
+      <div className='onboarding-step__eyebrow'>{en ? 'Welcome to OpenBioScience' : '欢迎使用 OpenBioScience'}</div>
       <h1>{en ? 'Choose your language first' : '先选择你希望使用的语言'}</h1>
       <p className='onboarding-step__lead'>
         {en
@@ -366,7 +366,7 @@ export const ModeGuideStep: React.FC<ModeGuideStepProps> = ({ selectedMode, loca
           ? 'You can switch these modes from the plus button in the new-chat input. Pick the scenario you expect to use most; you can switch freely later.'
           : '新会话输入框左下角的加号里可以切换这些模式。先选一个最常用的场景，教程结束后仍然可以自由切换。'}
       </p>
-      <div className='onboarding-mode-comic' aria-label={en ? 'Four OpenScience mode comic' : 'OpenScience 四模式漫画'}>
+      <div className='onboarding-mode-comic' aria-label={en ? 'Four OpenBioScience mode comic' : 'OpenBioScience 四模式漫画'}>
         <img src={comicImage} alt='' draggable={false} />
         <div className='onboarding-mode-comic__grid'>
           {comicPanels.map((panel) => (
@@ -439,8 +439,8 @@ export const RuntimeCheckStep: React.FC<RuntimeCheckStepProps> = ({ checking, it
       <h1>{en ? 'Install any one coding agent to begin' : '安装任意一种代码智能体即可开始'}</h1>
       <p className='onboarding-step__lead'>
         {en
-          ? 'OpenScience uses Claude Code, Codex, or OpenCode to read and edit local files, run code, and generate artifacts. You only need one of them.'
-          : 'OpenScience 会调用 Claude Code、Codex 或 OpenCode 来读写本地文件、运行代码和生成 artifact。系统会自动检测，不需要三者都安装。'}
+          ? 'OpenBioScience uses Claude Code, Codex, or OpenCode to read and edit local files, run code, and generate artifacts. You only need one of them.'
+          : 'OpenBioScience 会调用 Claude Code、Codex 或 OpenCode 来读写本地文件、运行代码和生成 artifact。系统会自动检测，不需要三者都安装。'}
       </p>
       <div className='onboarding-runtime-toolbar'>
         <span className={['onboarding-runtime-summary', hasAvailableRuntime && 'is-ready'].filter(Boolean).join(' ')}>
@@ -637,7 +637,7 @@ export const TelemetryConsentStep: React.FC<TelemetryConsentStepProps> = ({ enab
         </span>
         <span>
           <CheckOne theme='outline' size='15' />
-          {en ? 'Used only to improve OpenScience stability and experience' : '只用于改进 OpenScience 的稳定性和体验'}
+          {en ? 'Used only to improve OpenBioScience stability and experience' : '只用于改进 OpenBioScience 的稳定性和体验'}
         </span>
         <span>
           <CheckOne theme='outline' size='15' />
@@ -766,7 +766,7 @@ export const FinishStep: React.FC<FinishStepProps> = ({
   return (
     <div className='onboarding-step onboarding-finish-step'>
       <div className='onboarding-step__eyebrow'>{en ? 'Ready' : '准备完成'}</div>
-      <h1>{en ? 'OpenScience is ready for research' : 'OpenScience 已准备好开始研究'}</h1>
+      <h1>{en ? 'OpenBioScience is ready for research' : 'OpenBioScience 已准备好开始研究'}</h1>
       <p className='onboarding-step__lead'>
         {en
           ? 'After finishing, you will enter the new-chat page. Use the plus button to choose a mode, or reopen this tutorial from Settings later.'

@@ -1,8 +1,0 @@
-* text=auto eol=lf
-
-*.jpg binary
-*.jpeg binary
-*.png binary
-*.pdf binary
-*.dta binary
-*.rds binary

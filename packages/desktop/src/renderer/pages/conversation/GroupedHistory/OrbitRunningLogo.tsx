@@ -6,6 +6,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
+import { APP_DISPLAY_NAME } from '@/renderer/utils/brand';
 
 const ORBIT_FRAME_COUNT = 36;
 const ORBIT_FRAME_RATE = 18;
@@ -61,7 +62,11 @@ type OrbitRunningLogoProps = {
   ariaLabel?: string;
 };
 
-const OrbitRunningLogo: React.FC<OrbitRunningLogoProps> = ({ className, size = 16, ariaLabel = 'OpenScience running' }) => {
+const OrbitRunningLogo: React.FC<OrbitRunningLogoProps> = ({
+  className,
+  size = 16,
+  ariaLabel = `${APP_DISPLAY_NAME} running`,
+}) => {
   const theme = useDocumentTheme();
   const prefersReducedMotion = usePrefersReducedMotion();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);

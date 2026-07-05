@@ -61,10 +61,10 @@
   "more": "Mehr",
   "refresh": "Aktualisieren",
   "readOnly": "Schreibgeschützt",
-  "tray.showWindow": "OpenScience anzeigen",
+  "tray.showWindow": "OpenBioScience anzeigen",
   "tray.newChat": "Neuer Chat",
   "tray.closeToTray": "In Taskleiste minimieren",
-  "tray.about": "Über OpenScience",
+  "tray.about": "Über OpenBioScience",
   "tray.restart": "App neu starten",
   "tray.quit": "Beenden",
   "tray.runningTasks": "Laufende Aufgaben",
@@ -75,22 +75,22 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "Dieses System wird vom gebündelten Backend nicht unterstützt",
-      "description": "OpenScience wurde geöffnet, aber das lokale OpenScience Core-Backend kann auf dieser Linux-Version nicht ausgeführt werden. Bitte upgrade auf eine unterstützte Linux-Distribution und starte OpenScience neu.",
+      "description": "OpenBioScience wurde geöffnet, aber das lokale OpenBioScience Core-Backend kann auf dieser Linux-Version nicht ausgeführt werden. Bitte upgrade auf eine unterstützte Linux-Distribution und starte OpenBioScience neu.",
       "requiredVersions": "Erforderliche Runtime-Symbole: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "OpenScience-Installation ist unvollständig",
-      "description": "Diese Installation fehlen erforderliche lokale Ressourcen, daher kann OpenScience Core nicht starten. Bitte lade die neueste Version von OpenScience herunter und installiere sie neu. Wenn das Problem nach der Neuinstallation erneut auftritt, überprüfe, ob Sicherheits- oder Antivirus-Software OpenScience Core unter Quarantäne gestellt hat.",
+      "title": "OpenBioScience-Installation ist unvollständig",
+      "description": "Diese Installation fehlen erforderliche lokale Ressourcen, daher kann OpenBioScience Core nicht starten. Bitte lade die neueste Version von OpenBioScience herunter und installiere sie neu. Wenn das Problem nach der Neuinstallation erneut auftritt, überprüfe, ob Sicherheits- oder Antivirus-Software OpenBioScience Core unter Quarantäne gestellt hat.",
       "downloadLatest": "Neueste Version herunterladen",
       "sendDiagnostics": "Diagnose senden",
       "diagnosticsSent": "Diagnose gesendet",
       "diagnosticsReportSuccess": "Diagnosebericht gesendet",
       "diagnosticsReportFailed": "Fehler beim Senden des Diagnoseberichts",
-      "runtimeComponentDescription": "Diese Installation fehlen erforderliche gebündelte Runtime-Komponenten, daher kann {{resource}} nicht starten. Installiere das neueste OpenScience-Paket neu. Wenn es nach der Neuinstallation immer noch auftritt, überprüfe, ob Sicherheits- oder Antivirus-Software OpenScience-Komponenten unter Quarantäne gestellt hat."
+      "runtimeComponentDescription": "Diese Installation fehlen erforderliche gebündelte Runtime-Komponenten, daher kann {{resource}} nicht starten. Installiere das neueste OpenBioScience-Paket neu. Wenn es nach der Neuinstallation immer noch auftritt, überprüfe, ob Sicherheits- oder Antivirus-Software OpenBioScience-Komponenten unter Quarantäne gestellt hat."
     },
     "packageArchitectureMismatch": {
-      "title": "OpenScience-Paket-Architektur-Fehlanpassung",
-      "description": "Dieses OpenScience-Paket ist für {{packageArch}}, aber dieser Mac ist {{deviceArch}}. Möglicherweise hast du das falsche Paket heruntergeladen. Bitte lade das {{expectedArch}}-Paket herunter und installiere es."
+      "title": "OpenBioScience-Paket-Architektur-Fehlanpassung",
+      "description": "Dieses OpenBioScience-Paket ist für {{packageArch}}, aber dieser Mac ist {{deviceArch}}. Möglicherweise hast du das falsche Paket heruntergeladen. Bitte lade das {{expectedArch}}-Paket herunter und installiere es."
     }
   },
   "fileAttach.addFiles": "Dateien hinzufügen",

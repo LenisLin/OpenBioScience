@@ -232,7 +232,7 @@ const LoginPage: React.FC = () => {
       <header className='login-page__topbar'>
         <div className='login-page__identity'>
           <DeepScientistWordmark
-            aria-label='OpenScience'
+            aria-label='OpenBioScience'
             className='login-page__wordmark-image'
             wrapperClassName='login-page__wordmark'
           />

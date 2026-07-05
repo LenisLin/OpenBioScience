@@ -43,6 +43,7 @@ import {
   resolveGuidCapabilityMode,
 } from './utils/modeCapabilities';
 import SpeechInputButton from '@/renderer/components/chat/SpeechInputButton';
+import { APP_DISPLAY_NAME } from '@/renderer/utils/brand';
 import { appendSpeechTranscript } from '@/renderer/hooks/system/useSpeechInput';
 import { useLiveTranscriptInsertion } from '@/renderer/hooks/system/useLiveTranscriptInsertion';
 import LoopGoalBar from '@/renderer/pages/conversation/components/LoopGoalBar';
@@ -91,7 +92,7 @@ const ResearchHeroTitle: React.FC<{ localeKey: string }> = ({ localeKey }) => {
   const [phraseIndex, setPhraseIndex] = useState(0);
   const phrase = phrases[phraseIndex] ?? phrases[0];
   const helperText = isChinese ? '帮你' : 'helps you';
-  const ariaLabel = `OpenScience ${helperText} ${phrase}`;
+  const ariaLabel = `${APP_DISPLAY_NAME} ${helperText} ${phrase}`;
 
   useEffect(() => {
     const timer = window.setInterval(() => {
