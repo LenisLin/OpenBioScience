@@ -157,7 +157,7 @@ export const SCIENCE_MATERIALIZED_SKILL_IDS = [
   'kdense-umap-learn',
 ] as const;
 
-export const SCIENCE_SKILL_PACK_GENERATED_AT = '2026-07-07T03:04:30.302Z';
+export const SCIENCE_SKILL_PACK_GENERATED_AT = '2026-07-07T03:07:46.118Z';
 
 export const SCIENCE_SKILL_PACK_COUNTS = {
   total: 146,

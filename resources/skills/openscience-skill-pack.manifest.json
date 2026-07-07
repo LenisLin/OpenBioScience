@@ -1,6 +1,6 @@
 {
   "schema": "openscience.skill-pack.v1",
-  "generatedAt": "2026-07-07T03:04:30.302Z",
+  "generatedAt": "2026-07-07T03:07:46.118Z",
   "generatedBy": "scripts/materialize-science-skills.mjs",
   "defaultLoadSemantics": "All listed skills are first-class built-in Science skills by default; SKILL.md bodies still load through normal skill triggering/progressive disclosure.",
   "sources": [
@@ -48,7 +48,7 @@
       "repositoryLicense": "MIT",
       "sourceRoot": "resources/skills/vendor/academicforge/skills",
       "selection": "Biomedical Claude Science skills only: structure prediction, protein design, remote compute, model endpoints, single-cell foundation models, and scientific writing helpers. Overlapping skills already covered by existing canonical packs are excluded.",
-      "availableSkillFiles": 33,
+      "availableSkillFiles": 22,
       "includedSkillFiles": 22
     }
   ],
@@ -64,7 +64,7 @@
       "deepscientist": 20,
       "kdense": 149,
       "natureSkills": 15,
-      "academicforge": 33
+      "academicforge": 22
     },
     "quarantinedScripts": 51,
     "restrictedDefault": 47,
