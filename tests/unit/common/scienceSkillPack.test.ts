@@ -57,8 +57,11 @@ describe('OpenScience materialized Science skill pack', () => {
     expect(manifest.counts.total).toBe(SCIENCE_SKILL_PACK_COUNTS.total);
     expect(manifest.counts.byPack.deepscientist).toBe(SCIENCE_SKILL_PACK_COUNTS.deepscientist);
     expect(manifest.counts.byPack.kdense).toBe(SCIENCE_SKILL_PACK_COUNTS.kdense);
+    expect(manifest.counts.byPack.natureSkills).toBe(SCIENCE_SKILL_PACK_COUNTS.natureSkills);
+    expect(manifest.counts.byPack.academicforge).toBe(SCIENCE_SKILL_PACK_COUNTS.academicforge);
     expect(manifest.counts.byPack.autoEmpirical).toBeUndefined();
     expect(manifest.counts.byPackAvailable?.autoEmpirical).toBeUndefined();
+    expect(manifest.counts.byPackAvailable?.academicforge).toBe(SCIENCE_SKILL_PACK_COUNTS.academicforge);
     expect(manifest.counts.quarantinedScripts).toBe(SCIENCE_SKILL_PACK_COUNTS.quarantinedScripts);
     expect(manifest.counts.restrictedDefault).toBe(SCIENCE_SKILL_PACK_COUNTS.restrictedDefault);
     expect(manifest.counts.clinicalBoundary).toBe(SCIENCE_SKILL_PACK_COUNTS.clinicalBoundary);
@@ -153,6 +156,17 @@ describe('OpenScience materialized Science skill pack', () => {
     expect(SCIENCE_MATERIALIZED_SKILL_IDS).toContain('kdense-pyhealth');
     expect(SCIENCE_MATERIALIZED_SKILL_IDS).toContain('kdense-clinical-decision-support');
     expect(SCIENCE_MATERIALIZED_SKILL_IDS).toContain('nature-literature-pipeline');
+    expect(SCIENCE_MATERIALIZED_SKILL_IDS).toContain('cs-alphafold2');
+    expect(SCIENCE_MATERIALIZED_SKILL_IDS).toContain('cs-remote-compute-modal');
+    expect(SCIENCE_MATERIALIZED_SKILL_IDS).toContain('cs-scgpt');
+  });
+
+  it('keeps the AcademicForge vendor subset aligned with the generated manifest', () => {
+    const academicForgeSkills = manifest.skills.filter((skill) => skill.packId === 'academicforge');
+    expect(academicForgeSkills).toHaveLength(SCIENCE_SKILL_PACK_COUNTS.academicforge);
+    expect(academicForgeSkills.every((skill) => skill.id.startsWith('cs-'))).toBe(true);
+    expect(academicForgeSkills.some((skill) => skill.id === 'cs-remote-compute-ssh')).toBe(true);
+    expect(academicForgeSkills.some((skill) => skill.id === 'cs-paper-narrative')).toBe(true);
   });
 
   it('upgrades legacy catalog-only defaults to the materialized pack', () => {
