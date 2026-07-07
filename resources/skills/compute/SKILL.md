@@ -13,10 +13,10 @@ remote compute, SSH, Slurm/HPC, GPU runs, Modal, or managed model endpoints.
 
 - General compute discipline: `ds-science`, `ds-experiment`,
   `ds-analysis-campaign`.
-- Environment and endpoints: JimLiu `compute-env-setup`,
-  `managed-model-endpoints`, `using-model-endpoint`.
-- Remote compute: JimLiu `remote-compute-ssh`, `remote-compute-modal`;
-  K-Dense `kdense-modal`, `kdense-optimize-for-gpu`, `kdense-dask`,
+- Environment and endpoints: `cs-compute-env-setup`,
+  `cs-managed-model-endpoints`, `cs-using-model-endpoint`.
+- Remote compute: `cs-remote-compute-ssh`, `cs-remote-compute-modal`;
+  K-Dense `kdense-optimize-for-gpu`, `kdense-dask`,
   `kdense-nextflow`, `kdense-latchbio-integration`,
   `kdense-dnanexus-integration`.
 - Local scientific packages: use the relevant domain router first, then package

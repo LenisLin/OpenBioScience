@@ -41,7 +41,7 @@ K-Dense 也必须经过安全分层：其 `SECURITY.md` 对部分脚本型 skill
 
 - `database-lookup`
 - `citation-management`
-- `literature-review`
+- `kdense-literature-review`
 - `peer-review`
 - `scanpy`
 - `anndata`

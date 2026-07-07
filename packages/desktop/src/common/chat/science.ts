@@ -875,7 +875,7 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     `- Use ${SCIENCE_SINGLECELL_SKILL_NAME}: ${SCIENCE_SINGLECELL_SKILL_PATH}.`,
     `- Use ${SCIENCE_COMPUTE_SKILL_NAME}: ${SCIENCE_COMPUTE_SKILL_PATH}.`,
     `- Default Science skill pack manifest: ${SCIENCE_SKILL_PACK_MANIFEST_PATH}.`,
-    `- Materialized external leaf skills remain discoverable through routers: ${SCIENCE_SKILL_PACK_COUNTS.total} total; ${SCIENCE_SKILL_PACK_COUNTS.deepscientist} DeepScientist, ${SCIENCE_SKILL_PACK_COUNTS.kdense} K-Dense biomedical skills, and ${SCIENCE_SKILL_PACK_COUNTS.natureSkills} Nature Skills.`,
+    `- Materialized external leaf skills remain discoverable through routers: ${SCIENCE_SKILL_PACK_COUNTS.total} total; ${SCIENCE_SKILL_PACK_COUNTS.deepscientist} DeepScientist, ${SCIENCE_SKILL_PACK_COUNTS.kdense} K-Dense biomedical skills, ${SCIENCE_SKILL_PACK_COUNTS.natureSkills} Nature Skills, and ${SCIENCE_SKILL_PACK_COUNTS.academicforge} AcademicForge Claude Science skills.`,
     `- Safety policy summary: ${SCIENCE_SKILL_PACK_COUNTS.quarantinedScripts} script-bearing skills are quarantined by default; ${SCIENCE_SKILL_PACK_COUNTS.restrictedDefault} skills require explicit authorization for restricted contexts.`,
   ].join('\n');
 

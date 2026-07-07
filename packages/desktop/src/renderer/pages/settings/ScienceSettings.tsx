@@ -222,6 +222,11 @@ const ScienceSettings: React.FC = () => {
         value: SCIENCE_SKILL_PACK_COUNTS.natureSkills,
         detail: t('settings.science.vendorNatureSkillsDesc'),
       },
+      {
+        label: 'AcademicForge',
+        value: SCIENCE_SKILL_PACK_COUNTS.academicforge,
+        detail: t('settings.science.vendorAcademicForgeDesc'),
+      },
     ],
     [t]
   );
@@ -628,6 +633,18 @@ const ScienceSettings: React.FC = () => {
                 <Tag size='small'>{SCIENCE_SKILL_PACK_COUNTS.natureSkills} skills</Tag>
                 <Tag size='small' color='blue'>
                   Apache 2.0
+                </Tag>
+              </div>
+            </div>
+            <div className='rounded-8px bg-1 px-12px py-10px'>
+              <div className='text-13px font-650 text-t-primary'>HughYau/AcademicForge</div>
+              <div className='mt-4px text-12px leading-18px text-t-secondary'>
+                {t('settings.science.vendorAcademicForgeDesc')}
+              </div>
+              <div className='mt-8px flex flex-wrap gap-6px'>
+                <Tag size='small'>{SCIENCE_SKILL_PACK_COUNTS.academicforge} skills</Tag>
+                <Tag size='small' color='blue'>
+                  MIT
                 </Tag>
               </div>
             </div>

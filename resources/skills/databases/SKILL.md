@@ -23,7 +23,7 @@ outside this skill.
 
 ## Merge Map
 
-- General paper lookup: `ds-alphaxiv-paper-lookup`, `kdense-paper-lookup`,
+- General paper lookup: `kdense-paper-lookup`,
   `kdense-literature-review`, `kdense-citation-management`.
 - Broad database routing: `kdense-database-lookup`,
   `kdense-research-lookup`.

@@ -31,7 +31,7 @@ from the core `openscience-science` evidence/artifact contract.
 - Figure and display production:
   `ds-paper-plot`, `ds-figure-polish`, `ds-nature-figure`.
 - Support:
-  `ds-science`, `ds-optimize`, `ds-alphaxiv-paper-lookup`.
+  `ds-science`, `ds-optimize`, `kdense-paper-lookup`.
 
 ## Workflow SOP
 
