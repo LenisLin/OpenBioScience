@@ -28,9 +28,8 @@ Prefer one narrow route:
   conversion logs, and outputs as artifacts.
 - Slides/posters: `ds-nature-paper2ppt`, `kdense-scientific-slides`,
   `nature-paper2ppt`.
-- JimLiu science-skills equivalents, when materialized later:
-  `literature-review`, `pdf-explore`, `figure-style`, `figure-composer`,
-  `paper-narrative`, `indication-dossier`.
+- Claude Science helper routes: `cs-pdf-explore`, `cs-figure-style`,
+  `cs-figure-composer`, `cs-paper-narrative`, `cs-indication-dossier`.
 
 ## SOP
 

@@ -151,7 +151,8 @@
     "vendorDeepScientistDesc": "Used as the Science Mode operating discipline: real execution, result boundaries, package checks, and evidence graph rules.",
     "vendorKDenseDesc": "Used as a domain skill pool: databases, scientific software, lab workflows, and task templates are triggered on demand.",
     "vendorAutoEmpiricalDesc": "Used as the social-science and empirical-research pool: econometrics, causal inference, replication packages, citation checks, survey codebooks, qualitative analysis, and AER-style paper workflows.",
-    "vendorNatureSkillsDesc": "Used as the Nature-style delivery pool: paper reading, manuscript writing, figures, citations, data availability, reviewer response, PPT, and patent-oriented drafting with restricted execution where needed."
+    "vendorNatureSkillsDesc": "Used as the Nature-style delivery pool: paper reading, manuscript writing, figures, citations, data availability, reviewer response, PPT, and patent-oriented drafting with restricted execution where needed.",
+    "vendorAcademicForgeDesc": "Used as the Claude Science skill pool: structure prediction, protein design, remote compute, model endpoints, PDF exploration, and figure composition helpers adapted into OpenBioScience."
   },
   "betaTesting": {
     "title": "Beta Testing",

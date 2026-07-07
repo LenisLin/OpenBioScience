@@ -176,6 +176,7 @@ wiki/
 desdoc/
 .deeporganiser-lark-smoke/
 local-tests/
+demo/
 
 # Local kanban (协作工作簿，不入库)
 kanban/

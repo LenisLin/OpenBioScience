@@ -132,16 +132,16 @@ openscience-empirical
   `kdense-pdf`, `kdense-docx`, `kdense-pptx`, `kdense-markitdown`。
 - AERS：`aer-lit-review-*`, `aer-paper-*`, `aer-referee-report`,
   `aer-citation-fidelity`, `aer-reference-verify`, `aer-marp-*`。
-- JimLiu 未来映射：`literature-review`, `pdf-explore`,
-  `figure-style`, `figure-composer`, `paper-narrative`,
-  `indication-dossier`。
+- Claude Science 适配映射：`cs-pdf-explore`,
+  `cs-figure-style`, `cs-figure-composer`, `cs-paper-narrative`,
+  `cs-indication-dossier`。文献综述正式版本继续使用
+  `kdense-literature-review`。
 
 ### `openscience-databases`
 
 合并：
 
 - 当前：`research_evidence(action="search"|"read")`。
-- DeepScientist：`ds-alphaxiv-paper-lookup`。
 - K-Dense：`kdense-database-lookup`, `kdense-paper-lookup`,
   `kdense-research-lookup`, `kdense-cellxgene-census`, `kdense-gget`,
   `kdense-bioservices`, `kdense-depmap`, `kdense-primekg`。
@@ -164,9 +164,10 @@ openscience-empirical
   `kdense-deepchem`, `kdense-medchem`, `kdense-molfeat`,
   `kdense-diffdock`, `kdense-esm`, `kdense-molecular-dynamics`,
   `kdense-torchdrug`, `kdense-glycoengineering`。
-- JimLiu 未来映射：`alphafold2`, `boltz`, `chai1`, `openfold3`,
-  `esmfold2`, `fair-esm2`, `diffdock`, `proteinmpnn`,
-  `ligandmpnn`, `solublempnn`。
+- Claude Science 适配映射：`cs-alphafold2`, `cs-boltz`,
+  `cs-chai1`, `cs-openfold3`, `cs-esmfold2`, `cs-fair-esm2`,
+  `cs-proteinmpnn`, `cs-ligandmpnn`, `cs-solublempnn`。Docking
+  正式版本继续使用 `kdense-diffdock`。
 
 Artifact 要求：
 
@@ -184,7 +185,8 @@ Artifact 要求：
   `kdense-scvelo`, `kdense-cellxgene-census`, `kdense-gget`,
   `kdense-pysam`, `kdense-gtars`, `kdense-tiledbvcf`,
   `kdense-polars-bio`, `kdense-pydeseq2`。
-- JimLiu 未来映射：`scvi-tools`, `scgpt`。
+- Claude Science 适配映射：`cs-scgpt`。scVI 正式版本继续使用
+  `kdense-scvi-tools`。
 - DeepScientist figure/writing skills 用于最终图表和报告。
 
 Artifact 要求：
@@ -201,9 +203,9 @@ Artifact 要求：
 - K-Dense：`kdense-modal`, `kdense-optimize-for-gpu`, `kdense-dask`,
   `kdense-nextflow`, `kdense-latchbio-integration`,
   `kdense-dnanexus-integration`。
-- JimLiu 未来映射：`compute-env-setup`, `remote-compute-ssh`,
-  `remote-compute-modal`, `managed-model-endpoints`,
-  `using-model-endpoint`。
+- Claude Science 适配映射：`cs-compute-env-setup`,
+  `cs-remote-compute-ssh`, `cs-remote-compute-modal`,
+  `cs-managed-model-endpoints`, `cs-using-model-endpoint`。
 
 边界：
 

@@ -14,13 +14,15 @@ and biomolecular design tasks.
 - Structure retrieval/validation: `kdense-database-lookup`,
   `kdense-biopython`, `kdense-bioservices`.
 - Protein language models and structure prediction: `kdense-esm`,
-  `kdense-diffdock`, `kdense-molecular-dynamics`; JimLiu equivalents
-  `alphafold2`, `boltz`, `chai1`, `openfold3`, `esmfold2`, `fair-esm2`.
-- Protein/ligand design: JimLiu `proteinmpnn`, `ligandmpnn`,
-  `solublempnn`; K-Dense `kdense-glycoengineering`, `kdense-torchdrug`.
+  `kdense-diffdock`, `kdense-molecular-dynamics`, `cs-alphafold2`,
+  `cs-boltz`, `cs-chai1`, `cs-openfold3`, `cs-esmfold2`,
+  `cs-fair-esm2`.
+- Protein/ligand design: `cs-proteinmpnn`, `cs-ligandmpnn`,
+  `cs-solublempnn`; K-Dense `kdense-glycoengineering`,
+  `kdense-torchdrug`.
 - Chemistry and molecules: `kdense-rdkit`, `kdense-datamol`,
   `kdense-deepchem`, `kdense-medchem`, `kdense-molfeat`,
-  JimLiu `diffdock`.
+  `kdense-diffdock`.
 - Viewer/editing: artifact viewer metadata for 3Dmol/Mol\*, Ketcher, and
   molecule/structure Preview pages.
 

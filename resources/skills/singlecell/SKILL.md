@@ -12,11 +12,11 @@ trajectory/velocity, and Vitessce-style exploration.
 ## Merge Map
 
 - AnnData/Scanpy/scVI/scGPT: `kdense-anndata`, `kdense-scanpy`,
-  `kdense-scvi-tools`, `kdense-scvelo`, JimLiu `scvi-tools`, `scgpt`.
+  `kdense-scvi-tools`, `kdense-scvelo`, `cs-scgpt`.
 - Public datasets/registries: `kdense-cellxgene-census`,
   `kdense-database-lookup`, `kdense-gget`, `kdense-bioservices`.
 - Genomics support: `kdense-pysam`, `kdense-gtars`, `kdense-tiledbvcf`,
-  `kdense-polars-bio`, `kdense-pydeseq2`.
+  `kdense-polars-bio`, `kdense-pydeseq2`, `cs-borzoi`, `cs-evo2`.
 - Visualization and reports: `ds-nature-figure`, `ds-figure-polish`,
   `kdense-scientific-visualization`, Vitessce viewer metadata.
 

@@ -222,6 +222,11 @@ const ScienceSettings: React.FC = () => {
         value: SCIENCE_SKILL_PACK_COUNTS.natureSkills,
         detail: t('settings.science.vendorNatureSkillsDesc'),
       },
+      {
+        label: 'AcademicForge',
+        value: SCIENCE_SKILL_PACK_COUNTS.academicforge,
+        detail: t('settings.science.vendorAcademicForgeDesc'),
+      },
     ],
     [t]
   );

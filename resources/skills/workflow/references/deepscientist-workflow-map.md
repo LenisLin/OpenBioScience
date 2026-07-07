@@ -38,7 +38,8 @@ Figure and display production:
 
 Support:
 `ds-science` for scientific package/runtime discipline and
-`ds-alphaxiv-paper-lookup` for AlphaXiv paper summaries.
+`kdense-paper-lookup` for paper lookup support when a workflow stage needs
+literature context.
 
 ## Minimal Evidence Outputs
 

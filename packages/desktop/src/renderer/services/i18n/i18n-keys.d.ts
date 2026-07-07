@@ -2700,6 +2700,7 @@ export type I18nKey =
   | 'settings.science.testConnection'
   | 'settings.science.timeoutMs'
   | 'settings.science.title'
+  | 'settings.science.vendorAcademicForgeDesc'
   | 'settings.science.vendorAutoEmpiricalDesc'
   | 'settings.science.vendorDeepScientistDesc'
   | 'settings.science.vendorKDenseDesc'
