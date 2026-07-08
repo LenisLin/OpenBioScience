@@ -67,6 +67,11 @@ async function main() {
       entryPoints: [path.join(ROOT, 'packages/desktop/src/process/resources/builtinMcp/userInputServer.ts')],
       outfile: path.join(ROOT, 'out/main/builtin-mcp-user-input.js'),
     }),
+    esbuild.build({
+      ...SHARED_OPTIONS,
+      entryPoints: [path.join(ROOT, 'packages/desktop/src/process/resources/builtinMcp/bioServer.ts')],
+      outfile: path.join(ROOT, 'out/main/builtin-mcp-bio.js'),
+    }),
   ]);
 }
 

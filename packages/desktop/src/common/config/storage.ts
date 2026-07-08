@@ -726,6 +726,18 @@ export const BUILTIN_LAB_SKILL_LEGACY_NAMES = ['deeporganiser-lab-skill'] as con
 export const BUILTIN_USER_INPUT_ID = 'builtin-user-input';
 export const BUILTIN_USER_INPUT_NAME = 'openscience-user-input';
 export const BUILTIN_USER_INPUT_LEGACY_NAMES = ['deeporganiser-user-input'] as const;
+export const BUILTIN_BIO_RUNTIME_ID = 'builtin-bio-runtime';
+export const BUILTIN_BIO_RUNTIME_NAME = 'openscience-bio-runtime';
+export const BUILTIN_BIO_RUNTIME_LEGACY_NAMES = ['deeporganiser-bio-runtime'] as const;
+export const BUILTIN_BIO_SOURCE_ID = 'builtin-bio-source';
+export const BUILTIN_BIO_SOURCE_NAME = 'openscience-bio-source';
+export const BUILTIN_BIO_SOURCE_LEGACY_NAMES = ['deeporganiser-bio-source'] as const;
+export const BUILTIN_BIO_KNOWLEDGE_ID = 'builtin-bio-knowledge';
+export const BUILTIN_BIO_KNOWLEDGE_NAME = 'openscience-bio-knowledge';
+export const BUILTIN_BIO_KNOWLEDGE_LEGACY_NAMES = ['deeporganiser-bio-knowledge'] as const;
+export const BUILTIN_BIO_PLOT_ID = 'builtin-bio-plot';
+export const BUILTIN_BIO_PLOT_NAME = 'openscience-bio-plot';
+export const BUILTIN_BIO_PLOT_LEGACY_NAMES = ['deeporganiser-bio-plot'] as const;
 
 export interface IMcpTool {
   name: string;

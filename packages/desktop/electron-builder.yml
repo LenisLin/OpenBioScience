@@ -223,6 +223,7 @@ asarUnpack:
   - 'out/main/builtin-mcp-science-artifact.js'
   - 'out/main/builtin-mcp-lab-skill.js'
   - 'out/main/builtin-mcp-user-input.js'
+  - 'out/main/builtin-mcp-bio.js'
   - 'out/main/team-mcp-stdio.js'
   - 'out/main/team-guide-mcp-stdio.js'
 

@@ -34,6 +34,14 @@ import {
 import {
   BUILTIN_IMAGE_GEN_NAME,
   BUILTIN_IMAGE_GEN_LEGACY_NAMES,
+  BUILTIN_BIO_KNOWLEDGE_NAME,
+  BUILTIN_BIO_KNOWLEDGE_LEGACY_NAMES,
+  BUILTIN_BIO_PLOT_NAME,
+  BUILTIN_BIO_PLOT_LEGACY_NAMES,
+  BUILTIN_BIO_RUNTIME_NAME,
+  BUILTIN_BIO_RUNTIME_LEGACY_NAMES,
+  BUILTIN_BIO_SOURCE_NAME,
+  BUILTIN_BIO_SOURCE_LEGACY_NAMES,
   BUILTIN_LAB_SKILL_NAME,
   BUILTIN_LAB_SKILL_LEGACY_NAMES,
   BUILTIN_LARK_PROJECT_AGENT_NAME,
@@ -61,7 +69,36 @@ type ConfigFile = typeof ProcessConfigType;
 type MigrationStepResult = boolean;
 type McpImportServer = Partial<IMcpServer> & Pick<IMcpServer, 'name' | 'transport'>;
 type BackendClientPreferences = Record<string, unknown>;
+type BioMcpProfile = 'runtime' | 'source' | 'knowledge' | 'plot';
 const BUILTIN_CHROME_DEVTOOLS_NAME = 'chrome-devtools';
+
+const BIO_MCP_SERVERS: Array<{
+  profile: BioMcpProfile;
+  name: string;
+  description: string;
+}> = [
+  {
+    profile: 'runtime',
+    name: BUILTIN_BIO_RUNTIME_NAME,
+    description:
+      'Built-in OpenBioScience scRNA-seq runtime control plane for environment, workflow, and output contracts.',
+  },
+  {
+    profile: 'source',
+    name: BUILTIN_BIO_SOURCE_NAME,
+    description: 'Built-in OpenBioScience data-source control plane for accession triage and data manifests.',
+  },
+  {
+    profile: 'knowledge',
+    name: BUILTIN_BIO_KNOWLEDGE_NAME,
+    description: 'Built-in OpenBioScience marker, atlas, gene-set, and ligand-receptor evidence contracts.',
+  },
+  {
+    profile: 'plot',
+    name: BUILTIN_BIO_PLOT_NAME,
+    description: 'Built-in OpenBioScience scRNA-seq plot template and plot artifact manifest contracts.',
+  },
+];
 
 const BUILTIN_SERVER_LEGACY_NAMES = new Map<string, readonly string[]>([
   [BUILTIN_IMAGE_GEN_NAME, BUILTIN_IMAGE_GEN_LEGACY_NAMES],
@@ -71,6 +108,10 @@ const BUILTIN_SERVER_LEGACY_NAMES = new Map<string, readonly string[]>([
   [BUILTIN_SCIENCE_ARTIFACT_NAME, BUILTIN_SCIENCE_ARTIFACT_LEGACY_NAMES],
   [BUILTIN_LAB_SKILL_NAME, BUILTIN_LAB_SKILL_LEGACY_NAMES],
   [BUILTIN_USER_INPUT_NAME, BUILTIN_USER_INPUT_LEGACY_NAMES],
+  [BUILTIN_BIO_RUNTIME_NAME, BUILTIN_BIO_RUNTIME_LEGACY_NAMES],
+  [BUILTIN_BIO_SOURCE_NAME, BUILTIN_BIO_SOURCE_LEGACY_NAMES],
+  [BUILTIN_BIO_KNOWLEDGE_NAME, BUILTIN_BIO_KNOWLEDGE_LEGACY_NAMES],
+  [BUILTIN_BIO_PLOT_NAME, BUILTIN_BIO_PLOT_LEGACY_NAMES],
 ]);
 
 function findExistingBuiltinServer(existingByName: Map<string, IMcpServer>, name: string): IMcpServer | undefined {
@@ -83,7 +124,7 @@ function findExistingBuiltinServer(existingByName: Map<string, IMcpServer>, name
 }
 
 function hasExistingBuiltinServer(existingByName: Map<string, IMcpServer>, name: string): boolean {
-  return !!existingByName.get(name);
+  return !!findExistingBuiltinServer(existingByName, name);
 }
 
 const LEGACY_BACKEND_CLIENT_PREFERENCE_KEYS = [
@@ -501,6 +542,32 @@ function buildBuiltinUserInputServer(env: Record<string, string>): McpImportServ
   };
 }
 
+function buildBuiltinBioServer(definition: (typeof BIO_MCP_SERVERS)[number]): McpImportServer {
+  const scriptPath = getBuiltinMcpScriptPath('builtin-mcp-bio');
+  const env = {
+    OPENBIOSCIENCE_BIO_MCP_PROFILE: definition.profile,
+  };
+  const serverConfig = {
+    command: 'node',
+    args: [scriptPath],
+    env,
+  };
+
+  return {
+    name: definition.name,
+    description: definition.description,
+    enabled: false,
+    builtin: true,
+    transport: {
+      type: 'stdio',
+      command: 'node',
+      args: [scriptPath],
+      env,
+    },
+    original_json: JSON.stringify({ mcpServers: { [definition.name]: serverConfig } }, null, 2),
+  };
+}
+
 function areStringArraysEqual(left?: string[], right?: string[]): boolean {
   const leftValue = left || [];
   const rightValue = right || [];
@@ -585,7 +652,8 @@ function sanitizeResearchEvidenceEnvForCodex(env?: Record<string, string>): Reco
 function buildCodexOpenScienceMcpServers(
   medicalEvidenceServer: McpImportServer,
   researchEvidenceServer: McpImportServer,
-  scienceArtifactServer: McpImportServer
+  scienceArtifactServer: McpImportServer,
+  bioServers: McpImportServer[] = []
 ): ManagedCodexMcpServer[] {
   const medicalEnv =
     medicalEvidenceServer.transport?.type === 'stdio'
@@ -600,6 +668,7 @@ function buildCodexOpenScienceMcpServers(
     toManagedCodexMcpServer(medicalEvidenceServer, medicalEnv),
     toManagedCodexMcpServer(researchEvidenceServer, researchEnv),
     toManagedCodexMcpServer(scienceArtifactServer),
+    ...bioServers.map((server) => toManagedCodexMcpServer(server)),
   ].filter((server): server is ManagedCodexMcpServer => Boolean(server));
 }
 
@@ -749,6 +818,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   const scienceArtifactServer = buildBuiltinScienceArtifactServer(scienceArtifactEnvResolution);
   const labSkillServer = buildBuiltinLabSkillServer();
   const larkProjectAgentServer = buildBuiltinLarkProjectAgentServer();
+  const bioServers = BIO_MCP_SERVERS.map(buildBuiltinBioServer);
   await startUserInputGateway();
   const userInputServer = buildBuiltinUserInputServer(getUserInputGatewayEnv());
   const defaultServers = [...buildDefaultMcpServers(), larkProjectAgentServer];
@@ -760,6 +830,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
     scienceArtifactServer,
     labSkillServer,
     userInputServer,
+    ...bioServers,
   ].filter((server) => !hasExistingBuiltinServer(existingByName, server.name));
   let imageServerUpdated = false;
   let medicalEvidenceServerUpdated = false;
@@ -767,6 +838,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   let scienceArtifactServerUpdated = false;
   let labSkillServerUpdated = false;
   let userInputServerUpdated = false;
+  let bioServerUpdated = false;
 
   if (missing.length > 0) {
     await mcpService.batchImportServers.invoke({ servers: missing });
@@ -939,6 +1011,31 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
       },
     });
     labSkillServerUpdated = true;
+  }
+
+  for (const bioServer of bioServers) {
+    const existingBioServer = findExistingBuiltinServer(existingByName, bioServer.name);
+    if (
+      existingBioServer &&
+      (existingBioServer.builtin !== true ||
+        existingBioServer.name !== bioServer.name ||
+        !existingBioServer.original_json ||
+        existingBioServer.original_json.trim() === '' ||
+        existingBioServer.original_json.trim() === '{}' ||
+        existingBioServer.original_json !== bioServer.original_json ||
+        !isSameStdioTransport(existingBioServer.transport, bioServer.transport))
+    ) {
+      await mcpService.updateServer.invoke({
+        id: existingBioServer.id,
+        data: {
+          name: bioServer.name,
+          builtin: true,
+          transport: bioServer.transport,
+          original_json: bioServer.original_json,
+        },
+      });
+      bioServerUpdated = true;
+    }
   }
 
   const refreshedServers = await mcpService.listServers.invoke();
@@ -1150,7 +1247,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
 
   try {
     const codexConfigChanged = await syncCodexOpenScienceMcpConfig(
-      buildCodexOpenScienceMcpServers(medicalEvidenceServer, researchEvidenceServer, scienceArtifactServer)
+      buildCodexOpenScienceMcpServers(medicalEvidenceServer, researchEvidenceServer, scienceArtifactServer, bioServers)
     );
     console.info(
       '[Migration] OpenScience MCP entries in Codex config %s',
@@ -1166,7 +1263,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   }
 
   console.info(
-    '[Migration] MCP bootstrap completed, imported %d missing defaults, updated image server: %s, updated medical evidence server: %s, updated research evidence server: %s, updated science artifact server: %s, updated lab skill server: %s, updated user input server: %s, image config source: %s, medical evidence config source: %s, research evidence config source: %s, science artifact config source: %s, image enabled: %s',
+    '[Migration] MCP bootstrap completed, imported %d missing defaults, updated image server: %s, updated medical evidence server: %s, updated research evidence server: %s, updated science artifact server: %s, updated lab skill server: %s, updated user input server: %s, updated bio servers: %s, image config source: %s, medical evidence config source: %s, research evidence config source: %s, science artifact config source: %s, image enabled: %s',
     missing.length,
     imageServerUpdated ? 'yes' : 'no',
     medicalEvidenceServerUpdated ? 'yes' : 'no',
@@ -1174,6 +1271,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
     scienceArtifactServerUpdated ? 'yes' : 'no',
     labSkillServerUpdated ? 'yes' : 'no',
     userInputServerUpdated ? 'yes' : 'no',
+    bioServerUpdated ? 'yes' : 'no',
     imageConfigSource,
     medicalEvidenceConfigSource,
     researchEvidenceConfigSource,

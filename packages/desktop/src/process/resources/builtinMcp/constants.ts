@@ -28,6 +28,14 @@ export const BUILTIN_LAB_SKILL_ID = 'builtin-lab-skill';
 export const BUILTIN_LAB_SKILL_NAME = 'openscience-lab-skill';
 export const BUILTIN_USER_INPUT_ID = 'builtin-user-input';
 export const BUILTIN_USER_INPUT_NAME = 'openscience-user-input';
+export const BUILTIN_BIO_RUNTIME_ID = 'builtin-bio-runtime';
+export const BUILTIN_BIO_RUNTIME_NAME = 'openscience-bio-runtime';
+export const BUILTIN_BIO_SOURCE_ID = 'builtin-bio-source';
+export const BUILTIN_BIO_SOURCE_NAME = 'openscience-bio-source';
+export const BUILTIN_BIO_KNOWLEDGE_ID = 'builtin-bio-knowledge';
+export const BUILTIN_BIO_KNOWLEDGE_NAME = 'openscience-bio-knowledge';
+export const BUILTIN_BIO_PLOT_ID = 'builtin-bio-plot';
+export const BUILTIN_BIO_PLOT_NAME = 'openscience-bio-plot';
 
 export function isBuiltinImageGenName(name?: string | null): boolean {
   if (!name) return false;

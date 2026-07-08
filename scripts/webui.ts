@@ -368,6 +368,39 @@ function buildStandaloneBuiltinMcpServers(backendPort: number): WebuiMcpServerPa
       enabled: true,
     }),
     buildStdioMcpServer({
+      name: 'openscience-bio-runtime',
+      description:
+        'Built-in OpenBioScience scRNA-seq runtime control plane for environment, workflow, and output contracts.',
+      scriptName: 'builtin-mcp-bio',
+      env: {
+        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime',
+      },
+    }),
+    buildStdioMcpServer({
+      name: 'openscience-bio-source',
+      description: 'Built-in OpenBioScience data-source control plane for accession triage and data manifests.',
+      scriptName: 'builtin-mcp-bio',
+      env: {
+        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source',
+      },
+    }),
+    buildStdioMcpServer({
+      name: 'openscience-bio-knowledge',
+      description: 'Built-in OpenBioScience marker, atlas, gene-set, and ligand-receptor evidence contracts.',
+      scriptName: 'builtin-mcp-bio',
+      env: {
+        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'knowledge',
+      },
+    }),
+    buildStdioMcpServer({
+      name: 'openscience-bio-plot',
+      description: 'Built-in OpenBioScience scRNA-seq plot template and plot artifact manifest contracts.',
+      scriptName: 'builtin-mcp-bio',
+      env: {
+        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'plot',
+      },
+    }),
+    buildStdioMcpServer({
       name: 'openscience-image-generation',
       description: 'Built-in image generation tool powered by AI models. Configure the model in Settings > Tools.',
       scriptName: 'builtin-mcp-image-gen',
@@ -395,7 +428,12 @@ async function fetchBackendJson<T>(backendPort: number, pathName: string, init?:
   if (!response.ok) {
     throw new Error(`Backend ${init?.method ?? 'GET'} ${pathName} failed (${response.status}): ${text}`);
   }
-  if (payload && typeof payload === 'object' && 'success' in payload && (payload as BackendEnvelope<T>).success === false) {
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    'success' in payload &&
+    (payload as BackendEnvelope<T>).success === false
+  ) {
     throw new Error((payload as BackendEnvelope<T>).error || `Backend ${pathName} returned success=false`);
   }
   if (payload && typeof payload === 'object' && 'data' in payload) {

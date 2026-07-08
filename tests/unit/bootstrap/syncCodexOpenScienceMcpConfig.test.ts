@@ -74,6 +74,34 @@ describe('syncCodexOpenScienceMcpConfig', () => {
     expect(block).toContain('[mcp_servers.openscience-research-evidence]');
   });
 
+  it('writes OpenBioScience bio MCP profile entries without secrets', () => {
+    const block = buildCodexOpenScienceMcpBlock([
+      {
+        name: 'openscience-bio-runtime',
+        command: 'node',
+        args: ['/managed/builtin-mcp-bio.js'],
+        env: {
+          OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime',
+        },
+      },
+      {
+        name: 'openscience-bio-source',
+        command: 'node',
+        args: ['/managed/builtin-mcp-bio.js'],
+        env: {
+          OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source',
+        },
+      },
+    ]);
+
+    expect(block).toContain('[mcp_servers.openscience-bio-runtime]');
+    expect(block).toContain('[mcp_servers.openscience-bio-source]');
+    expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "runtime"');
+    expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "source"');
+    expect(block).not.toContain('API_KEY');
+    expect(block).not.toContain('TOKEN');
+  });
+
   it('replaces an old managed block and keeps secrets out of the written text', async () => {
     const configPath = path.join(tempDir, 'config.toml');
     await fs.writeFile(
