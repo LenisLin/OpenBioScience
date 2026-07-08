@@ -11,6 +11,19 @@ trajectory/velocity, and Vitessce-style exploration.
 
 ## Merge Map
 
+- Handwritten OpenBioScience scRNA-seq runbooks are not owned by generated
+  manifests or `scienceSkills.generated.ts`; route to them explicitly here.
+- Reproduction and orchestration: `bio-scrna-reproduction`.
+- Runtime choice and reproducibility routing: `bio-environment-routing`.
+- Dataset/accession/source-file resolution: `bio-data-resolution`.
+- Input import and raw/processed matrix semantics: `bio-singlecell-import`.
+- QC and preprocessing: `bio-qc-preprocess`.
+- Batch correction, dimensionality reduction, and clustering:
+  `bio-batch-dim-cluster`.
+- Marker ranking and threshold tuning: `bio-marker-optimization`.
+- Cell type annotation and confidence grading: `bio-cell-annotation`.
+- Data-backed scRNA-seq figures: `bio-scrna-plotting`.
+- Claim-boundary review and final interpretation: `bio-result-interpretation`.
 - AnnData/Scanpy/scVI/scGPT: `kdense-anndata`, `kdense-scanpy`,
   `kdense-scvi-tools`, `kdense-scvelo`, `cs-scgpt`.
 - Public datasets/registries: `kdense-cellxgene-census`,
@@ -22,17 +35,30 @@ trajectory/velocity, and Vitessce-style exploration.
 
 ## SOP
 
-1. Identify raw inputs, processed matrices, metadata, batch/sample fields,
-   annotations, and expected deliverables.
-2. Run analysis through real Python/R/project code; do not summarize imagined
-   Scanpy/scVI outputs.
-3. Register evidence for input dataset, preprocessing, QC, model commands,
-   logs, parameters, package versions, and generated tables/figures.
-4. For H5AD or spatial workspaces, create dataset/run-bundle artifacts.
-5. Use Vitessce only after preparing compatible config/data. Record conversion
-   commands, validation, config paths, and warnings.
-6. Snapshot scripts, notebooks, logs, figures, marker tables, model config, and
-   viewer config.
+1. If the user asks for paper/demo reproduction, start with
+   `bio-scrna-reproduction`; otherwise route to the narrowest matching
+   `bio-*` runbook.
+2. Resolve accessions, repository files, local pointers, metadata availability,
+   and raw-versus-processed status with `bio-data-resolution`.
+3. Select or probe official execution environments with
+   `bio-environment-routing`; refer to runtimes by `environmentRef`, not host
+   paths.
+4. Import local objects and classify matrix semantics with
+   `bio-singlecell-import`.
+5. Run analysis only through real Python/R/project code via MCP/runner; skills
+   are runbooks, not executors. Do not summarize imagined Scanpy/Seurat outputs.
+6. Follow the step skills in order when applicable: `bio-qc-preprocess` ->
+   `bio-batch-dim-cluster` -> `bio-marker-optimization` ->
+   `bio-cell-annotation` -> `bio-scrna-plotting` ->
+   `bio-result-interpretation`.
+7. Register evidence for input dataset, preprocessing, QC, model commands,
+   logs, parameters, package versions, generated tables/figures, warnings, and
+   claim boundaries through `science_artifact`.
+8. For H5AD, spatial workspaces, or viewer outputs, create dataset/run-bundle
+   artifacts before visualization. Use Vitessce only after preparing compatible
+   config/data and recording validation, config paths, and warnings.
+9. Snapshot scripts, notebooks, logs, figures, marker tables, annotation tables,
+   model config, viewer config, and interpretation reports.
 
 ## Boundaries
 
