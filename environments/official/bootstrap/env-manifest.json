@@ -1,0 +1,50 @@
+{
+  "storage_root": "/mnt/NAS_21T/ProjectData/OpenBioScience",
+  "official_root": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official",
+  "cache": {
+    "conda_pkgs_dirs": "/mnt/NAS_21T/ProjectData/OpenBioScience/cache/conda-pkgs",
+    "mamba_root_prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/cache/mamba-root"
+  },
+  "environments": [
+    {
+      "name": "sc-py-singlecell",
+      "yaml": "environments/official/sc-py-singlecell.yml",
+      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-py-singlecell"
+    },
+    {
+      "name": "sc-r-singlecell",
+      "yaml": "environments/official/sc-r-singlecell.yml",
+      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-singlecell"
+    },
+    {
+      "name": "sc-r-plot",
+      "yaml": "environments/official/sc-r-plot.yml",
+      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-plot"
+    },
+    {
+      "name": "sc-r-clinical",
+      "yaml": "environments/official/sc-r-clinical.yml",
+      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-clinical"
+    },
+    {
+      "name": "sc-cci-r",
+      "yaml": "environments/official/sc-cci-r.yml",
+      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-cci-r"
+    },
+    {
+      "name": "sc-r-trajectory",
+      "yaml": "environments/official/sc-r-trajectory.yml",
+      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-trajectory"
+    },
+    {
+      "name": "sc-r-tumor-cnv",
+      "yaml": "environments/official/sc-r-tumor-cnv.yml",
+      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-tumor-cnv"
+    },
+    {
+      "name": "sc-network-grn-r",
+      "yaml": "environments/official/sc-network-grn-r.yml",
+      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-network-grn-r"
+    }
+  ]
+}

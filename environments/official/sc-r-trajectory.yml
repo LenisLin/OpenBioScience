@@ -1,0 +1,30 @@
+name: sc-r-trajectory
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # Trajectory and pseudotime environment for R-based lineage inference and
+  # downstream trend modeling.
+  - r-base=4.5.*
+
+  # Core containers
+  - bioconductor-singlecellexperiment
+  - bioconductor-summarizedexperiment
+  - bioconductor-scater
+  - bioconductor-scran
+
+  # Trajectory stack
+  - bioconductor-slingshot
+  - bioconductor-tradeseq
+  - r-mgcv
+  - r-igraph
+
+  # Light interoperability
+  - r-seurat=5.*
+  - r-seuratobject=5.*
+  - r-ggplot2
+
+  # Notes:
+  # - Monocle3 is not currently available as a conda-resolvable package on
+  #   conda-forge or bioconda under the package names checked (`r-monocle3`
+  #   and `bioconductor-monocle3` both 404 on Anaconda.org as of 2026-07-08).

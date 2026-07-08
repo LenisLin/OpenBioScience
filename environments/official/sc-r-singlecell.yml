@@ -1,0 +1,39 @@
+name: sc-r-singlecell
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # R base for Seurat/SingleCellExperiment object workflows, QC,
+  # preprocessing, annotation, and R/Python handoff through zellkonverter.
+  # This base tracks the conda v5 Seurat + SeuratObject pair.
+  - r-base=4.5.*
+  - r-seurat=5.*
+  - r-seuratobject=5.*
+  - r-sctransform
+  - r-future
+  - r-future.apply
+  - r-data.table
+  - r-dplyr
+  - r-tidyr
+  - r-tibble
+  - r-readr
+  - r-stringr
+  - r-ggplot2
+  - r-patchwork
+  - bioconductor-singlecellexperiment
+  - bioconductor-summarizedexperiment
+  - bioconductor-scater
+  - bioconductor-scran
+  - bioconductor-scuttle
+  - bioconductor-dropletutils
+  - bioconductor-zellkonverter
+  - bioconductor-singler
+  - bioconductor-celldex
+  - bioconductor-glmgampoi
+  - bioconductor-biomart
+  - bioconductor-annotationhub
+  - bioconductor-org.hs.eg.db
+  - bioconductor-org.mm.eg.db
+  - r-yaml
+  - r-jsonlite
+  - r-optparse

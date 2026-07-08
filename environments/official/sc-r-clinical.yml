@@ -1,0 +1,31 @@
+name: sc-r-clinical
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # Clinical downstream environment for cohort, survival, response, and
+  # biomarker analysis on outputs produced by the upstream single-cell envs.
+  - r-base=4.5.*
+
+  # Cohort / survival modeling
+  - r-survival
+  - r-survminer
+  - r-rms
+  - r-broom
+  - r-forestplot
+  - r-tableone
+  - r-matchit
+  - r-gtsummary
+
+  # Tidy cohort handling
+  - r-data.table
+  - r-dplyr
+  - r-tidyr
+  - r-tibble
+  - r-readr
+  - r-ggplot2
+
+  # Cancer and clinical data access
+  - bioconductor-genomicdatacommons
+  - bioconductor-tcgabiolinks
+  - bioconductor-summarizedexperiment

@@ -1,0 +1,33 @@
+name: sc-network-grn-r
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # R-first GRN and activity-inference environment. This environment provides
+  # the conda-resolvable base for GENIE3, AUCell, RcisTarget, and decoupleR,
+  # and the bootstrap runtime for SCENIC.
+  - r-base=4.5.*
+
+  # Core object compatibility
+  - r-seurat=5.*
+  - r-seuratobject=5.*
+  - bioconductor-singlecellexperiment
+  - bioconductor-summarizedexperiment
+
+  # R-first GRN and activity inference stack
+  - bioconductor-genie3
+  - bioconductor-aucell
+  - bioconductor-rcistarget
+  - bioconductor-decoupler
+
+  # Utility
+  - r-data.table
+  - r-dplyr
+  - r-ggplot2
+  - r-remotes
+  - r-devtools
+
+  # Notes:
+  # - SCENIC installs through its official GitHub repository.
+  # - dorothea and progeny install through their ecosystem package sources
+  #   during the bootstrap step when the workflow needs them.

@@ -1,0 +1,39 @@
+name: sc-r-plot
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # Dedicated R figure rendering environment. This stack owns plot assembly,
+  # annotation, color systems, and export devices for sibling analysis envs.
+  - r-base=4.5.*
+  - r-ggplot2
+  - r-ggpubr
+  - r-patchwork
+  - r-cowplot
+  - r-gridextra
+  - r-ggrepel
+  - r-ggsignif
+  - r-rstatix
+  - r-gghalves
+  - r-ggbeeswarm
+  - r-ggdist
+  - r-ggridges
+  - r-ggalluvial
+  - r-ggforce
+  - r-ggtext
+  - r-aplot
+  - r-survminer
+  - r-forestplot
+  - bioconductor-complexheatmap
+  - r-circlize
+  - r-pheatmap
+  - bioconductor-enhancedvolcano
+  - bioconductor-dittoseq
+  - r-ggsci
+  - r-rcolorbrewer
+  - r-viridis
+  - r-colorspace
+  - r-scales
+  - r-svglite
+  - r-ragg
+  - r-cairo

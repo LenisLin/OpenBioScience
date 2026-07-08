@@ -1,0 +1,35 @@
+name: sc-cci-r
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # R-first communication-analysis environment. This environment provides the
+  # conda-resolvable runtime for Seurat/SCE interoperability and the helper
+  # stack used by CellChat- and NicheNet-family workflows.
+  - r-base=4.5.*
+
+  # Core object compatibility
+  - r-seurat=5.*
+  - r-seuratobject=5.*
+  - bioconductor-singlecellexperiment
+  - bioconductor-summarizedexperiment
+
+  # Communication-analysis runtime
+  - r-future
+  - r-future.apply
+  - r-data.table
+  - r-dplyr
+  - r-igraph
+  - r-ggplot2
+  - r-patchwork
+  - bioconductor-complexheatmap
+  - r-circlize
+
+  # GitHub/bootstrap helpers
+  - r-remotes
+  - r-devtools
+
+  # Notes:
+  # - CellChat installs through its official GitHub repository.
+  # - SpatialCellChat installs through its official GitHub repository.
+  # - nichenetr installs through its official GitHub repository.

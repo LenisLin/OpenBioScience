@@ -91,6 +91,29 @@ Environment Resolver 的最小行为：
 5. 如果用户有匹配的 user env，可作为候选或覆盖项返回。
 6. 对 heavy step 允许 workflow 指定 step-level `environmentRef`。
 
+## Current Bootstrap Manifest
+
+当前仓库已经新增一个操作层 manifest：
+
+```text
+environments/official/bootstrap/env-manifest.json
+```
+
+它记录当前阶段已经安装的官方 Conda 环境：
+
+| Environment | YAML | Prefix |
+| --- | --- | --- |
+| `sc-py-singlecell` | `environments/official/sc-py-singlecell.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-py-singlecell` |
+| `sc-r-singlecell` | `environments/official/sc-r-singlecell.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-singlecell` |
+| `sc-r-plot` | `environments/official/sc-r-plot.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-plot` |
+| `sc-r-clinical` | `environments/official/sc-r-clinical.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-clinical` |
+| `sc-cci-r` | `environments/official/sc-cci-r.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-cci-r` |
+| `sc-r-trajectory` | `environments/official/sc-r-trajectory.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-trajectory` |
+| `sc-r-tumor-cnv` | `environments/official/sc-r-tumor-cnv.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-tumor-cnv` |
+| `sc-network-grn-r` | `environments/official/sc-network-grn-r.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-network-grn-r` |
+
+这个 manifest 是当前安装和迁移的操作记录，不是最终 resolver index。后续正式 index 仍应保留轻量 routing contract，并补充 `resources` 与 `supports`，而不是把完整包版本矩阵塞进上下文。
+
 ## 与上下文的关系
 
 LLM 或 agent 不应默认加载完整 index。更推荐：
@@ -110,4 +133,3 @@ LLM 或 agent 不应默认加载完整 index。更推荐：
 2. 定义 TypeScript/Rust DTO，保证前后端字段一致。
 3. 给 resolver 增加最小单元测试：按 skill、tool、workflow 匹配。
 4. 在 Bio skills/MCP 文档中引用 `environmentRef`，不要嵌入完整安装说明。
-

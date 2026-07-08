@@ -1,0 +1,28 @@
+name: sc-r-tumor-cnv
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # Tumor-CNV environment for scRNA-seq-based CNV inference and tumor/normal
+  # classification workflows.
+  - r-base=4.5.*
+
+  # Core single-cell object compatibility
+  - r-seurat=5.*
+  - r-seuratobject=5.*
+  - bioconductor-singlecellexperiment
+  - bioconductor-summarizedexperiment
+
+  # CNV runtime
+  - bioconductor-infercnv
+  - r-future
+  - r-matrix
+  - r-data.table
+  - r-ggplot2
+  - r-remotes
+  - r-devtools
+
+  # Notes:
+  # - copykat installs through its official GitHub repository.
+  # - SCEVAN installs through its official GitHub repository.
+  # - numbat installs through its official repository during the bootstrap step.
