@@ -39,6 +39,7 @@ import { resolveGuidAssistantDefaults } from './utils/assistantDefaults';
 import {
   getGuidModeDefaultSkillIds,
   getGuidModeRequiredMcpNames,
+  isGuidMcpServerVisible,
   normalizeGuidAgentBackend,
   resolveGuidCapabilityMode,
 } from './utils/modeCapabilities';
@@ -298,11 +299,7 @@ const GuidPage: React.FC = () => {
           ? agentSelection.currentEffectiveAgentInfo.agent_type
           : agentSelection.selectedAgent
       ) || normalizeGuidAgentBackend(agentSelection.selectedAgent),
-    [
-      agentSelection.currentEffectiveAgentInfo.agent_type,
-      agentSelection.is_presetAgent,
-      agentSelection.selectedAgent,
-    ]
+    [agentSelection.currentEffectiveAgentInfo.agent_type, agentSelection.is_presetAgent, agentSelection.selectedAgent]
   );
   const lockedModeSkillIds = useMemo(() => getGuidModeDefaultSkillIds(activeCapabilityMode), [activeCapabilityMode]);
   const lockedModeMcpNames = useMemo(
@@ -312,8 +309,8 @@ const GuidPage: React.FC = () => {
   const lockedModeMcpNameSet = useMemo(() => new Set(lockedModeMcpNames), [lockedModeMcpNames]);
   const visibleMcpServers = useMemo(
     () =>
-      availableMcpServers.filter((server) => server.builtin !== true || lockedModeMcpNameSet.has(server.name)),
-    [availableMcpServers, lockedModeMcpNameSet]
+      availableMcpServers.filter((server) => isGuidMcpServerVisible(server, activeCapabilityMode, lockedModeMcpNames)),
+    [activeCapabilityMode, availableMcpServers, lockedModeMcpNames]
   );
   const lockedModeMcpServerIds = useMemo(
     () => visibleMcpServers.filter((server) => lockedModeMcpNameSet.has(server.name)).map((server) => server.id),

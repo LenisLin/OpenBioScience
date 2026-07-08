@@ -8,6 +8,10 @@ import { DEFAULT_MEDICAL_EVIDENCE_SKILL_IDS } from '@/common/chat/medicalEvidenc
 import { DEFAULT_SCIENCE_SKILL_IDS } from '@/common/chat/science';
 import { LAB_SKILL_DEPOSITION_SKILL_NAME } from '@/common/chat/labSkillDeposition';
 import {
+  BUILTIN_BIO_KNOWLEDGE_NAME,
+  BUILTIN_BIO_PLOT_NAME,
+  BUILTIN_BIO_RUNTIME_NAME,
+  BUILTIN_BIO_SOURCE_NAME,
   BUILTIN_IMAGE_GEN_NAME,
   BUILTIN_LAB_SKILL_NAME,
   BUILTIN_MEDICAL_EVIDENCE_NAME,
@@ -59,4 +63,20 @@ export function getGuidModeRequiredMcpNames(
     return [BUILTIN_LAB_SKILL_NAME, BUILTIN_USER_INPUT_NAME];
   }
   return [];
+}
+
+export function getGuidModeSelectableBuiltinMcpNames(mode: GuidCapabilityMode): string[] {
+  if (mode === 'science') {
+    return [BUILTIN_BIO_RUNTIME_NAME, BUILTIN_BIO_SOURCE_NAME, BUILTIN_BIO_KNOWLEDGE_NAME, BUILTIN_BIO_PLOT_NAME];
+  }
+  return [];
+}
+
+export function isGuidMcpServerVisible(
+  server: { builtin?: boolean; name: string },
+  mode: GuidCapabilityMode,
+  requiredMcpNames: string[] = getGuidModeRequiredMcpNames(mode)
+): boolean {
+  if (server.builtin !== true) return true;
+  return requiredMcpNames.includes(server.name) || getGuidModeSelectableBuiltinMcpNames(mode).includes(server.name);
 }

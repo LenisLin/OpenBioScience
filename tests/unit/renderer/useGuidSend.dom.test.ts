@@ -7,8 +7,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LEGACY_LOCAL_RUNTIME_ID, LEGACY_LOCAL_RUNTIME_NAME } from '@/common/config/legacyIdentifiers';
-import { DEFAULT_SCIENCE_SKILL_IDS, SCIENCE_WORKFLOW_SKILL_NAME } from '@/common/chat/science';
+import { LOOP_GOAL_SKILL_NAME } from '@/common/chat/loopGoal';
+import { DEFAULT_SCIENCE_SKILL_IDS } from '@/common/chat/science';
 import {
+  BUILTIN_BIO_RUNTIME_NAME,
   BUILTIN_RESEARCH_EVIDENCE_NAME,
   BUILTIN_SCIENCE_ARTIFACT_NAME,
   BUILTIN_USER_INPUT_NAME,
@@ -322,7 +324,7 @@ describe('useGuidSend', () => {
     expect(result.current.isButtonDisabled).toBe(false);
   });
 
-  it('loads Workflow by default for loop goal mode even when Science mode is off', async () => {
+  it('loads Loop Goal by default for loop goal mode even when Science mode is off', async () => {
     const deps = createDeps();
     deps.input = 'Keep iterating until the refactor has tests and no regressions.';
     deps.isLoopGoalMode = true;
@@ -336,11 +338,43 @@ describe('useGuidSend', () => {
     });
 
     const payload = createConversationInvokeMock.mock.calls[0][0];
-    expect(payload.assistant?.conversation_overrides?.skill_ids).toEqual([
-      'assistant-skill',
-      SCIENCE_WORKFLOW_SKILL_NAME,
-    ]);
+    expect(payload.assistant?.conversation_overrides?.skill_ids).toEqual(['assistant-skill', LOOP_GOAL_SKILL_NAME]);
     expect(payload.extra.loop_goal).toEqual(expect.objectContaining({ status: 'active' }));
+  });
+
+  it('sends a manually selected OpenBioScience bio builtin MCP as a session server', async () => {
+    const deps = createDeps();
+    deps.availableMcpServers = [
+      { id: 'mcp-user', name: 'User MCP', enabled: true, builtin: false } as IMcpServer,
+      {
+        id: 'mcp-bio-runtime',
+        name: BUILTIN_BIO_RUNTIME_NAME,
+        enabled: false,
+        builtin: true,
+        transport: {
+          type: 'stdio',
+          command: 'node',
+          args: ['builtin-mcp-bio.js'],
+          env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime' },
+        },
+      } as IMcpServer,
+    ];
+    deps.selectedMcpServerIds = ['mcp-user', 'mcp-bio-runtime'];
+
+    const { result } = renderHook(() => useGuidSend(deps));
+
+    await act(async () => {
+      await result.current.handleSend();
+    });
+
+    const payload = createConversationInvokeMock.mock.calls[0][0];
+    expect(payload.extra.selected_mcp_server_ids).toEqual(['mcp-user']);
+    expect(payload.extra.selected_session_mcp_servers).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'mcp-bio-runtime', name: BUILTIN_BIO_RUNTIME_NAME })])
+    );
+    expect(payload.extra.session_mcp_servers).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'mcp-bio-runtime', name: BUILTIN_BIO_RUNTIME_NAME })])
+    );
   });
 
   it('refreshes builtin MCP catalog before creating a Science conversation', async () => {
