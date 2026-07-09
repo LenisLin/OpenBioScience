@@ -544,9 +544,19 @@ function buildBuiltinUserInputServer(env: Record<string, string>): McpImportServ
 
 function buildBuiltinBioServer(definition: (typeof BIO_MCP_SERVERS)[number]): McpImportServer {
   const scriptPath = getBuiltinMcpScriptPath('builtin-mcp-bio');
-  const env = {
+  const env: Record<string, string> = {
     OPENBIOSCIENCE_BIO_MCP_PROFILE: definition.profile,
   };
+  for (const key of [
+    'OPENBIOSCIENCE_RUNTIME_ROOT',
+    'OPENSCIENCE_RUNTIME_ROOT',
+    'OPENBIOSCIENCE_WORKSPACE_ROOT',
+    'OPENBIOSCIENCE_REPO_ROOT',
+    'OPENBIOSCIENCE_BIO_RUNNER_ROOT',
+  ]) {
+    const value = process.env[key];
+    if (value) env[key] = value;
+  }
   const serverConfig = {
     command: 'node',
     args: [scriptPath],

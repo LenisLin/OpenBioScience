@@ -11,10 +11,10 @@ This skill chooses the minimal official environment and execution route for scRN
 ## OpenBioScience Adapter
 
 - Treat `openscience-compute`, `openscience-singlecell`, and `openscience-science-artifact` as controlling contracts.
-- Use `bio_runtime.status`, `bio_runtime.list_environments`, and `bio_runtime.probe_environment` for current environment checks; execute workflows only through a future approved runner.
+- Use `bio_runtime.status`, `bio_runtime.list_environments`, and `bio_runtime.probe_environment` for current environment checks; execute supported smoke workflows only through `bio_runtime.run_workflow`.
 - Record probes, selected `environmentRef`, package versions, blocked reasons, and logs through `science_artifact`.
 - Do not write absolute host paths; use user-provided paths, artifact IDs, or `environmentRef`.
-- Do not install or mutate official environments during analysis.
+- Do not install or mutate official environments during analysis. Environment creation belongs to the server admin bootstrap flow, not the user workflow.
 
 ## Scope
 
@@ -54,7 +54,7 @@ Recommended:
 2. Map the operation to candidate `environmentRef` values such as `sc-py-singlecell` or `sc-r-singlecell`.
 3. Probe package availability, versions, object readability, and hardware needs through controlled runtime calls.
 4. Choose the least specialized environment that supports the operation.
-5. Emit a routing summary before analysis execution.
+5. For supported P0 runners, validate `workflowId`, config fields, and output root before calling `bio_runtime.run_workflow`.
 6. Register probe logs and the final route through `science_artifact`.
 
 ## Output Contract

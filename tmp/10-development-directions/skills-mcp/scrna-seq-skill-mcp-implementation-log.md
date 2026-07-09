@@ -69,7 +69,7 @@ node scripts/build-mcp-servers.js
 测试覆盖：
 
 - `bio-*` 不进入 generated science skill manifest 的现有测试仍通过。
-- Bio MCP catalog 不包含 `/mnt/NAS` 开发路径。
+- Bio MCP catalog 不包含开发机 NAS 绝对路径。
 - Desktop migration 会导入四个 bio MCP server profile。
 - TypeScript 编译和 MCP bundle 构建通过。
 

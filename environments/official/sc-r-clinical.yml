@@ -6,6 +6,7 @@ dependencies:
   # Clinical downstream environment for cohort, survival, response, and
   # biomarker analysis on outputs produced by the upstream single-cell envs.
   - r-base=4.5.*
+  - jq
 
   # Cohort / survival modeling
   - r-survival
@@ -28,4 +29,5 @@ dependencies:
   # Cancer and clinical data access
   - bioconductor-genomicdatacommons
   - bioconductor-tcgabiolinks
+  - bioconductor-tcgabiolinksgui.data
   - bioconductor-summarizedexperiment

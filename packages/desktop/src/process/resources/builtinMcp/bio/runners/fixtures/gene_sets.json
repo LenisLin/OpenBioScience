@@ -1,0 +1,4 @@
+{
+  "T_CELL_CYTOTOXIC": ["CD3D", "NKG7"],
+  "MYELOID_IL8_AP": ["LYZ", "CXCL8", "HLA-DRA"]
+}

@@ -6,7 +6,7 @@ package source, and operational note for each package or tight package group.
 
 | environment | package | preferred_install_method | verified_source | note |
 | --- | --- | --- | --- | --- |
-| `sc-py-singlecell` | `python=3.12` | `conda-forge` | [Python 3.12 documentation](https://docs.python.org/3.12/) | runtime baseline |
+| `sc-py-singlecell` | `python=3.11` | `conda-forge` | [Python 3.11 documentation](https://docs.python.org/3.11/) | runtime baseline |
 | `sc-py-singlecell` | `pip` | `conda-forge` | [pip documentation](https://pip.pypa.io/en/stable/) | package installer |
 | `sc-py-singlecell` | `numpy`, `pandas`, `scipy`, `scikit-learn` | `conda-forge` | [NumPy docs](https://numpy.org/doc/stable/); [pandas docs](https://pandas.pydata.org/docs/); [SciPy docs](https://docs.scipy.org/doc/scipy/); [scikit-learn docs](https://scikit-learn.org/stable/) | scientific Python base |
 | `sc-py-singlecell` | `anndata` | `conda-forge` | [AnnData docs](https://anndata.readthedocs.io/en/stable/) | annotated matrix container |
@@ -29,7 +29,7 @@ package source, and operational note for each package or tight package group.
 | `sc-r-singlecell` | `bioconductor-glmgampoi` | `bioconda` | [glmGamPoi](https://bioconductor.org/packages/glmGamPoi/) | gamma-Poisson fitting support |
 | `sc-r-singlecell` | `bioconductor-biomart` | `bioconda` | [biomaRt](https://bioconductor.org/packages/biomaRt/) | Ensembl annotation queries |
 | `sc-r-singlecell` | `bioconductor-annotationhub` | `bioconda` | [AnnotationHub](https://bioconductor.org/packages/AnnotationHub/) | indexed annotation resource access |
-| `sc-r-singlecell` | `bioconductor-org.hs.eg.db`, `bioconductor-org.mm.eg.db` | `bioconda` | [org.Hs.eg.db](https://bioconductor.org/packages/org.Hs.eg.db/); [org.Mm.eg.db](https://bioconductor.org/packages/org.Mm.eg.db/) | human and mouse annotation maps |
+| `sc-r-singlecell` | `bioconductor-go.db`, `bioconductor-org.hs.eg.db`, `bioconductor-org.mm.eg.db` | `bioconda` | [GO.db](https://bioconductor.org/packages/GO.db/); [org.Hs.eg.db](https://bioconductor.org/packages/org.Hs.eg.db/); [org.Mm.eg.db](https://bioconductor.org/packages/org.Mm.eg.db/) | GO, human, and mouse annotation maps |
 | `sc-r-singlecell` | `r-yaml`, `r-jsonlite`, `r-optparse` | `conda-forge` | [yaml CRAN page](https://cran.r-project.org/package=yaml); [jsonlite CRAN page](https://cran.r-project.org/package=jsonlite); [optparse CRAN page](https://cran.r-project.org/package=optparse) | configuration and CLI helpers |
 | `sc-r-plot` | `r-base` | `conda-forge` | [R project](https://cran.r-project.org/) | R runtime baseline |
 | `sc-r-plot` | `r-ggplot2`, `r-patchwork`, `r-cowplot`, `r-gridextra` | `conda-forge` | [ggplot2 docs](https://ggplot2.tidyverse.org/); [patchwork docs](https://patchwork.data-imaginist.com/); [cowplot docs](https://wilkelab.org/cowplot/); [gridExtra site](https://cindyfang70.github.io/gridExtra/) | figure assembly and panel layout |

@@ -19,17 +19,74 @@ dependencies:
   - r-future.apply
   - r-data.table
   - r-dplyr
+  - r-tidyr
+  - r-purrr
+  - r-reshape2
+  - r-matrix
+  - r-pbapply
   - r-igraph
+  - r-nmf
+  - r-network
+  - r-sna
   - r-ggplot2
+  - r-ggalluvial
+  - r-ggnetwork
+  - r-ggpubr
+  - r-ggrepel
+  - r-ggforce
+  - r-ggnewscale
   - r-patchwork
+  - r-jsonlite
   - bioconductor-complexheatmap
+  - bioconductor-biocneighbors
+  - bioconductor-biocgenerics
   - r-circlize
+  - r-irlba
+  - r-rspectra
+  - r-reticulate
+  - r-fnn
+  - r-shape
+  - r-rcolorbrewer
+  - r-magrittr
+  - r-colorspace
+  - r-plyr
+  - r-plotly
+  - r-shiny
+  - r-bslib
+  - r-collapse
+  - r-svglite
+  - r-rcppeigen
+
+  # NicheNet import stack. Keep these conda-managed so the GitHub postinstall
+  # only installs the nichenetr source package instead of compiling a large
+  # transitive dependency chain.
+  - r-tidyverse
+  - r-readr
+  - r-fdrtool
+  - r-rocr
+  - r-catools
+  - r-hmisc
+  - r-caret
+  - r-randomforest
+  - r-diagrammer
+  - r-mlrmbo
+  - r-parallelmap
+  - r-emoa
+  - r-dicekriging
+  - r-e1071
+  - r-shadowtext
+  - r-nloptr
+  - r-lme4
+  - r-pbkrtest
+  - r-car
+  - r-gdtools
+  - r-ggiraph
 
   # GitHub/bootstrap helpers
+  - git
   - r-remotes
   - r-devtools
 
   # Notes:
-  # - CellChat installs through its official GitHub repository.
-  # - SpatialCellChat installs through its official GitHub repository.
-  # - nichenetr installs through its official GitHub repository.
+  # - CellChat installs through environments/official/bootstrap/postinstall-sc-cci-r.R.
+  # - nichenetr installs through environments/official/bootstrap/postinstall-sc-cci-r.R.

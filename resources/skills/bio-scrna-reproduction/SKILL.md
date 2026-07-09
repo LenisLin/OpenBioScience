@@ -13,7 +13,7 @@ This skill is the top-level runbook for scRNA-seq reproduction. It coordinates e
 - Treat `openscience-science`, `openscience-singlecell`, `openscience-compute`, and `openscience-science-artifact` as the controlling contract.
 - Use this skill as workflow guidance, not as evidence or an execution engine.
 - Use `research_evidence` for paper, accession, database, and methods lookup.
-- Use `bio_runtime` for environment and workflow validation, `bio_source` for data-source contracts, `bio_knowledge` for marker/atlas contracts, and `bio_plot` for plot contracts. Controlled execution requires an approved runner.
+- Use `bio_runtime` for environment probing, workflow validation, and allowlisted P0 smoke execution; use `bio_source` for data-source contracts, `bio_knowledge` for marker/atlas contracts, and `bio_plot` for plot contracts.
 - Register inputs, code, configs, logs, outputs, warnings, and decisions through `science_artifact`.
 - Do not install packages into official environments during analysis.
 - Use only `environmentRef` names when referring to execution environments.
@@ -62,7 +62,7 @@ Recommended:
 2. Resolve source evidence and dataset availability through `bio-data-resolution`.
 3. Classify inputs and claim support through `bio-singlecell-import`.
 4. Select execution route with `bio-environment-routing`; prefer the minimal official `environmentRef`.
-5. Plan preprocessing, clustering, markers, annotation, and plotting via the appropriate downstream skills; run them only when an approved runner is available.
+5. Plan preprocessing, clustering, markers, annotation, and plotting via the appropriate downstream skills; run only cataloged `bio_runtime.run_workflow` entries.
 6. Require each step to emit machine-readable summaries before proceeding to interpret results.
 7. Register every artifact, parameter file, environment probe, log, warning, and blocked claim through `science_artifact`.
 

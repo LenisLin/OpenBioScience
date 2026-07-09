@@ -23,7 +23,7 @@
 | Skill 调整 | 进行中 | 已删除一批与生物医学无关的 skills，并保留/整理生命科学相关基础能力；已新增第一批 scRNA-seq `bio-*` runbook skills，并通过 `openscience-singlecell` router 暴露 | 用 demo case 校验每个 runbook 的可用性；后续补充 CCI、clinical、trajectory、GRN、CNV 等下游完整 runner contract |
 | MCP 调整 | 部分落地/进行中 | 已识别 MCP 是 Bio 能力落地的重要层；已新增 `openscience-bio-runtime`、`openscience-bio-source`、`openscience-bio-knowledge`、`openscience-bio-plot` 四个 control-plane profile，并接入 desktop/WebUI/build/package/test | 将 skeleton 接入真实 environment resolver、matrix/object inspector、workflow runner、source provider、knowledge provider 和 plotting scripts |
 | SSH/远程计算调整 | 尚未实质开始 | 已明确核心问题：当前 SSH 连接不等于完整远程计算平台；远程算力必须和数据可达性绑定 | 设计 Remote Runtime Mode：本地 UI、远程 CLI/agent runtime、显式数据部署、远程 token/provider、结果回收 |
-| Environment 环境服务 | 部分落地/进行中 | 已明确 server-native 前提；官方环境采用 Docker 内 Conda；index 轻量化；用户环境采用 User 级 conda 和受控自动注册；已完成 8 个官方 Conda 环境的 NAS 前缀安装与 bootstrap manifest；已清理旧 `/tmp/openbioscience-envs` 临时前缀；`sc-py-singlecell` 已完成 CUDA 12.4 / PyTorch 2.5.1 / `scvi-tools` 导入验证 | 将 NAS Conda 前缀封装进官方 Docker/server runtime；定义正式 environment index schema、Environment Resolver、server API、环境状态 UI、environment-manager skill/MCP 边界；补齐全部环境 smoke probe 和任务 provenance |
+| Environment 环境服务 | 部分落地/进行中 | 已明确 server-native 前提；官方环境采用 Docker 内 Conda；index 轻量化；用户环境采用 User 级 conda 和受控自动注册；已完成可迁移 runtime-root bootstrap manifest；P0 `sc-py-singlecell`、`sc-r-singlecell`、`sc-r-clinical` 已完成真实 WSL 安装与 probe，核心 runner smoke 已通过；CUDA/PyTorch/scVI 已移出 P0 默认环境 | 将 Conda 前缀封装进官方 Docker/server runtime；定义正式 environment index schema、Environment Resolver、server API、环境状态 UI、environment-manager skill/MCP 边界；补齐全部环境 smoke probe 和任务 provenance |
 
 ## 核心判断
 
@@ -55,11 +55,11 @@ OpenBioScience 不能只把 SSH 服务器作为一个 prompt/context 交给 agen
 
 本阶段把环境议题从纯架构讨论推进到可执行前缀层：
 
-- 官方环境根目录已迁移到 `/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official`。
+- 官方环境根目录已迁移到 `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs`。
 - 当前已安装 8 个官方环境：`sc-py-singlecell`、`sc-r-singlecell`、`sc-r-plot`、`sc-r-clinical`、`sc-cci-r`、`sc-r-trajectory`、`sc-r-tumor-cnv`、`sc-network-grn-r`。
 - `sc-py-singlecell` 去掉临时 CUDA 版本后缀，作为正式环境名；`sc-r-trajectory` 也使用无版本后缀的正式名称。
-- `sc-py-singlecell` 已完成核心导入验证：`torch 2.5.1`、CUDA `12.4`、`torchvision 0.20.1`、`torchaudio 2.5.1`、`scvi-tools 1.4.3`。
-- 新增 `environments/official/bootstrap/env-manifest.json` 和 `install-official-envs.sh`，记录官方环境的 YAML、NAS prefix 和 cache 根目录。
+- `sc-py-singlecell` 已完成核心导入验证：Scanpy/AnnData/LIANA/CellPhoneDB/GEOparse/pysradb。CUDA/PyTorch/scVI 已从 P0 默认环境中移出，后续作为独立 GPU/scVI 扩展环境处理。
+- 新增 `environments/official/bootstrap/env-manifest.json` 和 `install-official-envs.sh`，记录官方环境的 YAML、runtime-root prefix 和 cache 根目录。
 
 仍需注意：这一步解决的是 server-side Conda 前缀和存储布局，不等于完整 harness runtime 已经完成。Docker image、resolver、job runner、UI 状态与 skill/MCP 的 `environmentRef` 绑定仍是后续工程任务。
 

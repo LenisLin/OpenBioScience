@@ -30,16 +30,40 @@ describe('OpenBioScience bio MCP catalog', () => {
         'sc-r-tumor-cnv',
       ])
     );
-    expect(JSON.stringify(BIO_ENVIRONMENTS)).not.toContain('/mnt/NAS');
+    expect(JSON.stringify(BIO_ENVIRONMENTS)).not.toContain('NAS_21T');
+    expect(JSON.stringify(BIO_ENVIRONMENTS)).not.toContain('ProjectData');
   });
 
   it('keeps workflow and plot contracts separate', () => {
     expect(BIO_WORKFLOWS.map((workflow) => workflow.id)).toEqual(
-      expect.arrayContaining(['singlecell_import_summary', 'seurat_qc_preprocess', 'scrna_plot_figure_set'])
+      expect.arrayContaining([
+        'singlecell_import_summary',
+        'seurat_qc_preprocess',
+        'scrna_plot_figure_set',
+        'inspect_input',
+        'run_scanpy_core',
+        'run_seurat_core',
+        'run_pseudobulk_de',
+        'run_signature_scoring',
+        'run_liana',
+      ])
     );
     expect(BIO_PLOT_TEMPLATES.map((template) => template.id)).toEqual(
       expect.arrayContaining(['scrna.embedding.umap.cluster.v1', 'scrna.marker.dotplot.heatmap.v1'])
     );
+  });
+
+  it('maps P0 runner workflows to explicit environment refs and scripts', () => {
+    const runnerWorkflows = BIO_WORKFLOWS.filter((workflow) => workflow.runner);
+
+    expect(BIO_MCP_PROFILES.runtime.actions).toContain('run_workflow');
+    expect(runnerWorkflows.map((workflow) => workflow.id)).toEqual(
+      expect.arrayContaining(['inspect_input', 'run_scanpy_core', 'run_seurat_core', 'run_pseudobulk_de'])
+    );
+    expect(runnerWorkflows.every((workflow) => workflow.runner?.environmentRef)).toBe(true);
+    expect(runnerWorkflows.every((workflow) => workflow.runner?.script.startsWith('scripts/'))).toBe(true);
+    expect(JSON.stringify(runnerWorkflows)).not.toContain('NAS_21T');
+    expect(JSON.stringify(runnerWorkflows)).not.toContain('ProjectData');
   });
 
   it('defaults missing profile to runtime but rejects invalid non-empty profiles', () => {

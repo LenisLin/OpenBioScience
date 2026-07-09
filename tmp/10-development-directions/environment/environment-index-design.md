@@ -103,14 +103,14 @@ environments/official/bootstrap/env-manifest.json
 
 | Environment | YAML | Prefix |
 | --- | --- | --- |
-| `sc-py-singlecell` | `environments/official/sc-py-singlecell.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-py-singlecell` |
-| `sc-r-singlecell` | `environments/official/sc-r-singlecell.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-singlecell` |
-| `sc-r-plot` | `environments/official/sc-r-plot.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-plot` |
-| `sc-r-clinical` | `environments/official/sc-r-clinical.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-clinical` |
-| `sc-cci-r` | `environments/official/sc-cci-r.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-cci-r` |
-| `sc-r-trajectory` | `environments/official/sc-r-trajectory.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-trajectory` |
-| `sc-r-tumor-cnv` | `environments/official/sc-r-tumor-cnv.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-tumor-cnv` |
-| `sc-network-grn-r` | `environments/official/sc-network-grn-r.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-network-grn-r` |
+| `sc-py-singlecell` | `environments/official/sc-py-singlecell.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-py-singlecell` |
+| `sc-r-singlecell` | `environments/official/sc-r-singlecell.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-r-singlecell` |
+| `sc-r-plot` | `environments/official/sc-r-plot.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-r-plot` |
+| `sc-r-clinical` | `environments/official/sc-r-clinical.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-r-clinical` |
+| `sc-cci-r` | `environments/official/sc-cci-r.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-cci-r` |
+| `sc-r-trajectory` | `environments/official/sc-r-trajectory.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-r-trajectory` |
+| `sc-r-tumor-cnv` | `environments/official/sc-r-tumor-cnv.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-r-tumor-cnv` |
+| `sc-network-grn-r` | `environments/official/sc-network-grn-r.yml` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-network-grn-r` |
 
 这个 manifest 是当前安装和迁移的操作记录，不是最终 resolver index。后续正式 index 仍应保留轻量 routing contract，并补充 `resources` 与 `supports`，而不是把完整包版本矩阵塞进上下文。
 

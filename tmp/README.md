@@ -130,10 +130,10 @@ tmp/
 
 当前已落实：
 
-- 官方环境统一存储到 `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official`
+- 官方环境统一存储到 `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs`
 - Conda / mamba cache 统一放到 `<OPENBIOSCIENCE_RUNTIME_ROOT>/cache`
-- 已安装 8 个官方环境：`sc-py-singlecell`、`sc-r-singlecell`、`sc-r-plot`、`sc-r-clinical`、`sc-cci-r`、`sc-r-trajectory`、`sc-r-tumor-cnv`、`sc-network-grn-r`
-- `sc-py-singlecell` 已补 `scvi-tools`，并按 CUDA 12.4 / PyTorch 2.5.1 组合完成导入验证
+- 已真实安装并 probe P0 核心环境：`sc-py-singlecell`、`sc-r-singlecell`、`sc-r-clinical`；`sc-cci-r` 已完成基础环境安装与依赖 dry-run，CellChat/nichenetr postinstall 仍需在网络稳定或预热 cache 后完成
+- `sc-py-singlecell` 已完成 Scanpy/AnnData/LIANA/CellPhoneDB/GEOparse/pysradb 导入验证；CUDA/PyTorch/scVI 已移出 P0 默认环境
 - 旧的 `/tmp/openbioscience-envs` 临时环境前缀已清理
 - 新增 bootstrap manifest 和安装入口，作为后续 resolver / server 资源注册的输入雏形
 

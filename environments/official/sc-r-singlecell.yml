@@ -18,8 +18,15 @@ dependencies:
   - r-tibble
   - r-readr
   - r-stringr
+  - r-yaml
+  - r-jsonlite
+  - r-optparse
+  - jq
   - r-ggplot2
   - r-patchwork
+  - r-cowplot
+  - r-pheatmap
+  - bioconductor-complexheatmap
   - bioconductor-singlecellexperiment
   - bioconductor-summarizedexperiment
   - bioconductor-scater
@@ -29,11 +36,21 @@ dependencies:
   - bioconductor-zellkonverter
   - bioconductor-singler
   - bioconductor-celldex
+  - bioconductor-deseq2
+  - bioconductor-edger
+  - bioconductor-limma
+  - bioconductor-mast
+  - bioconductor-muscat
+  - bioconductor-clusterprofiler
+  - bioconductor-enrichplot
+  - bioconductor-fgsea
+  - bioconductor-gsva
+  - bioconductor-aucell
+  - bioconductor-ucell
   - bioconductor-glmgampoi
   - bioconductor-biomart
   - bioconductor-annotationhub
+  - bioconductor-go.db
   - bioconductor-org.hs.eg.db
   - bioconductor-org.mm.eg.db
-  - r-yaml
-  - r-jsonlite
-  - r-optparse
+  - r-msigdbr

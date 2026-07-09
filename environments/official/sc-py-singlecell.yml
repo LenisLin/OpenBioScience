@@ -1,41 +1,48 @@
 name: sc-py-singlecell
 channels:
   - conda-forge
-  - pytorch
-  - nvidia
+  - bioconda
 dependencies:
   # Python base for AnnData/Scanpy object IO, QC, preprocessing, and
   # neighborhood graph construction. R-side object handoff lives in
   # sc-r-singlecell. Figure production lives in sc-r-plot.
-  - python=3.12.*
+  - python=3.11.*
   - pip
   - numpy
   - pandas
   - scipy
   - scikit-learn
   - anndata
+  - mudata
+  - muon
   - scanpy
   - h5py
+  - zarr
+  - pytables
   - umap-learn
   - leidenalg
   - python-igraph
   - pynndescent
   - matplotlib-base
-  # scvi-tools depends on PyTorch. We pin the PyTorch family explicitly
-  # against an official previous-version matrix so CUDA selection can be
-  # controlled at deployment time instead of drifting during solve.
-  #
-  # Official PyTorch 2.5.1 matrix:
-  # - torch 2.5.1
-  # - torchvision 0.20.1
-  # - torchaudio 2.5.1
-  # - optional CUDA variants: 11.8 / 12.1 / 12.4
-  #
-  # The default official GPU profile in this repository uses CUDA 12.4.
-  # If a server driver line requires a different official pair, switch this
-  # single metapackage to 12.1 or 11.8 together with the same torch trio.
-  - pytorch::pytorch=2.5.1
-  - pytorch::torchvision=0.20.1
-  - pytorch::torchaudio=2.5.1
-  - pytorch-cuda=12.4
-  - scvi-tools
+  - requests
+  - beautifulsoup4
+  - lxml
+  - pyyaml
+  - biopython
+  - mygene
+  - celltypist
+  - scrublet
+  - gseapy
+  - harmonypy
+  - bbknn
+  - scanorama
+  - typer
+  - pydantic
+  - snakemake-minimal
+  - pip:
+      # Provider and CCI packages with faster PyPI availability than conda.
+      - decoupler
+      - GEOparse
+      - pysradb
+      - cellphonedb
+      - liana

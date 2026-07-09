@@ -10,7 +10,7 @@ This skill defines figure contracts for scRNA-seq workflows. It prepares reprodu
 
 ## OpenBioScience Adapter
 
-- Use `bio_plot.list_plot_templates`, `bio_plot.validate_plot_inputs`, and `bio_plot.render_plan` for current plot contracts; generate figures only through an approved runner in an official `environmentRef` when available.
+- Use `bio_plot.list_plot_templates`, `bio_plot.validate_plot_inputs`, and `bio_plot.render_plan` for current plot contracts; generate figures only from registered upstream runner outputs in an official `environmentRef`.
 - Register source objects, plotting configs, code, figure files, thumbnails, and warnings through `science_artifact`.
 - Use `ds-nature-figure`, `ds-figure-polish`, or scientific visualization skills only for presentation refinement after data-backed plots exist.
 - Do not create paper-like panels without linking every panel to source tables/objects.

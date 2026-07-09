@@ -12,7 +12,7 @@ This skill decides whether local single-cell inputs can be safely imported and w
 
 - Treat `openscience-science`, `openscience-singlecell`, `openscience-compute`, and `openscience-science-artifact` as controlling contracts.
 - Use this skill as workflow guidance, not as evidence or an execution engine.
-- Use `research_evidence` only for source lookup; use `bio_runtime.validate_workflow` for current import contract checks. Object inspection and conversion require an approved runner.
+- Use `research_evidence` only for source lookup; use `bio_runtime.validate_workflow` for import contract checks and `bio_runtime.run_workflow` for allowlisted `inspect_input` smoke runs.
 - Record concrete inputs, code/config, logs, environment, output objects, warnings, and decisions through `science_artifact`.
 - Do not install packages into official environments during analysis.
 - Use `environmentRef` candidates such as `sc-py-singlecell` and `sc-r-singlecell`.
@@ -59,7 +59,7 @@ Recommended:
 2. Inspect matrix dimensions, dtype, integer-like status, sparsity, gene identifiers, barcode conventions, and metadata keys.
 3. Classify matrix semantics as `raw_counts`, `processed_expression`, `metadata_only`, or `unknown`.
 4. Join metadata and report sample/patient/condition/batch/response key completeness.
-5. Select minimal `environmentRef` and prepare an object or conversion plan only when an approved runner is available.
+5. Select minimal `environmentRef` and prepare an object or conversion plan only when a cataloged runner is available.
 6. Emit an import summary before downstream analysis.
 7. Register imported object, logs, warnings, and blocked claims through `science_artifact`.
 

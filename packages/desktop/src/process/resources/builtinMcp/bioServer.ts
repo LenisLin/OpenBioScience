@@ -6,6 +6,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
@@ -18,12 +20,14 @@ import {
   type BioMcpCatalogItem,
   type BioMcpProfile,
 } from './bio/catalog';
-import { safeAbsolutePathStatus } from './bio/pathSafety';
+import { isApprovedAbsolutePath, safeAbsolutePathStatus } from './bio/pathSafety';
 
 type JsonRecord = Record<string, unknown>;
 
 const RESULT_SCHEMA = 'openbioscience.bio_mcp.result.v1';
-const DEFAULT_RUNTIME_ROOT = '${OPENBIOSCIENCE_RUNTIME_ROOT}';
+const DEFAULT_RUNTIME_ROOT = '/srv/openbioscience';
+const DEFAULT_RUNNER_TIMEOUT_MS = 10 * 60 * 1000;
+const execFileAsync = promisify(execFile);
 
 const jsonText = (value: unknown) => ({
   content: [{ type: 'text' as const, text: JSON.stringify(value, null, 2) }],
@@ -47,9 +51,7 @@ const runtimeRoot = (): string =>
   DEFAULT_RUNTIME_ROOT;
 
 const environmentPath = (environmentRef: string): string =>
-  runtimeRoot() === DEFAULT_RUNTIME_ROOT
-    ? `${DEFAULT_RUNTIME_ROOT}/environments/official/${environmentRef}`
-    : path.join(runtimeRoot(), 'environments', 'official', environmentRef);
+  path.join(runtimeRoot(), 'envs', environmentRef);
 
 const pathStatus = (candidate: string): 'configured' | 'available' | 'missing' =>
   candidate.includes('${') ? 'configured' : fs.existsSync(candidate) ? 'available' : 'missing';
@@ -63,6 +65,59 @@ const missingFields = (payload: JsonRecord | undefined, fields: string[]): strin
 
 const catalogById = (items: BioMcpCatalogItem[], id?: string): BioMcpCatalogItem | undefined =>
   id ? items.find((item) => item.id === id) : undefined;
+
+const findRepoRoot = (start: string): string => {
+  let current = path.resolve(start);
+  while (true) {
+    if (fs.existsSync(path.join(current, '.git'))) return current;
+    const parent = path.dirname(current);
+    if (parent === current) return path.resolve(process.cwd());
+    current = parent;
+  }
+};
+
+const repoRoot = (): string => process.env.OPENBIOSCIENCE_REPO_ROOT || findRepoRoot(process.cwd());
+
+const runnerRoot = (): string =>
+  process.env.OPENBIOSCIENCE_BIO_RUNNER_ROOT ||
+  path.join(repoRoot(), 'packages', 'desktop', 'src', 'process', 'resources', 'builtinMcp', 'bio', 'runners');
+
+const bootstrapRoot = (): string => path.join(repoRoot(), 'environments', 'official', 'bootstrap');
+
+const runnerTimeoutMs = (): number => {
+  const configured = Number(process.env.OPENBIOSCIENCE_BIO_RUNNER_TIMEOUT_MS || '');
+  return Number.isFinite(configured) && configured > 0 ? configured : DEFAULT_RUNNER_TIMEOUT_MS;
+};
+
+const isDryRun = (payload?: JsonRecord): boolean => payload?.dryRun === true || payload?.dry_run === true;
+
+const pathLikeKeys = new Set([
+  'input_path',
+  'inputPath',
+  'counts_path',
+  'countsPath',
+  'metadata_path',
+  'metadataPath',
+  'gene_sets_path',
+  'geneSetsPath',
+  'lr_pairs_path',
+  'lrPairsPath',
+  'object_path',
+  'objectPath',
+  'marker_table',
+  'markerTable',
+  'plot_plan',
+  'plotPlan',
+]);
+
+const unsafeAbsoluteConfigPaths = (config: JsonRecord): string[] =>
+  Object.entries(config)
+    .filter(([key, value]) => pathLikeKeys.has(key) && typeof value === 'string' && path.isAbsolute(value))
+    .map(([, value]) => value as string)
+    .filter((value) => !isApprovedAbsolutePath(value));
+
+const tail = (value: string, maxLength = 4000): string =>
+  value.length <= maxLength ? value : value.slice(value.length - maxLength);
 
 const resolveEnvironment = (environmentRef: string) => {
   const catalog = catalogById(BIO_ENVIRONMENTS, environmentRef);
@@ -87,7 +142,7 @@ const statusPayload = (profile: BioMcpProfile) => {
     toolName: definition.toolName,
     runtimeRoot: runtimeRoot(),
     actions: definition.actions,
-    environmentIndex: `${runtimeRoot()}/environments/official/README.md`,
+    environmentIndex: `${runtimeRoot()}/envs`,
     notes: [
       'This MCP exposes OpenBioScience control-plane contracts only.',
       'Use science_artifact to record concrete evidence, outputs, warnings, and blocked claims.',
@@ -97,7 +152,7 @@ const statusPayload = (profile: BioMcpProfile) => {
   };
 };
 
-const handleRuntimeAction = (action: string, payload?: JsonRecord) => {
+export const handleRuntimeAction = async (action: string, payload?: JsonRecord) => {
   if (action === 'status') return statusPayload('runtime');
   if (action === 'list_environments') {
     return {
@@ -117,16 +172,14 @@ const handleRuntimeAction = (action: string, payload?: JsonRecord) => {
     const environmentRef = asString(payload?.environmentRef || payload?.environment_ref);
     if (!environmentRef) throw new Error(`${action} requires environmentRef.`);
     const resolved = resolveEnvironment(environmentRef);
+    if (action === 'probe_environment') {
+      return runEnvironmentProbe(environmentRef, resolved, payload);
+    }
     return {
       schema: RESULT_SCHEMA,
       action,
       status: resolved.status === 'missing' ? 'conditional' : 'supported',
       ...resolved,
-      probe: {
-        mode: 'path_only',
-        importChecksRun: false,
-        reason: 'This first-pass MCP skeleton records environment resolution without running package imports.',
-      },
       timestamp: Date.now(),
     };
   }
@@ -162,8 +215,17 @@ const handleRuntimeAction = (action: string, payload?: JsonRecord) => {
       workflow,
       missingFields: missing,
       environmentCandidates: workflow.environmentRefs?.map(resolveEnvironment) || [],
+      runner: workflow.runner
+        ? {
+            ...workflow.runner,
+            scriptPath: path.join(runnerRoot(), workflow.runner.script),
+          }
+        : undefined,
       timestamp: Date.now(),
     };
+  }
+  if (action === 'run_workflow') {
+    return runWorkflow(payload);
   }
   if (action === 'list_plot_templates') {
     return {
@@ -184,15 +246,209 @@ const handleRuntimeAction = (action: string, payload?: JsonRecord) => {
       action,
       status: outputPaths.length ? 'conditional' : 'blocked',
       outputPaths,
-      summaries: outputPaths.map((outputPath) => ({
-        path: outputPath,
-        status: safeAbsolutePathStatus(outputPath),
-      })),
+      summaries: summarizeOutputPaths(outputPaths),
       warnings: outputPaths.length ? [] : ['summarize_outputs requires outputPaths.'],
       timestamp: Date.now(),
     };
   }
   throw new Error(`Unsupported runtime action "${action}".`);
+};
+
+const summarizeOutputPaths = (outputPaths: string[]) =>
+  outputPaths.map((outputPath) => ({
+    path: outputPath,
+    status: safeAbsolutePathStatus(outputPath),
+  }));
+
+const runEnvironmentProbe = async (
+  environmentRef: string,
+  resolved: ReturnType<typeof resolveEnvironment>,
+  payload?: JsonRecord
+) => {
+  const probeScript = path.join(bootstrapRoot(), 'probe-official-envs.sh');
+  const command = process.env.OPENBIOSCIENCE_BASH_EXE || 'bash';
+  const args = [probeScript, environmentRef];
+  const dryRun = isDryRun(payload);
+  const base = {
+    schema: RESULT_SCHEMA,
+    action: 'probe_environment',
+    environmentRef,
+    ...resolved,
+    probe: {
+      mode: 'official_probe',
+      command,
+      args,
+      scriptPath: probeScript,
+    },
+    timestamp: Date.now(),
+  };
+
+  if (!resolved.catalog) {
+    return { ...base, status: 'blocked', warnings: resolved.warnings };
+  }
+  if (!fs.existsSync(probeScript)) {
+    return { ...base, status: 'blocked', warnings: [`Probe runner is missing: ${probeScript}`] };
+  }
+  if (dryRun) {
+    return { ...base, status: 'supported', dryRun: true };
+  }
+  if (resolved.status !== 'available') {
+    return {
+      ...base,
+      status: 'conditional',
+      warnings: [`Environment prefix is not available: ${resolved.path}`],
+    };
+  }
+
+  try {
+    const { stdout, stderr } = await execFileAsync(command, args, {
+      env: {
+        ...process.env,
+        OPENBIOSCIENCE_RUNTIME_ROOT: runtimeRoot(),
+      },
+      timeout: runnerTimeoutMs(),
+      windowsHide: true,
+    });
+    return {
+      ...base,
+      status: 'supported',
+      probeResult: JSON.parse(stdout),
+      stderr: tail(stderr || ''),
+    };
+  } catch (error) {
+    return {
+      ...base,
+      status: 'blocked',
+      warnings: [`Probe execution failed: ${error instanceof Error ? error.message : String(error)}`],
+    };
+  }
+};
+
+const runWorkflow = async (payload?: JsonRecord) => {
+  const workflowId = asString(payload?.workflowId || payload?.workflow_id);
+  const workflow = catalogById(BIO_WORKFLOWS, workflowId);
+  const config = isRecord(payload?.config) ? payload.config : {};
+  const outputDir = asString(payload?.outputDir || payload?.output_dir || config.output_dir);
+  const dryRun = isDryRun(payload);
+
+  if (!workflow) {
+    return {
+      schema: RESULT_SCHEMA,
+      action: 'run_workflow',
+      status: 'blocked',
+      workflowId,
+      warnings: [`Unknown workflowId "${workflowId || '<missing>'}".`],
+      knownWorkflows: BIO_WORKFLOWS.map((item) => item.id),
+      timestamp: Date.now(),
+    };
+  }
+  if (!workflow.runner) {
+    return {
+      schema: RESULT_SCHEMA,
+      action: 'run_workflow',
+      status: 'blocked',
+      workflowId,
+      workflow,
+      warnings: [`Workflow "${workflowId}" has no allowlisted runner yet.`],
+      timestamp: Date.now(),
+    };
+  }
+
+  const missing = missingFields(config, workflow.requiredFields || []);
+  const configBlockers = [...missing.map((field) => `Missing required config field "${field}".`)];
+  if (!outputDir) configBlockers.push('run_workflow requires outputDir.');
+  if (outputDir && (!path.isAbsolute(outputDir) || !isApprovedAbsolutePath(outputDir))) {
+    configBlockers.push(`outputDir must be an absolute path under an approved OpenBioScience root: ${outputDir}`);
+  }
+  const unsafePaths = unsafeAbsoluteConfigPaths(config);
+  configBlockers.push(...unsafePaths.map((unsafePath) => `Config path is outside approved roots: ${unsafePath}`));
+  const warnings = [...configBlockers];
+
+  const environment = resolveEnvironment(workflow.runner.environmentRef);
+  const scriptPath = path.join(runnerRoot(), workflow.runner.script);
+  const runnerCommand = workflow.runner.kind === 'python' ? 'python' : 'Rscript';
+  const command = process.env.MAMBA_EXE || 'mamba';
+  const plannedArgs = [
+    'run',
+    '-p',
+    environment.path,
+    runnerCommand,
+    scriptPath,
+    '--config',
+    outputDir ? path.join(outputDir, 'runner_config.json') : '<outputDir>/runner_config.json',
+    '--output-dir',
+    outputDir || '<missing-output-dir>',
+  ];
+
+  if (warnings.length || environment.status !== 'available' || !fs.existsSync(scriptPath)) {
+    if (environment.status !== 'available') warnings.push(`Environment prefix is not available: ${environment.path}`);
+    if (!fs.existsSync(scriptPath)) warnings.push(`Runner script is missing: ${scriptPath}`);
+    return {
+      schema: RESULT_SCHEMA,
+      action: 'run_workflow',
+      status: dryRun && configBlockers.length === 0 ? 'conditional' : 'blocked',
+      workflowId,
+      workflow,
+      environment,
+      command,
+      args: plannedArgs,
+      dryRun,
+      warnings,
+      timestamp: Date.now(),
+    };
+  }
+
+  if (dryRun) {
+    return {
+      schema: RESULT_SCHEMA,
+      action: 'run_workflow',
+      status: 'supported',
+      workflowId,
+      workflow,
+      environment,
+      command,
+      args: plannedArgs,
+      dryRun: true,
+      timestamp: Date.now(),
+    };
+  }
+
+  fs.mkdirSync(outputDir, { recursive: true });
+  const configPath = path.join(outputDir, 'runner_config.json');
+  fs.writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, 'utf8');
+
+  try {
+    const { stdout, stderr } = await execFileAsync(command, plannedArgs, {
+      env: {
+        ...process.env,
+        OPENBIOSCIENCE_RUNTIME_ROOT: runtimeRoot(),
+        OPENBIOSCIENCE_WORKSPACE_ROOT: process.env.OPENBIOSCIENCE_WORKSPACE_ROOT || repoRoot(),
+      },
+      timeout: runnerTimeoutMs(),
+      windowsHide: true,
+    });
+    const manifestPath = path.join(outputDir, 'run_manifest.json');
+    return {
+      schema: RESULT_SCHEMA,
+      action: 'run_workflow',
+      status: 'supported',
+      workflowId,
+      manifestPath,
+      manifest: fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : undefined,
+      stdout: tail(stdout || ''),
+      stderr: tail(stderr || ''),
+      timestamp: Date.now(),
+    };
+  } catch (error) {
+    return {
+      schema: RESULT_SCHEMA,
+      action: 'run_workflow',
+      status: 'blocked',
+      workflowId,
+      warnings: [`Runner execution failed: ${error instanceof Error ? error.message : String(error)}`],
+      timestamp: Date.now(),
+    };
+  }
 };
 
 const validatePlotInputs = (action: string, payload?: JsonRecord) => {
@@ -350,7 +606,18 @@ const handlePlotAction = (action: string, payload?: JsonRecord) => {
       timestamp: Date.now(),
     };
   }
-  if (action === 'summarize_plot_outputs') return handleRuntimeAction('summarize_outputs', payload);
+  if (action === 'summarize_plot_outputs') {
+    const outputPaths = uniqueStrings(asArray(payload?.outputPaths || payload?.output_paths));
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: outputPaths.length ? 'conditional' : 'blocked',
+      outputPaths,
+      summaries: summarizeOutputPaths(outputPaths),
+      warnings: outputPaths.length ? [] : ['summarize_plot_outputs requires outputPaths.'],
+      timestamp: Date.now(),
+    };
+  }
   throw new Error(`Unsupported plot action "${action}".`);
 };
 
@@ -371,7 +638,7 @@ async function main() {
     },
     async ({ action, payload }) => {
       const recordPayload = isRecord(payload) ? payload : {};
-      if (profile === 'runtime') return jsonText(handleRuntimeAction(action, recordPayload));
+      if (profile === 'runtime') return jsonText(await handleRuntimeAction(action, recordPayload));
       if (profile === 'source') return jsonText(handleSourceAction(action, recordPayload));
       if (profile === 'knowledge') return jsonText(handleKnowledgeAction(action, recordPayload));
       return jsonText(handlePlotAction(action, recordPayload));
@@ -382,7 +649,9 @@ async function main() {
   await server.connect(transport);
 }
 
-main().catch((error) => {
-  console.error('[BioMCP] Fatal error:', error);
-  process.exit(1);
-});
+if (process.env.OPENBIOSCIENCE_SKIP_MCP_MAIN !== '1') {
+  main().catch((error) => {
+    console.error('[BioMCP] Fatal error:', error);
+    process.exit(1);
+  });
+}

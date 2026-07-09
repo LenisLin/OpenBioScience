@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { safeAbsolutePathStatus } from '@/process/resources/builtinMcp/bio/pathSafety';
+import { isApprovedAbsolutePath, safeAbsolutePathStatus } from '@/process/resources/builtinMcp/bio/pathSafety';
 
 const ENV_KEYS = [
   'OPENBIOSCIENCE_WORKSPACE_ROOT',
@@ -39,6 +39,7 @@ describe('OpenBioScience bio MCP server path checks', () => {
     fs.writeFileSync(allowedFile, 'ok\n', 'utf8');
     process.env.OPENBIOSCIENCE_WORKSPACE_ROOT = root;
 
+    expect(isApprovedAbsolutePath(allowedFile)).toBe(true);
     expect(safeAbsolutePathStatus(allowedFile)).toBe('available');
   });
 
@@ -49,6 +50,7 @@ describe('OpenBioScience bio MCP server path checks', () => {
     process.env.OPENBIOSCIENCE_WORKSPACE_ROOT = root;
 
     try {
+      expect(isApprovedAbsolutePath(outsideFile)).toBe(false);
       expect(safeAbsolutePathStatus(outsideFile)).toBe('unverified');
     } finally {
       fs.rmSync(outsideRoot, { recursive: true, force: true });

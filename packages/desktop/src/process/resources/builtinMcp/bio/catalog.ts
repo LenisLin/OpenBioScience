@@ -12,6 +12,11 @@ export type BioMcpCatalogItem = {
   environmentRefs?: string[];
   requiredFields?: string[];
   outputs?: string[];
+  runner?: {
+    kind: 'python' | 'rscript';
+    script: string;
+    environmentRef: string;
+  };
 };
 
 export type BioMcpProfileDefinition = {
@@ -36,6 +41,7 @@ export const BIO_MCP_PROFILES: Record<BioMcpProfile, BioMcpProfileDefinition> = 
       'probe_environment',
       'list_workflows',
       'validate_workflow',
+      'run_workflow',
       'list_plot_templates',
       'validate_plot_inputs',
       'summarize_outputs',
@@ -85,7 +91,7 @@ export const BIO_ENVIRONMENTS: BioMcpCatalogItem[] = [
   {
     id: 'sc-py-singlecell',
     description:
-      'Python/Scanpy-centered single-cell import, object inspection, integration, and scVI-compatible workflows.',
+      'Python/Scanpy-centered single-cell import, object inspection, integration, and CCI smoke workflows.',
     environmentRefs: ['sc-py-singlecell'],
     outputs: ['pip-freeze.txt', 'objects/*.h5ad', 'tables/*.tsv', 'figures/*'],
   },
@@ -131,6 +137,78 @@ export const BIO_ENVIRONMENTS: BioMcpCatalogItem[] = [
 ];
 
 export const BIO_WORKFLOWS: BioMcpCatalogItem[] = [
+  {
+    id: 'inspect_input',
+    description: 'Allowlisted runner smoke for local input format and table/object semantics inspection.',
+    environmentRefs: ['sc-py-singlecell'],
+    requiredFields: ['input_path'],
+    outputs: ['reports/import_summary.json', 'run_manifest.json', 'logs/inspect_input.log'],
+    runner: {
+      kind: 'python',
+      script: 'scripts/inspect_input.py',
+      environmentRef: 'sc-py-singlecell',
+    },
+  },
+  {
+    id: 'run_scanpy_core',
+    description: 'Allowlisted Scanpy smoke runner for QC metrics, PCA/neighbors/UMAP, Leiden clusters, and marker table.',
+    environmentRefs: ['sc-py-singlecell'],
+    requiredFields: ['counts_path', 'metadata_path'],
+    outputs: ['reports/scanpy_core_summary.json', 'tables/qc_metrics.tsv', 'tables/cluster_markers.tsv', 'figures/umap_clusters.png', 'run_manifest.json'],
+    runner: {
+      kind: 'python',
+      script: 'scripts/run_scanpy_core.py',
+      environmentRef: 'sc-py-singlecell',
+    },
+  },
+  {
+    id: 'run_seurat_core',
+    description: 'Allowlisted Seurat smoke runner for normalization, PCA/neighbors/clusters, marker table, and RDS output.',
+    environmentRefs: ['sc-r-singlecell'],
+    requiredFields: ['counts_path', 'metadata_path'],
+    outputs: ['reports/seurat_core_summary.json', 'tables/seurat_metadata.tsv', 'tables/cluster_markers.tsv', 'objects/seurat_core.rds', 'run_manifest.json'],
+    runner: {
+      kind: 'rscript',
+      script: 'scripts/run_seurat_core.R',
+      environmentRef: 'sc-r-singlecell',
+    },
+  },
+  {
+    id: 'run_pseudobulk_de',
+    description: 'Allowlisted pseudobulk DE smoke runner using sample x cell-type aggregation and edgeR when replication permits.',
+    environmentRefs: ['sc-r-singlecell'],
+    requiredFields: ['counts_path', 'metadata_path', 'sample_key', 'group_key', 'cell_type_key'],
+    outputs: ['reports/pseudobulk_de_summary.json', 'tables/pseudobulk_counts.tsv', 'tables/pseudobulk_de.tsv', 'run_manifest.json'],
+    runner: {
+      kind: 'rscript',
+      script: 'scripts/run_pseudobulk_de.R',
+      environmentRef: 'sc-r-singlecell',
+    },
+  },
+  {
+    id: 'run_signature_scoring',
+    description: 'Allowlisted signature scoring smoke runner for small gene-set score tables.',
+    environmentRefs: ['sc-r-singlecell'],
+    requiredFields: ['counts_path', 'gene_sets_path'],
+    outputs: ['reports/signature_scoring_summary.json', 'tables/signature_scores.tsv', 'run_manifest.json'],
+    runner: {
+      kind: 'rscript',
+      script: 'scripts/run_signature_scoring.R',
+      environmentRef: 'sc-r-singlecell',
+    },
+  },
+  {
+    id: 'run_liana',
+    description: 'Allowlisted ligand-receptor smoke runner for LIANA-compatible CCI score contracts.',
+    environmentRefs: ['sc-py-singlecell'],
+    requiredFields: ['counts_path', 'metadata_path', 'lr_pairs_path', 'cell_type_key'],
+    outputs: ['reports/liana_summary.json', 'tables/liana_lr_scores.tsv', 'run_manifest.json'],
+    runner: {
+      kind: 'python',
+      script: 'scripts/run_liana.py',
+      environmentRef: 'sc-py-singlecell',
+    },
+  },
   {
     id: 'singlecell_import_summary',
     description: 'Inspect matrix/object semantics, metadata keys, raw-count status, and downstream claim boundaries.',

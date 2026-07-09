@@ -10,7 +10,7 @@ import path from 'node:path';
 const uniqueStrings = (values: Array<string | undefined>): string[] =>
   Array.from(new Set(values.map((value) => value?.trim()).filter((value): value is string => Boolean(value)))).sort();
 
-const allowedPathRoots = (): string[] =>
+export const allowedPathRoots = (): string[] =>
   uniqueStrings([
     process.env.OPENBIOSCIENCE_WORKSPACE_ROOT,
     process.env.OPENBIOSCIENCE_RUNTIME_ROOT,
@@ -24,7 +24,9 @@ const isPathUnderRoot = (candidate: string, root: string): boolean => {
 };
 
 export const safeAbsolutePathStatus = (candidate: string): 'available' | 'unverified' => {
-  if (!path.isAbsolute(candidate)) return 'unverified';
-  if (!allowedPathRoots().some((root) => isPathUnderRoot(candidate, root))) return 'unverified';
+  if (!isApprovedAbsolutePath(candidate)) return 'unverified';
   return fs.existsSync(candidate) ? 'available' : 'unverified';
 };
+
+export const isApprovedAbsolutePath = (candidate: string): boolean =>
+  path.isAbsolute(candidate) && allowedPathRoots().some((root) => isPathUnderRoot(candidate, root));

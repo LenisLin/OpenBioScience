@@ -1,0 +1,7 @@
+cell,sample,condition,cell_type
+cell_a,S1,baseline,T_cell
+cell_b,S1,baseline,T_cell
+cell_c,S2,on_treatment,T_cell
+cell_d,S2,on_treatment,myeloid
+cell_e,S3,baseline,myeloid
+cell_f,S3,baseline,myeloid

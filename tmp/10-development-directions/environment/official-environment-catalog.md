@@ -30,19 +30,19 @@ Current storage root:
 Current official Conda prefix root:
 
 ```text
-<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official
+<OPENBIOSCIENCE_RUNTIME_ROOT>/envs
 ```
 
 | Environment | Installed prefix | Current size | Current validation |
 | --- | --- | --- | --- |
-| `sc-py-singlecell` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-py-singlecell` | 7.0G | import smoke completed for `torch`, CUDA runtime, `torchvision`, `torchaudio`, `scvi-tools` |
-| `sc-r-singlecell` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-singlecell` | 1.1G | prefix installed; package-level smoke remains pending |
-| `sc-r-plot` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-plot` | 294M | prefix installed; package-level smoke remains pending |
-| `sc-r-clinical` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-clinical` | 579M | prefix installed; package-level smoke remains pending |
-| `sc-cci-r` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-cci-r` | 1.8G | prefix installed; package-level smoke remains pending |
-| `sc-r-trajectory` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-trajectory` | 65M | prefix installed; package-level smoke remains pending |
-| `sc-r-tumor-cnv` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-tumor-cnv` | 161M | prefix installed; package-level smoke remains pending |
-| `sc-network-grn-r` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-network-grn-r` | 368M | prefix installed; package-level smoke remains pending |
+| `sc-py-singlecell` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-py-singlecell` | target server dependent | official probe pending on target server |
+| `sc-r-singlecell` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-r-singlecell` | target server dependent | official probe pending on target server |
+| `sc-r-plot` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-r-plot` | target server dependent | official probe pending on target server |
+| `sc-r-clinical` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-r-clinical` | target server dependent | official probe pending on target server |
+| `sc-cci-r` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-cci-r` | target server dependent | official probe pending on target server |
+| `sc-r-trajectory` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-r-trajectory` | target server dependent | P1 probe pending |
+| `sc-r-tumor-cnv` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-r-tumor-cnv` | target server dependent | P1 probe pending |
+| `sc-network-grn-r` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/envs/sc-network-grn-r` | target server dependent | P1 probe pending |
 
 Bootstrap metadata:
 
@@ -54,7 +54,7 @@ Naming decisions in this phase:
 
 - `sc-py-singlecell` is the canonical Python single-cell environment name. The temporary CUDA/version suffix was removed after installation.
 - `sc-r-trajectory` is the canonical trajectory environment name. The temporary R-version suffix was removed after installation.
-- Old temporary prefixes under `/tmp/openbioscience-envs` were removed after NAS migration.
+- Old temporary prefixes under `/tmp/openbioscience-envs` should be removed after runtime-root migration.
 
 ## Cross-Environment Rules
 

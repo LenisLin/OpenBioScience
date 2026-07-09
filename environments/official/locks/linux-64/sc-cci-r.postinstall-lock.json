@@ -1,0 +1,64 @@
+{
+  "schema": "openbioscience.postinstall_lock.v1",
+  "environmentRef": "sc-cci-r",
+  "generatedAt": "2026-07-09T14:05:13Z",
+  "packages": [
+    {
+      "package": "NMF",
+      "source": "cran",
+      "repo": null,
+      "status": "available",
+      "version": "0.28",
+      "remoteType": null,
+      "remoteHost": null,
+      "remoteUsername": null,
+      "remoteRepo": null,
+      "remoteRef": null,
+      "remoteSha": null,
+      "githubSHA1": null,
+      "sourceTarball": null
+    },
+    {
+      "package": "CellChat",
+      "source": "github",
+      "repo": "jinworks/CellChat",
+      "status": "available",
+      "version": "2.2.0.9001",
+      "remoteType": "local",
+      "remoteHost": null,
+      "remoteUsername": null,
+      "remoteRepo": null,
+      "remoteRef": null,
+      "remoteSha": null,
+      "githubSHA1": null,
+      "sourceTarball": {
+        "fileName": "jinworks_CellChat.tar.gz",
+        "sha256": "9ffe779f79dc869c6d457de63bc732eabda1c556127017dac84a4a852b257bca",
+        "bytes": 29281195,
+        "archiveRoot": "jinworks-CellChat-75253cd/",
+        "archiveRef": "75253cd"
+      }
+    },
+    {
+      "package": "nichenetr",
+      "source": "github",
+      "repo": "saeyslab/nichenetr",
+      "status": "available",
+      "version": "2.2.1.1",
+      "remoteType": "local",
+      "remoteHost": null,
+      "remoteUsername": null,
+      "remoteRepo": null,
+      "remoteRef": null,
+      "remoteSha": null,
+      "githubSHA1": null,
+      "sourceTarball": {
+        "fileName": "saeyslab_nichenetr.tar.gz",
+        "sha256": "fa71f3b0fc83dfaf6ccd2f06119674853aecb3f8662143106d3949db4737ecc8",
+        "bytes": 18771856,
+        "archiveRoot": "saeyslab-nichenetr-66f90d5/",
+        "archiveRef": "66f90d5"
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+schema: openbioscience.runner_defaults.v1
+fixture_root: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures
+workflows:
+  inspect_input:
+    input_path: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures/counts.csv
+    species: human
+  run_scanpy_core:
+    counts_path: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures/counts.csv
+    metadata_path: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures/metadata.csv
+    sample_key: sample
+    cluster_resolution: 0.4
+  run_seurat_core:
+    counts_path: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures/counts.csv
+    metadata_path: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures/metadata.csv
+    sample_key: sample
+    cluster_resolution: 0.4
+  run_pseudobulk_de:
+    counts_path: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures/counts.csv
+    metadata_path: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures/metadata.csv
+    sample_key: sample
+    group_key: condition
+    cell_type_key: cell_type
+  run_signature_scoring:
+    counts_path: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures/counts.csv
+    metadata_path: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures/metadata.csv
+    gene_sets_path: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures/gene_sets.json
+  run_liana:
+    counts_path: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures/counts.csv
+    metadata_path: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures/metadata.csv
+    lr_pairs_path: packages/desktop/src/process/resources/builtinMcp/bio/runners/fixtures/lr_pairs.tsv
+    cell_type_key: cell_type

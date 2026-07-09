@@ -10,7 +10,7 @@ This skill defines auditable QC and preprocessing for imported single-cell objec
 
 ## OpenBioScience Adapter
 
-- Use `bio_runtime.validate_workflow` to check QC/preprocessing contracts; execute only through an approved runner when available.
+- Use `bio_runtime.validate_workflow` to check QC/preprocessing contracts; execute only through cataloged `bio_runtime.run_workflow` runners such as `run_scanpy_core` or `run_seurat_core`.
 - Use `environmentRef` such as `sc-py-singlecell` or `sc-r-singlecell`; do not encode host paths.
 - Register parameters, thresholds, object versions, QC plots/tables, logs, and warnings through `science_artifact`.
 - Treat threshold choices as analysis decisions that require provenance.

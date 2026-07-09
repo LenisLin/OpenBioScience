@@ -1,50 +1,113 @@
 {
-  "storage_root": "/mnt/NAS_21T/ProjectData/OpenBioScience",
-  "official_root": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official",
+  "schema": "openbioscience.official_environment_manifest.v1",
+  "harness_version": "0.1.0-p0",
+  "runtime_root_env": "OPENBIOSCIENCE_RUNTIME_ROOT",
+  "default_runtime_root": "/srv/openbioscience",
+  "official_env_root": "${OPENBIOSCIENCE_RUNTIME_ROOT}/envs",
   "cache": {
-    "conda_pkgs_dirs": "/mnt/NAS_21T/ProjectData/OpenBioScience/cache/conda-pkgs",
-    "mamba_root_prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/cache/mamba-root"
+    "conda_pkgs_dirs": "${OPENBIOSCIENCE_RUNTIME_ROOT}/cache/conda-pkgs",
+    "mamba_root_prefix": "${OPENBIOSCIENCE_RUNTIME_ROOT}/cache/mamba-root",
+    "r_github_source_tarballs": "${OPENBIOSCIENCE_RUNTIME_ROOT}/cache/r-github"
+  },
+  "install": {
+    "micromamba": "bash environments/official/bootstrap/install-micromamba-wsl.sh",
+    "entrypoint": "bash environments/official/bootstrap/install-official-envs.sh",
+    "reproduce_from_lock": "bash scripts/bio-harness/reproduce-official-envs.sh --p0 --from-lock",
+    "sync_tested_runtime": "bash scripts/bio-harness/sync-tested-runtime.sh --p0",
+    "dry_run": "bash environments/official/bootstrap/install-official-envs.sh --dry-run <env-name>",
+    "probe": "bash environments/official/bootstrap/probe-official-envs.sh <env-name>",
+    "cache_r_github_tarballs": "bash environments/official/bootstrap/cache-r-github-tarballs.sh --from-lock",
+    "repair_bioconductor_data": "bash environments/official/bootstrap/repair-bioconductor-data-packages.sh --env <env-name> <package-key>"
+  },
+  "reproducibility": {
+    "strategy": "Environment YAML files are the editable source of intent. Platform locks are generated only after local probes pass and are committed as the tested reproduction snapshot.",
+    "primary_platform": "linux-64",
+    "lock_root": "environments/official/locks/${OPENBIOSCIENCE_LOCK_PLATFORM:-linux-64}",
+    "tracked_assets": [
+      "environment YAML files",
+      "explicit conda lock files",
+      "postinstall lock JSON files",
+      "probe results",
+      "runtime build report",
+      "bootstrap/probe/runner scripts",
+      "small fixtures",
+      "skills and MCP catalog"
+    ],
+    "excluded_assets": [
+      "conda prefixes",
+      "conda package caches",
+      "R/Python package source caches",
+      "downloaded datasets",
+      "database caches",
+      "analysis outputs",
+      "compiled binaries"
+    ]
   },
   "environments": [
     {
       "name": "sc-py-singlecell",
+      "tier": "P0",
+      "role": "Python AnnData/Scanpy import, QC, clustering, CellPhoneDB/LIANA smoke, and provider parsing",
       "yaml": "environments/official/sc-py-singlecell.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-py-singlecell"
+      "prefix": "${OPENBIOSCIENCE_RUNTIME_ROOT}/envs/sc-py-singlecell",
+      "probe": "environments/official/bootstrap/probes/probe_sc_py_singlecell.py"
     },
     {
       "name": "sc-r-singlecell",
+      "tier": "P0",
+      "role": "R Seurat/SCE import, QC, clustering, annotation, pseudobulk DE, enrichment, and signature scoring",
       "yaml": "environments/official/sc-r-singlecell.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-singlecell"
+      "prefix": "${OPENBIOSCIENCE_RUNTIME_ROOT}/envs/sc-r-singlecell",
+      "probe": "environments/official/bootstrap/probes/probe_sc_r_singlecell.R"
     },
     {
       "name": "sc-r-plot",
+      "tier": "P0",
+      "role": "R figure rendering for reproducible scRNA-seq plot artifacts",
       "yaml": "environments/official/sc-r-plot.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-plot"
+      "prefix": "${OPENBIOSCIENCE_RUNTIME_ROOT}/envs/sc-r-plot",
+      "probe": "environments/official/bootstrap/probes/probe_sc_r_plot.R"
     },
     {
       "name": "sc-r-clinical",
+      "tier": "P0",
+      "role": "R clinical response, composition, and survival analysis",
       "yaml": "environments/official/sc-r-clinical.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-clinical"
+      "prefix": "${OPENBIOSCIENCE_RUNTIME_ROOT}/envs/sc-r-clinical",
+      "probe": "environments/official/bootstrap/probes/probe_sc_r_clinical.R"
     },
     {
       "name": "sc-cci-r",
+      "tier": "P0",
+      "role": "R CellChat/NicheNet-style cell-cell communication workflows",
       "yaml": "environments/official/sc-cci-r.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-cci-r"
+      "prefix": "${OPENBIOSCIENCE_RUNTIME_ROOT}/envs/sc-cci-r",
+      "probe": "environments/official/bootstrap/probes/probe_sc_cci_r.R",
+      "postinstall": "environments/official/bootstrap/postinstall-sc-cci-r.R"
     },
     {
       "name": "sc-r-trajectory",
+      "tier": "P1",
+      "role": "R Slingshot/tradeSeq trajectory and pseudotime workflows",
       "yaml": "environments/official/sc-r-trajectory.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-trajectory"
+      "prefix": "${OPENBIOSCIENCE_RUNTIME_ROOT}/envs/sc-r-trajectory",
+      "probe": null
     },
     {
       "name": "sc-r-tumor-cnv",
+      "tier": "P1",
+      "role": "R tumor CNV inference modules for malignant-cell screening",
       "yaml": "environments/official/sc-r-tumor-cnv.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-tumor-cnv"
+      "prefix": "${OPENBIOSCIENCE_RUNTIME_ROOT}/envs/sc-r-tumor-cnv",
+      "probe": null
     },
     {
       "name": "sc-network-grn-r",
+      "tier": "P1",
+      "role": "R GRN and TF activity modules for GENIE3/BioNERO/SCENIC-style extensions",
       "yaml": "environments/official/sc-network-grn-r.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-network-grn-r"
+      "prefix": "${OPENBIOSCIENCE_RUNTIME_ROOT}/envs/sc-network-grn-r",
+      "probe": null
     }
   ]
 }

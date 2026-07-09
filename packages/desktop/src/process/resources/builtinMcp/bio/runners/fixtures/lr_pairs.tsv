@@ -1,0 +1,4 @@
+ligand	receptor	pathway
+CXCL8	CXCR1	inflammatory
+CXCL8	CXCR2	inflammatory
+HLA-DRA	CD4	antigen_presentation
