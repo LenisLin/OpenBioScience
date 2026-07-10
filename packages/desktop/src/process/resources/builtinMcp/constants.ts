@@ -36,6 +36,8 @@ export const BUILTIN_BIO_KNOWLEDGE_ID = 'builtin-bio-knowledge';
 export const BUILTIN_BIO_KNOWLEDGE_NAME = 'openscience-bio-knowledge';
 export const BUILTIN_BIO_PLOT_ID = 'builtin-bio-plot';
 export const BUILTIN_BIO_PLOT_NAME = 'openscience-bio-plot';
+export const BUILTIN_BIO_REPRODUCTION_ID = 'builtin-bio-reproduction';
+export const BUILTIN_BIO_REPRODUCTION_NAME = 'openscience-bio-reproduction';
 
 export function isBuiltinImageGenName(name?: string | null): boolean {
   if (!name) return false;

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type BioMcpProfile = 'runtime' | 'source' | 'knowledge' | 'plot';
+export type BioMcpProfile = 'runtime' | 'source' | 'knowledge' | 'plot' | 'reproduction';
 
 export type BioMcpCatalogItem = {
   id: string;
@@ -72,6 +72,21 @@ export const BIO_MCP_PROFILES: Record<BioMcpProfile, BioMcpProfileDefinition> = 
     description:
       'OpenBioScience scRNA-seq plotting control plane for local plot template catalogs, input validation, and plot artifact manifests.',
     actions: ['status', 'list_plot_templates', 'validate_plot_inputs', 'render_plan', 'summarize_plot_outputs'],
+  },
+  reproduction: {
+    profile: 'reproduction',
+    serverName: 'openscience-bio-reproduction',
+    toolName: 'bio_reproduction',
+    description:
+      'OpenBioScience omics reproduction planning control plane for source packaging, availability audit, lightweight localization planning, and script-boundary validation.',
+    actions: [
+      'status',
+      'build_source_package',
+      'localize_source_package',
+      'audit_data_code_availability',
+      'draft_reproduction_plan',
+      'validate_reproduction_plan',
+    ],
   },
 };
 
@@ -217,7 +232,7 @@ export const BIO_PLOT_TEMPLATES: BioMcpCatalogItem[] = [
 
 export function resolveBioProfile(value?: string | null): BioMcpProfile {
   if (!value) return 'runtime';
-  if (value === 'source' || value === 'knowledge' || value === 'plot') return value;
+  if (value === 'source' || value === 'knowledge' || value === 'plot' || value === 'reproduction') return value;
   if (value === 'runtime') return value;
   throw new Error(`Invalid OpenBioScience bio MCP profile "${value}".`);
 }

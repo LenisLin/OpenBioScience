@@ -10,6 +10,7 @@ import { LAB_SKILL_DEPOSITION_SKILL_NAME } from '@/common/chat/labSkillDepositio
 import {
   BUILTIN_BIO_KNOWLEDGE_NAME,
   BUILTIN_BIO_PLOT_NAME,
+  BUILTIN_BIO_REPRODUCTION_NAME,
   BUILTIN_BIO_RUNTIME_NAME,
   BUILTIN_BIO_SOURCE_NAME,
   BUILTIN_IMAGE_GEN_NAME,
@@ -67,7 +68,13 @@ export function getGuidModeRequiredMcpNames(
 
 export function getGuidModeSelectableBuiltinMcpNames(mode: GuidCapabilityMode): string[] {
   if (mode === 'science') {
-    return [BUILTIN_BIO_RUNTIME_NAME, BUILTIN_BIO_SOURCE_NAME, BUILTIN_BIO_KNOWLEDGE_NAME, BUILTIN_BIO_PLOT_NAME];
+    return [
+      BUILTIN_BIO_RUNTIME_NAME,
+      BUILTIN_BIO_SOURCE_NAME,
+      BUILTIN_BIO_KNOWLEDGE_NAME,
+      BUILTIN_BIO_PLOT_NAME,
+      BUILTIN_BIO_REPRODUCTION_NAME,
+    ];
   }
   return [];
 }

@@ -92,12 +92,22 @@ describe('syncCodexOpenScienceMcpConfig', () => {
           OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source',
         },
       },
+      {
+        name: 'openscience-bio-reproduction',
+        command: 'node',
+        args: ['/managed/builtin-mcp-bio.js'],
+        env: {
+          OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction',
+        },
+      },
     ]);
 
     expect(block).toContain('[mcp_servers.openscience-bio-runtime]');
     expect(block).toContain('[mcp_servers.openscience-bio-source]');
+    expect(block).toContain('[mcp_servers.openscience-bio-reproduction]');
     expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "runtime"');
     expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "source"');
+    expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "reproduction"');
     expect(block).not.toContain('API_KEY');
     expect(block).not.toContain('TOKEN');
   });

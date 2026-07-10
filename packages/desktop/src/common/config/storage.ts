@@ -738,6 +738,9 @@ export const BUILTIN_BIO_KNOWLEDGE_LEGACY_NAMES = ['deeporganiser-bio-knowledge'
 export const BUILTIN_BIO_PLOT_ID = 'builtin-bio-plot';
 export const BUILTIN_BIO_PLOT_NAME = 'openscience-bio-plot';
 export const BUILTIN_BIO_PLOT_LEGACY_NAMES = ['deeporganiser-bio-plot'] as const;
+export const BUILTIN_BIO_REPRODUCTION_ID = 'builtin-bio-reproduction';
+export const BUILTIN_BIO_REPRODUCTION_NAME = 'openscience-bio-reproduction';
+export const BUILTIN_BIO_REPRODUCTION_LEGACY_NAMES = ['deeporganiser-bio-reproduction'] as const;
 
 export interface IMcpTool {
   name: string;

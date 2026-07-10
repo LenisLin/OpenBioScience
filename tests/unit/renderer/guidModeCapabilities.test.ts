@@ -9,6 +9,7 @@ import {
 import {
   BUILTIN_BIO_KNOWLEDGE_NAME,
   BUILTIN_BIO_PLOT_NAME,
+  BUILTIN_BIO_REPRODUCTION_NAME,
   BUILTIN_BIO_RUNTIME_NAME,
   BUILTIN_BIO_SOURCE_NAME,
   BUILTIN_IMAGE_GEN_NAME,
@@ -38,6 +39,7 @@ describe('guid capability mode MCP requirements', () => {
       BUILTIN_BIO_SOURCE_NAME,
       BUILTIN_BIO_KNOWLEDGE_NAME,
       BUILTIN_BIO_PLOT_NAME,
+      BUILTIN_BIO_REPRODUCTION_NAME,
     ]);
     expect(getGuidModeRequiredMcpNames('science')).not.toEqual(
       expect.arrayContaining([
@@ -45,6 +47,7 @@ describe('guid capability mode MCP requirements', () => {
         BUILTIN_BIO_SOURCE_NAME,
         BUILTIN_BIO_KNOWLEDGE_NAME,
         BUILTIN_BIO_PLOT_NAME,
+        BUILTIN_BIO_REPRODUCTION_NAME,
       ])
     );
   });

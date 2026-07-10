@@ -48,6 +48,7 @@ const DEFAULT_SCIENCE_SKILL_IDS = [
   'openscience-databases',
   'openscience-biomodels',
   'openscience-singlecell',
+  'bio-omics-reproduction-planning',
   'openscience-compute',
 ];
 const DEFAULT_RESEARCH_EVIDENCE_DOMAINS = [
@@ -83,6 +84,14 @@ type WebuiMcpServerPayload = {
 
 type StoredWebuiMcpServer = WebuiMcpServerPayload & {
   id: string;
+};
+
+type StdioMcpServerBuildParams = {
+  name: string;
+  description: string;
+  scriptName: string;
+  enabled?: boolean;
+  env?: Record<string, string>;
 };
 
 const __filename = fileURLToPath(import.meta.url);
@@ -280,13 +289,7 @@ function builtinMcpScriptPath(scriptName: string): string | undefined {
   return fs.existsSync(candidate) ? candidate : undefined;
 }
 
-function buildStdioMcpServer(params: {
-  name: string;
-  description: string;
-  scriptName: string;
-  enabled?: boolean;
-  env?: Record<string, string>;
-}): WebuiMcpServerPayload | undefined {
+function buildStdioMcpServer(params: StdioMcpServerBuildParams): WebuiMcpServerPayload | undefined {
   const scriptPath = builtinMcpScriptPath(params.scriptName);
   if (!scriptPath) {
     console.warn(`[webui] built-in MCP script not found: ${params.scriptName}.js`);
@@ -313,7 +316,54 @@ function buildStdioMcpServer(params: {
   };
 }
 
-function buildStandaloneBuiltinMcpServers(backendPort: number): WebuiMcpServerPayload[] {
+export function buildStandaloneBioMcpServerSpecs(): StdioMcpServerBuildParams[] {
+  return [
+    {
+      name: 'openscience-bio-runtime',
+      description:
+        'Built-in OpenBioScience scRNA-seq runtime control plane for environment, workflow, and output contracts.',
+      scriptName: 'builtin-mcp-bio',
+      env: {
+        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime',
+      },
+    },
+    {
+      name: 'openscience-bio-source',
+      description: 'Built-in OpenBioScience data-source control plane for accession triage and data manifests.',
+      scriptName: 'builtin-mcp-bio',
+      env: {
+        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source',
+      },
+    },
+    {
+      name: 'openscience-bio-knowledge',
+      description: 'Built-in OpenBioScience marker, atlas, gene-set, and ligand-receptor evidence contracts.',
+      scriptName: 'builtin-mcp-bio',
+      env: {
+        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'knowledge',
+      },
+    },
+    {
+      name: 'openscience-bio-plot',
+      description: 'Built-in OpenBioScience scRNA-seq plot template and plot artifact manifest contracts.',
+      scriptName: 'builtin-mcp-bio',
+      env: {
+        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'plot',
+      },
+    },
+    {
+      name: 'openscience-bio-reproduction',
+      description:
+        'Built-in OpenBioScience omics reproduction planning control plane for source packaging, availability audit, lightweight localization planning, and script-boundary validation.',
+      scriptName: 'builtin-mcp-bio',
+      env: {
+        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction',
+      },
+    },
+  ];
+}
+
+export function buildStandaloneBuiltinMcpServers(backendPort: number): WebuiMcpServerPayload[] {
   const servers = [
     buildStdioMcpServer({
       name: 'openscience-medical-evidence',
@@ -367,39 +417,7 @@ function buildStandaloneBuiltinMcpServers(backendPort: number): WebuiMcpServerPa
       scriptName: 'builtin-mcp-user-input',
       enabled: true,
     }),
-    buildStdioMcpServer({
-      name: 'openscience-bio-runtime',
-      description:
-        'Built-in OpenBioScience scRNA-seq runtime control plane for environment, workflow, and output contracts.',
-      scriptName: 'builtin-mcp-bio',
-      env: {
-        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime',
-      },
-    }),
-    buildStdioMcpServer({
-      name: 'openscience-bio-source',
-      description: 'Built-in OpenBioScience data-source control plane for accession triage and data manifests.',
-      scriptName: 'builtin-mcp-bio',
-      env: {
-        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source',
-      },
-    }),
-    buildStdioMcpServer({
-      name: 'openscience-bio-knowledge',
-      description: 'Built-in OpenBioScience marker, atlas, gene-set, and ligand-receptor evidence contracts.',
-      scriptName: 'builtin-mcp-bio',
-      env: {
-        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'knowledge',
-      },
-    }),
-    buildStdioMcpServer({
-      name: 'openscience-bio-plot',
-      description: 'Built-in OpenBioScience scRNA-seq plot template and plot artifact manifest contracts.',
-      scriptName: 'builtin-mcp-bio',
-      env: {
-        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'plot',
-      },
-    }),
+    ...buildStandaloneBioMcpServerSpecs().map((params) => buildStdioMcpServer(params)),
     buildStdioMcpServer({
       name: 'openscience-image-generation',
       description: 'Built-in image generation tool powered by AI models. Configure the model in Settings > Tools.',
@@ -611,7 +629,9 @@ async function main(): Promise<void> {
   process.on('SIGTERM', () => void shutdown('SIGTERM'));
 }
 
-main().catch((err) => {
-  console.error('[webui] failed to start:', err instanceof Error ? err.message : err);
-  process.exit(1);
-});
+if (path.resolve(process.argv[1] || '') === __filename) {
+  main().catch((err) => {
+    console.error('[webui] failed to start:', err instanceof Error ? err.message : err);
+    process.exit(1);
+  });
+}

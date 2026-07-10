@@ -38,6 +38,8 @@ import {
   BUILTIN_BIO_KNOWLEDGE_LEGACY_NAMES,
   BUILTIN_BIO_PLOT_NAME,
   BUILTIN_BIO_PLOT_LEGACY_NAMES,
+  BUILTIN_BIO_REPRODUCTION_NAME,
+  BUILTIN_BIO_REPRODUCTION_LEGACY_NAMES,
   BUILTIN_BIO_RUNTIME_NAME,
   BUILTIN_BIO_RUNTIME_LEGACY_NAMES,
   BUILTIN_BIO_SOURCE_NAME,
@@ -69,7 +71,7 @@ type ConfigFile = typeof ProcessConfigType;
 type MigrationStepResult = boolean;
 type McpImportServer = Partial<IMcpServer> & Pick<IMcpServer, 'name' | 'transport'>;
 type BackendClientPreferences = Record<string, unknown>;
-type BioMcpProfile = 'runtime' | 'source' | 'knowledge' | 'plot';
+type BioMcpProfile = 'runtime' | 'source' | 'knowledge' | 'plot' | 'reproduction';
 const BUILTIN_CHROME_DEVTOOLS_NAME = 'chrome-devtools';
 
 const BIO_MCP_SERVERS: Array<{
@@ -98,6 +100,12 @@ const BIO_MCP_SERVERS: Array<{
     name: BUILTIN_BIO_PLOT_NAME,
     description: 'Built-in OpenBioScience scRNA-seq plot template and plot artifact manifest contracts.',
   },
+  {
+    profile: 'reproduction',
+    name: BUILTIN_BIO_REPRODUCTION_NAME,
+    description:
+      'Built-in OpenBioScience omics reproduction planning control plane for source packaging, availability audit, lightweight localization planning, and script-boundary validation.',
+  },
 ];
 
 const BUILTIN_SERVER_LEGACY_NAMES = new Map<string, readonly string[]>([
@@ -112,6 +120,7 @@ const BUILTIN_SERVER_LEGACY_NAMES = new Map<string, readonly string[]>([
   [BUILTIN_BIO_SOURCE_NAME, BUILTIN_BIO_SOURCE_LEGACY_NAMES],
   [BUILTIN_BIO_KNOWLEDGE_NAME, BUILTIN_BIO_KNOWLEDGE_LEGACY_NAMES],
   [BUILTIN_BIO_PLOT_NAME, BUILTIN_BIO_PLOT_LEGACY_NAMES],
+  [BUILTIN_BIO_REPRODUCTION_NAME, BUILTIN_BIO_REPRODUCTION_LEGACY_NAMES],
 ]);
 
 function findExistingBuiltinServer(existingByName: Map<string, IMcpServer>, name: string): IMcpServer | undefined {

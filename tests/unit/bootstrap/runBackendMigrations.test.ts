@@ -4,6 +4,8 @@ import { IMAGE_GEN_ENV_KEYS } from '@/common/config/imageGenerationMcpEnv';
 import {
   BUILTIN_BIO_KNOWLEDGE_NAME,
   BUILTIN_BIO_PLOT_NAME,
+  BUILTIN_BIO_REPRODUCTION_NAME,
+  BUILTIN_BIO_REPRODUCTION_LEGACY_NAMES,
   BUILTIN_BIO_RUNTIME_NAME,
   BUILTIN_BIO_RUNTIME_LEGACY_NAMES,
   BUILTIN_BIO_SOURCE_NAME,
@@ -245,6 +247,13 @@ describe('runBackendMigrations', () => {
             env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'plot' },
           }),
         }),
+        expect.objectContaining({
+          name: BUILTIN_BIO_REPRODUCTION_NAME,
+          transport: expect.objectContaining({
+            args: ['/mock/builtin-mcp-bio.js'],
+            env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction' },
+          }),
+        }),
       ])
     );
   });
@@ -280,6 +289,12 @@ describe('runBackendMigrations', () => {
           command: 'node',
           args: ['/mock/builtin-mcp-bio.js'],
           env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'plot' },
+        }),
+        expect.objectContaining({
+          name: BUILTIN_BIO_REPRODUCTION_NAME,
+          command: 'node',
+          args: ['/mock/builtin-mcp-bio.js'],
+          env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction' },
         }),
       ])
     );
@@ -319,6 +334,45 @@ describe('runBackendMigrations', () => {
         transport: expect.objectContaining({
           args: ['/mock/builtin-mcp-bio.js'],
           env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime' },
+        }),
+      }),
+    });
+  });
+
+  it('updates an existing legacy-name reproduction MCP server instead of importing a duplicate', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const legacyReproductionServer: IMcpServer = {
+      id: 'legacy-bio-reproduction-id',
+      name: BUILTIN_BIO_REPRODUCTION_LEGACY_NAMES[0],
+      description: 'Legacy bio reproduction MCP server.',
+      enabled: false,
+      builtin: false,
+      transport: {
+        type: 'stdio',
+        command: 'node',
+        args: ['/mock/old-bio.js'],
+        env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction' },
+      },
+      created_at: 1,
+      updated_at: 1,
+      original_json: '{}',
+    };
+    listServersMock.mockResolvedValue([imageServer(), legacyReproductionServer]);
+
+    await runBackendMigrations(configFile as never);
+
+    const importedServers = batchImportServersMock.mock.calls.flatMap((call) => call[0]?.servers ?? []);
+    expect(importedServers).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: BUILTIN_BIO_REPRODUCTION_NAME })])
+    );
+    expect(updateServerMock).toHaveBeenCalledWith({
+      id: 'legacy-bio-reproduction-id',
+      data: expect.objectContaining({
+        name: BUILTIN_BIO_REPRODUCTION_NAME,
+        builtin: true,
+        transport: expect.objectContaining({
+          args: ['/mock/builtin-mcp-bio.js'],
+          env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction' },
         }),
       }),
     });

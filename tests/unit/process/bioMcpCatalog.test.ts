@@ -9,12 +9,22 @@ import {
 } from '@/process/resources/builtinMcp/bio/catalog';
 
 describe('OpenBioScience bio MCP catalog', () => {
-  it('defines independent control-plane profiles for runtime, source, knowledge, and plot', () => {
-    expect(Object.keys(BIO_MCP_PROFILES).sort()).toEqual(['knowledge', 'plot', 'runtime', 'source']);
+  it('defines independent control-plane profiles for runtime, source, knowledge, plot, and reproduction', () => {
+    expect(Object.keys(BIO_MCP_PROFILES).sort()).toEqual(['knowledge', 'plot', 'reproduction', 'runtime', 'source']);
     expect(BIO_MCP_PROFILES.runtime.toolName).toBe('bio_runtime');
     expect(BIO_MCP_PROFILES.source.toolName).toBe('bio_source');
     expect(BIO_MCP_PROFILES.knowledge.toolName).toBe('bio_knowledge');
     expect(BIO_MCP_PROFILES.plot.toolName).toBe('bio_plot');
+    expect(BIO_MCP_PROFILES.reproduction.toolName).toBe('bio_reproduction');
+    expect(BIO_MCP_PROFILES.reproduction.serverName).toBe('openscience-bio-reproduction');
+    expect(BIO_MCP_PROFILES.reproduction.actions).toEqual([
+      'status',
+      'build_source_package',
+      'localize_source_package',
+      'audit_data_code_availability',
+      'draft_reproduction_plan',
+      'validate_reproduction_plan',
+    ]);
   });
 
   it('uses environmentRef catalog entries without hardcoded development NAS paths', () => {
@@ -46,6 +56,7 @@ describe('OpenBioScience bio MCP catalog', () => {
     expect(resolveBioProfile(undefined)).toBe('runtime');
     expect(resolveBioProfile('')).toBe('runtime');
     expect(resolveBioProfile('source')).toBe('source');
+    expect(resolveBioProfile('reproduction')).toBe('reproduction');
     expect(() => resolveBioProfile('typo')).toThrow('Invalid OpenBioScience bio MCP profile');
   });
 });
