@@ -1,12 +1,16 @@
-import React, { Suspense, useEffect } from 'react';
-import { HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import React, { Suspense, useEffect, useRef } from 'react';
+import { HashRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { isLeaderAgentBetaEnabled } from '@/common/config/betaTesting';
+import { Button, Notification, Result } from '@arco-design/web-react';
 import AppLoader from '@renderer/components/layout/AppLoader';
 import { useAuth } from '@renderer/hooks/context/AuthContext';
 import { useConfig } from '@renderer/hooks/config/useConfig';
 import ScheduledTasksErrorBoundary from '@renderer/pages/cron/ScheduledTasksPage/ScheduledTasksErrorBoundary';
 import { shouldShowOnboarding } from '@renderer/pages/onboarding/onboardingState';
 import { APP_DISPLAY_NAME } from '@/renderer/utils/brand';
+import i18n from '@/renderer/services/i18n';
+import { fetchManagedAgents } from '@/renderer/utils/model/agentTypes';
+import { isElectronDesktop } from '@/renderer/utils/platform';
 const Conversation = React.lazy(() => import('@renderer/pages/conversation'));
 const Guid = React.lazy(() => import('@renderer/pages/guid'));
 const Onboarding = React.lazy(() => import('@renderer/pages/onboarding'));
@@ -30,10 +34,115 @@ const TaskDetailPage = React.lazy(() => import('@renderer/pages/cron/ScheduledTa
 const CollaborationWorkspacePage = React.lazy(() => import('@renderer/pages/collaboration'));
 const LarkProjectsPage = React.lazy(() => import('@renderer/pages/collaboration/LarkProjectsPage'));
 
+const CODEX_STARTUP_CHECK_KEY = 'openbioscience.codexStartupCheck.v1';
+
+const CodexStartupCheck: React.FC = () => {
+  const navigate = useNavigate();
+  const checkedRef = useRef(false);
+
+  useEffect(() => {
+    if (checkedRef.current || sessionStorage.getItem(CODEX_STARTUP_CHECK_KEY) === 'done') return;
+    checkedRef.current = true;
+
+    void fetchManagedAgents().then((agents) => {
+      sessionStorage.setItem(CODEX_STARTUP_CHECK_KEY, 'done');
+      const codexAvailable = agents.some(
+        (agent) => agent.available && (agent.backend === 'codex' || agent.name.toLowerCase() === 'codex cli')
+      );
+      if (codexAvailable) return;
+
+      const environmentKey = isElectronDesktop()
+        ? 'settings.agentManagement.codexStartupCheckDesktop'
+        : 'settings.agentManagement.codexStartupCheckWebui';
+      Notification.warning({
+        title: i18n.t('settings.agentManagement.codexStartupCheckTitle'),
+        content: i18n.t(environmentKey),
+        duration: 0,
+        btn: (
+          <Button type='primary' size='mini' onClick={() => void navigate('/settings/model')}>
+            {i18n.t('settings.agentManagement.codexStartupCheckAction')}
+          </Button>
+        ),
+      });
+    });
+  }, [navigate]);
+
+  return null;
+};
+
+type RouteErrorBoundaryProps = React.PropsWithChildren<{
+  routePath: string;
+}>;
+
+type RouteErrorBoundaryState = {
+  error: Error | null;
+};
+
+class RouteErrorBoundary extends React.Component<RouteErrorBoundaryProps, RouteErrorBoundaryState> {
+  state: RouteErrorBoundaryState = {
+    error: null,
+  };
+
+  static getDerivedStateFromError(error: Error): RouteErrorBoundaryState {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    console.error('[RouteErrorBoundary] Route failed to render:', {
+      routePath: this.props.routePath,
+      error,
+      info,
+    });
+  }
+
+  private handleReload = (): void => {
+    window.location.reload();
+  };
+
+  private handleBack = (): void => {
+    window.location.hash = '#/guid';
+  };
+
+  render() {
+    if (!this.state.error) {
+      return this.props.children;
+    }
+
+    return (
+      <div className='flex min-h-full w-full items-center justify-center px-16px py-32px'>
+        <Result
+          status='error'
+          title={i18n.t('common.error', { defaultValue: 'Error' })}
+          subTitle={this.state.error.message || i18n.t('common.unknownError', { defaultValue: 'Unknown error' })}
+          extra={
+            <div className='flex items-center justify-center gap-8px'>
+              <Button type='primary' onClick={this.handleReload}>
+                {i18n.t('common.reload', { defaultValue: 'Reload' })}
+              </Button>
+              <Button onClick={this.handleBack}>{i18n.t('common.back', { defaultValue: 'Back' })}</Button>
+            </div>
+          }
+        />
+      </div>
+    );
+  }
+}
+
+const RouteErrorBoundaryWithLocation: React.FC<React.PropsWithChildren> = ({ children }) => {
+  const location = useLocation();
+  return (
+    <RouteErrorBoundary key={location.key} routePath={location.pathname}>
+      {children}
+    </RouteErrorBoundary>
+  );
+};
+
 const withRouteFallback = (Component: React.LazyExoticComponent<React.ComponentType>) => (
-  <Suspense fallback={<AppLoader />}>
-    <Component />
-  </Suspense>
+  <RouteErrorBoundaryWithLocation>
+    <Suspense fallback={<AppLoader />}>
+      <Component />
+    </Suspense>
+  </RouteErrorBoundaryWithLocation>
 );
 
 const withScheduledRouteFallback = (Component: React.LazyExoticComponent<React.ComponentType>) => (
@@ -105,6 +214,7 @@ const LeaderAgentBetaRoute: React.FC = () => {
 const PanelRoute: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
   return (
     <HashRouter>
+      <CodexStartupCheck />
       <Routes>
         <Route path='/login' element={<Navigate to='/guid' replace />} />
         <Route path='/register' element={<Navigate to='/guid' replace />} />

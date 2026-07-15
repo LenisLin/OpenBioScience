@@ -38,6 +38,7 @@ import {
 } from '@/renderer/pages/conversation/platforms/useConversationCommandQueue';
 import { usePreviewContext } from '@/renderer/pages/conversation/Preview';
 import { useConversationRuntimeView } from '@/renderer/pages/conversation/runtime/useConversationRuntimeView';
+import { usePostToolSilenceRecovery } from '@/renderer/pages/conversation/runtime/usePostToolSilenceRecovery';
 import { getConversationRuntimeWorkspaceErrorMessage } from '@/renderer/pages/conversation/utils/conversationCreateError';
 import { warmupConversation } from '@/renderer/pages/conversation/utils/warmupConversation';
 import { useTeamPermission } from '@/renderer/pages/team/hooks/TeamPermissionContext';
@@ -50,7 +51,7 @@ import { buildDisplayMessage } from '@/renderer/utils/file/messageFiles';
 import { getModelContextLimit } from '@/renderer/utils/model/modelContextLimits';
 import { Message, Tag } from '@arco-design/web-react';
 import { Brain, Shield } from '@icon-park/react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buildSendFailureError } from './buildSendFailureError';
 import { useAcpInitialMessage } from './useAcpInitialMessage';
@@ -250,6 +251,51 @@ const AcpSendBox: React.FC<{
   const addOrUpdateMessage = useAddOrUpdateMessage(); // Move this here so it's available in useEffect
   const addOrUpdateMessageRef = useLatestRef(addOrUpdateMessage);
   const runtimeView = useConversationRuntimeView(conversation_id);
+  const stallNoticeKeysRef = useRef(new Set<string>());
+  const postToolRecovery = usePostToolSilenceRecovery({
+    conversationId: conversation_id,
+    runtimeView: runtimeView.view,
+    enabled: !teamRuntime,
+    onRecovered: resetState,
+  });
+
+  useEffect(() => {
+    let noticeType: 'warning' | 'error' | undefined;
+    let noticeContent: string | undefined;
+    if (postToolRecovery.phase === 'warning') {
+      noticeType = 'warning';
+      noticeContent = t('acp.stall.warning');
+      Message.warning(noticeContent);
+    } else if (postToolRecovery.phase === 'recovered') {
+      noticeType = 'warning';
+      noticeContent = t('acp.stall.recovered');
+      Message.warning(noticeContent);
+    } else if (postToolRecovery.phase === 'failed') {
+      noticeType = 'error';
+      noticeContent = t('acp.stall.failed');
+      Message.error(noticeContent);
+    }
+
+    if (!noticeType || !noticeContent || !postToolRecovery.turnId) return;
+    const noticeKey = `post-tool-silence:${conversation_id}:${postToolRecovery.turnId}:${postToolRecovery.phase}`;
+    if (stallNoticeKeysRef.current.has(noticeKey)) return;
+    stallNoticeKeysRef.current.add(noticeKey);
+    addOrUpdateMessageRef.current(
+      {
+        id: noticeKey,
+        msg_id: noticeKey,
+        type: 'tips',
+        position: 'center',
+        conversation_id,
+        created_at: Date.now(),
+        content: {
+          content: noticeContent,
+          type: noticeType,
+        },
+      },
+      true
+    );
+  }, [conversation_id, postToolRecovery.phase, postToolRecovery.turnId, t]);
 
   // Shared file handling logic
   const { handleFilesAdded, clearFiles } = useSendBoxFiles({

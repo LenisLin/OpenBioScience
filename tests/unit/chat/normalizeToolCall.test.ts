@@ -5,7 +5,12 @@
  */
 
 import type { IMessageAcpToolCall } from '@/common/chat/chatLib';
-import { normalizeAcpToolCall } from '@/common/chat/normalizeToolCall';
+import {
+  hasRunningToolMessages,
+  normalizeAcpToolCall,
+  normalizeAcpToolStatus,
+  normalizeToolCall,
+} from '@/common/chat/normalizeToolCall';
 import { describe, expect, it } from 'vitest';
 
 describe('normalizeAcpToolCall', () => {
@@ -45,5 +50,46 @@ describe('normalizeAcpToolCall', () => {
     expect((normalized as { imagePath?: string } | undefined)?.imagePath).toBe(
       '/Users/test/.codex/generated_images/session/ig_test_image.png'
     );
+  });
+
+  it.each(['canceled', 'cancelled'])('normalizes ACP %s updates as canceled', (status) => {
+    const message = {
+      id: 'tool-canceled',
+      conversation_id: 'conv-1',
+      type: 'acp_tool_call',
+      content: {
+        update: {
+          sessionUpdate: 'tool_call_update',
+          tool_call_id: 'tool-canceled',
+          status,
+          title: 'Run command',
+          kind: 'execute',
+        },
+      },
+    } as never;
+
+    expect(normalizeAcpToolCall(message)?.status).toBe('canceled');
+    expect(normalizeAcpToolStatus(status)).toBe('canceled');
+  });
+
+  it.each([
+    ['failed', 'error'],
+    ['canceled', 'canceled'],
+    ['cancelled', 'canceled'],
+  ] as const)('normalizes generic tool %s updates as %s terminal state', (status, expected) => {
+    const message = {
+      id: 'generic-terminal',
+      conversation_id: 'conv-1',
+      type: 'tool_call',
+      content: {
+        call_id: 'generic-terminal',
+        name: 'execute',
+        args: {},
+        status,
+      },
+    } as const;
+
+    expect(normalizeToolCall(message)?.status).toBe(expected);
+    expect(hasRunningToolMessages([message])).toBe(false);
   });
 });

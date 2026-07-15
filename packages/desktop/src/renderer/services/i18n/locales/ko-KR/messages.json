@@ -73,6 +73,23 @@
     "no": "아니요 (esc)"
   },
   "agentProgressSummary": "{{current}} / {{total}}단계 · {{count}}개 파일 변경됨",
+  "scienceDelivery": {
+    "title": "전달 상태",
+    "coverageSummary": "범위: {{completed}}/{{total}} 완료 · 조치 필요 {{actionRequired}} · 차단 {{blocked}}",
+    "coverageDetails": "범위 세부 정보",
+    "blockers": "외부 차단 요인",
+    "nextActions": "다음 작업",
+    "states": {
+      "running": "진행 중",
+      "actionRequired": "조치 필요",
+      "completed": "완료",
+      "partial": "제한적으로 완료",
+      "blocked": "차단됨",
+      "failed": "실패",
+      "awaitingUser": "사용자 검토 대기 중"
+    },
+    "analysis": { "analysisId": "분석 ID", "stage": "현재 단계", "checkpoint": "검사점", "baseline": "현재 기준선" }
+  },
   "codexMemory": {
     "title": "Codex Memory",
     "fallbackTitle": "Memory snapshot",

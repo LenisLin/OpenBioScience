@@ -82,6 +82,7 @@ describe('syncCodexOpenScienceMcpConfig', () => {
         args: ['/managed/builtin-mcp-bio.js'],
         env: {
           OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime',
+          OPENBIOSCIENCE_RUNTIME_ROOT: '/mnt/NAS_21T/ProjectData/OpenBioScience',
         },
       },
       {
@@ -90,6 +91,7 @@ describe('syncCodexOpenScienceMcpConfig', () => {
         args: ['/managed/builtin-mcp-bio.js'],
         env: {
           OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source',
+          OPENBIOSCIENCE_RUNTIME_ROOT: '/mnt/NAS_21T/ProjectData/OpenBioScience',
         },
       },
       {
@@ -98,6 +100,25 @@ describe('syncCodexOpenScienceMcpConfig', () => {
         args: ['/managed/builtin-mcp-bio.js'],
         env: {
           OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction',
+          OPENBIOSCIENCE_RUNTIME_ROOT: '/mnt/NAS_21T/ProjectData/OpenBioScience',
+        },
+      },
+      {
+        name: 'openscience-bio-statistics',
+        command: 'node',
+        args: ['/managed/builtin-mcp-bio.js'],
+        env: {
+          OPENBIOSCIENCE_BIO_MCP_PROFILE: 'statistics',
+          OPENBIOSCIENCE_RUNTIME_ROOT: '/mnt/NAS_21T/ProjectData/OpenBioScience',
+        },
+      },
+      {
+        name: 'openscience-bio-environment-manager',
+        command: 'node',
+        args: ['/managed/builtin-mcp-bio.js'],
+        env: {
+          OPENBIOSCIENCE_BIO_MCP_PROFILE: 'environment_manager',
+          OPENBIOSCIENCE_RUNTIME_ROOT: '/mnt/NAS_21T/ProjectData/OpenBioScience',
         },
       },
     ]);
@@ -105,11 +126,36 @@ describe('syncCodexOpenScienceMcpConfig', () => {
     expect(block).toContain('[mcp_servers.openscience-bio-runtime]');
     expect(block).toContain('[mcp_servers.openscience-bio-source]');
     expect(block).toContain('[mcp_servers.openscience-bio-reproduction]');
+    expect(block).toContain('[mcp_servers.openscience-bio-statistics]');
+    expect(block).toContain('[mcp_servers.openscience-bio-environment-manager]');
     expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "runtime"');
     expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "source"');
     expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "reproduction"');
+    expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "statistics"');
+    expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "environment_manager"');
+    expect(block).toContain('OPENBIOSCIENCE_RUNTIME_ROOT = "/mnt/NAS_21T/ProjectData/OpenBioScience"');
     expect(block).not.toContain('API_KEY');
     expect(block).not.toContain('TOKEN');
+  });
+
+  it('never writes per-session gateway credentials into the Codex config', () => {
+    const block = buildCodexOpenScienceMcpBlock([
+      {
+        name: 'openscience-science-artifact',
+        command: 'node',
+        args: ['/managed/builtin-mcp-science-artifact.js'],
+        env: {
+          OPENSCIENCE_STRICT_PROVENANCE: 'true',
+          DEEPORGANISER_USER_INPUT_URL: 'http://127.0.0.1:12345/user-input/request',
+          DEEPORGANISER_USER_INPUT_TOKEN: 'session-secret',
+        },
+      },
+    ]);
+
+    expect(block).toContain('OPENSCIENCE_STRICT_PROVENANCE');
+    expect(block).not.toContain('DEEPORGANISER_USER_INPUT_URL');
+    expect(block).not.toContain('DEEPORGANISER_USER_INPUT_TOKEN');
+    expect(block).not.toContain('session-secret');
   });
 
   it('replaces an old managed block and keeps secrets out of the written text', async () => {

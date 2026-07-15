@@ -9,6 +9,14 @@ dependencies:
   # sc-r-singlecell. Figure production lives in sc-r-plot.
   - python=3.12.*
   - pip
+  # Shared research-document and binary inspection utilities used during
+  # planning and source triage. poppler provides pdfinfo/pdftotext; binutils
+  # provides strings. git supports repositories when available but workflows
+  # must retain non-git fallbacks.
+  - poppler
+  - binutils
+  - git
+  - file
   - numpy
   - pandas
   - scipy

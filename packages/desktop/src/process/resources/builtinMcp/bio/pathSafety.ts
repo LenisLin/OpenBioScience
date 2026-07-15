@@ -57,6 +57,30 @@ const realpathIfExists = (candidate: string): string | undefined => {
   }
 };
 
+export const resolveSafeProjectWritePath = (projectRoot: string, relativePath: string): string => {
+  if (path.isAbsolute(relativePath)) {
+    throw new Error(`Project write path must be relative: ${relativePath}`);
+  }
+  const root = path.resolve(projectRoot);
+  if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
+    throw new Error(`Project root is not an available directory: ${root}`);
+  }
+  const resolved = path.resolve(root, relativePath);
+  const relative = path.relative(root, resolved);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error(`Project write path escapes the project root: ${relativePath}`);
+  }
+  const existingPath = nearestExistingPath(resolved);
+  if (!existingPath) throw new Error(`Cannot resolve project write path: ${relativePath}`);
+  const realRoot = fs.realpathSync(root);
+  const realExisting = fs.realpathSync(existingPath);
+  const realRelative = path.relative(realRoot, realExisting);
+  if (realRelative.startsWith('..') || path.isAbsolute(realRelative)) {
+    throw new Error(`Project write path resolves through a symlink outside the project root: ${relativePath}`);
+  }
+  return resolved;
+};
+
 export type SafeOutputDirectoryStatus = {
   status: 'allowed' | 'blocked';
   outputDir: string;

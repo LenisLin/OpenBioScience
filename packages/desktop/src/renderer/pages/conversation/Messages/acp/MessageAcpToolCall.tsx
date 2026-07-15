@@ -6,6 +6,7 @@
 
 import type { IMessageAcpToolCall } from '@/common/chat/chatLib';
 import { getAcpImageFileName, getAcpImagePath } from '@/common/chat/acpToolCallOutput';
+import { normalizeAcpToolStatus, type NormalizedToolStatus } from '@/common/chat/normalizeToolCall';
 import FileChangesPanel from '@/renderer/components/base/FileChangesPanel';
 import LocalImageView from '@/renderer/components/media/LocalImageView';
 import { useDiffPreviewHandlers } from '@/renderer/hooks/file/useDiffPreviewHandlers';
@@ -19,18 +20,22 @@ import { useTranslation } from 'react-i18next';
 import MarkdownView from '@renderer/components/Markdown';
 
 const StatusTag: React.FC<{ status: string }> = ({ status }) => {
-  const getTagProps = () => {
-    switch (status) {
+  const { t } = useTranslation();
+  const getTagProps = (normalizedStatus: NormalizedToolStatus) => {
+    switch (normalizedStatus) {
       case 'pending':
-        return { color: 'blue', text: 'Pending' };
-      case 'in_progress':
-        return { color: 'orange', text: 'In Progress' };
-      default:
-        return { color: 'gray', text: status };
+      case 'running':
+        return { color: 'orange', text: t('messages.agentSteps.status.running') };
+      case 'completed':
+        return { color: 'green', text: t('messages.agentSteps.status.success') };
+      case 'error':
+        return { color: 'red', text: t('messages.agentSteps.status.failed') };
+      case 'canceled':
+        return { color: 'gray', text: t('messages.agentSteps.status.canceled') };
     }
   };
 
-  const { color, text } = getTagProps();
+  const { color, text } = getTagProps(normalizeAcpToolStatus(status));
   return <Tag color={color}>{text}</Tag>;
 };
 

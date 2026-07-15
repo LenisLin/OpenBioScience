@@ -7,6 +7,11 @@
   "send": {
     "failed": "Failed to send message: {{error}}"
   },
+  "stall": {
+    "warning": "The agent has not continued after the last tool finished. OpenBioScience is monitoring the turn.",
+    "recovered": "The unresponsive run was stopped before it produced a final answer. Send 'Continue and finish the current task' to resume from the saved tool results.",
+    "failed": "The run appears unresponsive, but automatic stop failed. Use Stop or reload the conversation."
+  },
   "sendbox": {
     "placeholder": "Send message to {{backend}}..."
   },

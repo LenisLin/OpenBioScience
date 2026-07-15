@@ -53,6 +53,7 @@ describe('static-server', () => {
     handle = await startStaticServer({ staticDir, backendPort: backend.port, port: 0 });
     const r = await fetch(`${handle.localUrl}/`);
     expect(r.status).toBe(200);
+    expect(r.headers.get('cache-control')).toBe('no-cache, no-store, must-revalidate');
     const text = await r.text();
     expect(text).toContain('<title>root</title>');
   });
@@ -63,6 +64,7 @@ describe('static-server', () => {
     handle = await startStaticServer({ staticDir, backendPort: backend.port, port: 0 });
     const r = await fetch(`${handle.localUrl}/chat/123`);
     expect(r.status).toBe(200);
+    expect(r.headers.get('cache-control')).toBe('no-cache, no-store, must-revalidate');
     expect(await r.text()).toContain('<title>root</title>');
   });
 

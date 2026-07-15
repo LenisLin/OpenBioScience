@@ -7,26 +7,26 @@
 | 决策点 | 选择 |
 | --- | --- |
 | 自定义环境范围 | User 级 |
-| 自动化权限 | 受控自动注册 |
+| 自动化权限 | agent 外层创建，MCP 只注册/index |
 | 官方环境是否可被用户修改 | 不可修改 |
 | 自定义环境基础 | 优先 fork/patch 官方环境 |
+| 首版可见性 | agent/runtime 可见，不做前台 UI 管理 |
 
 User 级意味着一个用户的自定义环境可以跨项目复用，但需要在任务 provenance 中记录使用了哪个 user env，避免项目复现时隐含依赖丢失。
 
-## 受控自动注册流程
+## 受控注册流程
 
 目标流程：
 
 ```text
 用户/agent 发现官方环境缺包
-  -> environment-manager skill 判断是否需要新环境
-  -> 生成最小 conda patch
-  -> 调用 server API
-  -> server 校验权限、资源、包来源、名称
-  -> server 创建 user-scoped conda env
-  -> 运行 probe
-  -> 写入 user environment index
-  -> 返回 environmentRef
+  -> bio-environment-manager skill 判断是否需要新环境
+  -> 优先复用官方 environmentRef
+  -> 若必须新增，由 agent 在 MCP 外层创建/派生 user conda env
+  -> agent 记录包来源、patch/spec、日志和 probe 结果
+  -> environment registration MCP 写入 user environment index
+  -> bio_runtime list/resolve/probe 暴露并验证 environmentRef
+  -> 下游脚本或 workflow 使用该 environmentRef
 ```
 
 环境 ID 示例：
@@ -38,10 +38,10 @@ user:lyx/spatial-extra:1
 
 ## Environment Manager Skill
 
-建议新增手写 compact router skill：
+新增手写 compact runbook skill：
 
 ```text
-openbioscience-environment-manager
+bio-environment-manager
 ```
 
 职责：
@@ -49,9 +49,9 @@ openbioscience-environment-manager
 - 判断当前任务是否真的需要新环境。
 - 优先复用官方环境。
 - 优先基于官方环境生成最小 patch。
-- 生成 server 可执行的注册请求。
-- 等待 build/probe 结果。
-- 返回可用的 `environmentRef`。
+- 指导 agent 在 MCP 外层创建或派生 user conda env。
+- 通过 MCP 注册/index 已创建的 user env。
+- 通过 `bio_runtime` list/resolve/probe 返回可用的 `environmentRef`。
 - 失败时区分包冲突、权限不足、资源不足、网络问题、probe 失败。
 
 硬规则：
@@ -62,31 +62,41 @@ openbioscience-environment-manager
 probe 不通过就不注册为可用环境。
 skill 不直接修改官方 index。
 skill 不直接在官方环境中安装包。
+MCP 不负责真实 conda/mamba/pip/R/GitHub 安装。
 ```
 
-是否默认注入该 skill 暂不决定，保留为后续开发需求。
+包来源不做固定白名单；agent 必须记录来源、版本、Git commit/tag、channel/repository 和许可证/凭证风险。
 
-## API 草案
+## MCP 注册草案
 
-注册 user conda 环境：
+注册已创建的 user conda 环境：
 
 ```text
-POST /api/environments/user-conda
+environment_registration.register_user_conda
 ```
 
 请求：
 
 ```json
 {
-  "baseEnvironment": "singlecell-python",
+  "baseEnvironmentRef": "sc-py-singlecell",
   "name": "scanpy-custom",
-  "condaPatch": {
+  "prefix": "/srv/openbioscience/users/lyx/envs/scanpy-custom-1",
+  "packageDelta": {
     "channels": ["conda-forge", "bioconda"],
-    "dependencies": ["squidpy", "spatialdata"]
+    "dependencies": ["squidpy", "spatialdata"],
+    "pip": [],
+    "r": [],
+    "github": []
+  },
+  "probeSummary": {
+    "status": "passed",
+    "log": "execution/logs/environment_probe.log"
   },
   "supports": {
     "skills": ["openscience-singlecell"],
-    "tools": ["squidpy"]
+    "tools": ["scanpy", "squidpy"],
+    "workflows": ["spatial-singlecell"]
   }
 }
 ```
@@ -128,9 +138,8 @@ userEnvironments:
 
 ## 待开发事项
 
-1. 定义 `openbioscience-environment-manager` skill 的 SOP。
-2. 新增 server API 受控创建 user conda env。
-3. 实现 build/probe 状态记录。
-4. 在 UI 中展示用户环境列表、状态、失败日志和删除入口。
-5. 在任务 provenance 中记录 user env 使用情况。
-
+1. 完成 `bio-environment-manager` skill SOP。
+2. 定义 environment registration MCP 的 register/index schema。
+3. 让 `bio_runtime` 支持 user env 的 list/resolve/probe。
+4. 记录 build/probe 日志和 user env provenance。
+5. 暂不开发前台 UI 管理、复杂环境状态机或 server-side installer。

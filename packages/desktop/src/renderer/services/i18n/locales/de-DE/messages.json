@@ -73,6 +73,28 @@
     "no": "Nein (Esc)"
   },
   "agentProgressSummary": "Schritt {{current}} / {{total}} · {{count}} Dateien geändert",
+  "scienceDelivery": {
+    "title": "Lieferstatus",
+    "coverageSummary": "Abdeckung: {{completed}}/{{total}} abgeschlossen · {{actionRequired}} Aktion erforderlich · {{blocked}} blockiert",
+    "coverageDetails": "Abdeckungsdetails",
+    "blockers": "Externe Blocker",
+    "nextActions": "Nächste Aktionen",
+    "states": {
+      "running": "Läuft",
+      "actionRequired": "Aktion erforderlich",
+      "completed": "Abgeschlossen",
+      "partial": "Mit Einschränkungen abgeschlossen",
+      "blocked": "Blockiert",
+      "failed": "Fehlgeschlagen",
+      "awaitingUser": "Warten auf Benutzerprüfung"
+    },
+    "analysis": {
+      "analysisId": "Analyse-ID",
+      "stage": "Aktuelle Phase",
+      "checkpoint": "Prüfpunkt",
+      "baseline": "Aktuelle Basislinie"
+    }
+  },
   "codexMemory": {
     "title": "Codex Memory",
     "fallbackTitle": "Memory snapshot",

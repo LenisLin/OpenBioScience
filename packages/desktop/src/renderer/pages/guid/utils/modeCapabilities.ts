@@ -9,10 +9,12 @@ import { DEFAULT_SCIENCE_SKILL_IDS } from '@/common/chat/science';
 import { LAB_SKILL_DEPOSITION_SKILL_NAME } from '@/common/chat/labSkillDeposition';
 import {
   BUILTIN_BIO_KNOWLEDGE_NAME,
+  BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
   BUILTIN_BIO_PLOT_NAME,
   BUILTIN_BIO_REPRODUCTION_NAME,
   BUILTIN_BIO_RUNTIME_NAME,
   BUILTIN_BIO_SOURCE_NAME,
+  BUILTIN_BIO_STATISTICS_NAME,
   BUILTIN_IMAGE_GEN_NAME,
   BUILTIN_LAB_SKILL_NAME,
   BUILTIN_MEDICAL_EVIDENCE_NAME,
@@ -74,9 +76,64 @@ export function getGuidModeSelectableBuiltinMcpNames(mode: GuidCapabilityMode): 
       BUILTIN_BIO_KNOWLEDGE_NAME,
       BUILTIN_BIO_PLOT_NAME,
       BUILTIN_BIO_REPRODUCTION_NAME,
+      BUILTIN_BIO_STATISTICS_NAME,
+      BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
     ];
   }
   return [];
+}
+
+const BIO_SKILL_MCP_DEPENDENCIES: Record<string, string[]> = {
+  'bio-omics-reproduction-planning': [
+    BUILTIN_BIO_RUNTIME_NAME,
+    BUILTIN_BIO_SOURCE_NAME,
+    BUILTIN_BIO_REPRODUCTION_NAME,
+    BUILTIN_BIO_STATISTICS_NAME,
+  ],
+  'bio-data-resolution': [BUILTIN_BIO_SOURCE_NAME],
+  'bio-environment-routing': [BUILTIN_BIO_RUNTIME_NAME],
+  'bio-environment-manager': [BUILTIN_BIO_RUNTIME_NAME, BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME],
+  'bio-analysis-script-authoring': [BUILTIN_BIO_RUNTIME_NAME],
+  'bio-singlecell-import': [BUILTIN_BIO_RUNTIME_NAME],
+  'bio-qc-preprocess': [BUILTIN_BIO_RUNTIME_NAME],
+  'bio-batch-dim-cluster': [BUILTIN_BIO_RUNTIME_NAME],
+  'bio-marker-optimization': [BUILTIN_BIO_RUNTIME_NAME, BUILTIN_BIO_KNOWLEDGE_NAME],
+  'bio-scrna-differential-expression': [BUILTIN_BIO_RUNTIME_NAME, BUILTIN_BIO_STATISTICS_NAME],
+  'bio-cell-annotation': [BUILTIN_BIO_KNOWLEDGE_NAME],
+  'bio-result-interpretation': [BUILTIN_BIO_KNOWLEDGE_NAME],
+  'bio-scrna-plotting': [BUILTIN_BIO_PLOT_NAME],
+  'bio-scrna-reproduction': [
+    BUILTIN_BIO_RUNTIME_NAME,
+    BUILTIN_BIO_SOURCE_NAME,
+    BUILTIN_BIO_KNOWLEDGE_NAME,
+    BUILTIN_BIO_PLOT_NAME,
+    BUILTIN_BIO_REPRODUCTION_NAME,
+    BUILTIN_BIO_STATISTICS_NAME,
+  ],
+};
+
+export function resolveSkillRequiredMcpNames(skillIds: readonly string[] = []): string[] {
+  const names = new Set<string>();
+  for (const skillId of skillIds) {
+    BIO_SKILL_MCP_DEPENDENCIES[skillId]?.forEach((name) => names.add(name));
+  }
+  return getGuidModeSelectableBuiltinMcpNames('science').filter((name) => names.has(name));
+}
+
+export function resolveSkillRequiredMcpSources(skillIds: readonly string[] = []): Record<string, string[]> {
+  const sources = new Map<string, Set<string>>();
+  for (const skillId of skillIds) {
+    for (const name of BIO_SKILL_MCP_DEPENDENCIES[skillId] || []) {
+      const skillSources = sources.get(name) || new Set<string>();
+      skillSources.add(skillId);
+      sources.set(name, skillSources);
+    }
+  }
+  return Object.fromEntries(
+    getGuidModeSelectableBuiltinMcpNames('science')
+      .filter((name) => sources.has(name))
+      .map((name) => [name, [...sources.get(name)!].sort()])
+  );
 }
 
 export function isGuidMcpServerVisible(

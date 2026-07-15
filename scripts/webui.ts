@@ -25,11 +25,36 @@ import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { startWebHost } from '@deeporganiser/web-host';
+import {
+  buildOpenBioScienceRuntimeEnv,
+  buildOpenBioScienceRuntimePath,
+  resolveOpenBioScienceRuntimeRoot,
+} from '../packages/desktop/src/process/utils/openBioScienceRuntimeEnv';
 import { openBrowserUrl, shouldAutoOpenBrowser } from '../packages/web-cli/src/browser.js';
 
 const legacyEnvName = (suffix: string): string => `${['AI', 'ON', 'UI'].join('')}_${suffix}`;
 const readEnv = (suffix: string): string | undefined =>
   process.env[`DEEPORGANISER_${suffix}`] ?? process.env[legacyEnvName(suffix)];
+
+const OPENBIOSCIENCE_CLI_TOOLS = ['file', 'pdfinfo', 'pdftotext', 'python', 'python3', 'strings', 'git'] as const;
+
+function syncOpenBioScienceCliTools(runtimeRoot: string): void {
+  const sourceBin = path.join(runtimeRoot, 'environments', 'official', 'sc-py-singlecell', 'bin');
+  const targetBin = path.join(os.homedir(), '.local', 'bin');
+  if (!fs.existsSync(sourceBin)) return;
+  fs.mkdirSync(targetBin, { recursive: true });
+  for (const tool of OPENBIOSCIENCE_CLI_TOOLS) {
+    const source = path.join(sourceBin, tool);
+    const target = path.join(targetBin, tool);
+    if (!fs.existsSync(source)) continue;
+    try {
+      if (fs.lstatSync(target).isSymbolicLink() && fs.readlinkSync(target) === source) continue;
+      continue;
+    } catch {
+      fs.symlinkSync(source, target);
+    }
+  }
+}
 
 // Aligned with packages/desktop/src/common/config/constants.ts WEBUI_DEFAULT_PORT.
 const DEFAULT_PORT = (() => {
@@ -49,6 +74,11 @@ const DEFAULT_SCIENCE_SKILL_IDS = [
   'openscience-biomodels',
   'openscience-singlecell',
   'bio-omics-reproduction-planning',
+  'bio-omics-analysis',
+  'bio-singlecell-baseline',
+  'bio-environment-manager',
+  'bio-analysis-script-authoring',
+  'bio-method-parameter-reconstruction',
   'openscience-compute',
 ];
 const DEFAULT_RESEARCH_EVIDENCE_DOMAINS = [
@@ -323,42 +353,76 @@ export function buildStandaloneBioMcpServerSpecs(): StdioMcpServerBuildParams[] 
       description:
         'Built-in OpenBioScience scRNA-seq runtime control plane for environment, workflow, and output contracts.',
       scriptName: 'builtin-mcp-bio',
-      env: {
+      enabled: true,
+      env: buildOpenBioScienceRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime',
-      },
+      }),
     },
     {
       name: 'openscience-bio-source',
       description: 'Built-in OpenBioScience data-source control plane for accession triage and data manifests.',
       scriptName: 'builtin-mcp-bio',
-      env: {
+      enabled: true,
+      env: buildOpenBioScienceRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source',
-      },
+      }),
     },
     {
       name: 'openscience-bio-knowledge',
       description: 'Built-in OpenBioScience marker, atlas, gene-set, and ligand-receptor evidence contracts.',
       scriptName: 'builtin-mcp-bio',
-      env: {
+      enabled: true,
+      env: buildOpenBioScienceRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'knowledge',
-      },
+      }),
     },
     {
       name: 'openscience-bio-plot',
       description: 'Built-in OpenBioScience scRNA-seq plot template and plot artifact manifest contracts.',
       scriptName: 'builtin-mcp-bio',
-      env: {
+      enabled: true,
+      env: buildOpenBioScienceRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'plot',
-      },
+      }),
     },
     {
       name: 'openscience-bio-reproduction',
       description:
         'Built-in OpenBioScience omics reproduction planning control plane for source packaging, availability audit, lightweight localization planning, and script-boundary validation.',
       scriptName: 'builtin-mcp-bio',
-      env: {
+      enabled: true,
+      env: buildOpenBioScienceRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction',
-      },
+      }),
+    },
+    {
+      name: 'openscience-bio-analysis',
+      description:
+        'Built-in OpenBioScience private omics analysis control plane for human checkpoints, scRNA-seq baseline, episodes, and closure.',
+      scriptName: 'builtin-mcp-bio',
+      enabled: true,
+      env: buildOpenBioScienceRuntimeEnv({
+        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'analysis',
+      }),
+    },
+    {
+      name: 'openscience-bio-statistics',
+      description:
+        'Built-in OpenBioScience statistical contract control plane for expression semantics and replicate-aware edgeR differential expression.',
+      scriptName: 'builtin-mcp-bio',
+      enabled: true,
+      env: buildOpenBioScienceRuntimeEnv({
+        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'statistics',
+      }),
+    },
+    {
+      name: 'openscience-bio-environment-manager',
+      description: 'Built-in OpenBioScience bio environment manager control plane for runtime environments.',
+      scriptName: 'builtin-mcp-bio',
+      enabled: true,
+      env: buildOpenBioScienceRuntimeEnv({
+        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'environment_manager',
+      }),
     },
   ];
 }
@@ -470,6 +534,7 @@ async function bootstrapStandaloneMcpCatalog(backendPort: number): Promise<void>
       const current = existingByName.get(server.name);
       if (!current?.id) return false;
       return (
+        current.enabled !== server.enabled ||
         current.builtin !== server.builtin ||
         current.description !== server.description ||
         current.original_json !== server.original_json ||
@@ -503,6 +568,11 @@ async function bootstrapStandaloneMcpCatalog(backendPort: number): Promise<void>
           original_json: server.original_json,
         }),
       });
+      if (current.enabled !== server.enabled) {
+        await fetchBackendJson(backendPort, `/api/mcp/servers/${encodeURIComponent(current.id)}/toggle`, {
+          method: 'POST',
+        });
+      }
     }
     if (changed.length > 0) {
       console.log(`[webui] OpenBioScience MCP catalog updated: ${changed.map((server) => server.name).join(', ')}`);
@@ -539,6 +609,12 @@ function augmentPathWithNvm(): void {
 }
 
 async function main(): Promise<void> {
+  const runtimeRoot = resolveOpenBioScienceRuntimeRoot(process.env, repoRoot);
+  if (runtimeRoot) {
+    process.env.OPENBIOSCIENCE_RUNTIME_ROOT = runtimeRoot;
+    process.env.PATH = buildOpenBioScienceRuntimePath(process.env.PATH, process.env, repoRoot);
+    syncOpenBioScienceCliTools(runtimeRoot);
+  }
   augmentPathWithNvm();
   runPackageIfNeeded();
   const port = resolvePort();

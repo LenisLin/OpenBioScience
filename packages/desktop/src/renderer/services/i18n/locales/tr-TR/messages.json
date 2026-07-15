@@ -73,6 +73,28 @@
     "no": "Hayır (esc)"
   },
   "agentProgressSummary": "{{current}} / {{total}} adım · {{count}} dosya değişti",
+  "scienceDelivery": {
+    "title": "Teslimat durumu",
+    "coverageSummary": "Kapsam: {{completed}}/{{total}} tamamlandı · {{actionRequired}} işlem gerekli · {{blocked}} engellendi",
+    "coverageDetails": "Kapsam ayrıntıları",
+    "blockers": "Harici engeller",
+    "nextActions": "Sonraki işlemler",
+    "states": {
+      "running": "Çalışıyor",
+      "actionRequired": "İşlem gerekli",
+      "completed": "Tamamlandı",
+      "partial": "Sınırlamalarla tamamlandı",
+      "blocked": "Engellendi",
+      "failed": "Başarısız",
+      "awaitingUser": "Kullanıcı incelemesi bekleniyor"
+    },
+    "analysis": {
+      "analysisId": "Analiz kimliği",
+      "stage": "Geçerli aşama",
+      "checkpoint": "Kontrol noktası",
+      "baseline": "Geçerli başlangıç"
+    }
+  },
   "codexMemory": {
     "title": "Codex Memory",
     "fallbackTitle": "Memory snapshot",

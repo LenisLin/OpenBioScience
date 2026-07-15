@@ -204,6 +204,23 @@
     },
     "progressLog": "过程记录"
   },
+  "scienceDelivery": {
+    "title": "交付状态",
+    "coverageSummary": "覆盖情况：已完成 {{completed}}/{{total}} · 待处理 {{actionRequired}} · 阻塞 {{blocked}}",
+    "coverageDetails": "覆盖详情",
+    "blockers": "外部阻塞项",
+    "nextActions": "后续操作",
+    "states": {
+      "running": "进行中",
+      "actionRequired": "需要操作",
+      "completed": "已完成",
+      "partial": "完成但有限制",
+      "blocked": "已阻塞",
+      "failed": "失败",
+      "awaitingUser": "等待用户复核"
+    },
+    "analysis": { "analysisId": "分析 ID", "stage": "当前阶段", "checkpoint": "检查点", "baseline": "当前基线" }
+  },
   "codexMemory": {
     "title": "Codex 记忆",
     "fallbackTitle": "记忆快照",

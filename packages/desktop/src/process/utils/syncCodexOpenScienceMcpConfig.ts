@@ -23,6 +23,8 @@ export interface SyncCodexOpenScienceMcpConfigOptions {
 
 const MANAGED_BLOCK_START = '# >>> OpenScience managed MCP servers';
 const MANAGED_BLOCK_END = '# <<< OpenScience managed MCP servers';
+const SENSITIVE_ENV_KEY_PATTERN =
+  /(?:api[_-]?key|authorization|auth[_-]?token|access[_-]?token|refresh[_-]?token|secret|password|credential|cookie|session|user_input_(?:token|url))/iu;
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -74,7 +76,7 @@ export function buildCodexOpenScienceMcpBlock(servers: ManagedCodexMcpServer[], 
     lines.push(`args = ${tomlArray(server.args || [])}`);
 
     const envEntries = Object.entries(server.env || {}).filter(
-      ([, value]) => typeof value === 'string' && value.length > 0
+      ([key, value]) => typeof value === 'string' && value.length > 0 && !SENSITIVE_ENV_KEY_PATTERN.test(key)
     );
     if (envEntries.length > 0) {
       lines.push('', `[mcp_servers.${server.name}.env]`);

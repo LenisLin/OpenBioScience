@@ -80,10 +80,12 @@ const gitShowJson = <T>(repoPath: string, commit: string, objectPath: string): T
 
 describe.runIf(gitAvailable())('scienceArtifactGitStore', () => {
   let root: string;
+  let outsideRoot: string;
   let previousMaxCopyBytes: string | undefined;
 
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'openscience-artifact-git-'));
+    outsideRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'openscience-artifact-outside-'));
     previousMaxCopyBytes = process.env.OPENSCIENCE_ARTIFACT_GIT_MAX_COPY_BYTES;
     process.env.OPENSCIENCE_ARTIFACT_GIT_MAX_COPY_BYTES = '16';
     fs.mkdirSync(path.join(root, 'results', 'supplementary'), { recursive: true });
@@ -97,12 +99,100 @@ describe.runIf(gitAvailable())('scienceArtifactGitStore', () => {
     fs.writeFileSync(path.join(root, 'data', 'input.csv'), 'x,y\n1,2\n', 'utf8');
     fs.writeFileSync(path.join(root, 'data', 'large.bin'), 'this file is intentionally larger than threshold', 'utf8');
     fs.writeFileSync(path.join(root, '.env'), 'TOKEN=secret\n', 'utf8');
+    fs.writeFileSync(path.join(outsideRoot, 'external.csv'), 'x,y\n3,4\n', 'utf8');
+    fs.writeFileSync(path.join(outsideRoot, '.env'), 'TOKEN=external-secret\n', 'utf8');
   });
 
   afterEach(() => {
     if (previousMaxCopyBytes == null) delete process.env.OPENSCIENCE_ARTIFACT_GIT_MAX_COPY_BYTES;
     else process.env.OPENSCIENCE_ARTIFACT_GIT_MAX_COPY_BYTES = previousMaxCopyBytes;
     fs.rmSync(root, { recursive: true, force: true });
+    fs.rmSync(outsideRoot, { recursive: true, force: true });
+  });
+
+  it('does not copy project-external files without an exact authorization', () => {
+    const panel = makePanel(root, 'sci_run_external_blocked');
+    const externalPath = path.join(outsideRoot, 'external.csv');
+
+    const snapshot = commitScienceArtifactSnapshot({
+      projectRoot: root,
+      panel,
+      state: { runId: panel.runId },
+      events: [],
+      includePaths: [{ path: externalPath, role: 'input' }],
+    });
+
+    expect(snapshot.ok).toBe(true);
+    expect(snapshot.files).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: externalPath,
+          mode: 'ignored',
+          reason: 'external_path_not_authorized',
+        }),
+      ])
+    );
+    expect(snapshot.warning).toBe(
+      'One or more external files were not copied. Authorize each exact file before retrying the snapshot.'
+    );
+  });
+
+  it('copies one exact authorized external file but never copies denied secret files', () => {
+    const panel = makePanel(root, 'sci_run_external_authorized');
+    const externalPath = path.join(outsideRoot, 'external.csv');
+    const secretPath = path.join(outsideRoot, '.env');
+
+    const snapshot = commitScienceArtifactSnapshot({
+      projectRoot: root,
+      panel,
+      state: { runId: panel.runId },
+      events: [],
+      includePaths: [
+        { path: externalPath, role: 'input' },
+        { path: secretPath, role: 'input' },
+      ],
+      authorizedExternalPaths: [fs.realpathSync(externalPath), fs.realpathSync(secretPath)],
+    });
+
+    expect(snapshot.ok).toBe(true);
+    expect(snapshot.files).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: externalPath, mode: 'copied' }),
+        expect.objectContaining({ path: secretPath, mode: 'ignored', reason: 'secret_or_internal_path' }),
+      ])
+    );
+  });
+
+  it('treats a project-local symlink to an external file as external', () => {
+    const panel = makePanel(root, 'sci_run_external_symlink');
+    const externalPath = path.join(outsideRoot, 'external.csv');
+    const symlinkPath = path.join(root, 'data', 'external-link.csv');
+    fs.symlinkSync(externalPath, symlinkPath);
+
+    const blocked = commitScienceArtifactSnapshot({
+      projectRoot: root,
+      panel,
+      state: { runId: panel.runId },
+      events: [],
+      includePaths: [{ path: symlinkPath, role: 'input' }],
+    });
+    expect(blocked.files).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: symlinkPath, mode: 'ignored', reason: 'external_path_not_authorized' }),
+      ])
+    );
+
+    const authorized = commitScienceArtifactSnapshot({
+      projectRoot: root,
+      panel,
+      state: { runId: panel.runId },
+      events: [],
+      includePaths: [{ path: symlinkPath, role: 'input' }],
+      authorizedExternalPaths: [fs.realpathSync(externalPath)],
+    });
+    expect(authorized.files).toEqual(
+      expect.arrayContaining([expect.objectContaining({ path: symlinkPath, mode: 'copied' })])
+    );
   });
 
   it('creates one project-level repo and snapshots copied, pointer, and ignored files', () => {
@@ -123,7 +213,9 @@ describe.runIf(gitAvailable())('scienceArtifactGitStore', () => {
     expect(first.commit).toBeTruthy();
     expect(first.repoPath).toBe(path.join(root, '.openscience', 'artifact-repo'));
     expect(fs.existsSync(path.join(first.repoPath!, '.git'))).toBe(true);
-    expect(first.files.some((file) => file.mode === 'copied' && file.relativePath === 'results/supplementary/table.csv')).toBe(true);
+    expect(
+      first.files.some((file) => file.mode === 'copied' && file.relativePath === 'results/supplementary/table.csv')
+    ).toBe(true);
     expect(first.files.some((file) => file.mode === 'pointer' && file.relativePath === 'data/large.bin')).toBe(true);
     expect(first.files.some((file) => file.mode === 'ignored' && file.relativePath === '.env')).toBe(true);
 
@@ -174,7 +266,10 @@ describe.runIf(gitAvailable())('scienceArtifactGitStore', () => {
       })
     );
 
-    const secretProvenance = resolveScienceArtifactFileProvenance({ projectRoot: root, filePath: path.join(root, '.env') });
+    const secretProvenance = resolveScienceArtifactFileProvenance({
+      projectRoot: root,
+      filePath: path.join(root, '.env'),
+    });
     expect(secretProvenance.ok).toBe(true);
     expect(secretProvenance.status).toBe('ignored');
   });
@@ -225,7 +320,9 @@ describe.runIf(gitAvailable())('scienceArtifactGitStore', () => {
     expect(notebook.cells.some((cell) => cell.cell_type === 'code')).toBe(true);
     expect(notebook.cells[1]?.cell_type).toBe('markdown');
     expect(notebook.cells[1]?.source.join('')).toMatch(/^## Summary/u);
-    expect(notebook.cells.filter((cell) => cell.cell_type === 'markdown' && cell.source.join('').startsWith('# '))).toHaveLength(1);
+    expect(
+      notebook.cells.filter((cell) => cell.cell_type === 'markdown' && cell.source.join('').startsWith('# '))
+    ).toHaveLength(1);
 
     const manifest = JSON.parse(fs.readFileSync(path.join(exported.exportDir!, 'export-manifest.json'), 'utf8')) as {
       schema: string;
@@ -341,9 +438,9 @@ describe.runIf(gitAvailable())('scienceArtifactGitStore', () => {
     expect(manuscriptSnapshot.ok).toBe(true);
     expect(manuscriptSnapshot.repoPath).toBe(figureSnapshot.repoPath);
     expect(manuscriptSnapshot.commit).not.toBe(figureSnapshot.commit);
-    expect(manuscriptSnapshot.files.some((file) => file.relativePath === 'manuscript/review.tex' && file.mode === 'copied')).toBe(
-      true
-    );
+    expect(
+      manuscriptSnapshot.files.some((file) => file.relativePath === 'manuscript/review.tex' && file.mode === 'copied')
+    ).toBe(true);
 
     const edgeItems = gitShowJson<SciencePanelData['edges']>(
       manuscriptSnapshot.repoPath!,

@@ -7,6 +7,11 @@
   "send": {
     "failed": "Failed to send message: {{error}}"
   },
+  "stall": {
+    "warning": "El agente no ha continuado después de finalizar la última herramienta. OpenBioScience está supervisando el turno.",
+    "recovered": "La ejecución sin respuesta se detuvo. Puede continuar desde el último resultado de la herramienta.",
+    "failed": "La ejecución no responde, pero el cierre automático falló. Use Detener o vuelva a cargar la conversación."
+  },
   "sendbox": {
     "placeholder": "Send message to {{backend}}..."
   },

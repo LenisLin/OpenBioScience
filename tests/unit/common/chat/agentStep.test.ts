@@ -1,5 +1,27 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeAgentSteps, summarizeAgentActivity } from '@/common/chat/agentStep';
+import { normalizeAgentSteps, summarizeAgentActivity, summarizeShellCommand } from '@/common/chat/agentStep';
+
+describe('summarizeShellCommand', () => {
+  it('removes shell wrappers and summarizes distinct tools', () => {
+    expect(
+      summarizeShellCommand(
+        '/usr/bin/bash -lc "pdftotext paper.pdf /tmp/paper.txt && rg -n GSE /tmp/paper.txt | head -160"'
+      )
+    ).toBe('pdftotext → rg → head');
+  });
+
+  it('summarizes long shell workflows without echoing the full script', () => {
+    expect(summarizeShellCommand('set -e; gzip -cd matrix.gz | awk NR==1; cmp -s a b; printf ok')).toBe(
+      'set → gzip → awk → cmp → printf'
+    );
+  });
+
+  it('summarizes structured approval command arrays without throwing', () => {
+    expect(summarizeShellCommand(['/usr/bin/bash', '-lc', 'pwd && rg -n "GSE144735" . | head -20'] as never)).toBe(
+      'pwd → rg → head'
+    );
+  });
+});
 
 describe('normalizeAgentSteps', () => {
   it('groups consecutive exploration tools', () => {
@@ -66,6 +88,38 @@ describe('normalizeAgentSteps', () => {
       kind: 'command',
       status: 'completed',
       command: 'bun test packages/desktop/src/common/chat/agentStep.test.ts',
+    });
+  });
+
+  it('normalizes structured approval commands from tool_group confirmation details', () => {
+    const result = normalizeAgentSteps([
+      {
+        id: 'm1',
+        type: 'tool_group',
+        conversation_id: 'c1',
+        content: [
+          {
+            call_id: 'cmd-array-1',
+            name: 'execute',
+            description: { reason: 'Read project files' },
+            render_output_as_markdown: false,
+            status: 'Confirming',
+            result_display: '',
+            confirmationDetails: {
+              type: 'exec',
+              title: 'Run command',
+              rootCommand: 'bash',
+              command: ['/usr/bin/bash', '-lc', 'pwd && find . -maxdepth 2 -type f'],
+            },
+          },
+        ],
+      },
+    ] as never);
+
+    expect(result[0]).toMatchObject({
+      kind: 'command',
+      status: 'running',
+      command: 'pwd && find . -maxdepth 2 -type f',
     });
   });
 
@@ -173,6 +227,72 @@ describe('normalizeAgentSteps', () => {
       kind: 'command',
       status: 'running',
       command: 'npm test',
+    });
+  });
+
+  it('treats canceled ACP commands as terminal instead of pending', () => {
+    const result = normalizeAgentSteps([
+      {
+        id: 'm-canceled',
+        type: 'acp_tool_call',
+        conversation_id: 'c1',
+        content: {
+          update: {
+            sessionUpdate: 'tool_call_update',
+            tool_call_id: 'acp-canceled',
+            status: 'cancelled',
+            title: 'Run command',
+            kind: 'execute',
+            rawInput: { command: 'sleep 10' },
+          },
+        },
+      },
+    ] as never);
+
+    expect(result[0]).toMatchObject({ status: 'canceled', command: 'sleep 10' });
+  });
+
+  it.each(['canceled', 'cancelled'])('treats generic tool %s as terminal', (status) => {
+    const result = normalizeAgentSteps([
+      {
+        id: 'generic-canceled',
+        type: 'tool_call',
+        conversation_id: 'c1',
+        content: {
+          call_id: 'generic-canceled',
+          name: 'execute',
+          args: { command: 'sleep 10' },
+          status,
+        },
+      },
+    ] as never);
+
+    expect(result[0]).toMatchObject({ status: 'canceled', command: 'sleep 10' });
+  });
+
+  it('uses a stable fallback title for partial ACP approval updates', () => {
+    const result = normalizeAgentSteps([
+      {
+        id: 'm1',
+        type: 'acp_tool_call',
+        conversation_id: 'c1',
+        content: {
+          session_id: 's1',
+          update: {
+            sessionUpdate: 'tool_call',
+            tool_call_id: 'acp-mcp-approval-1',
+            status: 'pending',
+            kind: 'mcp',
+          },
+        },
+      },
+    ] as never);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      kind: 'generic',
+      status: 'pending',
+      title: 'mcp',
     });
   });
 

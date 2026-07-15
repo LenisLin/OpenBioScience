@@ -59,6 +59,8 @@ import {
   getGuidModeRequiredMcpNames,
   normalizeGuidAgentBackend,
   resolveGuidCapabilityMode,
+  resolveSkillRequiredMcpSources,
+  resolveSkillRequiredMcpNames,
 } from '../utils/modeCapabilities';
 
 function buildLarkProjectContextPrompt(context: GuidLarkProjectContext): string {
@@ -173,10 +175,23 @@ const mergeSkillIds = (...groups: Array<readonly string[] | undefined>): string[
 
 const resolveBuiltinSessionMcpServer = (
   availableMcpServers: IMcpServer[],
-  name: string
+  name: string,
+  extraEnv?: Record<string, string>
 ): ISessionMcpServer | undefined => {
   const server = availableMcpServers.find((item) => item.name === name);
-  return server ? toSessionMcpServer(server) : undefined;
+  if (!server) return undefined;
+  const sessionServer = toSessionMcpServer(server);
+  if (!extraEnv || sessionServer.transport.type !== 'stdio') return sessionServer;
+  return {
+    ...sessionServer,
+    transport: {
+      ...sessionServer.transport,
+      env: {
+        ...sessionServer.transport.env,
+        ...extraEnv,
+      },
+    },
+  };
 };
 
 const hasBuiltinMcpServer = (servers: IMcpServer[], name: string): boolean =>
@@ -270,7 +285,9 @@ const resolveResearchEvidenceSessionMcpServer = (
 
 const resolveScienceArtifactSessionMcpServer = (
   availableMcpServers: IMcpServer[],
-  config?: { strictProvenance?: boolean; writeProjectManifest?: boolean; defaultSkillIds?: string[] }
+  config: { strictProvenance?: boolean; writeProjectManifest?: boolean; defaultSkillIds?: string[] } | undefined,
+  workspaceRoot: string,
+  sessionId: string
 ): ISessionMcpServer | undefined => {
   const server = availableMcpServers.find((item) => item.name === BUILTIN_SCIENCE_ARTIFACT_NAME);
   if (!server) return undefined;
@@ -288,6 +305,8 @@ const resolveScienceArtifactSessionMcpServer = (
           ? config.defaultSkillIds
           : [...DEFAULT_SCIENCE_SKILL_IDS]
         ).join(','),
+        OPENSCIENCE_WORKSPACE_ROOT: workspaceRoot,
+        OPENSCIENCE_SESSION_ID: sessionId,
       },
     },
   };
@@ -426,6 +445,9 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const hasMedicalEvidenceMode = activeCapabilityMode === 'medical-evidence';
     const hasSkillDepositionMode = activeCapabilityMode === 'skill-deposition';
     const hasScienceMode = activeCapabilityMode === 'science';
+    if (hasScienceMode && !dir) {
+      throw new Error('Science Mode requires an OpenScience workspace.');
+    }
     const hasLarkProjectContext = Boolean(larkProjectContext?.tasklistGuid);
     const hasLoopGoal =
       !hasMedicalEvidenceMode &&
@@ -464,27 +486,40 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const medicalEvidenceAgentBackend =
       normalizeGuidAgentBackend(is_preset ? effectiveAgentType : selectedAgent) ||
       normalizeGuidAgentBackend(selectedAgent);
-    const requiredBuiltinMcpNames = getGuidModeRequiredMcpNames(activeCapabilityMode, {
-      medicalEvidenceAgentBackend,
-    });
-    const availableMcpServersForSend = await resolveModeMcpCatalog(availableMcpServers, requiredBuiltinMcpNames);
-
-    // Guid page's per-conversation skill overrides take precedence over the
-    // assistant's saved defaults. The combined skills menu lets the user pick
-    // any custom skill — not just preset-declared ones — so for non-preset
-    // agents we still forward the user's selection (the backend accepts
-    // `preset_enabled_skills` regardless of `is_preset`).
-    const presetEnabledSkillsDefault = resolveEnabledSkills(agentInfo);
+    const modeDefaultSkillIds = getGuidModeDefaultSkillIds(activeCapabilityMode);
     const enabled_skills =
-      guidEnabledSkills ?? (is_presetAgent ? assistantDefaultSkillIds : presetEnabledSkillsDefault);
+      guidEnabledSkills ?? (is_presetAgent ? assistantDefaultSkillIds : resolveEnabledSkills(agentInfo));
     const base_enabled_skills_to_send = is_presetAgent
       ? enabled_skills
       : guidEnabledSkills?.length
         ? guidEnabledSkills
         : undefined;
     const loopGoalSkillIds = loopGoalForCreate ? [LOOP_GOAL_SKILL_NAME] : undefined;
-    const modeDefaultSkillIds = getGuidModeDefaultSkillIds(activeCapabilityMode);
     const enabled_skills_to_send = mergeSkillIds(base_enabled_skills_to_send, modeDefaultSkillIds, loopGoalSkillIds);
+    const skillRequiredMcpNames = resolveSkillRequiredMcpNames(enabled_skills_to_send);
+    const autoMcpSources = resolveSkillRequiredMcpSources(enabled_skills_to_send);
+    const requiredBuiltinMcpNames = Array.from(
+      new Set([
+        ...getGuidModeRequiredMcpNames(activeCapabilityMode, {
+          medicalEvidenceAgentBackend,
+        }),
+        ...skillRequiredMcpNames,
+      ])
+    );
+    const availableMcpServersForSend = await resolveModeMcpCatalog(availableMcpServers, requiredBuiltinMcpNames);
+
+    const missingRequiredMcpNames = requiredBuiltinMcpNames.filter(
+      (name) => !hasBuiltinMcpServer(availableMcpServersForSend, name)
+    );
+    if (missingRequiredMcpNames.length > 0) {
+      throw new Error(`Required MCP servers are unavailable: ${missingRequiredMcpNames.join(', ')}`);
+    }
+
+    // Guid page's per-conversation skill overrides take precedence over the
+    // assistant's saved defaults. The combined skills menu lets the user pick
+    // any custom skill — not just preset-declared ones — so for non-preset
+    // agents we still forward the user's selection (the backend accepts
+    // `preset_enabled_skills` regardless of `is_preset`).
     const excludeBuiltinSkills =
       guidDisabledBuiltinSkills ??
       (is_presetAgent ? assistantDefaultDisabledBuiltinSkillIds : resolveDisabledBuiltinSkills(agentInfo));
@@ -552,8 +587,22 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       ? resolveResearchEvidenceSessionMcpServer(availableMcpServersForSend, researchEvidenceConfig)
       : undefined;
     const scienceArtifactSessionMcpServer = hasScienceMode
-      ? resolveScienceArtifactSessionMcpServer(availableMcpServersForSend, scienceArtifactConfig)
+      ? resolveScienceArtifactSessionMcpServer(
+          availableMcpServersForSend,
+          scienceArtifactConfig,
+          finalWorkspace,
+          plannedConversationId || `science_${uuid(16)}`
+        )
       : undefined;
+    const bioWorkspaceEnv = finalWorkspace
+      ? {
+          OPENBIOSCIENCE_WORKSPACE_ROOT: finalWorkspace,
+          OPENSCIENCE_WORKSPACE_ROOT: finalWorkspace,
+        }
+      : undefined;
+    const skillRequiredSessionMcpServers = skillRequiredMcpNames
+      .map((name) => resolveBuiltinSessionMcpServer(availableMcpServersForSend, name, bioWorkspaceEnv))
+      .filter((server): server is ISessionMcpServer => Boolean(server));
     const labSkillSessionMcpServer = hasSkillDepositionMode
       ? withLabSkillConversationEnv(
           resolveBuiltinSessionMcpServer(availableMcpServersForSend, BUILTIN_LAB_SKILL_NAME),
@@ -576,6 +625,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       ...(imageGenerationSessionMcpServer ? [imageGenerationSessionMcpServer] : []),
       ...(researchEvidenceSessionMcpServer ? [researchEvidenceSessionMcpServer] : []),
       ...(scienceArtifactSessionMcpServer ? [scienceArtifactSessionMcpServer] : []),
+      ...skillRequiredSessionMcpServers,
       ...(labSkillSessionMcpServer ? [labSkillSessionMcpServer] : []),
       ...(userInputSessionMcpServer ? [userInputSessionMcpServer] : []),
     ]);
@@ -687,6 +737,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
           mcp_servers: loadedMcpServersForSnapshot.map((server) => server.name),
           mcp_statuses: loadedMcpStatusesForSnapshot,
           session_mcp_servers: selectedSessionMcpServersWithModeRequirements,
+          ...(Object.keys(autoMcpSources).length ? { auto_mcp_sources: autoMcpSources } : {}),
           ...(loopGoalForCreate ? { loop_goal: loopGoalForCreate } : {}),
           ...larkProjectExtra,
           ...medicalEvidenceExtra,
@@ -723,13 +774,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
 
         emitter.emit('chat.history.refresh');
 
-        if (
-          trimmedInput ||
-          hasLarkProjectContext ||
-          hasLoopGoal ||
-          shouldCreateLoopGoalFromInput ||
-          files.length > 0
-        ) {
+        if (trimmedInput || hasLarkProjectContext || hasLoopGoal || shouldCreateLoopGoalFromInput || files.length > 0) {
           const initialMessage = {
             input: initialUserInput,
             files: files.length > 0 ? files : undefined,

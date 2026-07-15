@@ -7,6 +7,11 @@
   "send": {
     "failed": "Mesaj gönderilemedi: {{error}}"
   },
+  "stall": {
+    "warning": "Son araç tamamlandıktan sonra ajan devam etmedi. OpenBioScience çalışmayı izliyor.",
+    "recovered": "Yanıt vermeyen çalışma durduruldu. Son araç sonucundan devam edebilirsiniz.",
+    "failed": "Çalışma yanıt vermiyor ancak otomatik durdurma başarısız oldu. Durdur'u kullanın veya konuşmayı yeniden yükleyin."
+  },
   "sendbox": {
     "placeholder": "{{backend}}'a mesaj gönder..."
   },

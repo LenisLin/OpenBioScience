@@ -34,6 +34,18 @@ export const SCIENCE_SINGLECELL_SKILL_PATH = 'resources/skills/singlecell/SKILL.
 export const SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME = 'bio-omics-reproduction-planning';
 export const SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_PATH =
   'resources/skills/bio-omics-reproduction-planning/SKILL.md';
+export const SCIENCE_BIO_OMICS_ANALYSIS_SKILL_NAME = 'bio-omics-analysis';
+export const SCIENCE_BIO_OMICS_ANALYSIS_SKILL_PATH = 'resources/skills/bio-omics-analysis/SKILL.md';
+export const SCIENCE_BIO_SINGLECELL_BASELINE_SKILL_NAME = 'bio-singlecell-baseline';
+export const SCIENCE_BIO_SINGLECELL_BASELINE_SKILL_PATH = 'resources/skills/bio-singlecell-baseline/SKILL.md';
+export const SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME = 'bio-environment-manager';
+export const SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_PATH = 'resources/skills/bio-environment-manager/SKILL.md';
+export const SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME = 'bio-analysis-script-authoring';
+export const SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_PATH =
+  'resources/skills/bio-analysis-script-authoring/SKILL.md';
+export const SCIENCE_BIO_METHOD_PARAMETER_RECONSTRUCTION_SKILL_NAME = 'bio-method-parameter-reconstruction';
+export const SCIENCE_BIO_METHOD_PARAMETER_RECONSTRUCTION_SKILL_PATH =
+  'resources/skills/bio-method-parameter-reconstruction/SKILL.md';
 export const SCIENCE_COMPUTE_SKILL_NAME = 'openscience-compute';
 export const SCIENCE_COMPUTE_SKILL_PATH = 'resources/skills/compute/SKILL.md';
 export const SCIENCE_VENDOR_CATALOG_SKILL_NAME = 'openscience-science-vendor-catalog';
@@ -55,6 +67,11 @@ export const DEFAULT_SCIENCE_SKILL_IDS = [
   SCIENCE_BIOMODELS_SKILL_NAME,
   SCIENCE_SINGLECELL_SKILL_NAME,
   SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME,
+  SCIENCE_BIO_OMICS_ANALYSIS_SKILL_NAME,
+  SCIENCE_BIO_SINGLECELL_BASELINE_SKILL_NAME,
+  SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME,
+  SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME,
+  SCIENCE_BIO_METHOD_PARAMETER_RECONSTRUCTION_SKILL_NAME,
   SCIENCE_COMPUTE_SKILL_NAME,
 ] as const;
 
@@ -82,8 +99,33 @@ export function normalizeScienceDefaultSkillIds(skillIds?: readonly string[]): s
   if (isPreviousMaterializedDefault) {
     return [...DEFAULT_SCIENCE_SKILL_IDS];
   }
+  const previousAnalysisAwareDefaultSet = new Set<string>(
+    DEFAULT_SCIENCE_SKILL_IDS.filter(
+      (id) => id !== SCIENCE_BIO_OMICS_ANALYSIS_SKILL_NAME && id !== SCIENCE_BIO_SINGLECELL_BASELINE_SKILL_NAME
+    )
+  );
+  const isPreviousReproductionDefault =
+    skillIds.length === previousAnalysisAwareDefaultSet.size &&
+    skillIds.every((id) => previousAnalysisAwareDefaultSet.has(id));
+  if (isPreviousReproductionDefault) {
+    return [...DEFAULT_SCIENCE_SKILL_IDS];
+  }
+  const previousWithoutEnvironmentAndScriptSet = new Set<string>(
+    DEFAULT_SCIENCE_SKILL_IDS.filter(
+      (id) =>
+        id !== SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME && id !== SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME
+    )
+  );
+  const isPreviousWithoutEnvironmentAndScript =
+    skillIds.length === previousWithoutEnvironmentAndScriptSet.size &&
+    skillIds.every((id) => previousWithoutEnvironmentAndScriptSet.has(id));
+  if (isPreviousWithoutEnvironmentAndScript) {
+    return [...DEFAULT_SCIENCE_SKILL_IDS];
+  }
   const previousCompactDefaultSet = new Set<string>(
-    DEFAULT_SCIENCE_SKILL_IDS.filter((id) => id !== SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME)
+    [...previousWithoutEnvironmentAndScriptSet].filter(
+      (id) => id !== SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME
+    )
   );
   const isPreviousCompactDefault =
     skillIds.length === previousCompactDefaultSet.size && skillIds.every((id) => previousCompactDefaultSet.has(id));
@@ -483,6 +525,7 @@ export interface ScienceGraphWarning {
     | 'untraced_artifact'
     | 'unsupported_claim'
     | 'broken_reference'
+    | 'workflow_action_required'
     | 'stale_version'
     | 'missing_environment'
     | 'missing_execution_log';
@@ -535,6 +578,650 @@ export interface ScienceSkillUse {
   revision?: string;
 }
 
+export type BioReceiptProducer = 'bio_source' | 'bio_runtime' | 'bio_reproduction' | 'bio_statistics' | 'bio_analysis';
+
+export type ScienceWorkflowKind = 'omics_reproduction' | 'omics_analysis';
+
+export type OmicsAnalysisStage = 'intake' | 'qc' | 'baseline' | 'episode' | 'closing';
+
+export type OmicsAnalysisStageStatus = 'running' | 'awaiting_user' | 'accepted' | 'needs_revision' | 'blocked';
+
+export type OmicsAnalysisProjectStatus =
+  | 'running'
+  | 'awaiting_user'
+  | 'accepted'
+  | 'needs_revision'
+  | 'blocked'
+  | 'closed';
+
+export type AnalysisCheckpointStatus =
+  | 'accepted'
+  | 'accepted_with_changes'
+  | 'needs_revision'
+  | 'deferred'
+  | 'cancelled';
+
+export interface BioNextAction {
+  id: string;
+  tool: BioReceiptProducer | 'science_artifact' | 'runtime';
+  action: string;
+  reason: string;
+  payload?: Record<string, unknown>;
+  actionFingerprint?: string;
+  preconditionHash?: string;
+  expectedMutation?: string[];
+  maxAttempts?: number;
+  stopWhenUnchanged?: boolean;
+}
+
+export interface BioBlocker {
+  id: string;
+  kind: 'credentials' | 'permissions' | 'data' | 'environment' | 'contract';
+  message: string;
+  moduleId?: string;
+  external: boolean;
+}
+
+export interface BioControlReceipt {
+  schema: 'openbioscience.bio.receipt.v1';
+  receiptId: string;
+  producer: BioReceiptProducer;
+  action: string;
+  status: string;
+  projectRoot: string;
+  createdAt: number;
+  validationFingerprint?: string;
+  details?: Record<string, unknown>;
+}
+
+export interface OmicsAnalysisReceipt extends BioControlReceipt {
+  producer: 'bio_analysis';
+  workflowKind: 'omics_analysis';
+  analysisId: string;
+  modality: string;
+  stage: OmicsAnalysisStage;
+  stageStatus: OmicsAnalysisStageStatus;
+  projectStatus: OmicsAnalysisProjectStatus;
+  directDependencyReceiptIds: string[];
+  canonicalFiles: Array<{ path: string; contentHash: string }>;
+  skillUses: Array<{ skillId: string; contentHash: string }>;
+  nextActions: BioNextAction[];
+  externalBlockers: BioBlocker[];
+  privacyPolicy: {
+    externalEgress: 'forbidden' | 'allowlisted';
+    rawDataExport: 'forbidden';
+    sampleIdentifierPolicy: 'local_only';
+  };
+  summary: Record<string, unknown>;
+  episodeId?: string;
+}
+
+export interface AnalysisCheckpointReceipt extends OmicsAnalysisReceipt {
+  action: 'request_checkpoint';
+  checkpointStatus: AnalysisCheckpointStatus;
+  requestId?: string;
+  changeSummary?: string;
+}
+
+export type BioReceiptReference = string;
+
+export interface BioMcpResultV2 {
+  schema: 'openbioscience.bio_mcp.result.v2';
+  action: string;
+  status: 'ready' | 'needs_completion' | 'blocked' | 'invalid_request' | 'supported' | 'partial';
+  receiptId?: BioReceiptReference;
+  receiptIds?: BioReceiptReference[];
+  cache: {
+    hit: boolean;
+    inputFingerprint: string;
+  };
+  nextActions: BioNextAction[];
+  correctedCall?: {
+    action: string;
+    payload: Record<string, unknown>;
+  };
+}
+
+export type PaperReproductionMode = 'exact' | 'analogous' | 'scoped_reimplementation';
+export type PaperScopeStatus =
+  | 'required'
+  | 'ready'
+  | 'conditional'
+  | 'external_data_block'
+  | 'capability_block'
+  | 'analogous_only'
+  | 'excluded_by_user'
+  | 'unresolved';
+export type PaperEvidenceBasis = 'explicit' | 'cross_source_inference' | 'agent_inference' | 'unresolved';
+
+export interface PaperEvidenceLocator {
+  id: string;
+  sourceId: string;
+  sourceHash: string;
+  path?: string;
+  url?: string;
+  page?: number;
+  lineStart?: number;
+  lineEnd?: number;
+  section?: string;
+  excerptHash: string;
+  basis: PaperEvidenceBasis;
+}
+
+export interface PaperReproductionTarget {
+  id: string;
+  evidenceIds: string[];
+}
+
+export interface PaperFigure extends PaperReproductionTarget {
+  label: string;
+  title: string;
+  panelIds: string[];
+}
+
+export interface PaperPanel extends PaperReproductionTarget {
+  figureId: string;
+  label: string;
+  claimIds: string[];
+  cohortIds: string[];
+  methodUnitIds: string[];
+  dependencyIds: string[];
+  expectedOutputIds: string[];
+}
+
+export interface PaperClaim extends PaperReproductionTarget {
+  text: string;
+  claimKind: 'descriptive' | 'associational' | 'inferential' | 'methodological';
+}
+
+export interface PaperMethodUnit extends PaperReproductionTarget {
+  analysisFamily: string;
+  lineage?: string;
+  reportedMethod: string;
+  parameterIds: string[];
+}
+
+export interface PaperDataDependency extends PaperReproductionTarget {
+  label: string;
+  cohortIds: string[];
+  modality: string;
+  requiredFields: string[];
+  localSupport: 'available' | 'partial' | 'missing' | 'unresolved';
+}
+
+export interface PaperExpectedOutput extends PaperReproductionTarget {
+  label: string;
+  artifactKind: 'object' | 'table' | 'figure' | 'report' | 'statistical_result';
+}
+
+export interface PaperScopeDecision {
+  id: string;
+  targetIds: string[];
+  reproductionMode: PaperReproductionMode;
+  status: PaperScopeStatus;
+  reason: string;
+  userDecisionId?: string;
+}
+
+export interface PaperExtractionConflict {
+  id: string;
+  targetIds: string[];
+  evidenceIds: string[];
+  message: string;
+  material: boolean;
+}
+
+export interface PaperUnresolvedItem {
+  id: string;
+  targetIds: string[];
+  message: string;
+  nextAction?: string;
+}
+
+export interface PaperReproductionMap {
+  schema: 'openbioscience.paper_reproduction_map.v1';
+  createdAt: string;
+  sources: Array<{ id: string; kind: string; path?: string; url?: string; contentHash: string }>;
+  evidence: PaperEvidenceLocator[];
+  figures: PaperFigure[];
+  panels: PaperPanel[];
+  claims: PaperClaim[];
+  cohorts: Array<{ id: string; label: string; datasetIds: string[]; evidenceIds: string[] }>;
+  methodUnits: PaperMethodUnit[];
+  dataDependencies: PaperDataDependency[];
+  expectedOutputs: PaperExpectedOutput[];
+  scopeDecisions: PaperScopeDecision[];
+  conflicts: PaperExtractionConflict[];
+  unresolvedItems: PaperUnresolvedItem[];
+}
+
+export interface PaperReproductionMapReceipt extends BioControlReceipt {
+  producer: 'bio_reproduction';
+  action: 'validate_paper_reproduction_map';
+  canonicalFile: { path: string; contentHash: string };
+  sourceReceiptIds: string[];
+  targetIds: string[];
+  unresolvedTargetIds: string[];
+  nextActions: BioNextAction[];
+}
+
+export interface ReproductionScopeReceipt extends BioControlReceipt {
+  producer: 'bio_reproduction';
+  action: 'validate_reproduction_scope';
+  paperMapReceiptId: string;
+  canonicalFile: { path: string; contentHash: string };
+  requiredTargetIds: string[];
+  excludedTargetIds: string[];
+  blockedTargetIds: string[];
+  nextActions: BioNextAction[];
+}
+
+export interface SkillComplianceReceipt extends BioControlReceipt {
+  producer: 'bio_reproduction';
+  action: 'validate_skill_compliance';
+  skillId: string;
+  skillContentHash: string;
+  requirementIds: string[];
+  satisfiedRequirementIds: string[];
+  violations: string[];
+  nextActions: BioNextAction[];
+}
+
+export interface ScriptValidationReceipt extends BioControlReceipt {
+  producer: 'bio_reproduction';
+  action: 'preflight_execution_scripts';
+  executionContractReceiptId: string;
+  methodParameterReceiptId: string;
+  scripts: Array<{ path: string; contentHash: string; moduleIds: string[] }>;
+  skillComplianceReceiptIds: string[];
+  statisticalDesignReceiptIds: string[];
+  violations: string[];
+  nextActions: BioNextAction[];
+}
+
+export interface ExecutionRunReceipt extends BioControlReceipt {
+  producer: 'bio_runtime';
+  action: 'record_execution';
+  scriptValidationReceiptId: string;
+  startedAt: number;
+  finishedAt: number;
+  scriptFiles: Array<{ path: string; contentHash: string }>;
+  configFiles: Array<{ path: string; contentHash: string }>;
+  logFiles: Array<{ path: string; contentHash: string }>;
+  outputFiles: Array<{ path: string; contentHash: string }>;
+  exitCode: number;
+}
+
+export interface ReproductionModuleReadiness {
+  id: string;
+  environmentRef: string;
+  declaredStatus: string;
+  sourceStatus: string;
+  contractStatus: 'complete' | 'incomplete';
+  executionStatus: 'ready' | 'conditional' | 'blocked';
+  skillRoute: string[];
+  mcpRoute: string[];
+  expectedOutputs: string[];
+  blockingReasons: string[];
+}
+
+export type MethodAlignmentLevel =
+  | 'parameter_aligned'
+  | 'partially_aligned'
+  | 'scoped_reimplementation'
+  | 'unresolved_conflict';
+
+export type MethodSourceKind = 'paper_methods' | 'supplement' | 'author_code' | 'figure_legend';
+
+export interface MethodParameterEvidence {
+  parameterId: string;
+  moduleId: string;
+  name: string;
+  sourceKind: MethodSourceKind;
+  sourceId: string;
+  locator: string;
+  reportedValue: unknown;
+  normalizedValue: unknown;
+  contentHash: string;
+}
+
+export interface MethodModuleCoverage {
+  moduleId: string;
+  sourcesInspected: MethodSourceKind[];
+  parameterCount: number;
+  hasConflict: boolean;
+  alignmentLevel: MethodAlignmentLevel;
+}
+
+export interface MethodParameterConflict {
+  parameterId: string;
+  moduleId: string;
+  evidenceIds: string[];
+  values: unknown[];
+  material: boolean;
+}
+
+export interface MethodParameterReceipt extends BioControlReceipt {
+  producer: 'bio_reproduction';
+  action: 'extract_method_parameters';
+  canonicalFile: { path: string; contentHash: string };
+  sourceReceiptIds: string[];
+  moduleCoverage: MethodModuleCoverage[];
+  conflicts: MethodParameterConflict[];
+  nextActions: BioNextAction[];
+}
+
+export interface MethodAlignmentReceipt extends BioControlReceipt {
+  producer: 'bio_reproduction';
+  action: 'validate_method_alignment';
+  methodParameterReceiptId: string;
+  alignmentLevel: MethodAlignmentLevel;
+  executedParameterFile: { path: string; contentHash: string };
+  scriptFiles: Array<{ path: string; contentHash: string }>;
+  alignedParameters: string[];
+  substitutedParameters: string[];
+  conflicts: MethodParameterConflict[];
+  eligibleClaims: string[];
+  nextActions: BioNextAction[];
+}
+
+export interface ReproductionCompletionReceipt extends BioControlReceipt {
+  producer: 'bio_reproduction';
+  action: 'validate_reproduction_plan';
+  workflowKind: 'omics_reproduction';
+  planningCompletion: 'complete' | 'incomplete';
+  executionReadiness: 'ready' | 'partial' | 'blocked';
+  canonicalFiles: Array<{ path: string; contentHash: string }>;
+  sourceReceiptIds: string[];
+  runtimeReceiptIds: string[];
+  methodParameterReceiptId: string;
+  methodModuleCoverage: MethodModuleCoverage[];
+  eligibleClaims: string[];
+  skillUses: Omit<ScienceSkillUse, 'runId' | 'revision'>[];
+  moduleReadiness: ReproductionModuleReadiness[];
+  nextActions: BioNextAction[];
+  externalBlockers: BioBlocker[];
+}
+
+export type BioStatisticsContrastStatus =
+  | 'tested'
+  | 'blocked_insufficient_replicates'
+  | 'blocked_invalid_design'
+  | 'failed';
+
+export interface BioStatisticsDesignContrast {
+  id: string;
+  target: string;
+  reference: string;
+  cellType: string;
+  targetReplicates: number;
+  referenceReplicates: number;
+  completePairs?: number;
+  status: 'ready' | 'blocked';
+  warnings: string[];
+}
+
+export interface BioStatisticsDesignReceipt extends BioControlReceipt {
+  producer: 'bio_statistics';
+  action: 'validate_de_design';
+  analysisKind: 'pseudobulk_de';
+  replicateUnit: string;
+  pairedBy?: string;
+  formula: string;
+  minimumReplicates: 3;
+  contrasts: BioStatisticsDesignContrast[];
+  nextActions: BioNextAction[];
+}
+
+export interface BioStatisticsCompletionReceipt extends BioControlReceipt {
+  producer: 'bio_statistics';
+  action: 'validate_de_outputs';
+  workflowKind: 'omics_reproduction';
+  workflowPhase: 'execution';
+  planningReceiptId: string;
+  designReceiptId: string;
+  package: 'edgeR';
+  packageVersion: string;
+  contrasts: Array<{
+    id: string;
+    target: string;
+    reference: string;
+    coefficient: string;
+    status: BioStatisticsContrastStatus;
+    effectiveReplicates: Record<string, number>;
+    warnings: string[];
+  }>;
+  canonicalFiles: Array<{ path: string; contentHash: string }>;
+  skillUses: Omit<ScienceSkillUse, 'runId' | 'revision'>[];
+  mcpActions: string[];
+  nextActions: BioNextAction[];
+  externalBlockers: BioBlocker[];
+}
+
+export type ScrnaExecutionModuleId =
+  | 'data_import'
+  | 'quality_control'
+  | 'normalization'
+  | 'clustering'
+  | 'major_annotation'
+  | 'minor_annotation'
+  | 'cluster_markers'
+  | 'composition'
+  | 'condition_de'
+  | 'descriptive_statistics'
+  | 'figures'
+  | 'disease_program';
+
+export type ScrnaAnnotationMode = 'independent_annotation' | 'reference_review' | 'label_transfer';
+export type ScrnaQcOutcome = 'filtered' | 'passed_no_removal' | 'failed';
+export type ExecutionModuleStatus =
+  | 'validated'
+  | 'generated_unvalidated'
+  | 'scientifically_limited'
+  | 'externally_blocked'
+  | 'incomplete'
+  | 'not_requested';
+
+export interface ScrnaExecutionContractModule {
+  id: ScrnaExecutionModuleId;
+  required: boolean;
+  expectedOutputs: string[];
+}
+
+export interface ScrnaExecutionContract {
+  schema: 'openbioscience.scrna_reproduction.execution_contract.v1';
+  createdAt: string;
+  objective: string;
+  datasetIds: string[];
+  modality: 'scrna_seq';
+  annotationMode: ScrnaAnnotationMode;
+  modules: ScrnaExecutionContractModule[];
+}
+
+export interface ScrnaExecutionContractModuleV2 {
+  id: string;
+  parentId?: string;
+  required: boolean;
+  panelIds: string[];
+  claimIds: string[];
+  cohortIds: string[];
+  lineage?: string;
+  analysisFamilies: string[];
+  dependencyModuleIds: string[];
+  scopeDecisionId: string;
+  annotationMode?: ScrnaAnnotationMode;
+  requiredInputs: string[];
+  expectedOutputs: string[];
+  validationRequirements: string[];
+}
+
+export interface ScrnaExecutionContractV2 {
+  schema: 'openbioscience.scrna_reproduction.execution_contract.v2';
+  createdAt: string;
+  objective: string;
+  datasetIds: string[];
+  modality: 'scrna_seq';
+  paperMapReceiptId: string;
+  scopeReceiptId: string;
+  modules: ScrnaExecutionContractModuleV2[];
+}
+
+export interface ExecutionContractReceipt extends BioControlReceipt {
+  producer: 'bio_reproduction';
+  action: 'prepare_execution_contract';
+  workflowKind: 'omics_reproduction';
+  workflowPhase: 'execution';
+  modality: 'scrna_seq';
+  planningReceiptId: string;
+  canonicalFile: { path: string; contentHash: string };
+  annotationMode: ScrnaAnnotationMode;
+  requiredModules: ScrnaExecutionModuleId[];
+  nextActions: BioNextAction[];
+}
+
+export interface ExecutionContractReceiptV2 extends BioControlReceipt {
+  producer: 'bio_reproduction';
+  action: 'prepare_execution_contract';
+  workflowKind: 'omics_reproduction';
+  workflowPhase: 'execution';
+  modality: 'scrna_seq';
+  contractVersion: 2;
+  planningReceiptId: string;
+  paperMapReceiptId: string;
+  scopeReceiptId: string;
+  canonicalFile: { path: string; contentHash: string };
+  requiredModules: string[];
+  nextActions: BioNextAction[];
+}
+
+export interface ExecutionModuleResult {
+  id: ScrnaExecutionModuleId;
+  required: boolean;
+  status: ExecutionModuleStatus;
+  outputFiles: Array<{ path: string; contentHash: string }>;
+  validationReceiptIds: string[];
+  qcOutcome?: ScrnaQcOutcome;
+  annotationMode?: ScrnaAnnotationMode;
+  limitations: string[];
+}
+
+export interface ReproductionExecutionReceipt extends BioControlReceipt {
+  producer: 'bio_reproduction';
+  action: 'complete_execution';
+  workflowKind: 'omics_reproduction';
+  workflowPhase: 'execution';
+  modality: 'scrna_seq';
+  executionCompletion: 'complete' | 'incomplete';
+  scientificOutcome: 'validated' | 'validated_with_limits' | 'externally_blocked';
+  executionContractFile: { path: string; contentHash: string };
+  executionContractReceiptId: string;
+  planningReceiptId: string;
+  methodAlignmentReceiptId: string;
+  statisticalReceiptIds: string[];
+  modules: ExecutionModuleResult[];
+  canonicalFiles: Array<{ path: string; contentHash: string }>;
+  skillUses: Omit<ScienceSkillUse, 'runId' | 'revision'>[];
+  nextActions: BioNextAction[];
+  externalBlockers: BioBlocker[];
+}
+
+export interface ExecutionModuleResultV2 {
+  id: string;
+  required: boolean;
+  status: ExecutionModuleStatus;
+  targetIds: string[];
+  outputFiles: Array<{ path: string; contentHash: string }>;
+  validationReceiptIds: string[];
+  limitations: string[];
+}
+
+export interface ReproductionExecutionReceiptV2 extends BioControlReceipt {
+  producer: 'bio_reproduction';
+  action: 'complete_execution';
+  workflowKind: 'omics_reproduction';
+  workflowPhase: 'execution';
+  modality: 'scrna_seq';
+  contractVersion: 2;
+  executionCompletion: 'complete' | 'incomplete';
+  scientificOutcome: 'validated' | 'validated_with_limits' | 'externally_blocked';
+  executionContractFile: { path: string; contentHash: string };
+  executionContractReceiptId: string;
+  planningReceiptId: string;
+  paperMapReceiptId: string;
+  scopeReceiptId: string;
+  methodAlignmentReceiptId: string;
+  scriptValidationReceiptId: string;
+  executionRunReceiptIds: string[];
+  statisticalReceiptIds: string[];
+  modules: ExecutionModuleResultV2[];
+  coverageItems: ScienceCoverageItem[];
+  canonicalFiles: Array<{ path: string; contentHash: string }>;
+  skillUses: Omit<ScienceSkillUse, 'runId' | 'revision'>[];
+  nextActions: BioNextAction[];
+  externalBlockers: BioBlocker[];
+}
+
+export type ScienceDeliveryState =
+  | 'running'
+  | 'awaiting_user'
+  | 'action_required'
+  | 'completed'
+  | 'partial'
+  | 'blocked'
+  | 'failed';
+
+export interface ScienceDeliveryStatus {
+  state: ScienceDeliveryState;
+  phase: 'planning' | 'execution' | 'general' | OmicsAnalysisStage;
+  authoritativeLabel: string;
+  reasonCodes: string[];
+  publicationDisposition: 'accepted' | 'pending' | 'rejected';
+}
+
+export interface ScienceCoverageItem {
+  id: string;
+  targetType: 'user_objective' | 'paper_figure' | 'paper_panel' | 'paper_claim';
+  targetId: string;
+  moduleIds: string[];
+  cohortIds: string[];
+  reproductionMode: PaperReproductionMode;
+  status: PaperScopeStatus | 'completed' | 'scientifically_blocked';
+  reason: string;
+  artifactIds: string[];
+  evidenceIds: string[];
+  receiptIds: string[];
+}
+
+export interface ScienceCoverageSummary {
+  total: number;
+  completed: number;
+  exact: number;
+  analogous: number;
+  scoped: number;
+  actionRequired: number;
+  externalBlocked: number;
+  excluded: number;
+}
+
+export interface ScienceFigurePanelProvenance {
+  panelId: string;
+  sourceCohortIds: string[];
+  methodEvidenceIds: string[];
+  artifactIds: string[];
+  sourceTableArtifactIds: string[];
+  receiptIds: string[];
+}
+
+export interface ScienceAttachmentRef {
+  uri: string;
+  artifactId: string;
+  version: number;
+  role: string;
+  contentHash: string;
+  sourcePath?: string;
+  status: 'ready' | 'modified' | 'stale';
+}
+
 export type ScienceReportBlock =
   | { type: 'paragraph'; text: string; evidenceIds?: string[] }
   | { type: 'bullet_list'; items: Array<{ text: string; evidenceIds?: string[]; confidence?: string }> }
@@ -563,7 +1250,7 @@ export interface SciencePanelData {
   question: string;
   generatedAt: number;
   summary?: string;
-  status: 'completed' | 'partial' | 'blocked' | 'failed' | 'running' | 'draft';
+  status: 'completed' | 'partial' | 'blocked' | 'failed' | 'running' | 'awaiting_user' | 'draft';
   stats: {
     searches: number;
     artifacts: number;
@@ -588,6 +1275,26 @@ export interface SciencePanelData {
   edges?: ScienceProvenanceEdge[];
   graphWarnings?: ScienceGraphWarning[];
   usedSkills?: ScienceSkillUse[];
+  workflowKind?: ScienceWorkflowKind;
+  workflowPhase?: 'planning' | 'execution' | OmicsAnalysisStage;
+  planningCompletion?: 'complete' | 'incomplete';
+  executionReadiness?: 'ready' | 'partial' | 'blocked';
+  completionReceipt?: ReproductionCompletionReceipt;
+  executionReceipt?: ReproductionExecutionReceipt | ReproductionExecutionReceiptV2;
+  statisticalCompletionReceipt?: BioStatisticsCompletionReceipt;
+  deliveryState?: ScienceDeliveryStatus;
+  coverageSummary?: ScienceCoverageSummary;
+  coverageItems?: ScienceCoverageItem[];
+  figurePanelProvenance?: ScienceFigurePanelProvenance[];
+  attachments?: ScienceAttachmentRef[];
+  methodAlignmentReceipt?: MethodAlignmentReceipt;
+  analysisReceipt?: OmicsAnalysisReceipt;
+  analysisId?: string;
+  analysisStage?: OmicsAnalysisStage;
+  analysisCheckpointStatus?: AnalysisCheckpointStatus;
+  baselineReceiptId?: string;
+  nextActions?: BioNextAction[];
+  externalBlockers?: BioBlocker[];
   methods?: {
     queryPlan?: string[];
     commands?: string[];
@@ -607,6 +1314,7 @@ export type ScienceArtifactAction =
   | 'replace'
   | 'append'
   | 'version'
+  | 'authorize_external_file'
   | 'snapshot'
   | 'publish'
   | 'annotate'
@@ -833,6 +1541,7 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '',
     '## Runtime Contract',
     '- Do real work in the normal agent runtime: shell, Python, R, LaTeX, notebooks, project pipelines, or explicitly authorized remote tools.',
+    '- Within the authorized research project root, perform ordinary file inspection, script execution, and analysis directly through the local runtime without repeatedly asking for sandbox confirmation. Request approval only when required by the runtime boundary, especially for paths outside the project, network access, credentials, package/environment mutation, destructive operations, or external services. Never claim that a command ran on the host when the runtime actually rejected or sandboxed it.',
     '- MCP tools are control-plane tools. They record/search/read/patch/version/publish evidence and artifacts; they do not replace real analysis.',
     '- If decisive task variables are missing, pause before running irreversible or report-defining work and use the OpenScience user-input MCP tool (`user_input`). Ask at most 3 concise questions, prefer choices when possible, and include an unknown/not sure/other path when appropriate. In multi-turn work, first reuse prior user_input answers, user decisions, and artifact evidence from the same conversation/project; do not ask the same question again unless the user changes the scope or the old answer is no longer applicable.',
     projectRoot
@@ -841,6 +1550,25 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '',
     '## Required Control Surfaces',
     '- Use `research_evidence(action="status"|"list_tools"|"search"|"read"|"call")` for literature, PaperClip files, and scientific database retrieval. PaperClip is active only when a key is configured; `provider="bio_tools"` exposes PubMed, ChEMBL, GEO, AlphaFold, and other JimLiu science-skills database tools through the same MCP.',
+    '- PaperClip and `bio_tools` are optional research_evidence providers. If either is disabled, report the specific unavailable provider capability and continue with local files, direct allowed sources, and other configured Bio MCPs. Do not imply that `bio_reproduction`, `bio_source`, `bio_runtime`, or `science_artifact` is unavailable merely because these providers are not configured.',
+    '- For paper-scoped omics reproduction, derive scope from the current validated PaperReproductionMap; do not author or execute scripts before current scope, method, Skill-compliance, and script-preflight receipts are ready, and never omit a relevant panel without an explicit scope decision.',
+    '- For single-cell reproduction tasks, derive required execution modules from the user objective and scoped paper target. Continue beyond import or QC when downstream analysis is requested, but do not impose an unrequested disease program, trajectory, CCI, or other optional module as a completion gate.',
+    '- Resolve OpenBioScience official environments through `bio_runtime` or `OPENBIOSCIENCE_RUNTIME_ROOT`; shell PATH absence alone is not evidence that an official environment is missing.',
+    '- For paper, article, or demo reproduction feasibility tasks, read and follow `bio-omics-reproduction-planning` before auditing. Complete the `bio_reproduction` planning sequence (`build_source_package`, `audit_data_code_availability`, `draft_reproduction_plan`, then `validate_reproduction_plan`) and write the canonical `case_reproduction/planning/reproduction_plan.md` plus `case_reproduction/planning/source_audit.json` before publishing a feasibility conclusion. A chat summary or an ad hoc file under `outputs/` is not a substitute for this package.',
+    '- Treat reproduction MCPs as phase gates, not repeated scientific auditors. Pass receipt IDs only; never copy, trim, or construct receipt objects. Reuse cache hits. For `invalid_request`, execute its exact `correctedCall` once; stop on an unchanged fingerprint or `stopWhenUnchanged`. MCP-owned source, method, and execution control files are written atomically by the MCP and must not be rewritten by the Agent.',
+    '- For scRNA-seq biological condition comparisons, load `bio-scrna-differential-expression` and use `bio_statistics`. Count independent biological replicates only after exclusions and pairing: require at least 3 per group for unpaired designs or 3 complete pairs. Block invalid contrasts without replacing them with cell-level inference. Cluster marker ranking is descriptive annotation evidence and must use log-normalized, never scaled, expression.',
+    '- Before authoring reproduction scripts, call `bio_source(action="inspect_method_sources")`, then call `bio_reproduction(action="extract_method_parameters")` with its `methodSourceReceiptId`. The MCP writes `case_reproduction/planning/method_parameter_contract.json` atomically. Record only parameters supported by paper, supplement, author-code, or figure-legend evidence.',
+    '- A missing, malformed, or incomplete method-parameter receipt is a correctable workflow step, not a provenance limitation. Follow the returned `nextActions` until the receipt is ready; do not publish a terminal Science status, downgrade the failure to a warning, or construct a substitute receipt manually. Use only declared Science panel statuses.',
+    '- Before authoring omics reproduction execution scripts, call `bio_reproduction(action="prepare_execution_contract")`, follow its `nextActions`, and execute only modules marked required in the current contract.',
+    '- Before publishing an omics reproduction execution run, call `bio_reproduction(action="complete_execution")`. Pass `workflowPhase: "execution"` and only its `executionReceiptId` to `science_artifact`; planning, method, and statistical receipts are coordinator prerequisites.',
+    '- If execution files were generated but the execution publication remains `running`, describe them as generated outputs with incomplete control-plane validation; do not say the reproduction execution is completed.',
+    '- Pass only the final `completionReceiptId` to `science_artifact(action="publish", payload={"workflowKind":"omics_reproduction", ...})`. The publisher resolves authoritative receipt state from the project store. `planningCompletion` and `executionReadiness` remain separate.',
+    '- For user-authorized local/private omics data without a paper target, use `bio_analysis`, never `bio_reproduction`. Start with `start_analysis`, keep dataset units separate, and pass only `analysisReceiptId` to `science_artifact(action="publish", payload={"workflowKind":"omics_analysis", ...})`.',
+    '- The analysis lifecycle is intake -> qc -> baseline -> episode* -> closing. `complete_intake`, `complete_qc`, `complete_baseline`, and `complete_episode` remain `awaiting_user` until `bio_analysis(action="request_checkpoint")` records an accepted checkpoint. Timeouts, cancellations, and deferred checkpoints do not authorize progression.',
+    '- scRNA-seq baseline is limited to QC/preprocessing, batch diagnostics, global clustering, markers, major assisted annotation, and descriptive figures. Do not automatically run subtype, DE, composition testing, trajectory, CCI, CNV, GRN, NMF, or clinical association; create one confirmed episode for each deeper question.',
+    '- For scoped scRNA-seq reproduction, also use `bio_source` for local asset/file-semantics checks and `bio_runtime(action="probe_environment")` for each selected official `environmentRef`. Report the resolved environmentRef, probe status, executable/package checks, and versions. Do not report the default shell as the analysis environment, and do not call an environment unavailable when its runtime probe passes.',
+    '- For local PDFs, probe `pdftotext` directly and use it when available. If shell PATH lookup fails after an official runtime resolves, also probe `${OPENBIOSCIENCE_RUNTIME_ROOT}/environments/official/sc-py-singlecell/bin/pdftotext` before declaring the tool unavailable. If an optional preliminary utility is missing, continue to the required extraction command or an existing Python PDF fallback. Never infer that PDF extraction is unavailable from one failed chained shell command.',
+    '- Reproduction feasibility wording must separate: data-supported scope, environment-probed execution readiness, planning-only modules, and unsupported exact/figure-level claims. Use `P0` or `P1` only when the report defines those levels; never label P1 executable when only its inputs can be prepared.',
     '- When `research_evidence` returns `evidenceDrafts`, register those drafts with `science_artifact` before using the result in a claim. Assign each new evidence item a stable human-readable id in first-use order (`E1`, `E2`, `E3`, ...), unless patching an existing evidence item whose id must be preserved. If a provider is unavailable, record the gap instead of silently relying on model memory.',
     '- Use `science_artifact` as the single artifact graph control surface. Do not invent separate science_start_run, science_search, science_register_* or science_submit_panel tools.',
     '- **Mandatory artifact handoff:** unless the user explicitly requests chat-only brainstorming, call `science_artifact(action="create"|"patch")` early to create or update the task artifact, then call `science_artifact(action="publish")` before the final visible answer.',
@@ -868,9 +1596,11 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     `- Core discipline: ${SCIENCE_CORE_SKILL_NAME}. Artifact protocol: ${SCIENCE_ARTIFACT_SKILL_NAME}.`,
     `- First project setup: ${SCIENCE_ONBOARDING_SKILL_NAME}; use only when no onboarding profile exists or the user explicitly asks to update it.`,
     `- Research stage routing: ${SCIENCE_WORKFLOW_SKILL_NAME}; use it to choose ds-* workflow stages without replacing artifact/evidence rules.`,
-    `- Domain routers loaded by default: ${SCIENCE_WRITING_SKILL_NAME}, ${SCIENCE_DATABASES_SKILL_NAME}, ${SCIENCE_BIOMODELS_SKILL_NAME}, ${SCIENCE_SINGLECELL_SKILL_NAME}, ${SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME}, ${SCIENCE_COMPUTE_SKILL_NAME}.`,
+    `- Domain routers loaded by default: ${SCIENCE_WRITING_SKILL_NAME}, ${SCIENCE_DATABASES_SKILL_NAME}, ${SCIENCE_BIOMODELS_SKILL_NAME}, ${SCIENCE_SINGLECELL_SKILL_NAME}, ${SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME}, ${SCIENCE_BIO_OMICS_ANALYSIS_SKILL_NAME}, ${SCIENCE_BIO_SINGLECELL_BASELINE_SKILL_NAME}, ${SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME}, ${SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME}, ${SCIENCE_COMPUTE_SKILL_NAME}.`,
     '- Router skills choose narrow biomedical leaf skills such as ds-*, kdense-*, nature-*, and later sciagent-* only when the task needs them. Record selected leaf skills as `skill_use` if they affect a visible result.',
     '- Vendored catalogs are migration/source indexes, not runtime evidence. Concrete outputs still need evidence, artifact, claim, provenance, and snapshot records.',
+    '- Skill selection or loading is not Skill completion. Read the selected Skill, follow its mandatory stages and output contract, and treat it as `used` only when the applicable coordinator validates its requirement ids against the current Skill content hash.',
+    '- `[LOAD_SKILL: <id>]` means the runtime loaded that skill. Do not search only the research workspace for `resources/skills`; use the injected skill content or the runtime skill source (commonly `/data/builtin-skills/<id>/SKILL.md` in WebUI containers) and do not report a loaded skill as missing.',
     '',
     '## Final Answer',
     '- Keep final prose short. The structured Science panel is the main result.',
@@ -886,6 +1616,10 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     `- Use ${SCIENCE_BIOMODELS_SKILL_NAME}: ${SCIENCE_BIOMODELS_SKILL_PATH}.`,
     `- Use ${SCIENCE_SINGLECELL_SKILL_NAME}: ${SCIENCE_SINGLECELL_SKILL_PATH}.`,
     `- Use ${SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME}: ${SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_PATH}.`,
+    `- Use ${SCIENCE_BIO_OMICS_ANALYSIS_SKILL_NAME}: ${SCIENCE_BIO_OMICS_ANALYSIS_SKILL_PATH}.`,
+    `- Use ${SCIENCE_BIO_SINGLECELL_BASELINE_SKILL_NAME}: ${SCIENCE_BIO_SINGLECELL_BASELINE_SKILL_PATH}.`,
+    `- Use ${SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME}: ${SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_PATH}.`,
+    `- Use ${SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME}: ${SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_PATH}.`,
     `- Use ${SCIENCE_COMPUTE_SKILL_NAME}: ${SCIENCE_COMPUTE_SKILL_PATH}.`,
     `- Default Science skill pack manifest: ${SCIENCE_SKILL_PACK_MANIFEST_PATH}.`,
     `- Materialized external leaf skills remain discoverable through routers: ${SCIENCE_SKILL_PACK_COUNTS.total} total; ${SCIENCE_SKILL_PACK_COUNTS.deepscientist} DeepScientist, ${SCIENCE_SKILL_PACK_COUNTS.kdense} K-Dense biomedical skills, ${SCIENCE_SKILL_PACK_COUNTS.natureSkills} Nature Skills, and ${SCIENCE_SKILL_PACK_COUNTS.academicforge} AcademicForge Claude Science skills.`,
@@ -902,6 +1636,237 @@ export const isScienceConversationExtra = (extra: unknown): extra is { science: 
 
 const toRecord = (value: unknown): Record<string, unknown> | undefined =>
   value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
+
+const SCIENCE_PANEL_STATUSES = new Set<SciencePanelData['status']>([
+  'completed',
+  'partial',
+  'blocked',
+  'failed',
+  'running',
+  'awaiting_user',
+  'draft',
+]);
+
+export const isRecognizedSciencePanelStatus = (value: unknown): boolean =>
+  value === 'in_progress' ||
+  value === 'completed_with_warnings' ||
+  SCIENCE_PANEL_STATUSES.has(value as SciencePanelData['status']);
+
+const emptySciencePanelStats = (): SciencePanelData['stats'] => ({
+  searches: 0,
+  artifacts: 0,
+  evidence: 0,
+  commands: 0,
+  validations: 0,
+  warnings: 0,
+});
+
+const numberOrDefault = (value: unknown, fallback = 0): number =>
+  typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+
+const stringOrUndefined = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim() ? value.trim() : undefined;
+
+const stringListOrEmpty = (value: unknown): string[] => {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed ? [trimmed] : [];
+  }
+  return Array.isArray(value)
+    ? value
+        .filter((item): item is string => typeof item === 'string')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+};
+
+const arrayOrEmpty = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
+
+export const normalizeSciencePanelStatus = (value: unknown): SciencePanelData['status'] => {
+  if (value === 'in_progress') return 'running';
+  if (value === 'completed_with_warnings') return 'completed';
+  return SCIENCE_PANEL_STATUSES.has(value as SciencePanelData['status'])
+    ? (value as SciencePanelData['status'])
+    : 'draft';
+};
+
+const normalizeScienceReportBlocks = (section: Record<string, unknown>): ScienceReportBlock[] => {
+  if (Array.isArray(section.blocks)) {
+    return section.blocks.filter((block): block is ScienceReportBlock => {
+      const record = toRecord(block);
+      return typeof record?.type === 'string';
+    });
+  }
+  const legacyContent = stringOrUndefined(section.content);
+  return legacyContent ? [{ type: 'paragraph', text: legacyContent }] : [];
+};
+
+const normalizeScienceReportSections = (
+  report: Record<string, unknown>,
+  title: string
+): SciencePanelData['report']['sections'] => {
+  const rawSections = Array.isArray(report.sections) ? report.sections : [];
+  const sections = rawSections
+    .map((item, index) => {
+      const section = toRecord(item);
+      if (!section) return undefined;
+      const heading = stringOrUndefined(section.heading) || stringOrUndefined(section.title) || `Section ${index + 1}`;
+      return {
+        id: stringOrUndefined(section.id) || `section-${index + 1}`,
+        heading,
+        blocks: normalizeScienceReportBlocks(section),
+      };
+    })
+    .filter((section): section is SciencePanelData['report']['sections'][number] => Boolean(section));
+  if (sections.length) return sections;
+
+  const legacyContent = stringOrUndefined(report.content);
+  return legacyContent
+    ? [{ id: 'summary', heading: title || 'Summary', blocks: [{ type: 'paragraph', text: legacyContent }] }]
+    : [];
+};
+
+const normalizeSciencePanelMethods = (value: unknown): SciencePanelData['methods'] | undefined => {
+  const record = toRecord(value);
+  if (!record) return undefined;
+  const methods: NonNullable<SciencePanelData['methods']> = {
+    queryPlan: stringListOrEmpty(record.queryPlan),
+    commands: stringListOrEmpty(record.commands),
+    environmentSummary: stringOrUndefined(record.environmentSummary),
+    limitations: stringListOrEmpty(record.limitations),
+  };
+  return methods.queryPlan?.length ||
+    methods.commands?.length ||
+    methods.environmentSummary ||
+    methods.limitations?.length
+    ? methods
+    : undefined;
+};
+
+export const normalizeSciencePanelData = (value: unknown): SciencePanelData | undefined => {
+  const record = toRecord(value);
+  if (!record || record.schema !== SCIENCE_PANEL_SCHEMA) return undefined;
+  const runId = stringOrUndefined(record.runId);
+  const reportRecord = toRecord(record.report);
+  if (!runId || !reportRecord) return undefined;
+
+  const evidence = arrayOrEmpty<ScienceEvidenceItem>(record.evidence);
+  const artifacts = arrayOrEmpty<ScienceArtifact>(record.artifacts);
+  const graphWarnings = arrayOrEmpty<ScienceGraphWarning>(record.graphWarnings);
+  const statsRecord = toRecord(record.stats);
+  const stats: SciencePanelData['stats'] = {
+    ...emptySciencePanelStats(),
+    searches: numberOrDefault(statsRecord?.searches),
+    artifacts: numberOrDefault(statsRecord?.artifacts, artifacts.length),
+    evidence: numberOrDefault(statsRecord?.evidence, evidence.length),
+    commands: numberOrDefault(statsRecord?.commands),
+    validations: numberOrDefault(statsRecord?.validations),
+    warnings: numberOrDefault(statsRecord?.warnings, graphWarnings.length),
+  };
+  const title = stringOrUndefined(reportRecord.title) || stringOrUndefined(record.summary) || 'Science report';
+  const question = stringOrUndefined(record.question) || stringOrUndefined(record.summary) || title || runId;
+  const panel: SciencePanelData = {
+    schema: SCIENCE_PANEL_SCHEMA,
+    runId,
+    question,
+    generatedAt: numberOrDefault(record.generatedAt),
+    status: normalizeSciencePanelStatus(record.status),
+    stats,
+    report: {
+      title,
+      sections: normalizeScienceReportSections(reportRecord, title),
+    },
+    evidence,
+    artifacts,
+    pages: arrayOrEmpty<ScienceArtifactPage>(record.pages),
+    claims: arrayOrEmpty<ScienceClaim>(record.claims),
+    provenance: arrayOrEmpty<ScienceProvenanceNode>(record.provenance),
+    edges: arrayOrEmpty<ScienceProvenanceEdge>(record.edges),
+    graphWarnings,
+    usedSkills: arrayOrEmpty<ScienceSkillUse>(record.usedSkills),
+  };
+  const conversationId = stringOrUndefined(record.conversationId);
+  const projectRoot = stringOrUndefined(record.projectRoot);
+  const summary = stringOrUndefined(record.summary);
+  const methods = normalizeSciencePanelMethods(record.methods);
+  if (conversationId) panel.conversationId = conversationId;
+  if (projectRoot) panel.projectRoot = projectRoot;
+  if (summary) panel.summary = summary;
+  if (methods) panel.methods = methods;
+  if (record.workflowKind === 'omics_reproduction' || record.workflowKind === 'omics_analysis') {
+    panel.workflowKind = record.workflowKind;
+  }
+  if (
+    record.workflowPhase === 'planning' ||
+    record.workflowPhase === 'execution' ||
+    record.workflowPhase === 'intake' ||
+    record.workflowPhase === 'qc' ||
+    record.workflowPhase === 'baseline' ||
+    record.workflowPhase === 'episode' ||
+    record.workflowPhase === 'closing'
+  ) {
+    panel.workflowPhase = record.workflowPhase;
+  }
+  if (record.planningCompletion === 'complete' || record.planningCompletion === 'incomplete') {
+    panel.planningCompletion = record.planningCompletion;
+  }
+  if (
+    record.executionReadiness === 'ready' ||
+    record.executionReadiness === 'partial' ||
+    record.executionReadiness === 'blocked'
+  ) {
+    panel.executionReadiness = record.executionReadiness;
+  }
+  if (toRecord(record.completionReceipt)) {
+    panel.completionReceipt = record.completionReceipt as unknown as ReproductionCompletionReceipt;
+  }
+  if (toRecord(record.executionReceipt)) {
+    panel.executionReceipt = record.executionReceipt as unknown as
+      | ReproductionExecutionReceipt
+      | ReproductionExecutionReceiptV2;
+  }
+  if (toRecord(record.statisticalCompletionReceipt)) {
+    panel.statisticalCompletionReceipt =
+      record.statisticalCompletionReceipt as unknown as BioStatisticsCompletionReceipt;
+  }
+  if (toRecord(record.methodAlignmentReceipt)) {
+    panel.methodAlignmentReceipt = record.methodAlignmentReceipt as unknown as MethodAlignmentReceipt;
+  }
+  if (toRecord(record.analysisReceipt))
+    panel.analysisReceipt = record.analysisReceipt as unknown as OmicsAnalysisReceipt;
+  if (stringOrUndefined(record.analysisId)) panel.analysisId = stringOrUndefined(record.analysisId);
+  if (
+    record.analysisStage === 'intake' ||
+    record.analysisStage === 'qc' ||
+    record.analysisStage === 'baseline' ||
+    record.analysisStage === 'episode' ||
+    record.analysisStage === 'closing'
+  ) {
+    panel.analysisStage = record.analysisStage;
+  }
+  if (
+    record.analysisCheckpointStatus === 'accepted' ||
+    record.analysisCheckpointStatus === 'accepted_with_changes' ||
+    record.analysisCheckpointStatus === 'needs_revision' ||
+    record.analysisCheckpointStatus === 'deferred' ||
+    record.analysisCheckpointStatus === 'cancelled'
+  ) {
+    panel.analysisCheckpointStatus = record.analysisCheckpointStatus;
+  }
+  if (stringOrUndefined(record.baselineReceiptId))
+    panel.baselineReceiptId = stringOrUndefined(record.baselineReceiptId);
+  panel.nextActions = arrayOrEmpty<BioNextAction>(record.nextActions);
+  panel.externalBlockers = arrayOrEmpty<BioBlocker>(record.externalBlockers);
+  if (toRecord(record.deliveryState)) panel.deliveryState = record.deliveryState as unknown as ScienceDeliveryStatus;
+  if (toRecord(record.coverageSummary)) {
+    panel.coverageSummary = record.coverageSummary as unknown as ScienceCoverageSummary;
+  }
+  panel.coverageItems = arrayOrEmpty<ScienceCoverageItem>(record.coverageItems);
+  panel.figurePanelProvenance = arrayOrEmpty<ScienceFigurePanelProvenance>(record.figurePanelProvenance);
+  panel.attachments = arrayOrEmpty<ScienceAttachmentRef>(record.attachments);
+  if (toRecord(record.git)) panel.git = record.git as ScienceArtifactGitRef;
+  return panel;
+};
 
 const stripFence = (value: string): string => {
   const trimmed = value.trim();
@@ -948,8 +1913,12 @@ function findPayloadCandidate(value: unknown, depth = 0): SciencePayload | undef
   }
   const record = toRecord(value);
   if (!record) return undefined;
-  if (record.schema === SCIENCE_PANEL_SCHEMA) return value as SciencePanelData;
-  if (record.schema === SCIENCE_EVENT_SCHEMA) return value as ScienceArtifactEvent;
+  if (record.schema === SCIENCE_PANEL_SCHEMA) return normalizeSciencePanelData(value);
+  if (record.schema === SCIENCE_EVENT_SCHEMA) {
+    const event = value as ScienceArtifactEvent;
+    const panel = normalizeSciencePanelData(event.panel);
+    return panel ? { ...event, panel } : event;
+  }
   for (const nested of Object.values(record)) {
     const payload = findPayloadCandidate(nested, depth + 1);
     if (payload) return payload;
@@ -998,11 +1967,11 @@ export const latestSciencePanel = (
   const panels = extractSciencePayloadsFromTools(messages)
     .map((payload) => {
       if ((payload as SciencePanelData).schema === SCIENCE_PANEL_SCHEMA) {
-        return payload as SciencePanelData;
+        return normalizeSciencePanelData(payload);
       }
       const event = payload as ScienceArtifactEvent;
       if (event.schema === SCIENCE_EVENT_SCHEMA && event.action === 'publish') {
-        return event.panel;
+        return normalizeSciencePanelData(event.panel);
       }
       return undefined;
     })
@@ -1023,10 +1992,11 @@ export const findSciencePanelArtifact = (
   artifactVersion?: number
 ): ScienceArtifact | undefined => {
   if (!artifactId) return undefined;
+  const artifacts = Array.isArray(panel.artifacts) ? panel.artifacts : [];
   return (
-    panel.artifacts.find(
+    artifacts.find(
       (artifact) => artifact.id === artifactId && (artifactVersion == null || artifact.version === artifactVersion)
-    ) || panel.artifacts.find((artifact) => artifact.id === artifactId)
+    ) || artifacts.find((artifact) => artifact.id === artifactId)
   );
 };
 
@@ -1069,11 +2039,12 @@ export const resolveScienceDisplayTarget = (payload: SciencePayload): ScienceDis
   const intent = event.displayIntent === 'open' || event.displayIntent === 'focus' ? event.displayIntent : undefined;
   if (!intent || !event.panel) return undefined;
 
-  const panel = event.panel;
+  const panel = normalizeSciencePanelData(event.panel);
+  if (!panel) return undefined;
   const pageId =
     event.target?.pageId || event.pageIds?.[0] || (event.target?.kind === 'page' ? event.target.id : undefined);
   const page = pageId ? panel.pages?.find((item) => item.id === pageId) : undefined;
-  const pane = page?.panes.find((item) => SCIENCE_PREVIEW_PANE_TYPES.has(item.type));
+  const pane = page?.panes?.find((item) => SCIENCE_PREVIEW_PANE_TYPES.has(item.type));
   const paneArtifact = findSciencePanelArtifact(panel, pane?.target?.artifactId, pane?.target?.artifactVersion);
   const panePath = pane?.target?.path || getScienceArtifactPreviewPath(paneArtifact);
   if (paneArtifact && panePath) {

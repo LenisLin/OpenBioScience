@@ -1,0 +1,25 @@
+Source: Lee et al., Nature Genetics 52, 594-603 (2020), DOI 10.1038/s41588-020-0636-z.
+
+[E1 Figure 1c legend]
+t-SNE plot of 27,971 cells in the KUL3 dataset identified by joint application of RCA and CCA and color-coded by global cell type.
+
+[E2 Figure 2 legend and methods]
+We utilized the reversed graph embedding technique from Monocle v.2 and reconstructed an unsupervised tumor cell trajectory.
+
+[E3 Figure 3 legend]
+MF1 was enriched for extracellular matrix synthesis, MF2 for extracellular matrix degradation and inflammatory chemokines, MF3 for RGS5.
+
+[E4 Figure 4b/c legend]
+t-SNE plot of 6,769 myeloid cells from the SMC dataset and 2,676 myeloid cells from the KUL3 dataset.
+
+[E5 Figure 4d legend and methods]
+Survival analysis using 353 TCGA COAD and READ samples according to SPP1 and CD68, and the ratio of SPP1 to CD68.
+
+[E6 Figure 5 legend]
+Comparisons of CD8+ T-cell phenotype in multiple cancer types: SMC CRC cohort; KUL3 CRC cohort; SMC lung cancer cohort; and PKU liver cancer cohort.
+
+[E7 scRNA-seq methods]
+For batch correction, we used multiple CCA implemented in Seurat v.2.3.4. We aligned the CCA subspaces and visualized them using t-SNE projection.
+
+[E8 data availability]
+Processed scRNA-seq and metadata for the SMC and KUL3 cohorts are available under the accession codes GSE132465, GSE132257 and GSE144735.

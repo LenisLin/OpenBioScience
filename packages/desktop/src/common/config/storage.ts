@@ -308,6 +308,8 @@ export type TChatConversation =
           mcp_statuses?: IConversationMcpStatus[];
           /** Session-only MCP server snapshot persisted at creation time. */
           session_mcp_servers?: ISessionMcpServer[];
+          /** Automatic MCP dependencies grouped by the skills that required them. */
+          auto_mcp_sources?: Record<string, string[]>;
           /** 预设助手 ID，用于在会话面板显示助手名称和头像 / Preset assistant ID for displaying name and avatar in conversation panel */
           preset_assistant_id?: string;
           /** 是否置顶会话 / Whether this conversation is pinned */
@@ -741,6 +743,15 @@ export const BUILTIN_BIO_PLOT_LEGACY_NAMES = ['deeporganiser-bio-plot'] as const
 export const BUILTIN_BIO_REPRODUCTION_ID = 'builtin-bio-reproduction';
 export const BUILTIN_BIO_REPRODUCTION_NAME = 'openscience-bio-reproduction';
 export const BUILTIN_BIO_REPRODUCTION_LEGACY_NAMES = ['deeporganiser-bio-reproduction'] as const;
+export const BUILTIN_BIO_ANALYSIS_ID = 'builtin-bio-analysis';
+export const BUILTIN_BIO_ANALYSIS_NAME = 'openscience-bio-analysis';
+export const BUILTIN_BIO_ANALYSIS_LEGACY_NAMES = ['deeporganiser-bio-analysis'] as const;
+export const BUILTIN_BIO_STATISTICS_ID = 'builtin-bio-statistics';
+export const BUILTIN_BIO_STATISTICS_NAME = 'openscience-bio-statistics';
+export const BUILTIN_BIO_STATISTICS_LEGACY_NAMES = ['deeporganiser-bio-statistics'] as const;
+export const BUILTIN_BIO_ENVIRONMENT_MANAGER_ID = 'builtin-bio-environment-manager';
+export const BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME = 'openscience-bio-environment-manager';
+export const BUILTIN_BIO_ENVIRONMENT_MANAGER_LEGACY_NAMES = ['deeporganiser-bio-environment-manager'] as const;
 
 export interface IMcpTool {
   name: string;

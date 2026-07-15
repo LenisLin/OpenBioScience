@@ -13,14 +13,28 @@ import { z } from 'zod';
 import {
   SCIENCE_EVENT_SCHEMA,
   SCIENCE_PANEL_SCHEMA,
+  isRecognizedSciencePanelStatus,
+  normalizeSciencePanelStatus,
+  type BioBlocker,
+  type BioNextAction,
+  type BioStatisticsCompletionReceipt,
+  type MethodAlignmentReceipt,
+  type OmicsAnalysisReceipt,
+  type ReproductionCompletionReceipt,
+  type ReproductionExecutionReceipt,
+  type ReproductionExecutionReceiptV2,
   type ScienceArtifact,
   type ScienceArtifactAction,
+  type ScienceAttachmentRef,
   type ScienceArtifactEvent,
   type ScienceArtifactGitRef,
   type ScienceArtifactPage,
   type ScienceArtifactResourceKind,
   type ScienceArtifactSnapshotIncludePath,
   type ScienceClaim,
+  type ScienceCoverageItem,
+  type ScienceCoverageSummary,
+  type ScienceDeliveryStatus,
   type ScienceEvidenceItem,
   type ScienceGraphWarning,
   type SciencePanelData,
@@ -35,9 +49,16 @@ import {
   ensureScienceProject,
   listScienceArtifactHistory,
 } from '@/process/services/scienceArtifactGitStore';
+import {
+  authorizeScienceArtifactExternalFile,
+  resolveScienceArtifactWorkspace,
+  type ScienceArtifactAuthorizationGatewayResult,
+} from '@/process/services/scienceArtifactAuthorization';
 import { BUILTIN_SCIENCE_ARTIFACT_NAME } from './constants';
+import { readReceipt } from './bio/receipts';
 
 type JsonRecord = Record<string, unknown>;
+type ExecutionReceipt = ReproductionExecutionReceipt | ReproductionExecutionReceiptV2;
 type TargetRef = {
   kind?: ScienceArtifactResourceKind;
   id?: string;
@@ -76,6 +97,21 @@ type ScienceRunState = {
   edges: Map<string, ScienceProvenanceEdge>;
   graphWarnings: Map<string, ScienceGraphWarning>;
   usedSkills: Map<string, ScienceSkillUse>;
+  workflowKind?: SciencePanelData['workflowKind'];
+  workflowPhase?: SciencePanelData['workflowPhase'];
+  planningCompletion?: SciencePanelData['planningCompletion'];
+  executionReadiness?: SciencePanelData['executionReadiness'];
+  completionReceipt?: ReproductionCompletionReceipt;
+  executionReceipt?: ExecutionReceipt;
+  statisticalCompletionReceipt?: BioStatisticsCompletionReceipt;
+  methodAlignmentReceipt?: MethodAlignmentReceipt;
+  analysisReceipt?: OmicsAnalysisReceipt;
+  analysisId?: string;
+  analysisStage?: OmicsAnalysisReceipt['stage'];
+  analysisCheckpointStatus?: string;
+  baselineReceiptId?: string;
+  nextActions: BioNextAction[];
+  externalBlockers: BioBlocker[];
   annotations: Map<string, AnnotationRecord>;
   events: ScienceArtifactEvent[];
   git?: ScienceArtifactGitRef;
@@ -84,6 +120,7 @@ type ScienceRunState = {
 };
 
 const runs = new Map<string, ScienceRunState>();
+const authorizedExternalFiles = new Map<string, { authorizedAt: number; requestId: string }>();
 
 const jsonText = (value: unknown) => ({
   content: [{ type: 'text' as const, text: JSON.stringify(value, null, 2) }],
@@ -97,6 +134,45 @@ const makeId = (kind: ScienceArtifactResourceKind): string =>
   `sci_${kind}_${Date.now().toString(36)}_${crypto.randomBytes(3).toString('hex')}`;
 const artifactKey = (id: string, version = 1): string => `${id}@${version}`;
 const writeProjectManifest = (): boolean => process.env[SCIENCE_ARTIFACT_ENV_KEYS.writeProjectManifest] !== 'false';
+const configuredSessionId = (): string => process.env[SCIENCE_ARTIFACT_ENV_KEYS.sessionId]?.trim() || 'science-session';
+
+const assertAuthorizedProjectRoot = (projectRoot?: string): string => {
+  const resolution = resolveScienceArtifactWorkspace(process.env[SCIENCE_ARTIFACT_ENV_KEYS.workspaceRoot], projectRoot);
+  if (resolution.ok === false) throw new Error(`${resolution.code}: ${resolution.message}`);
+  return resolution.workspaceRoot;
+};
+
+const callUserInputGateway = async (payload: unknown): Promise<ScienceArtifactAuthorizationGatewayResult> => {
+  const url = process.env.DEEPORGANISER_USER_INPUT_URL;
+  const token = process.env.DEEPORGANISER_USER_INPUT_TOKEN;
+  if (!url || !token) throw new Error('external_file_authorization_unavailable: User input gateway is unavailable.');
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error(`external_file_authorization_unavailable: Gateway failed (${response.status}).`);
+  return (await response.json()) as ScienceArtifactAuthorizationGatewayResult;
+};
+
+const authorizeExternalFile = async (candidate: string, conversationId?: string): Promise<JsonRecord> => {
+  const workspaceRoot = assertAuthorizedProjectRoot();
+  const result = await authorizeScienceArtifactExternalFile({
+    workspaceRoot,
+    candidate,
+    conversationId,
+    sessionId: configuredSessionId(),
+    requestAuthorization: callUserInputGateway,
+    now,
+  });
+  if (result.status === 'authorized' && 'authorizedAt' in result && result.normalizedPath) {
+    authorizedExternalFiles.set(result.normalizedPath, {
+      authorizedAt: result.authorizedAt,
+      requestId: result.requestId,
+    });
+  }
+  return result;
+};
 
 const isRecord = (value: unknown): value is JsonRecord =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -210,15 +286,16 @@ const applyRunContext = (
 };
 
 const ensureRun = (requestedRunId?: string, projectRoot?: string, payload?: JsonRecord): ScienceRunState => {
+  const authorizedProjectRoot = assertAuthorizedProjectRoot(projectRoot);
   const id = requestedRunId || asString(payload?.runId) || runId();
   const existing = runs.get(id);
   if (existing) {
-    if (projectRoot && !existing.projectRoot) existing.projectRoot = projectRoot;
-    if (projectRoot) ensureScienceProject(projectRoot);
+    if (!existing.projectRoot) existing.projectRoot = authorizedProjectRoot;
+    ensureScienceProject(authorizedProjectRoot);
     existing.updatedAt = now();
     return existing;
   }
-  const hydrated = hydrateRun(id, projectRoot);
+  const hydrated = hydrateRun(id, authorizedProjectRoot);
   if (hydrated) {
     runs.set(id, hydrated);
     return hydrated;
@@ -228,7 +305,7 @@ const ensureRun = (requestedRunId?: string, projectRoot?: string, payload?: Json
     conversationId: asString(contextValue(payload, 'conversationId'), undefined as unknown as string),
     messageId: asString(contextValue(payload, 'messageId'), undefined as unknown as string),
     toolCallId: asString(contextValue(payload, 'toolCallId'), undefined as unknown as string),
-    projectRoot,
+    projectRoot: authorizedProjectRoot,
     question: asString(payload?.question, 'Science research run'),
     summary: asString(payload?.summary, undefined as unknown as string),
     status: (asString(payload?.status, 'draft') as SciencePanelData['status']) || 'draft',
@@ -240,12 +317,28 @@ const ensureRun = (requestedRunId?: string, projectRoot?: string, payload?: Json
     edges: new Map(),
     graphWarnings: new Map(),
     usedSkills: new Map(),
+    workflowKind:
+      payload?.workflowKind === 'omics_reproduction' || payload?.workflow_kind === 'omics_reproduction'
+        ? 'omics_reproduction'
+        : payload?.workflowKind === 'omics_analysis' || payload?.workflow_kind === 'omics_analysis'
+          ? 'omics_analysis'
+          : undefined,
+    workflowPhase:
+      payload?.workflowKind === 'omics_reproduction' || payload?.workflow_kind === 'omics_reproduction'
+        ? payload?.workflowPhase === 'execution' || payload?.workflow_phase === 'execution'
+          ? 'execution'
+          : 'planning'
+        : payload?.workflowKind === 'omics_analysis' || payload?.workflow_kind === 'omics_analysis'
+          ? (asString(payload?.workflowPhase || payload?.workflow_phase, 'intake') as SciencePanelData['workflowPhase'])
+          : undefined,
+    nextActions: [],
+    externalBlockers: [],
     annotations: new Map(),
     events: [],
     createdAt: now(),
     updatedAt: now(),
   };
-  if (projectRoot) ensureScienceProject(projectRoot);
+  ensureScienceProject(authorizedProjectRoot);
   runs.set(id, created);
   return created;
 };
@@ -310,6 +403,61 @@ const hydrateRun = (id: string, projectRoot?: string): ScienceRunState | undefin
     edges: hydrateMap<ScienceProvenanceEdge>(state.edges),
     graphWarnings: hydrateMap<ScienceGraphWarning>(state.graphWarnings),
     usedSkills: hydrateMap<ScienceSkillUse>(state.usedSkills),
+    workflowKind:
+      state.workflowKind === 'omics_reproduction' || panel.workflowKind === 'omics_reproduction'
+        ? 'omics_reproduction'
+        : state.workflowKind === 'omics_analysis' || panel.workflowKind === 'omics_analysis'
+          ? 'omics_analysis'
+          : undefined,
+    workflowPhase:
+      state.workflowKind === 'omics_reproduction' || panel.workflowKind === 'omics_reproduction'
+        ? state.workflowPhase === 'execution' || panel.workflowPhase === 'execution'
+          ? 'execution'
+          : 'planning'
+        : state.workflowKind === 'omics_analysis' || panel.workflowKind === 'omics_analysis'
+          ? ((state.workflowPhase || panel.workflowPhase || 'intake') as SciencePanelData['workflowPhase'])
+          : undefined,
+    planningCompletion:
+      state.planningCompletion === 'complete' || state.planningCompletion === 'incomplete'
+        ? state.planningCompletion
+        : panel.planningCompletion,
+    executionReadiness:
+      state.executionReadiness === 'ready' ||
+      state.executionReadiness === 'partial' ||
+      state.executionReadiness === 'blocked'
+        ? state.executionReadiness
+        : panel.executionReadiness,
+    completionReceipt: isRecord(state.completionReceipt)
+      ? (state.completionReceipt as unknown as ReproductionCompletionReceipt)
+      : panel.completionReceipt,
+    executionReceipt: isRecord(state.executionReceipt)
+      ? (state.executionReceipt as unknown as ExecutionReceipt)
+      : panel.executionReceipt,
+    statisticalCompletionReceipt: isRecord(state.statisticalCompletionReceipt)
+      ? (state.statisticalCompletionReceipt as unknown as BioStatisticsCompletionReceipt)
+      : panel.statisticalCompletionReceipt,
+    methodAlignmentReceipt: isRecord(state.methodAlignmentReceipt)
+      ? (state.methodAlignmentReceipt as unknown as MethodAlignmentReceipt)
+      : panel.methodAlignmentReceipt,
+    analysisReceipt: isRecord(state.analysisReceipt)
+      ? (state.analysisReceipt as unknown as OmicsAnalysisReceipt)
+      : panel.analysisReceipt,
+    analysisId: asString(state.analysisId || panel.analysisId, undefined as unknown as string),
+    analysisStage: asString(
+      state.analysisStage || panel.analysisStage,
+      undefined as unknown as string
+    ) as OmicsAnalysisReceipt['stage'],
+    analysisCheckpointStatus: asString(
+      state.analysisCheckpointStatus || panel.analysisCheckpointStatus,
+      undefined as unknown as string
+    ),
+    baselineReceiptId: asString(state.baselineReceiptId || panel.baselineReceiptId, undefined as unknown as string),
+    nextActions: Array.isArray(state.nextActions)
+      ? (state.nextActions as unknown as BioNextAction[])
+      : panel.nextActions || [],
+    externalBlockers: Array.isArray(state.externalBlockers)
+      ? (state.externalBlockers as unknown as BioBlocker[])
+      : panel.externalBlockers || [],
     annotations: hydrateMap<AnnotationRecord>(state.annotations),
     events: Array.isArray(events) ? events : [],
     git: isRecord(state.git)
@@ -790,6 +938,228 @@ const fallbackBlocks = (run: ScienceRunState): ScienceReportBlock[] => {
   return [{ type: 'paragraph', text: run.summary || 'Science artifact run is being assembled.' }];
 };
 
+const deliveryStatus = (
+  run: ScienceRunState,
+  state: ScienceDeliveryStatus['state'],
+  reasonCodes: string[]
+): ScienceDeliveryStatus => {
+  const phase =
+    run.workflowKind === 'omics_reproduction'
+      ? run.workflowPhase || 'planning'
+      : run.workflowKind === 'omics_analysis'
+        ? run.analysisStage || 'intake'
+        : 'general';
+  const rejected =
+    run.graphWarnings.has('warn_reproduction_completion_required') ||
+    run.nextActions.some((action) => action.id === 'correct-science-publication-status');
+  return {
+    state,
+    phase,
+    authoritativeLabel: `${phase}.${state}`,
+    reasonCodes: [...new Set(reasonCodes)],
+    publicationDisposition: rejected
+      ? 'rejected'
+      : state === 'running' || state === 'action_required'
+        ? 'pending'
+        : 'accepted',
+  };
+};
+
+const deriveDeliveryState = (run: ScienceRunState): ScienceDeliveryStatus => {
+  const nextActionReasons = run.nextActions.map((action) => `next_action:${action.id}`);
+  const blockerReasons = run.externalBlockers.map((blocker) => `external_blocker:${blocker.id}`);
+  if (run.nextActions.length) return deliveryStatus(run, 'action_required', [...nextActionReasons, ...blockerReasons]);
+
+  if (run.workflowKind === 'omics_reproduction' && run.workflowPhase === 'execution') {
+    const receipt = run.executionReceipt;
+    if (!receipt) return deliveryStatus(run, 'running', ['execution_receipt:missing']);
+    const reasons = [
+      `receipt_status:${receipt.status}`,
+      `execution_completion:${receipt.executionCompletion}`,
+      `scientific_outcome:${receipt.scientificOutcome}`,
+      ...blockerReasons,
+    ];
+    if (receipt.scientificOutcome === 'externally_blocked' || receipt.status === 'blocked') {
+      return deliveryStatus(run, 'blocked', reasons);
+    }
+    if (receipt.status === 'ready' && receipt.executionCompletion === 'complete') {
+      return deliveryStatus(run, receipt.scientificOutcome === 'validated' ? 'completed' : 'partial', reasons);
+    }
+    if (['failed', 'error', 'invalid'].includes(receipt.status)) return deliveryStatus(run, 'failed', reasons);
+    return deliveryStatus(run, 'running', reasons);
+  }
+
+  if (run.workflowKind === 'omics_reproduction') {
+    const receipt = run.completionReceipt;
+    if (!receipt) return deliveryStatus(run, 'running', ['planning_receipt:missing']);
+    const reasons = [
+      `receipt_status:${receipt.status}`,
+      `planning_completion:${receipt.planningCompletion}`,
+      `execution_readiness:${receipt.executionReadiness}`,
+      ...blockerReasons,
+    ];
+    if (receipt.status === 'ready' && receipt.planningCompletion === 'complete') {
+      return deliveryStatus(run, 'completed', reasons);
+    }
+    if (receipt.status === 'blocked') return deliveryStatus(run, 'blocked', reasons);
+    if (['failed', 'error', 'invalid'].includes(receipt.status)) return deliveryStatus(run, 'failed', reasons);
+    return deliveryStatus(run, 'running', reasons);
+  }
+
+  if (run.workflowKind === 'omics_analysis') {
+    const receipt = run.analysisReceipt;
+    if (!receipt) return deliveryStatus(run, 'running', ['analysis_receipt:missing']);
+    const reasons = [
+      `receipt_status:${receipt.status}`,
+      `stage:${receipt.stage}`,
+      `stage_status:${receipt.stageStatus}`,
+      `project_status:${receipt.projectStatus}`,
+      ...blockerReasons,
+    ];
+    if (receipt.stageStatus === 'awaiting_user') return deliveryStatus(run, 'awaiting_user', reasons);
+    if (receipt.stageStatus === 'needs_revision') return deliveryStatus(run, 'action_required', reasons);
+    if (receipt.stageStatus === 'blocked' || receipt.projectStatus === 'blocked')
+      return deliveryStatus(run, 'blocked', reasons);
+    if (receipt.action === 'close_analysis' && receipt.projectStatus === 'closed') {
+      return deliveryStatus(run, 'completed', reasons);
+    }
+    return deliveryStatus(run, 'running', reasons);
+  }
+
+  const state = run.status === 'draft' ? 'running' : run.status;
+  return deliveryStatus(run, state, [`panel_status:${run.status}`]);
+};
+
+const reproductionModeFor = (run: ScienceRunState): ScienceCoverageItem['reproductionMode'] => {
+  if (run.methodAlignmentReceipt?.alignmentLevel === 'parameter_aligned') return 'exact';
+  if (run.methodAlignmentReceipt?.alignmentLevel === 'partially_aligned') return 'analogous';
+  return 'scoped_reimplementation';
+};
+
+const artifactIdsForPaths = (run: ScienceRunState, paths: string[]): string[] => {
+  const normalizedPaths = new Set(paths.map((candidate) => normalizeRelativePath(candidate, run.projectRoot)));
+  const ids = new Set<string>();
+  for (const artifact of run.artifacts.values()) {
+    const artifactPaths = [
+      artifact.primaryPath,
+      artifact.previewPath,
+      artifact.thumbnailPath,
+      ...(artifact.outputPaths || []),
+    ]
+      .filter((candidate): candidate is string => Boolean(candidate))
+      .map((candidate) => normalizeRelativePath(candidate, run.projectRoot));
+    if (artifactPaths.some((candidate) => normalizedPaths.has(candidate))) ids.add(artifact.id);
+  }
+  return [...ids];
+};
+
+const deriveCoverageItems = (run: ScienceRunState): ScienceCoverageItem[] => {
+  const receipt = run.executionReceipt;
+  if (receipt && 'coverageItems' in receipt && Array.isArray(receipt.coverageItems))
+    return clone(receipt.coverageItems);
+  if (receipt) {
+    const reproductionMode = reproductionModeFor(run);
+    return receipt.modules.map((module): ScienceCoverageItem => {
+      const status: ScienceCoverageItem['status'] =
+        module.status === 'validated'
+          ? 'completed'
+          : module.status === 'scientifically_limited'
+            ? 'scientifically_blocked'
+            : module.status === 'externally_blocked'
+              ? 'external_data_block'
+              : module.status === 'not_requested'
+                ? 'excluded_by_user'
+                : module.status === 'generated_unvalidated'
+                  ? 'conditional'
+                  : 'unresolved';
+      const artifactIds = artifactIdsForPaths(
+        run,
+        module.outputFiles.map((file) => file.path)
+      );
+      return {
+        id: `coverage-${module.id}`,
+        targetType: 'user_objective',
+        targetId: module.id,
+        moduleIds: [module.id],
+        cohortIds: [],
+        reproductionMode,
+        status,
+        reason: module.limitations.join(' ') || module.status,
+        artifactIds,
+        evidenceIds: artifactIds.flatMap(
+          (artifactId) => [...run.artifacts.values()].find((artifact) => artifact.id === artifactId)?.evidenceIds || []
+        ),
+        receiptIds: [receipt.receiptId, ...module.validationReceiptIds],
+      };
+    });
+  }
+
+  if (!run.completionReceipt) return [];
+  return run.completionReceipt.moduleReadiness.map(
+    (module): ScienceCoverageItem => ({
+      id: `coverage-${module.id}`,
+      targetType: 'user_objective',
+      targetId: module.id,
+      moduleIds: [module.id],
+      cohortIds: [],
+      reproductionMode: 'scoped_reimplementation',
+      status:
+        module.executionStatus === 'ready'
+          ? 'ready'
+          : module.executionStatus === 'conditional'
+            ? 'conditional'
+            : 'external_data_block',
+      reason: module.blockingReasons.join(' ') || module.declaredStatus,
+      artifactIds: [],
+      evidenceIds: [],
+      receiptIds: [run.completionReceipt?.receiptId || ''].filter(Boolean),
+    })
+  );
+};
+
+const summarizeCoverage = (items: ScienceCoverageItem[]): ScienceCoverageSummary => ({
+  total: items.length,
+  completed: items.filter((item) => item.status === 'completed').length,
+  exact: items.filter((item) => item.reproductionMode === 'exact').length,
+  analogous: items.filter((item) => item.reproductionMode === 'analogous').length,
+  scoped: items.filter((item) => item.reproductionMode === 'scoped_reimplementation').length,
+  actionRequired: items.filter((item) => ['required', 'conditional', 'unresolved'].includes(item.status)).length,
+  externalBlocked: items.filter((item) => ['external_data_block', 'capability_block'].includes(item.status)).length,
+  excluded: items.filter((item) => item.status === 'excluded_by_user').length,
+});
+
+const attachmentUri = (
+  runIdValue: string,
+  artifactId: string,
+  version: number,
+  role: string,
+  contentHash: string
+): string =>
+  `openscience-attachment://${encodeURIComponent(runIdValue)}/${encodeURIComponent(artifactId)}/${version}/${encodeURIComponent(role)}/${contentHash}`;
+
+const deriveAttachments = (panel: SciencePanelData, git: ScienceArtifactGitRef | undefined): ScienceAttachmentRef[] =>
+  (git?.files || [])
+    .filter(
+      (file): file is typeof file & { artifactId: string; storedPath: string; sha256: string } =>
+        file.mode === 'copied' && Boolean(file.artifactId && file.storedPath && file.sha256)
+    )
+    .map((file) => {
+      const artifact = panel.artifacts.find((candidate) => candidate.id === file.artifactId);
+      const version = file.artifactVersion || artifact?.version || 1;
+      return {
+        uri: attachmentUri(panel.runId, file.artifactId, version, file.role || 'other', file.sha256),
+        artifactId: file.artifactId,
+        version,
+        role: file.role || 'other',
+        contentHash: file.sha256,
+        sourcePath: file.relativePath || file.path,
+        status:
+          artifact?.contentHash && file.role === 'primary' && artifact.contentHash !== file.sha256
+            ? 'modified'
+            : 'ready',
+      } satisfies ScienceAttachmentRef;
+    });
+
 const buildPanel = (run: ScienceRunState): SciencePanelData => {
   const artifacts = [...run.artifacts.values()];
   const evidence = [...run.evidence.values()];
@@ -804,7 +1174,14 @@ const buildPanel = (run: ScienceRunState): SciencePanelData => {
       run.statsPatch?.commands ||
       artifacts.filter((item) => item.execution?.command || item.execution?.scriptPath).length,
     validations:
-      run.statsPatch?.validations || evidence.filter((item) => item.sourceType === 'validation_result').length,
+      run.statsPatch?.validations ||
+      evidence.filter((item) => item.sourceType === 'validation_result').length +
+        (run.completionReceipt
+          ? 1 + run.completionReceipt.sourceReceiptIds.length + run.completionReceipt.runtimeReceiptIds.length
+          : 0) +
+        (run.executionReceipt
+          ? 1 + new Set(run.executionReceipt.modules.flatMap((module) => module.validationReceiptIds)).size
+          : 0),
     warnings: warnings.length,
   };
   const report =
@@ -819,8 +1196,9 @@ const buildPanel = (run: ScienceRunState): SciencePanelData => {
         },
       ],
     } satisfies SciencePanelData['report']);
+  const coverageItems = deriveCoverageItems(run);
 
-  return {
+  const panel: SciencePanelData = {
     schema: SCIENCE_PANEL_SCHEMA,
     runId: run.runId,
     conversationId: run.conversationId,
@@ -839,16 +1217,549 @@ const buildPanel = (run: ScienceRunState): SciencePanelData => {
     edges: [...run.edges.values()],
     graphWarnings: warnings,
     usedSkills: [...run.usedSkills.values()],
+    workflowKind: run.workflowKind,
+    workflowPhase: run.workflowPhase,
+    planningCompletion: run.planningCompletion,
+    executionReadiness: run.executionReadiness,
+    completionReceipt: run.completionReceipt,
+    executionReceipt: run.executionReceipt,
+    statisticalCompletionReceipt: run.statisticalCompletionReceipt,
+    deliveryState: deriveDeliveryState(run),
+    coverageSummary: summarizeCoverage(coverageItems),
+    coverageItems,
+    methodAlignmentReceipt: run.methodAlignmentReceipt,
+    analysisReceipt: run.analysisReceipt,
+    analysisId: run.analysisId,
+    analysisStage: run.analysisStage,
+    analysisCheckpointStatus: run.analysisCheckpointStatus as SciencePanelData['analysisCheckpointStatus'],
+    baselineReceiptId: run.baselineReceiptId,
+    nextActions: run.nextActions,
+    externalBlockers: run.externalBlockers,
     methods: {
       commands: artifacts.map((item) => item.execution?.command).filter((item): item is string => Boolean(item)),
-      environmentSummary: artifacts
-        .map((item) => item.environment?.kind)
-        .filter(Boolean)
-        .join(', '),
-      limitations: warnings.filter((item) => item.severity !== 'info').map((item) => item.message),
+      environmentSummary:
+        run.executionReceipt?.modules
+          .filter((item) => item.required)
+          .map((item) => `${item.id}: ${item.status}`)
+          .join(', ') ||
+        run.completionReceipt?.moduleReadiness
+          .map((item) => `${item.environmentRef}: ${item.executionStatus}`)
+          .join(', ') ||
+        artifacts
+          .map((item) => item.environment?.kind)
+          .filter(Boolean)
+          .join(', '),
+      limitations: [
+        ...warnings.filter((item) => item.severity !== 'info').map((item) => item.message),
+        ...run.externalBlockers.map((item) => item.message),
+      ],
     },
     git: run.git,
   };
+  panel.attachments = deriveAttachments(panel, run.git);
+  return panel;
+};
+
+const completionReceiptFrom = (value: unknown): ReproductionCompletionReceipt | undefined => {
+  if (!isRecord(value)) return undefined;
+  if (
+    value.schema !== 'openbioscience.bio.receipt.v1' ||
+    value.producer !== 'bio_reproduction' ||
+    value.action !== 'validate_reproduction_plan' ||
+    value.workflowKind !== 'omics_reproduction' ||
+    !Array.isArray(value.canonicalFiles) ||
+    !Array.isArray(value.skillUses) ||
+    !Array.isArray(value.moduleReadiness) ||
+    typeof value.methodParameterReceiptId !== 'string' ||
+    !Array.isArray(value.methodModuleCoverage) ||
+    !Array.isArray(value.eligibleClaims) ||
+    !Array.isArray(value.nextActions) ||
+    !Array.isArray(value.externalBlockers)
+  ) {
+    return undefined;
+  }
+  return value as unknown as ReproductionCompletionReceipt;
+};
+
+const analysisReceiptFrom = (value: unknown): OmicsAnalysisReceipt | undefined => {
+  if (!isRecord(value)) return undefined;
+  if (
+    value.schema !== 'openbioscience.bio.receipt.v1' ||
+    value.producer !== 'bio_analysis' ||
+    value.workflowKind !== 'omics_analysis' ||
+    typeof value.analysisId !== 'string' ||
+    !['intake', 'qc', 'baseline', 'episode', 'closing'].includes(asString(value.stage)) ||
+    !['running', 'awaiting_user', 'accepted', 'needs_revision', 'blocked'].includes(asString(value.stageStatus)) ||
+    !Array.isArray(value.canonicalFiles) ||
+    !Array.isArray(value.skillUses) ||
+    !Array.isArray(value.nextActions) ||
+    !Array.isArray(value.externalBlockers)
+  ) {
+    return undefined;
+  }
+  return value as unknown as OmicsAnalysisReceipt;
+};
+
+const receiptById = <T>(
+  projectRoot: string,
+  receiptId: string,
+  parser: (value: unknown) => T | undefined
+): T | undefined => {
+  if (!receiptId) return undefined;
+  try {
+    return parser(readReceipt(projectRoot, receiptId));
+  } catch {
+    return undefined;
+  }
+};
+
+const statisticalCompletionReceiptFrom = (value: unknown): BioStatisticsCompletionReceipt | undefined => {
+  if (!isRecord(value)) return undefined;
+  if (
+    value.schema !== 'openbioscience.bio.receipt.v1' ||
+    value.producer !== 'bio_statistics' ||
+    value.action !== 'validate_de_outputs' ||
+    value.workflowKind !== 'omics_reproduction' ||
+    value.workflowPhase !== 'execution' ||
+    !Array.isArray(value.canonicalFiles) ||
+    !Array.isArray(value.contrasts) ||
+    !Array.isArray(value.skillUses) ||
+    !Array.isArray(value.mcpActions) ||
+    !Array.isArray(value.nextActions) ||
+    !Array.isArray(value.externalBlockers)
+  ) {
+    return undefined;
+  }
+  return value as unknown as BioStatisticsCompletionReceipt;
+};
+
+const methodAlignmentReceiptFrom = (value: unknown): MethodAlignmentReceipt | undefined => {
+  if (!isRecord(value)) return undefined;
+  if (
+    value.schema !== 'openbioscience.bio.receipt.v1' ||
+    value.producer !== 'bio_reproduction' ||
+    value.action !== 'validate_method_alignment' ||
+    typeof value.methodParameterReceiptId !== 'string' ||
+    !['parameter_aligned', 'partially_aligned', 'scoped_reimplementation', 'unresolved_conflict'].includes(
+      String(value.alignmentLevel)
+    ) ||
+    !isRecord(value.executedParameterFile) ||
+    !Array.isArray(value.scriptFiles) ||
+    !Array.isArray(value.alignedParameters) ||
+    !Array.isArray(value.substitutedParameters) ||
+    !Array.isArray(value.conflicts) ||
+    !Array.isArray(value.eligibleClaims) ||
+    !Array.isArray(value.nextActions)
+  ) {
+    return undefined;
+  }
+  return value as unknown as MethodAlignmentReceipt;
+};
+
+const executionCanonicalFileSchema = z.object({ path: z.string().min(1), contentHash: z.string().min(1) });
+const executionModuleResultSchema = z.object({
+  id: z.enum([
+    'data_import',
+    'quality_control',
+    'normalization',
+    'clustering',
+    'major_annotation',
+    'minor_annotation',
+    'cluster_markers',
+    'composition',
+    'condition_de',
+    'descriptive_statistics',
+    'figures',
+    'disease_program',
+  ]),
+  required: z.boolean(),
+  status: z.enum([
+    'validated',
+    'generated_unvalidated',
+    'scientifically_limited',
+    'externally_blocked',
+    'incomplete',
+    'not_requested',
+  ]),
+  outputFiles: z.array(executionCanonicalFileSchema),
+  validationReceiptIds: z.array(z.string()),
+  qcOutcome: z.enum(['filtered', 'passed_no_removal', 'failed']).optional(),
+  annotationMode: z.enum(['independent_annotation', 'reference_review', 'label_transfer']).optional(),
+  limitations: z.array(z.string()),
+});
+const executionModuleResultV2Schema = z.object({
+  id: z.string().min(1),
+  required: z.boolean(),
+  status: z.enum([
+    'validated',
+    'generated_unvalidated',
+    'scientifically_limited',
+    'externally_blocked',
+    'incomplete',
+    'not_requested',
+  ]),
+  targetIds: z.array(z.string()),
+  outputFiles: z.array(executionCanonicalFileSchema),
+  validationReceiptIds: z.array(z.string()),
+  limitations: z.array(z.string()),
+});
+const coverageItemSchema = z
+  .object({
+    id: z.string().min(1),
+    targetType: z.enum(['user_objective', 'paper_figure', 'paper_panel', 'paper_claim']),
+    targetId: z.string().min(1),
+    moduleIds: z.array(z.string()),
+    cohortIds: z.array(z.string()),
+    reproductionMode: z.enum(['exact', 'analogous', 'scoped_reimplementation']),
+    status: z.enum([
+      'required',
+      'ready',
+      'conditional',
+      'external_data_block',
+      'capability_block',
+      'analogous_only',
+      'excluded_by_user',
+      'unresolved',
+      'completed',
+      'scientifically_blocked',
+    ]),
+    reason: z.string(),
+    artifactIds: z.array(z.string()),
+    evidenceIds: z.array(z.string()),
+    receiptIds: z.array(z.string()),
+  })
+  .passthrough();
+const executionSkillUseSchema = z
+  .object({
+    id: z.string().min(1),
+    skillId: z.string().min(1),
+    skillName: z.string().min(1),
+    source: z.string().min(1),
+    purpose: z.string().min(1),
+    status: z.string().min(1),
+    triggeredBy: z.string().min(1),
+    createdAt: z.number(),
+  })
+  .passthrough();
+const executionBlockerSchema = z.object({
+  id: z.string().min(1),
+  kind: z.enum(['credentials', 'permissions', 'data', 'environment', 'contract']),
+  message: z.string().min(1),
+  moduleId: z.string().optional(),
+  external: z.boolean(),
+});
+const reproductionExecutionReceiptSchema = z
+  .object({
+    schema: z.literal('openbioscience.bio.receipt.v1'),
+    receiptId: z.string().min(1),
+    producer: z.literal('bio_reproduction'),
+    action: z.literal('complete_execution'),
+    status: z.string().min(1),
+    projectRoot: z.string().min(1),
+    createdAt: z.number(),
+    workflowKind: z.literal('omics_reproduction'),
+    workflowPhase: z.literal('execution'),
+    modality: z.literal('scrna_seq'),
+    executionCompletion: z.enum(['complete', 'incomplete']),
+    scientificOutcome: z.enum(['validated', 'validated_with_limits', 'externally_blocked']),
+    executionContractFile: executionCanonicalFileSchema,
+    executionContractReceiptId: z.string().min(1),
+    planningReceiptId: z.string().min(1),
+    methodAlignmentReceiptId: z.string().min(1),
+    statisticalReceiptIds: z.array(z.string()),
+    modules: z.array(executionModuleResultSchema),
+    canonicalFiles: z.array(executionCanonicalFileSchema),
+    skillUses: z.array(executionSkillUseSchema),
+    nextActions: z.array(z.record(z.unknown())),
+    externalBlockers: z.array(executionBlockerSchema),
+  })
+  .passthrough();
+
+const reproductionExecutionReceiptV2Schema = reproductionExecutionReceiptSchema
+  .omit({ modules: true })
+  .extend({
+    contractVersion: z.literal(2),
+    paperMapReceiptId: z.string().min(1),
+    scopeReceiptId: z.string().min(1),
+    scriptValidationReceiptId: z.string().min(1),
+    executionRunReceiptIds: z.array(z.string()),
+    modules: z.array(executionModuleResultV2Schema),
+    coverageItems: z.array(coverageItemSchema),
+  })
+  .passthrough();
+
+const executionReceiptFrom = (value: unknown): ExecutionReceipt | undefined => {
+  const parsed =
+    isRecord(value) && value.contractVersion === 2
+      ? reproductionExecutionReceiptV2Schema.safeParse(value)
+      : reproductionExecutionReceiptSchema.safeParse(value);
+  return parsed.success ? (parsed.data as unknown as ExecutionReceipt) : undefined;
+};
+
+const validateCompletionReceipt = (
+  receipt: ReproductionCompletionReceipt | undefined,
+  projectRoot: string
+): string[] => {
+  if (!receipt) return ['A valid bio_reproduction completionReceipt is required.'];
+  const issues: string[] = [];
+  if (receipt.status !== 'ready') issues.push('The completion receipt is not ready.');
+  if (receipt.planningCompletion !== 'complete') issues.push('planningCompletion is incomplete.');
+  if (receipt.nextActions.length) issues.push('Correctable nextActions remain unfinished.');
+  if (path.resolve(receipt.projectRoot) !== path.resolve(projectRoot)) {
+    issues.push('The completion receipt belongs to a different project root.');
+  }
+  for (const file of receipt.canonicalFiles) {
+    const resolved = path.resolve(projectRoot, file.path);
+    const relative = path.relative(projectRoot, resolved);
+    if (path.isAbsolute(file.path) || relative.startsWith('..') || path.isAbsolute(relative)) {
+      issues.push(`Canonical file escapes the project root: ${file.path}`);
+      continue;
+    }
+    if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
+      issues.push(`Canonical file is missing: ${file.path}`);
+      continue;
+    }
+    const currentHash = crypto.createHash('sha256').update(fs.readFileSync(resolved)).digest('hex');
+    if (currentHash !== file.contentHash) issues.push(`Canonical file changed after validation: ${file.path}`);
+  }
+  if (receipt.canonicalFiles.length < 3) {
+    issues.push('The plan, source audit, and method parameter contract must be included in the receipt.');
+  }
+  if (!receipt.methodParameterReceiptId) issues.push('The planning receipt has no method parameter receipt.');
+  return issues;
+};
+
+const validateExecutionReceipt = (
+  receipt: ExecutionReceipt | undefined,
+  planningReceipt: ReproductionCompletionReceipt | undefined,
+  projectRoot: string,
+  requestedStatus: SciencePanelData['status']
+): string[] => {
+  if (!receipt) return ['A current bio_reproduction executionReceipt is required for execution publication.'];
+  const issues: string[] = [];
+  const completedPublication = requestedStatus === 'completed';
+  if (!planningReceipt || receipt.planningReceiptId !== planningReceipt.receiptId) {
+    issues.push('The execution receipt does not reference the current reproduction planning receipt.');
+  }
+  if (path.resolve(receipt.projectRoot) !== path.resolve(projectRoot)) {
+    issues.push('The execution receipt belongs to a different project root.');
+  }
+  if (receipt.nextActions.length) issues.push('Correctable execution nextActions remain unfinished.');
+  if (completedPublication && (receipt.status !== 'ready' || receipt.executionCompletion !== 'complete')) {
+    issues.push('A completed publication requires a ready, complete execution receipt.');
+  }
+  if (completedPublication && receipt.scientificOutcome === 'externally_blocked') {
+    issues.push('An externally blocked execution cannot publish as completed.');
+  }
+  if (
+    requestedStatus === 'partial' &&
+    !(
+      (receipt.status === 'ready' && receipt.executionCompletion === 'complete') ||
+      (receipt.status === 'blocked' && receipt.scientificOutcome === 'externally_blocked')
+    )
+  ) {
+    issues.push('A partial publication requires a complete receipt or a terminal externally blocked receipt.');
+  }
+  if (
+    receipt.scientificOutcome === 'externally_blocked' &&
+    !receipt.externalBlockers.some((blocker) => blocker.external && blocker.kind !== 'contract')
+  ) {
+    issues.push('An externally blocked receipt requires a genuine external blocker.');
+  }
+  const validCompletedStatuses = new Set(['validated', 'scientifically_limited']);
+  for (const module of receipt.modules) {
+    if (!module.required) continue;
+    if (completedPublication && !validCompletedStatuses.has(module.status)) {
+      issues.push(`Required module ${module.id} is not validated.`);
+    }
+    if (requestedStatus === 'partial' && ['generated_unvalidated', 'incomplete'].includes(module.status)) {
+      issues.push(`Required module ${module.id} still has a correctable validation state.`);
+    }
+    if (
+      module.status === 'externally_blocked' &&
+      !receipt.externalBlockers.some(
+        (blocker) => blocker.external && blocker.kind !== 'contract' && blocker.moduleId === module.id
+      )
+    ) {
+      issues.push(`Required module ${module.id} has no matching genuine external blocker.`);
+    }
+  }
+  if (!receipt.canonicalFiles.length) issues.push('The execution receipt has no canonical files.');
+  for (const file of receipt.canonicalFiles) {
+    const resolved = path.resolve(projectRoot, file.path);
+    const relative = path.relative(projectRoot, resolved);
+    if (path.isAbsolute(file.path) || relative.startsWith('..') || path.isAbsolute(relative)) {
+      issues.push(`Execution file escapes the project root: ${file.path}`);
+      continue;
+    }
+    if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
+      issues.push(`Execution file is missing: ${file.path}`);
+      continue;
+    }
+    const realRoot = fs.realpathSync(projectRoot);
+    const realFile = fs.realpathSync(resolved);
+    const realRelative = path.relative(realRoot, realFile);
+    if (realRelative.startsWith('..') || path.isAbsolute(realRelative)) {
+      issues.push(`Execution file resolves outside the project root: ${file.path}`);
+      continue;
+    }
+    const stat = fs.statSync(resolved);
+    if ((stat.mode & 0o444) === 0) issues.push(`Execution file is not host-readable: ${file.path}`);
+    const snapshot = file as { path: string; contentHash: string; sizeBytes?: number; mtimeMs?: number };
+    const unchangedLargeFile =
+      stat.size > 25 * 1024 * 1024 && snapshot.sizeBytes === stat.size && snapshot.mtimeMs === stat.mtimeMs;
+    if (!unchangedLargeFile) {
+      const currentHash = crypto.createHash('sha256').update(fs.readFileSync(resolved)).digest('hex');
+      if (currentHash !== file.contentHash) issues.push(`Execution file changed after validation: ${file.path}`);
+    }
+  }
+  if (!receipt.canonicalFiles.some((file) => file.path === receipt.executionContractFile.path)) {
+    issues.push('The execution contract is missing from the final canonical file set.');
+  }
+  const canonicalContract = receipt.canonicalFiles.find((file) => file.path === receipt.executionContractFile.path);
+  if (canonicalContract && canonicalContract.contentHash !== receipt.executionContractFile.contentHash) {
+    issues.push('The execution contract hash does not match the final canonical file set.');
+  }
+  return issues;
+};
+
+const applyCompletionReceipt = (run: ScienceRunState, receipt: ReproductionCompletionReceipt): void => {
+  run.workflowKind = receipt.workflowKind;
+  run.planningCompletion = receipt.planningCompletion;
+  run.executionReadiness = receipt.executionReadiness;
+  run.completionReceipt = receipt;
+  run.nextActions = receipt.nextActions;
+  run.externalBlockers = receipt.externalBlockers;
+  for (const value of receipt.skillUses) {
+    const skillUse = normalizeSkillUse(run, { ...value, id: value.id });
+    run.usedSkills.set(skillUse.id, skillUse);
+  }
+  const completionNode = normalizeNode(run, {
+    id: receipt.receiptId,
+    type: 'activity',
+    label: 'Omics reproduction planning completion',
+    contentHash: crypto.createHash('sha256').update(JSON.stringify(receipt.canonicalFiles)).digest('hex'),
+    metadata: {
+      producer: receipt.producer,
+      action: receipt.action,
+      planningCompletion: receipt.planningCompletion,
+      executionReadiness: receipt.executionReadiness,
+      sourceReceiptIds: receipt.sourceReceiptIds,
+      runtimeReceiptIds: receipt.runtimeReceiptIds,
+    },
+  });
+  run.provenance.set(completionNode.id, completionNode);
+};
+
+const applyStatisticalCompletionReceipt = (run: ScienceRunState, receipt: BioStatisticsCompletionReceipt): void => {
+  run.workflowKind = receipt.workflowKind;
+  run.workflowPhase = 'execution';
+  run.statisticalCompletionReceipt = receipt;
+  run.nextActions = receipt.nextActions;
+  run.externalBlockers = receipt.externalBlockers;
+  for (const value of receipt.skillUses) {
+    const skillUse = normalizeSkillUse(run, { ...value, id: value.id });
+    run.usedSkills.set(skillUse.id, skillUse);
+  }
+  const completionNode = normalizeNode(run, {
+    id: receipt.receiptId,
+    type: 'activity',
+    label: 'Omics reproduction statistical completion',
+    contentHash: crypto.createHash('sha256').update(JSON.stringify(receipt.canonicalFiles)).digest('hex'),
+    metadata: {
+      producer: receipt.producer,
+      action: receipt.action,
+      planningReceiptId: receipt.planningReceiptId,
+      designReceiptId: receipt.designReceiptId,
+      package: receipt.package,
+      packageVersion: receipt.packageVersion,
+      mcpActions: receipt.mcpActions,
+    },
+  });
+  run.provenance.set(completionNode.id, completionNode);
+};
+
+const applyMethodAlignmentReceipt = (run: ScienceRunState, receipt: MethodAlignmentReceipt): void => {
+  run.workflowKind = 'omics_reproduction';
+  run.workflowPhase = 'execution';
+  run.methodAlignmentReceipt = receipt;
+  const completionNode = normalizeNode(run, {
+    id: receipt.receiptId,
+    type: 'activity',
+    label: 'Omics reproduction method alignment',
+    contentHash: crypto
+      .createHash('sha256')
+      .update(JSON.stringify([receipt.executedParameterFile, ...receipt.scriptFiles]))
+      .digest('hex'),
+    metadata: {
+      producer: receipt.producer,
+      action: receipt.action,
+      alignmentLevel: receipt.alignmentLevel,
+      methodParameterReceiptId: receipt.methodParameterReceiptId,
+      alignedParameterCount: receipt.alignedParameters.length,
+      substitutedParameterCount: receipt.substitutedParameters.length,
+      eligibleClaims: receipt.eligibleClaims,
+    },
+  });
+  run.provenance.set(completionNode.id, completionNode);
+};
+
+const applyExecutionReceipt = (run: ScienceRunState, receipt: ExecutionReceipt): void => {
+  run.workflowKind = receipt.workflowKind;
+  run.workflowPhase = 'execution';
+  run.executionReceipt = receipt;
+  run.nextActions = receipt.nextActions;
+  run.externalBlockers = receipt.externalBlockers;
+  for (const value of receipt.skillUses) {
+    const skillUse = normalizeSkillUse(run, { ...value, id: value.id });
+    run.usedSkills.set(skillUse.id, skillUse);
+  }
+  const completionNode = normalizeNode(run, {
+    id: receipt.receiptId,
+    type: 'activity',
+    label: 'Omics reproduction execution completion',
+    contentHash: crypto.createHash('sha256').update(JSON.stringify(receipt.canonicalFiles)).digest('hex'),
+    metadata: {
+      producer: receipt.producer,
+      action: receipt.action,
+      executionCompletion: receipt.executionCompletion,
+      scientificOutcome: receipt.scientificOutcome,
+      planningReceiptId: receipt.planningReceiptId,
+      executionContractReceiptId: receipt.executionContractReceiptId,
+      methodAlignmentReceiptId: receipt.methodAlignmentReceiptId,
+      statisticalReceiptIds: receipt.statisticalReceiptIds,
+    },
+  });
+  run.provenance.set(completionNode.id, completionNode);
+};
+
+const applyAnalysisReceipt = (run: ScienceRunState, receipt: OmicsAnalysisReceipt): void => {
+  run.workflowKind = 'omics_analysis';
+  run.workflowPhase = receipt.stage;
+  run.analysisReceipt = receipt;
+  run.analysisId = receipt.analysisId;
+  run.analysisStage = receipt.stage;
+  run.analysisCheckpointStatus =
+    receipt.action === 'request_checkpoint' ? asString((receipt as unknown as JsonRecord).checkpointStatus) : undefined;
+  if (receipt.stage === 'baseline') run.baselineReceiptId = receipt.receiptId;
+  run.nextActions = receipt.nextActions;
+  run.externalBlockers = receipt.externalBlockers;
+  const node = normalizeNode(run, {
+    id: receipt.receiptId,
+    type: 'activity',
+    label: `Omics analysis ${receipt.stage}`,
+    contentHash: crypto.createHash('sha256').update(JSON.stringify(receipt.canonicalFiles)).digest('hex'),
+    metadata: {
+      producer: receipt.producer,
+      action: receipt.action,
+      analysisId: receipt.analysisId,
+      stage: receipt.stage,
+      stageStatus: receipt.stageStatus,
+      projectStatus: receipt.projectStatus,
+      checkpointStatus: run.analysisCheckpointStatus,
+    },
+  });
+  run.provenance.set(node.id, node);
 };
 
 function persistRunSnapshot(
@@ -881,6 +1792,25 @@ function persistRunSnapshot(
       edges: panel.edges,
       graphWarnings: panel.graphWarnings,
       usedSkills: panel.usedSkills,
+      workflowKind: run.workflowKind,
+      workflowPhase: run.workflowPhase,
+      planningCompletion: run.planningCompletion,
+      executionReadiness: run.executionReadiness,
+      completionReceipt: run.completionReceipt,
+      executionReceipt: run.executionReceipt,
+      statisticalCompletionReceipt: run.statisticalCompletionReceipt,
+      methodAlignmentReceipt: run.methodAlignmentReceipt,
+      analysisReceipt: run.analysisReceipt,
+      analysisId: run.analysisId,
+      analysisStage: run.analysisStage,
+      analysisCheckpointStatus: run.analysisCheckpointStatus,
+      baselineReceiptId: run.baselineReceiptId,
+      deliveryState: panel.deliveryState,
+      coverageSummary: panel.coverageSummary,
+      coverageItems: panel.coverageItems,
+      attachments: panel.attachments,
+      nextActions: run.nextActions,
+      externalBlockers: run.externalBlockers,
       annotations: [...run.annotations.values()],
       git: run.git,
     };
@@ -892,13 +1822,20 @@ function persistRunSnapshot(
       event: triggerEvent,
       target: triggerEvent?.target,
       includePaths,
+      authorizedExternalPaths: [...authorizedExternalFiles.keys()],
     });
     if (gitRef.ok) {
       run.git = gitRef;
       panel.git = gitRef;
+      panel.attachments = deriveAttachments(panel, gitRef);
       state.git = gitRef;
+      state.attachments = panel.attachments;
       if (triggerEvent) {
         triggerEvent.git = gitRef;
+        if (triggerEvent.panel) {
+          triggerEvent.panel.git = gitRef;
+          triggerEvent.panel.attachments = panel.attachments;
+        }
         if (triggerEvent.snapshot) triggerEvent.snapshot.files = gitRef.files;
       }
     }
@@ -1026,7 +1963,7 @@ const createOrReplaceResource = (
   if (kind === 'run') {
     run.question = asString(payload.question, run.question);
     run.summary = asString(payload.summary, run.summary as string);
-    run.status = (asString(payload.status, run.status) as SciencePanelData['status']) || run.status;
+    run.status = normalizeSciencePanelStatus(asString(payload.status, run.status));
     if (isRecord(payload.stats)) run.statsPatch = payload.stats as Partial<SciencePanelData['stats']>;
     return { object: getResource(run, { kind: 'run' }), target: { kind: 'run', id: run.runId } };
   }
@@ -1170,7 +2107,7 @@ async function main() {
     'science_artifact',
     [
       'Single OpenScience artifact graph control surface.',
-      'Use action=status/reserve_id/get/list/create/patch/replace/append/version/snapshot/publish/annotate/focus_page.',
+      'Use action=status/reserve_id/get/list/create/patch/replace/append/version/authorize_external_file/snapshot/publish/annotate/focus_page.',
       'Every artifact has a stable id and version; patch/replace/version of existing objects require baseRevision from get.',
       'Use snapshot to add explicit files or folders to the project-level artifact git snapshot.',
       'publish emits the structured Science panel rendered by the UI; the final publish should use displayIntent=open.',
@@ -1186,6 +2123,7 @@ async function main() {
         'replace',
         'append',
         'version',
+        'authorize_external_file',
         'snapshot',
         'publish',
         'annotate',
@@ -1238,6 +2176,47 @@ async function main() {
           panel: buildPanel(run),
           openRuns: [...runs.keys()],
         });
+      }
+
+      if (action === 'authorize_external_file') {
+        const authorization = await authorizeExternalFile(
+          asString(body.externalPath || body.external_path || body.path),
+          conversationId || run.conversationId
+        );
+        if (authorization.status === 'authorized') {
+          const nodeId = makeId('provenance');
+          run.provenance.set(nodeId, {
+            id: nodeId,
+            type: 'user_decision',
+            label: 'Authorized one external file for this Science session',
+            path: asString(authorization.normalizedPath),
+            createdAt: asNumber(authorization.authorizedAt, now()),
+            metadata: {
+              requestId: authorization.requestId,
+              scope: authorization.scope,
+              expiresOnSessionEnd: true,
+            },
+            revision: revision(),
+          });
+        }
+        const evt = eventFor(run, action, undefined, {
+          provenanceNodeIds: authorization.status === 'authorized' ? [...run.provenance.keys()].slice(-1) : undefined,
+          warnings:
+            authorization.status === 'authorized'
+              ? undefined
+              : [
+                  {
+                    id: `sci_warning_${crypto.randomBytes(4).toString('hex')}`,
+                    runId: run.runId,
+                    severity: 'warning',
+                    code: 'missing_source',
+                    message: `External file authorization status: ${authorization.status}`,
+                    blocking: true,
+                    createdAt: now(),
+                  },
+                ],
+        });
+        return jsonText({ ...evt, authorization });
       }
 
       if (action === 'reserve_id') {
@@ -1444,9 +2423,309 @@ async function main() {
       }
 
       if (action === 'publish') {
+        const preserveAcceptedPublication =
+          run.workflowKind === 'omics_reproduction' && deriveDeliveryState(run).publicationDisposition === 'accepted';
+        const rawRequestedStatus = body.status ? asString(body.status, run.status) : run.status;
+        const requestedStatus = normalizeSciencePanelStatus(rawRequestedStatus);
+        const completionReceiptId = asString(body.completionReceiptId || body.completion_receipt_id);
+        const statisticalCompletionReceiptId = asString(
+          body.statisticalCompletionReceiptId || body.statistical_completion_receipt_id
+        );
+        const methodAlignmentReceiptId = asString(body.methodAlignmentReceiptId || body.method_alignment_receipt_id);
+        const executionReceiptId = asString(body.executionReceiptId || body.execution_receipt_id);
+        const analysisReceiptId = asString(body.analysisReceiptId || body.analysis_receipt_id);
+        const legacyReceiptProvided = Boolean(
+          body.completionReceipt ||
+          body.completion_receipt ||
+          body.statisticalCompletionReceipt ||
+          body.statistical_completion_receipt ||
+          body.methodAlignmentReceipt ||
+          body.method_alignment_receipt ||
+          body.executionReceipt ||
+          body.execution_receipt
+        );
+        const declaredReproductionWorkflow =
+          body.workflowKind === 'omics_reproduction' ||
+          body.workflow_kind === 'omics_reproduction' ||
+          run.workflowKind === 'omics_reproduction';
+        const declaredAnalysisWorkflow =
+          body.workflowKind === 'omics_analysis' ||
+          body.workflow_kind === 'omics_analysis' ||
+          run.workflowKind === 'omics_analysis';
+        const legacyAnalysisReceiptProvided = Boolean(body.analysisReceipt || body.analysis_receipt);
+        if (declaredAnalysisWorkflow && legacyAnalysisReceiptProvided) {
+          run.status = 'running';
+          run.nextActions = [
+            {
+              id: 'publish-analysis-with-receipt-id',
+              tool: 'science_artifact',
+              action: 'publish',
+              reason: 'Omics analysis publishing accepts analysisReceiptId only; full receipt objects are rejected.',
+              payload: { workflowKind: 'omics_analysis', analysisReceiptId },
+              maxAttempts: 1,
+              stopWhenUnchanged: true,
+            },
+          ];
+          const panel = buildPanel(run);
+          const evt = eventFor(run, action, target, { panel, warnings: panel.graphWarnings });
+          return jsonText({
+            ...evt,
+            displayIntent: displayIntent || 'open',
+            status: 'invalid_request',
+            error: { code: 'FULL_RECEIPT_PAYLOAD_REJECTED' },
+            correctedCall: run.nextActions[0],
+            nextActions: run.nextActions,
+          });
+        }
+        if (declaredAnalysisWorkflow) {
+          const incomingAnalysisReceipt = receiptById(run.projectRoot || '', analysisReceiptId, analysisReceiptFrom);
+          if (!incomingAnalysisReceipt) {
+            run.status = 'running';
+            run.nextActions = [
+              {
+                id: 'publish-analysis-with-current-receipt',
+                tool: 'bio_analysis',
+                action: 'status',
+                reason: 'A current analysisReceiptId from this project is required for analysis publishing.',
+                payload: { analysisId: asString(body.analysisId) },
+                maxAttempts: 1,
+                stopWhenUnchanged: true,
+              },
+            ];
+            const panel = buildPanel(run);
+            const evt = eventFor(run, action, target, { panel, warnings: panel.graphWarnings });
+            return jsonText({
+              ...evt,
+              displayIntent: displayIntent || 'open',
+              status: 'invalid_request',
+              error: { code: 'ANALYSIS_RECEIPT_REQUIRED' },
+              nextActions: run.nextActions,
+            });
+          }
+          applyAnalysisReceipt(run, incomingAnalysisReceipt);
+          run.status =
+            incomingAnalysisReceipt.stageStatus === 'awaiting_user'
+              ? 'awaiting_user'
+              : incomingAnalysisReceipt.action === 'close_analysis' &&
+                  incomingAnalysisReceipt.projectStatus === 'closed'
+                ? 'completed'
+                : 'running';
+          if (body.question) run.question = asString(body.question, run.question);
+          if (body.summary) run.summary = asString(body.summary, run.summary as string);
+          const panel = buildPanel(run);
+          const evt = eventFor(run, action, target, {
+            panel,
+            artifactIds: panel.artifacts.map((item) => item.id),
+            warnings: panel.graphWarnings,
+          });
+          return jsonText({
+            ...evt,
+            displayIntent: displayIntent || 'open',
+            analysisReceiptId: incomingAnalysisReceipt.receiptId,
+            authoritativeState: {
+              status: panel.status,
+              deliveryState: panel.deliveryState,
+              analysisId: panel.analysisId,
+              analysisStage: panel.analysisStage,
+              checkpointStatus: panel.analysisCheckpointStatus,
+            },
+          });
+        }
+        if (legacyReceiptProvided) {
+          if (!preserveAcceptedPublication) run.status = 'running';
+          run.nextActions = [
+            {
+              id: 'publish-with-receipt-ids',
+              tool: 'science_artifact',
+              action: 'publish',
+              reason: 'Omics reproduction publishing accepts receipt IDs only; full receipt objects are rejected.',
+              payload: {
+                workflowKind: 'omics_reproduction',
+                status: 'running',
+                completionReceiptId,
+                executionReceiptId,
+                statisticalCompletionReceiptId,
+                methodAlignmentReceiptId,
+              },
+              maxAttempts: 1,
+              stopWhenUnchanged: true,
+            },
+          ];
+          const panel = buildPanel(run);
+          const evt = eventFor(run, action, target, { panel, warnings: panel.graphWarnings });
+          return jsonText({
+            ...evt,
+            displayIntent: displayIntent || 'open',
+            status: 'invalid_request',
+            error: { code: 'FULL_RECEIPT_PAYLOAD_REJECTED' },
+            correctedCall: run.nextActions[0],
+            nextActions: run.nextActions,
+            authoritativeState: {
+              status: panel.status,
+              deliveryState: panel.deliveryState,
+              planningCompletion: panel.planningCompletion,
+              executionReadiness: panel.executionReadiness,
+            },
+          });
+        }
+        const incomingReceipt = receiptById(run.projectRoot || '', completionReceiptId, completionReceiptFrom);
+        const incomingStatisticalReceipt = receiptById(
+          run.projectRoot || '',
+          statisticalCompletionReceiptId,
+          statisticalCompletionReceiptFrom
+        );
+        const incomingMethodAlignmentReceipt = receiptById(
+          run.projectRoot || '',
+          methodAlignmentReceiptId,
+          methodAlignmentReceiptFrom
+        );
+        const incomingExecutionReceipt = receiptById(run.projectRoot || '', executionReceiptId, executionReceiptFrom);
+        const reproductionWorkflow =
+          declaredReproductionWorkflow ||
+          incomingReceipt?.workflowKind === 'omics_reproduction' ||
+          incomingExecutionReceipt?.workflowKind === 'omics_reproduction' ||
+          incomingStatisticalReceipt?.workflowKind === 'omics_reproduction' ||
+          Boolean(incomingMethodAlignmentReceipt) ||
+          run.workflowKind === 'omics_reproduction';
+        if (reproductionWorkflow && !run.workflowKind) run.workflowKind = 'omics_reproduction';
+        const workflowPhase =
+          body.workflowPhase === 'execution' ||
+          body.workflow_phase === 'execution' ||
+          incomingExecutionReceipt?.workflowPhase === 'execution' ||
+          incomingStatisticalReceipt?.workflowPhase === 'execution' ||
+          run.workflowPhase === 'execution'
+            ? 'execution'
+            : 'planning';
+        if (reproductionWorkflow && !run.workflowPhase) run.workflowPhase = workflowPhase;
+        if (body.status && !isRecognizedSciencePanelStatus(rawRequestedStatus)) {
+          const correctedStatus: SciencePanelData['status'] = reproductionWorkflow ? 'running' : 'draft';
+          if (!preserveAcceptedPublication) run.status = 'running';
+          run.nextActions = [
+            {
+              id: 'correct-science-publication-status',
+              tool: 'science_artifact',
+              action: 'publish',
+              reason: `Unsupported Science status: ${rawRequestedStatus}. Use a declared Science panel status.`,
+              payload: { status: correctedStatus },
+            },
+          ];
+          const panel = buildPanel(run);
+          const evt = eventFor(run, action, target, { panel, warnings: panel.graphWarnings });
+          return jsonText({
+            ...evt,
+            displayIntent: displayIntent || 'open',
+            statusCorrectionRequired: true,
+            nextActions: run.nextActions,
+          });
+        }
+        const planningReceipt = incomingReceipt || run.completionReceipt;
+        const receiptResolutionIssues = [
+          completionReceiptId && !incomingReceipt
+            ? `Unknown or invalid completionReceiptId: ${completionReceiptId}`
+            : '',
+          executionReceiptId && !incomingExecutionReceipt
+            ? `Unknown or invalid executionReceiptId: ${executionReceiptId}`
+            : '',
+          statisticalCompletionReceiptId && !incomingStatisticalReceipt
+            ? `Unknown or invalid statisticalCompletionReceiptId: ${statisticalCompletionReceiptId}`
+            : '',
+          methodAlignmentReceiptId && !incomingMethodAlignmentReceipt
+            ? `Unknown or invalid methodAlignmentReceiptId: ${methodAlignmentReceiptId}`
+            : '',
+        ].filter(Boolean);
+        const planningReceiptIssues = reproductionWorkflow
+          ? validateCompletionReceipt(planningReceipt, run.projectRoot || '')
+          : [];
+        const executionReceiptIssues =
+          reproductionWorkflow && workflowPhase === 'execution'
+            ? validateExecutionReceipt(
+                incomingExecutionReceipt || run.executionReceipt,
+                planningReceipt,
+                run.projectRoot || '',
+                requestedStatus
+              )
+            : [];
+        const receiptIssues = [...receiptResolutionIssues, ...planningReceiptIssues, ...executionReceiptIssues];
+        const reproductionSuccessPublication = requestedStatus === 'completed' || requestedStatus === 'partial';
+        if (reproductionWorkflow && reproductionSuccessPublication && receiptIssues.length) {
+          const receipt = planningReceipt;
+          const executionReceipt = incomingExecutionReceipt || run.executionReceipt;
+          if (!preserveAcceptedPublication) run.status = 'running';
+          run.nextActions = planningReceiptIssues.length
+            ? receipt?.nextActions.length
+              ? receipt.nextActions
+              : [
+                  {
+                    id: 'complete-reproduction-workflow',
+                    tool: 'bio_reproduction',
+                    action: 'validate_reproduction_plan',
+                    reason: planningReceiptIssues.join(' '),
+                  },
+                ]
+            : executionReceipt?.nextActions.length
+              ? executionReceipt.nextActions
+              : [
+                  {
+                    id: 'complete-reproduction-execution',
+                    tool: 'bio_reproduction',
+                    action: 'complete_execution',
+                    reason: executionReceiptIssues.join(' '),
+                  },
+                ];
+          run.graphWarnings.set('warn_reproduction_completion_required', {
+            id: 'warn_reproduction_completion_required',
+            runId: run.runId,
+            severity: 'error',
+            code: 'workflow_action_required',
+            message: `Reproduction publication remains running: ${receiptIssues.join(' ')}`,
+            blocking: true,
+            createdAt: now(),
+          });
+          const panel = buildPanel(run);
+          const evt = eventFor(run, action, target, {
+            panel,
+            warnings: panel.graphWarnings,
+          });
+          return jsonText({
+            ...evt,
+            displayIntent: displayIntent || 'open',
+            completionRequired: true,
+            nextActions: run.nextActions,
+            authoritativeState: {
+              status: panel.status,
+              deliveryState: panel.deliveryState,
+              planningCompletion: panel.planningCompletion,
+              executionReadiness: panel.executionReadiness,
+            },
+          });
+        }
+        if (incomingReceipt && !planningReceiptIssues.length) {
+          applyCompletionReceipt(run, incomingReceipt);
+          run.graphWarnings.delete('warn_reproduction_completion_required');
+        }
+        if (incomingMethodAlignmentReceipt) {
+          applyMethodAlignmentReceipt(run, incomingMethodAlignmentReceipt);
+        }
+        if (incomingStatisticalReceipt) {
+          applyStatisticalCompletionReceipt(run, incomingStatisticalReceipt);
+        }
+        if (incomingExecutionReceipt && !receiptIssues.length) {
+          applyExecutionReceipt(run, incomingExecutionReceipt);
+          run.graphWarnings.delete('warn_reproduction_completion_required');
+        }
+        if (reproductionWorkflow) {
+          run.workflowKind = 'omics_reproduction';
+          run.workflowPhase = workflowPhase;
+          run.graphWarnings.delete('warn_reproduction_completion_required');
+          const authoritativeReceipt = workflowPhase === 'execution' ? run.executionReceipt : run.completionReceipt;
+          if (authoritativeReceipt) {
+            run.nextActions = authoritativeReceipt.nextActions;
+            run.externalBlockers = authoritativeReceipt.externalBlockers;
+          }
+        }
         if (body.question) run.question = asString(body.question, run.question);
         if (body.summary) run.summary = asString(body.summary, run.summary as string);
-        if (body.status) run.status = (asString(body.status, run.status) as SciencePanelData['status']) || run.status;
+        run.status = requestedStatus;
         if (isRecord(body.report)) run.report = body.report as SciencePanelData['report'];
         if (isRecord(body.stats)) run.statsPatch = body.stats as Partial<SciencePanelData['stats']>;
         const panel = buildPanel(run);
@@ -1459,7 +2738,16 @@ async function main() {
           provenanceNodeIds: panel.provenance.map((item) => item.id),
           warnings: panel.graphWarnings,
         });
-        return jsonText({ ...evt, displayIntent: displayIntent || 'open' });
+        return jsonText({
+          ...evt,
+          displayIntent: displayIntent || 'open',
+          authoritativeState: {
+            status: panel.status,
+            deliveryState: panel.deliveryState,
+            planningCompletion: panel.planningCompletion,
+            executionReadiness: panel.executionReadiness,
+          },
+        });
       }
 
       throw new Error(`Unsupported science_artifact action: ${action}`);

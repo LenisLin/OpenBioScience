@@ -13,6 +13,8 @@ export const SCIENCE_ARTIFACT_ENV_KEYS = {
   defaultSkillIds: 'OPENSCIENCE_DEFAULT_SKILL_IDS',
   allowedDatabaseHosts: 'OPENSCIENCE_ALLOWED_DATABASE_HOSTS',
   artifactGitMaxCopyBytes: 'OPENSCIENCE_ARTIFACT_GIT_MAX_COPY_BYTES',
+  workspaceRoot: 'OPENSCIENCE_WORKSPACE_ROOT',
+  sessionId: 'OPENSCIENCE_SESSION_ID',
 } as const;
 
 export type ScienceArtifactMcpEnvResolveResult = {
