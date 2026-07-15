@@ -390,3 +390,10 @@ DEEPORGANISER_DATA_DIR="$HOME/.openscience-web-dev" DEEPORGANISER_OPEN_BROWSER=0
 ```
 
 The launchd label used for that local service was `com.codex.deeporganiser.webui`; remove it with `launchctl remove com.codex.deeporganiser.webui` if you need to stop that background instance.
+
+## Branch Workflow
+
+- The primary local worktree must remain on the `preview` branch.
+- Publish local changes to `preview` first.
+- Integrate `preview` into `integration`, then `integration` into `main`, using separate clean worktrees for those protected branch operations.
+- Do not switch the primary local worktree to `integration` or `main`.
