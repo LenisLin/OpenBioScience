@@ -6,6 +6,12 @@ description: >
 
 # Bio scRNA-seq Plotting
 
+## Reproduction Parameters
+
+- Consume reported expression transformation, centering, scaling, color limits, aggregation unit, and embedding method from the method contract.
+- Record the actual expression layer and transformation in the executed parameter manifest.
+- Visual similarity without aligned source parameters is not figure-level reproduction.
+
 This skill defines figure contracts for scRNA-seq workflows. It prepares reproducible visual outputs and figure provenance; it does not fabricate data or interpret significance.
 
 ## OpenBioScience Adapter
@@ -51,6 +57,7 @@ Recommended:
 
 1. Verify every requested panel has a source object/table and required keys.
 2. Build a plot manifest with panel IDs, data sources, variables, transformations, and output paths.
+   Marker and expression plots must declare their expression layer; raw counts or scaled values cannot be presented as normalized expression.
 3. Generate figures through controlled runner with saved config and deterministic settings only when that runner is available.
 4. Export publication-friendly and audit-friendly formats when feasible.
 5. Validate readability, axis labels, legends, group ordering, and missing categories.

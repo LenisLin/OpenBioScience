@@ -9,8 +9,8 @@ import { LEGACY_LOCAL_RUNTIME_ID } from '@/common/config/legacyIdentifiers';
 import type { AgentMetadata } from '@/renderer/utils/model/agentTypes';
 import AionModal from '@/renderer/components/base/AionModal';
 import { useManagedAgents } from '@/renderer/hooks/agent/useAgents';
-import { Button, Typography } from '@arco-design/web-react';
-import { Home, Plus } from '@icon-park/react';
+import { Alert, Button, Typography } from '@arco-design/web-react';
+import { Home, Plus, Refresh } from '@icon-park/react';
 import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -28,13 +28,16 @@ const LocalAgents: React.FC = () => {
   // listed (greyed) with a working re-enable toggle. `revalidate` here
   // refreshes both the management cache and the shared detected cache, so
   // toggling an agent on/off is reflected in the pickers too.
-  const { agents: allAgents, revalidate: mutateAgents } = useManagedAgents();
+  const { agents: allAgents, revalidate: mutateAgents, refreshCustomAgents } = useManagedAgents();
 
   const detectedAgents = allAgents.filter(
     (a) => a.agent_type === 'acp' && a.backend !== LEGACY_LOCAL_RUNTIME_ID && a.agent_source !== 'custom'
   );
 
   const customAgents: AgentMetadata[] = allAgents.filter((a) => a.agent_source === 'custom');
+  const codexAvailable = detectedAgents.some(
+    (agent) => agent.available && (agent.backend === 'codex' || agent.name.toLowerCase() === 'codex cli')
+  );
 
   const [editorVisible, setEditorVisible] = useState(false);
   const [editingAgent, setEditingAgent] = useState<AgentMetadata | null>(null);
@@ -115,6 +118,30 @@ const LocalAgents: React.FC = () => {
           {t('settings.agentManagement.detectCustomAgent')}
         </Button>
       </div>
+
+      {!codexAvailable && (
+        <div className='px-16px'>
+          <Alert
+            type='warning'
+            title={t('settings.agentManagement.codexStartupCheckTitle')}
+            content={t(
+              typeof window !== 'undefined' && window.electronAPI
+                ? 'settings.agentManagement.codexStartupCheckDesktop'
+                : 'settings.agentManagement.codexStartupCheckWebui'
+            )}
+            action={
+              <Button
+                size='mini'
+                type='secondary'
+                icon={<Refresh theme='outline' size='14' />}
+                onClick={() => void refreshCustomAgents()}
+              >
+                {t('settings.agentManagement.codexStartupCheckRefresh')}
+              </Button>
+            }
+          />
+        </div>
+      )}
 
       {process.env.NODE_ENV === 'development' && (
         <div className='px-16px mt-8px'>

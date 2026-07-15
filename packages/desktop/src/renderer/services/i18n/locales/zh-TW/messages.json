@@ -178,6 +178,23 @@
     },
     "progressLog": "過程記錄"
   },
+  "scienceDelivery": {
+    "title": "交付狀態",
+    "coverageSummary": "涵蓋情況：已完成 {{completed}}/{{total}} · 待處理 {{actionRequired}} · 阻塞 {{blocked}}",
+    "coverageDetails": "涵蓋詳情",
+    "blockers": "外部阻塞項",
+    "nextActions": "後續操作",
+    "states": {
+      "running": "進行中",
+      "actionRequired": "需要操作",
+      "completed": "已完成",
+      "partial": "完成但有限制",
+      "blocked": "已阻塞",
+      "failed": "失敗",
+      "awaitingUser": "等待使用者複核"
+    },
+    "analysis": { "analysisId": "分析 ID", "stage": "目前階段", "checkpoint": "檢查點", "baseline": "目前基線" }
+  },
   "codexMemory": {
     "title": "Codex 記憶",
     "fallbackTitle": "記憶快照",

@@ -3,6 +3,7 @@
 Use this reference when assigning execution modules after the top-level paper audit.
 Do not invent missing leaf skills.
 When no downstream skill exists, keep the module planned-only and state the required capability.
+All executable routes consume the validated method parameter contract first. Unreported values may be analysis choices but cannot support parameter-aligned claims.
 
 ## General Routing Rules
 
@@ -10,14 +11,21 @@ When no downstream skill exists, keep the module planned-only and state the requ
 - Route only scoped modules downstream after source audit and claim feasibility are explicit.
 - Use `bio_source` or `bio-data-resolution` for accession, file, and data-semantics uncertainty.
 - Use `bio_runtime` or `bio-environment-routing` for environmentRef and capability uncertainty.
+- Use `bio-environment-manager` only when a missing/custom environment must be
+  registered before a planned module can run.
+- Use `bio-analysis-script-authoring` only after module scope, inputs, outputs,
+  and environment candidates are explicit.
 - Use `science_artifact` for plan, audit, decisions, warnings, and later execution outputs.
 
 ## scRNA-seq
 
 Route after planning to `bio-scrna-reproduction`.
 Typical downstream modules:
+
 - import and matrix semantics -> `bio-singlecell-import`
 - environmentRef choice -> `bio-environment-routing`
+- missing/custom environment registration -> `bio-environment-manager`
+- approved script drafting -> `bio-analysis-script-authoring`
 - QC and preprocessing -> `bio-qc-preprocess`
 - batch, dimensionality reduction, clustering -> `bio-batch-dim-cluster`
 - markers -> `bio-marker-optimization`
@@ -26,6 +34,7 @@ Typical downstream modules:
 - final claim wording after executed outputs -> `bio-result-interpretation`
 
 Planning cautions:
+
 - raw UMI counts are needed for strict QC and many DE claims
 - sample or patient keys are needed for sample-level biological comparisons
 - processed-only objects usually support limited annotation, visualization, or signature review
@@ -60,6 +69,7 @@ Record genome build, blacklist, peak caller, motif database, and cell-type annot
 Use the planning skill for article-level audit.
 If no project multiome reproduction skill exists, keep modules planned-only.
 Split modules by modality and integration step:
+
 - RNA preprocessing
 - ATAC preprocessing
 - shared cell metadata

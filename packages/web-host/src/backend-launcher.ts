@@ -9,6 +9,7 @@
  */
 
 import { type ChildProcess, spawn } from 'node:child_process';
+import fs from 'node:fs';
 import { connect, createServer, type Socket } from 'node:net';
 import path from 'node:path';
 import { cleanupRegisteredAgentProcesses } from './agent-process-registry.js';
@@ -260,12 +261,24 @@ export function buildBackendPath(env: NodeJS.ProcessEnv = process.env): string {
           home && path.join(home, '.cargo', 'bin'),
           '/opt/homebrew/bin',
           '/usr/local/bin',
+          '/usr/bin',
+          '/bin',
+          '/usr/sbin',
+          '/sbin',
         ];
 
-  return dedupePathEntries(
+  const basePath = dedupePathEntries(
     [...candidates.filter((entry): entry is string => Boolean(entry)), ...splitPathEntries(env.PATH, delimiter)],
     process.platform === 'win32'
   ).join(delimiter);
+  if (process.platform === 'win32') return basePath;
+  const runtimeRoot = env.OPENBIOSCIENCE_RUNTIME_ROOT || env.OPENSCIENCE_RUNTIME_ROOT;
+  const officialBin = runtimeRoot
+    ? path.join(runtimeRoot, 'environments', 'official', 'sc-py-singlecell', 'bin')
+    : undefined;
+  return officialBin && fs.existsSync(officialBin)
+    ? dedupePathEntries([officialBin, ...splitPathEntries(basePath, delimiter)], false).join(delimiter)
+    : basePath;
 }
 
 const FETCH_FORBIDDEN_PORTS = new Set([
@@ -660,7 +673,9 @@ export class BackendLifecycleManager {
       this.childProcess?.once('error', (error) => {
         if (startupSettled) return;
         this._status = 'error';
-        rejectOnce(makeStartupError('spawn_error', 'DeepOrganiser Core process emitted an error before startup', error));
+        rejectOnce(
+          makeStartupError('spawn_error', 'DeepOrganiser Core process emitted an error before startup', error)
+        );
       });
 
       this.childProcess?.once('exit', (code, signal) => {
@@ -684,7 +699,9 @@ export class BackendLifecycleManager {
         const exitSignal = pendingStartupExit.signal ?? signal;
         if (!pendingStartupExit.startupSettledAtExit) {
           if (pendingStartupExit.statusAtExit === 'stopped') {
-            rejectOnce(new BackendStartupCancelledError('DeepOrganiser Core startup cancelled before health check passed'));
+            rejectOnce(
+              new BackendStartupCancelledError('DeepOrganiser Core startup cancelled before health check passed')
+            );
             return;
           }
           rejectOnce(
@@ -728,10 +745,15 @@ export class BackendLifecycleManager {
       };
       reportedPortTimer = setTimeout(() => {
         rejectReportedPort(
-          makeStartupError('listen_timeout', 'DeepOrganiser Core did not report its listening port before timeout', undefined, {
-            healthCheckTimeoutMs: BACKEND_PORT_REPORT_TIMEOUT_MS,
-            healthCheckElapsedMs: Date.now() - startupStartedAt,
-          })
+          makeStartupError(
+            'listen_timeout',
+            'DeepOrganiser Core did not report its listening port before timeout',
+            undefined,
+            {
+              healthCheckTimeoutMs: BACKEND_PORT_REPORT_TIMEOUT_MS,
+              healthCheckElapsedMs: Date.now() - startupStartedAt,
+            }
+          )
         );
       }, BACKEND_PORT_REPORT_TIMEOUT_MS);
     });

@@ -1,0 +1,44 @@
+services:
+  openbioscience:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: openbioscience-webui:local
+    container_name: openbioscience-webui
+    working_dir: /app
+    command:
+      - /opt/bun/bun.exe
+      - scripts/webui.ts
+      - --no-build
+      - --no-open
+      - --remote
+      - --port
+      - '25808'
+    ports:
+      - '25808:25808'
+    volumes:
+      - ./:/app
+      - ./data:/data
+      - ./demo:/workspace/demo
+      - /mnt/NAS_21T/ProjectData/OpenBioScience:/env:ro
+      # Compatibility alias for existing Conda prefixes that embed their original build prefix.
+      - /mnt/NAS_21T/ProjectData/OpenBioScience:/mnt/NAS_21T/ProjectData/OpenBioScience:ro
+      - /home/lenislin/.nvm/versions/node/v22.18.0/lib/node_modules/bun/bin:/opt/bun:ro
+      - /home/lenislin/.nvm/versions/node/v22.18.0:/opt/node:ro
+      - ./tmp/docker-bin/codex:/usr/local/bin/codex:ro
+      - ./tmp/codex-container-home:/data/codex-home
+      - /home/lenislin/.codex/config.toml:/data/codex-home/config.toml:ro
+      - /home/lenislin/.codex/auth.json:/data/codex-home/auth.json:ro
+      - /usr/bin/bwrap:/usr/local/bin/bwrap:ro
+    environment:
+      CODEX_HOME: /data/codex-home
+      DEEPORGANISER_ALLOW_REMOTE: 'true'
+      DEEPORGANISER_CORE_BIN: /app/resources/bundled-deeporganiser-core/linux-x64/deeporganiser-core.real
+      DEEPORGANISER_DATA_DIR: /data
+      DEEPORGANISER_LOG_DIR: /data/logs
+      DEEPORGANISER_NO_BUILD: '1'
+      DEEPORGANISER_OPEN_BROWSER: '0'
+      DEEPORGANISER_STATIC_DIR: /app/out/renderer
+      OPENBIOSCIENCE_RUNTIME_ROOT: /env
+      PATH: /opt/node/bin:/opt/bun:/usr/local/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    restart: unless-stopped

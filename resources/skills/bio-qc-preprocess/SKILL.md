@@ -6,6 +6,12 @@ description: >
 
 # Bio QC Preprocess
 
+## Reproduction Parameters
+
+- For reproduction, consume reported QC, normalization, transformation, and feature-selection values from the method contract.
+- Record every actual threshold and transformation in the executed parameter manifest.
+- Values not reported by the source may be selected as analysis choices but lower the alignment claim.
+
 This skill defines auditable QC and preprocessing for imported single-cell objects. It specifies decisions and outputs; execution is deferred to an approved runner; the current MCP layer validates workflow contracts only.
 
 ## OpenBioScience Adapter
@@ -56,7 +62,7 @@ Recommended:
 2. Compute per-cell and per-gene QC metrics by sample and batch where available.
 3. Propose thresholds from distributions and user/reproduction constraints; do not hide threshold choices.
 4. Apply filtering and record retained/removed counts by sample/batch.
-5. Normalize, transform, identify highly variable genes, and scale/regress only when justified.
+5. Preserve raw integer counts in `layers["counts"]`, save log-normalized expression in `layers["lognorm"]` or a documented `X`, identify highly variable genes, and keep scaled values in a separate HVG-only representation.
 6. Save preprocessed object and QC summary before clustering.
 7. Register all artifacts and warnings through `science_artifact`.
 
@@ -103,6 +109,8 @@ Summary schema:
 - QC metrics are stratified by available sample/batch keys.
 - Filtering thresholds and retained counts are reproducible from saved config.
 - Output object is readable in selected `environmentRef`.
+- Counts, log-normalized expression, and scaled values have distinct documented locations; marker ranking never consumes scaled values.
+- `adata.raw` semantics are documented and are not silently treated as log-normalized expression.
 - Warnings include confounding, missing metadata, and unsupported raw-count assumptions.
 
 ## Next

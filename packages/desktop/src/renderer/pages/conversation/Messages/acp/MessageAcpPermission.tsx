@@ -5,6 +5,7 @@
  */
 
 import type { IMessageAcpPermission } from '@/common/chat/chatLib';
+import { summarizeShellCommand, unwrapShellCommand } from '@/common/chat/agentStep';
 import { conversation } from '@/common/adapter/ipcBridge';
 import { Button, Card, Radio, Typography } from '@arco-design/web-react';
 import { ToolConfirmationOutcome } from '@renderer/utils/common';
@@ -16,6 +17,12 @@ const { Text } = Typography;
 interface MessageAcpPermissionProps {
   message: IMessageAcpPermission;
 }
+
+const displayText = (value: unknown): string | undefined => {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return undefined;
+};
 
 const MessageAcpPermission: React.FC<MessageAcpPermissionProps> = React.memo(({ message }) => {
   const { options = [], tool_call } = message.content || {};
@@ -31,7 +38,8 @@ const MessageAcpPermission: React.FC<MessageAcpPermissionProps> = React.memo(({ 
       };
     }
 
-    const displayTitle = tool_call.title || tool_call.raw_input?.description || t('messages.permissionRequest');
+    const displayTitle =
+      displayText(tool_call.title) || displayText(tool_call.raw_input?.description) || t('messages.permissionRequest');
 
     // 简单的图标映射
     const kindIcons: Record<string, string> = {
@@ -47,6 +55,9 @@ const MessageAcpPermission: React.FC<MessageAcpPermissionProps> = React.memo(({ 
     };
   };
   const { title, icon } = getToolInfo();
+  const rawCommand = tool_call?.raw_input?.command;
+  const commandSummary = summarizeShellCommand(rawCommand);
+  const commandText = unwrapShellCommand(rawCommand) || displayText(tool_call?.title);
   const [selected, setSelected] = useState<string | null>(null);
   const [isResponding, setIsResponding] = useState(false);
   const [hasResponded, setHasResponded] = useState(false);
@@ -97,12 +108,12 @@ const MessageAcpPermission: React.FC<MessageAcpPermissionProps> = React.memo(({ 
           <span className='text-2xl'>{icon}</span>
           <Text className='block'>{title}</Text>
         </div>
-        {(tool_call.raw_input?.command || tool_call.title) && (
+        <code className='text-xs text-t-secondary break-all'>{tool_call.tool_call_id}</code>
+        {commandSummary && commandSummary !== title ? <Text className='text-sm'>{commandSummary}</Text> : null}
+        {commandText && (
           <div>
             <Text className='text-xs text-t-secondary mb-1'>{t('messages.command')}</Text>
-            <code className='text-xs bg-1 p-2 rounded block text-t-primary break-all'>
-              {tool_call.raw_input?.command || tool_call.title}
-            </code>
+            <code className='text-xs bg-1 p-2 rounded block text-t-primary break-all'>{commandText}</code>
           </div>
         )}
         {!hasResponded && (

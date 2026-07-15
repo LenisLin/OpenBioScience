@@ -204,6 +204,28 @@
     },
     "progressLog": "Progress log"
   },
+  "scienceDelivery": {
+    "title": "Delivery status",
+    "coverageSummary": "Coverage: {{completed}}/{{total}} completed · {{actionRequired}} action required · {{blocked}} blocked",
+    "coverageDetails": "Coverage details",
+    "blockers": "External blockers",
+    "nextActions": "Next actions",
+    "states": {
+      "running": "Running",
+      "actionRequired": "Action required",
+      "completed": "Completed",
+      "partial": "Completed with limits",
+      "blocked": "Blocked",
+      "failed": "Failed",
+      "awaitingUser": "Awaiting user review"
+    },
+    "analysis": {
+      "analysisId": "Analysis ID",
+      "stage": "Current stage",
+      "checkpoint": "Checkpoint",
+      "baseline": "Current baseline"
+    }
+  },
   "codexMemory": {
     "title": "Codex Memory",
     "fallbackTitle": "Memory snapshot",

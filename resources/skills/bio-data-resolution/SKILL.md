@@ -1,7 +1,7 @@
 ---
 name: bio-data-resolution
 description: >
-  Use when a scRNA-seq reproduction task needs dataset discovery, accession parsing, GEO/SRA/ArrayExpress/source-file mapping, local artifact pointer validation, demo-data selection, metadata availability checks, or raw-versus-processed data status. Route importable local files to bio-singlecell-import and whole-workflow planning to bio-scrna-reproduction.
+Use when a scRNA-seq reproduction task or user-authorized private-data analysis needs dataset discovery, source-file mapping, local artifact pointer validation, dataset-unit identification, metadata availability checks, or raw-versus-processed data status. Route importable local files to bio-singlecell-import.
 ---
 
 # Bio Data Resolution
@@ -9,6 +9,9 @@ description: >
 This skill resolves data sources and access status for scRNA-seq workflows. It records what is available and what claims the data can support; it does not download or transform data by itself.
 
 ## OpenBioScience Adapter
+
+- For a user-provided local analysis, require the user-selected data root to be inside the authorized workspace and start `bio_analysis(action="start_analysis")`; never infer a host path or merge independently identified dataset units.
+- Record one dataset-unit row for every matrix/object plus linked metadata group. A shared parent folder is not evidence that units should be combined.
 
 - Use `research_evidence` for papers, repositories, database records, and accession metadata.
 - Use `bio_source` for accession and data-manifest contracts; use `bio_runtime` only for environment/workflow validation. Managed downloads require a future approved provider/runner.
@@ -83,12 +86,12 @@ Summary schema:
 
 ## Gotchas
 
-| Symptom | Likely cause | Fix |
-| --- | --- | --- |
-| Accession has only FASTQ | alignment/counting not in current scope | Record raw sequencing status and route to appropriate upstream pipeline only if requested |
-| Supplement has normalized matrix only | authors did not publish raw UMI counts | Allow annotation/plotting with limited claims; block counts-based DE |
-| Metadata split across files | repository-specific organization | Create explicit join plan before import |
-| Dataset license/terms unclear | external repository restrictions | Record uncertainty and avoid redistribution assumptions |
+| Symptom                               | Likely cause                            | Fix                                                                                       |
+| ------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Accession has only FASTQ              | alignment/counting not in current scope | Record raw sequencing status and route to appropriate upstream pipeline only if requested |
+| Supplement has normalized matrix only | authors did not publish raw UMI counts  | Allow annotation/plotting with limited claims; block counts-based DE                      |
+| Metadata split across files           | repository-specific organization        | Create explicit join plan before import                                                   |
+| Dataset license/terms unclear         | external repository restrictions        | Record uncertainty and avoid redistribution assumptions                                   |
 
 ## Validation
 
@@ -101,4 +104,5 @@ Summary schema:
 
 - Local importable files available -> `bio-singlecell-import`.
 - Runtime requirement unclear -> `bio-environment-routing`.
-- End-to-end objective continues -> `bio-scrna-reproduction`.
+- Explicit paper/demo objective -> `bio-scrna-reproduction`.
+- No paper objective and local/private data -> `bio-omics-analysis`.

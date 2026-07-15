@@ -178,6 +178,28 @@
     },
     "progressLog": "進行ログ"
   },
+  "scienceDelivery": {
+    "title": "配信ステータス",
+    "coverageSummary": "カバレッジ: {{completed}}/{{total}} 完了 · 要対応 {{actionRequired}} · ブロック {{blocked}}",
+    "coverageDetails": "カバレッジ詳細",
+    "blockers": "外部ブロッカー",
+    "nextActions": "次のアクション",
+    "states": {
+      "running": "実行中",
+      "actionRequired": "対応が必要",
+      "completed": "完了",
+      "partial": "制限付きで完了",
+      "blocked": "ブロック中",
+      "failed": "失敗",
+      "awaitingUser": "ユーザーレビュー待ち"
+    },
+    "analysis": {
+      "analysisId": "解析 ID",
+      "stage": "現在の段階",
+      "checkpoint": "チェックポイント",
+      "baseline": "現在のベースライン"
+    }
+  },
   "codexMemory": {
     "title": "Codex メモリ",
     "fallbackTitle": "メモリスナップショット",

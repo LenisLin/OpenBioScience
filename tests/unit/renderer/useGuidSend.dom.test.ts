@@ -10,7 +10,11 @@ import { LEGACY_LOCAL_RUNTIME_ID, LEGACY_LOCAL_RUNTIME_NAME } from '@/common/con
 import { LOOP_GOAL_SKILL_NAME } from '@/common/chat/loopGoal';
 import { DEFAULT_SCIENCE_SKILL_IDS } from '@/common/chat/science';
 import {
+  BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
+  BUILTIN_BIO_REPRODUCTION_NAME,
   BUILTIN_BIO_RUNTIME_NAME,
+  BUILTIN_BIO_SOURCE_NAME,
+  BUILTIN_BIO_STATISTICS_NAME,
   BUILTIN_RESEARCH_EVIDENCE_NAME,
   BUILTIN_SCIENCE_ARTIFACT_NAME,
   BUILTIN_USER_INPUT_NAME,
@@ -67,7 +71,7 @@ const createDeps = (): GuidSendDeps => ({
   setInput: vi.fn(),
   files: [],
   setFiles: vi.fn(),
-  dir: '',
+  dir: '/workspace/project',
   setDir: vi.fn(),
   setLoading: vi.fn(),
   loading: false,
@@ -99,7 +103,90 @@ const createDeps = (): GuidSendDeps => ({
   guidEnabledSkills: undefined,
   assistantDefaultSkillIds: undefined,
   assistantDefaultDisabledBuiltinSkillIds: undefined,
-  availableMcpServers: [{ id: 'mcp-user', name: 'User MCP', enabled: true, builtin: false } as IMcpServer],
+  availableMcpServers: [
+    { id: 'mcp-user', name: 'User MCP', enabled: true, builtin: false } as IMcpServer,
+    {
+      id: 'mcp-research',
+      name: BUILTIN_RESEARCH_EVIDENCE_NAME,
+      enabled: false,
+      builtin: true,
+      transport: { type: 'stdio', command: 'node', args: ['research.js'] },
+    } as IMcpServer,
+    {
+      id: 'mcp-science',
+      name: BUILTIN_SCIENCE_ARTIFACT_NAME,
+      enabled: false,
+      builtin: true,
+      transport: { type: 'stdio', command: 'node', args: ['science.js'] },
+    } as IMcpServer,
+    {
+      id: 'mcp-user-input',
+      name: BUILTIN_USER_INPUT_NAME,
+      enabled: false,
+      builtin: true,
+      transport: { type: 'stdio', command: 'node', args: ['user-input.js'] },
+    } as IMcpServer,
+    {
+      id: 'mcp-bio-runtime',
+      name: BUILTIN_BIO_RUNTIME_NAME,
+      enabled: false,
+      builtin: true,
+      transport: {
+        type: 'stdio',
+        command: 'node',
+        args: ['builtin-mcp-bio.js'],
+        env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime' },
+      },
+    } as IMcpServer,
+    {
+      id: 'mcp-bio-source',
+      name: BUILTIN_BIO_SOURCE_NAME,
+      enabled: false,
+      builtin: true,
+      transport: {
+        type: 'stdio',
+        command: 'node',
+        args: ['builtin-mcp-bio.js'],
+        env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source' },
+      },
+    } as IMcpServer,
+    {
+      id: 'mcp-bio-reproduction',
+      name: BUILTIN_BIO_REPRODUCTION_NAME,
+      enabled: false,
+      builtin: true,
+      transport: {
+        type: 'stdio',
+        command: 'node',
+        args: ['builtin-mcp-bio.js'],
+        env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction' },
+      },
+    } as IMcpServer,
+    {
+      id: 'mcp-bio-statistics',
+      name: BUILTIN_BIO_STATISTICS_NAME,
+      enabled: false,
+      builtin: true,
+      transport: {
+        type: 'stdio',
+        command: 'node',
+        args: ['builtin-mcp-bio.js'],
+        env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'statistics' },
+      },
+    } as IMcpServer,
+    {
+      id: 'mcp-bio-environment-manager',
+      name: BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
+      enabled: false,
+      builtin: true,
+      transport: {
+        type: 'stdio',
+        command: 'node',
+        args: ['builtin-mcp-bio.js'],
+        env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'environment_manager' },
+      },
+    } as IMcpServer,
+  ],
   selectedMcpServerIds: ['mcp-user'],
   assistantDefaultMcpIds: undefined,
   currentEffectiveAgentInfo: {
@@ -138,8 +225,65 @@ describe('useGuidSend', () => {
     const payload = createConversationInvokeMock.mock.calls[0][0];
     expect(payload.assistant?.conversation_overrides?.permission).toBe('bypassPermissions');
     expect(payload.assistant?.conversation_overrides?.model).toBe('claude-opus');
+    expect(payload.extra.selected_session_mcp_servers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: BUILTIN_BIO_RUNTIME_NAME }),
+        expect.objectContaining({ name: BUILTIN_BIO_SOURCE_NAME }),
+        expect.objectContaining({ name: BUILTIN_BIO_REPRODUCTION_NAME }),
+        expect.objectContaining({ name: BUILTIN_BIO_STATISTICS_NAME }),
+        expect.objectContaining({ name: BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME }),
+      ])
+    );
+    expect(payload.extra.auto_mcp_sources).toEqual(
+      expect.objectContaining({
+        [BUILTIN_BIO_RUNTIME_NAME]: expect.arrayContaining([
+          'bio-omics-reproduction-planning',
+          'bio-environment-manager',
+          'bio-analysis-script-authoring',
+        ]),
+        [BUILTIN_BIO_REPRODUCTION_NAME]: ['bio-omics-reproduction-planning'],
+        [BUILTIN_BIO_STATISTICS_NAME]: ['bio-omics-reproduction-planning'],
+        [BUILTIN_BIO_SOURCE_NAME]: ['bio-omics-reproduction-planning'],
+        [BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME]: ['bio-environment-manager'],
+      })
+    );
+    expect(payload.extra.auto_mcp_sources[BUILTIN_BIO_RUNTIME_NAME]).toHaveLength(3);
+    expect(payload.extra.auto_mcp_sources[BUILTIN_BIO_RUNTIME_NAME]).toEqual(
+      expect.arrayContaining([
+        'bio-omics-reproduction-planning',
+        'bio-environment-manager',
+        'bio-analysis-script-authoring',
+      ])
+    );
+    const scienceArtifactServer = payload.extra.selected_session_mcp_servers.find(
+      (server: { name?: string }) => server.name === BUILTIN_SCIENCE_ARTIFACT_NAME
+    );
+    expect(scienceArtifactServer.transport.env).toEqual(
+      expect.objectContaining({
+        OPENSCIENCE_WORKSPACE_ROOT: '/workspace/project',
+        OPENSCIENCE_SESSION_ID: expect.stringMatching(/^science_/u),
+      })
+    );
+    const bioRuntimeServer = payload.extra.selected_session_mcp_servers.find(
+      (server: { name?: string }) => server.name === BUILTIN_BIO_RUNTIME_NAME
+    );
+    expect(bioRuntimeServer.transport.env).toEqual(
+      expect.objectContaining({
+        OPENBIOSCIENCE_WORKSPACE_ROOT: '/workspace/project',
+        OPENSCIENCE_WORKSPACE_ROOT: '/workspace/project',
+      })
+    );
     expect(swrMutateMock).toHaveBeenCalledWith('guid.assistant.detail.assistant-1.zh-CN');
     expect(swrMutateMock).toHaveBeenCalledWith('assistants.list');
+  });
+
+  it('blocks Science conversation creation until a workspace is selected', async () => {
+    const deps = createDeps();
+    deps.dir = '';
+    const { result } = renderHook(() => useGuidSend(deps));
+
+    await expect(result.current.handleSend()).rejects.toThrow('Science Mode requires an OpenScience workspace.');
+    expect(createConversationInvokeMock).not.toHaveBeenCalled();
   });
 
   it('falls back to assistant default skill and MCP ids for preset conversations before local Guid overrides exist', async () => {
@@ -172,6 +316,7 @@ describe('useGuidSend', () => {
     deps.availableMcpServers = [
       { id: 'mcp-user', name: 'User MCP', enabled: true, builtin: false } as IMcpServer,
       { id: 'builtin-mcp', name: 'Builtin MCP', enabled: true, builtin: true } as IMcpServer,
+      ...createDeps().availableMcpServers.filter((server) => server.id !== 'mcp-user'),
     ];
     deps.selectedMcpServerIds = ['mcp-user', 'builtin-mcp'];
 
@@ -184,9 +329,13 @@ describe('useGuidSend', () => {
     const payload = createConversationInvokeMock.mock.calls[0][0];
     expect(payload.assistant?.conversation_overrides?.mcp_ids).toEqual(['mcp-user', 'builtin-mcp']);
     expect(payload.extra.selected_mcp_server_ids).toEqual(['mcp-user']);
-    expect(payload.extra.selected_session_mcp_servers).toEqual([expect.objectContaining({ id: 'builtin-mcp' })]);
+    expect(payload.extra.selected_session_mcp_servers).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'builtin-mcp' })])
+    );
     expect(payload.extra.mcp_server_ids).toEqual(['mcp-user']);
-    expect(payload.extra.session_mcp_servers).toEqual([expect.objectContaining({ id: 'builtin-mcp' })]);
+    expect(payload.extra.session_mcp_servers).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'builtin-mcp' })])
+    );
     expect(payload.extra.mcp_statuses).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: 'mcp-user', name: 'User MCP', status: 'loaded' }),
@@ -347,7 +496,7 @@ describe('useGuidSend', () => {
     deps.availableMcpServers = [
       { id: 'mcp-user', name: 'User MCP', enabled: true, builtin: false } as IMcpServer,
       {
-        id: 'mcp-bio-runtime',
+        id: 'mcp-bio-runtime-manual',
         name: BUILTIN_BIO_RUNTIME_NAME,
         enabled: false,
         builtin: true,
@@ -358,8 +507,9 @@ describe('useGuidSend', () => {
           env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime' },
         },
       } as IMcpServer,
+      ...createDeps().availableMcpServers.filter((server) => server.id !== 'mcp-user'),
     ];
-    deps.selectedMcpServerIds = ['mcp-user', 'mcp-bio-runtime'];
+    deps.selectedMcpServerIds = ['mcp-user', 'mcp-bio-runtime-manual'];
 
     const { result } = renderHook(() => useGuidSend(deps));
 
@@ -370,10 +520,14 @@ describe('useGuidSend', () => {
     const payload = createConversationInvokeMock.mock.calls[0][0];
     expect(payload.extra.selected_mcp_server_ids).toEqual(['mcp-user']);
     expect(payload.extra.selected_session_mcp_servers).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: 'mcp-bio-runtime', name: BUILTIN_BIO_RUNTIME_NAME })])
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'mcp-bio-runtime-manual', name: BUILTIN_BIO_RUNTIME_NAME }),
+      ])
     );
     expect(payload.extra.session_mcp_servers).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: 'mcp-bio-runtime', name: BUILTIN_BIO_RUNTIME_NAME })])
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'mcp-bio-runtime-manual', name: BUILTIN_BIO_RUNTIME_NAME }),
+      ])
     );
   });
 
@@ -404,6 +558,66 @@ describe('useGuidSend', () => {
           builtin: true,
           transport: { type: 'stdio', command: 'node', args: ['user-input.js'] },
         },
+        {
+          id: 'mcp-bio-runtime',
+          name: BUILTIN_BIO_RUNTIME_NAME,
+          enabled: false,
+          builtin: true,
+          transport: {
+            type: 'stdio',
+            command: 'node',
+            args: ['builtin-mcp-bio.js'],
+            env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime' },
+          },
+        },
+        {
+          id: 'mcp-bio-source',
+          name: BUILTIN_BIO_SOURCE_NAME,
+          enabled: false,
+          builtin: true,
+          transport: {
+            type: 'stdio',
+            command: 'node',
+            args: ['builtin-mcp-bio.js'],
+            env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source' },
+          },
+        },
+        {
+          id: 'mcp-bio-reproduction',
+          name: BUILTIN_BIO_REPRODUCTION_NAME,
+          enabled: false,
+          builtin: true,
+          transport: {
+            type: 'stdio',
+            command: 'node',
+            args: ['builtin-mcp-bio.js'],
+            env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction' },
+          },
+        },
+        {
+          id: 'mcp-bio-statistics',
+          name: BUILTIN_BIO_STATISTICS_NAME,
+          enabled: false,
+          builtin: true,
+          transport: {
+            type: 'stdio',
+            command: 'node',
+            args: ['builtin-mcp-bio.js'],
+            env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'statistics' },
+          },
+        },
+        {
+          id: 'mcp-bio-environment-manager',
+          name: BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
+          enabled: false,
+          builtin: true,
+          transport: {
+            type: 'stdio',
+            command: 'node',
+            args: ['builtin-mcp-bio.js'],
+            env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'environment_manager' },
+          },
+        },
       ],
     });
 
@@ -420,11 +634,24 @@ describe('useGuidSend', () => {
         expect.objectContaining({ name: BUILTIN_RESEARCH_EVIDENCE_NAME }),
         expect.objectContaining({ name: BUILTIN_SCIENCE_ARTIFACT_NAME }),
         expect.objectContaining({ name: BUILTIN_USER_INPUT_NAME }),
+        expect.objectContaining({ name: BUILTIN_BIO_RUNTIME_NAME }),
+        expect.objectContaining({ name: BUILTIN_BIO_SOURCE_NAME }),
+        expect.objectContaining({ name: BUILTIN_BIO_REPRODUCTION_NAME }),
+        expect.objectContaining({ name: BUILTIN_BIO_STATISTICS_NAME }),
+        expect.objectContaining({ name: BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME }),
       ])
     );
     expect(payload.extra.session_mcp_servers).toEqual(payload.extra.selected_session_mcp_servers);
     expect(payload.extra.mcp_servers).toEqual(
-      expect.arrayContaining([BUILTIN_RESEARCH_EVIDENCE_NAME, BUILTIN_SCIENCE_ARTIFACT_NAME, BUILTIN_USER_INPUT_NAME])
+      expect.arrayContaining([
+        BUILTIN_RESEARCH_EVIDENCE_NAME,
+        BUILTIN_SCIENCE_ARTIFACT_NAME,
+        BUILTIN_USER_INPUT_NAME,
+        BUILTIN_BIO_RUNTIME_NAME,
+        BUILTIN_BIO_SOURCE_NAME,
+        BUILTIN_BIO_REPRODUCTION_NAME,
+        BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
+      ])
     );
     expect(payload.extra.mcp_statuses).toEqual(
       expect.arrayContaining([

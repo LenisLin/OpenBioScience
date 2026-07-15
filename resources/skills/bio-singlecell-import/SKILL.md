@@ -16,6 +16,8 @@ This skill decides whether local single-cell inputs can be safely imported and w
 - Record concrete inputs, code/config, logs, environment, output objects, warnings, and decisions through `science_artifact`.
 - Do not install packages into official environments during analysis.
 - Use `environmentRef` candidates such as `sc-py-singlecell` and `sc-r-singlecell`.
+- For private data, write a metadata profile with type, missingness, uniqueness, candidate sample/patient/condition/batch keys, and join diagnostics. Do not emit raw metadata values to external tools or artifact snapshots.
+- Build a staging object only under the current `omics_analysis/<analysisId>/intake/results/objects/` directory. If import or joining is unsafe, record a blocked reason instead of creating a partial global object.
 
 ## Scope
 
@@ -58,7 +60,7 @@ Recommended:
 1. Identify file format, object type, axes, and expected runtime.
 2. Inspect matrix dimensions, dtype, integer-like status, sparsity, gene identifiers, barcode conventions, and metadata keys.
 3. Classify matrix semantics as `raw_counts`, `processed_expression`, `metadata_only`, or `unknown`.
-4. Join metadata and report sample/patient/condition/batch/response key completeness.
+4. Join metadata and report sample/patient/condition/batch/response key completeness, duplicate identifiers, unmatched cells, and join rate for each dataset unit.
 5. Select minimal `environmentRef` and prepare an object or conversion plan only when an approved runner is available.
 6. Emit an import summary before downstream analysis.
 7. Register imported object, logs, warnings, and blocked claims through `science_artifact`.
@@ -94,12 +96,12 @@ Summary schema:
 
 ## Gotchas
 
-| Symptom | Likely cause | Fix |
-| --- | --- | --- |
-| Values are float and non-integer | processed expression, not UMI counts | Avoid strict counts-based QC/DE claims |
-| Barcodes do not match metadata | suffix or sample-prefix mismatch | Normalize convention and report unmatched rate |
-| Duplicated gene symbols | alias collapse or mixed ID types | Preserve stable IDs and emit mapping table |
-| Metadata lacks sample/patient key | pseudo-replication risk | Block sample-level comparison until resolved |
+| Symptom                           | Likely cause                         | Fix                                            |
+| --------------------------------- | ------------------------------------ | ---------------------------------------------- |
+| Values are float and non-integer  | processed expression, not UMI counts | Avoid strict counts-based QC/DE claims         |
+| Barcodes do not match metadata    | suffix or sample-prefix mismatch     | Normalize convention and report unmatched rate |
+| Duplicated gene symbols           | alias collapse or mixed ID types     | Preserve stable IDs and emit mapping table     |
+| Metadata lacks sample/patient key | pseudo-replication risk              | Block sample-level comparison until resolved   |
 
 ## Validation
 

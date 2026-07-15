@@ -22,6 +22,7 @@ const {
   savePreferredThoughtLevelMock,
   isMobileMock,
   mobileActionSheetEntries,
+  postToolSilenceRecoveryMock,
 } = vi.hoisted(() => ({
   sendMessageInvokeMock: vi.fn(),
   addOrUpdateMessageMock: vi.fn(),
@@ -39,6 +40,12 @@ const {
         onSelect?: (value: string) => void;
       };
     }>,
+  },
+  postToolSilenceRecoveryMock: {
+    current: { phase: 'idle' } as {
+      phase: 'idle' | 'warning' | 'stopping' | 'recovered' | 'failed';
+      turnId?: string;
+    },
   },
 }));
 
@@ -175,6 +182,22 @@ vi.mock('@/renderer/pages/conversation/Preview', () => ({
     setSendBoxHandler: setSendBoxHandlerMock,
   }),
 }));
+vi.mock('@/renderer/pages/conversation/runtime/useConversationRuntimeView', () => ({
+  useConversationRuntimeView: () => ({
+    view: {
+      state: 'idle',
+      isProcessing: false,
+      canSendMessage: true,
+      pendingConfirmations: 0,
+    },
+    markSendStarted: vi.fn(),
+    markSendAccepted: vi.fn(),
+    markSendFailed: vi.fn(),
+  }),
+}));
+vi.mock('@/renderer/pages/conversation/runtime/usePostToolSilenceRecovery', () => ({
+  usePostToolSilenceRecovery: () => postToolSilenceRecoveryMock.current,
+}));
 vi.mock('@/renderer/pages/conversation/utils/warmupConversation', () => ({
   warmupConversation: vi.fn().mockResolvedValue(undefined),
 }));
@@ -207,6 +230,7 @@ vi.mock('@/renderer/pages/guid/hooks/agentSelectionUtils', () => ({
 vi.mock('@arco-design/web-react', () => ({
   Message: {
     success: vi.fn(),
+    warning: vi.fn(),
     error: vi.fn(),
   },
   Tag: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
@@ -234,6 +258,7 @@ describe('AcpSendBox', () => {
     savePreferredThoughtLevelMock.mockResolvedValue(undefined);
     isMobileMock.current = false;
     mobileActionSheetEntries.current = [];
+    postToolSilenceRecoveryMock.current = { phase: 'idle' };
     useTeamPermissionMock.mockReturnValue(null);
     useAcpConfigOptionsMock.mockReturnValue({
       setStatus: { state: 'idle' },
@@ -242,6 +267,30 @@ describe('AcpSendBox', () => {
       thoughtLevel: null,
       reload: vi.fn(),
       setConfigOption: vi.fn(),
+    });
+  });
+
+  it('adds a visible conversation notice after a silent turn is recovered', async () => {
+    postToolSilenceRecoveryMock.current = { phase: 'recovered', turnId: 'turn-stalled' };
+
+    render(
+      <AcpSendBox
+        conversation_id='conv-1'
+        backend='codex'
+        workspacePath='/tmp/workspace'
+        messageState={makeMessageState()}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addOrUpdateMessageMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'post-tool-silence:conv-1:turn-stalled:recovered',
+          type: 'tips',
+          content: expect.objectContaining({ type: 'warning' }),
+        }),
+        true
+      );
     });
   });
 

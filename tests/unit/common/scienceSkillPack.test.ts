@@ -5,6 +5,8 @@ import {
   DEFAULT_SCIENCE_SKILL_IDS,
   LEGACY_SCIENCE_DEFAULT_SKILL_IDS,
   SCIENCE_ARTIFACT_SKILL_NAME,
+  SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME,
+  SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME,
   SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME,
   SCIENCE_BIOMODELS_SKILL_NAME,
   SCIENCE_COMPUTE_SKILL_NAME,
@@ -80,6 +82,8 @@ describe('OpenScience materialized Science skill pack', () => {
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_BIOMODELS_SKILL_NAME);
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_SINGLECELL_SKILL_NAME);
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME);
+    expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME);
+    expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME);
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_COMPUTE_SKILL_NAME);
     expect(DEFAULT_SCIENCE_SKILL_IDS).not.toContain('openscience-empirical');
     expect(DEFAULT_SCIENCE_SKILL_IDS).not.toContain('ds-review');
@@ -195,15 +199,33 @@ describe('OpenScience materialized Science skill pack', () => {
     expect(normalized).not.toContain('kdense-database-lookup');
   });
 
-  it('upgrades the previous compact default to include omics reproduction planning', () => {
+  it('upgrades the previous reproduction-planning default to include environment and script skills', () => {
+    const previousReproductionDefault = DEFAULT_SCIENCE_SKILL_IDS.filter(
+      (id) =>
+        id !== SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME && id !== SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME
+    );
+
+    const normalized = normalizeScienceDefaultSkillIds(previousReproductionDefault);
+
+    expect(normalized).toEqual([...DEFAULT_SCIENCE_SKILL_IDS]);
+    expect(normalized).toContain(SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME);
+    expect(normalized).toContain(SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME);
+  });
+
+  it('upgrades the previous compact default to include omics planning, environment, and script skills', () => {
     const previousCompactDefault = DEFAULT_SCIENCE_SKILL_IDS.filter(
-      (id) => id !== SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME
+      (id) =>
+        id !== SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME &&
+        id !== SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME &&
+        id !== SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME
     );
 
     const normalized = normalizeScienceDefaultSkillIds(previousCompactDefault);
 
     expect(normalized).toEqual([...DEFAULT_SCIENCE_SKILL_IDS]);
     expect(normalized).toContain(SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME);
+    expect(normalized).toContain(SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME);
+    expect(normalized).toContain(SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME);
   });
 
   it('keeps user-customized science default skills unchanged', () => {

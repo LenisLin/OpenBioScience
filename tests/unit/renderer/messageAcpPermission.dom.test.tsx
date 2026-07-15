@@ -77,4 +77,30 @@ describe('MessageAcpPermission', () => {
       })
     );
   });
+
+  it('renders structured shell approval commands without exposing the raw array', () => {
+    const message = {
+      id: 'permission-msg-array',
+      conversation_id: 'conversation-1',
+      type: 'acp_permission',
+      content: {
+        session_id: 'session-1',
+        options: [{ option_id: 'allow-once', name: 'Allow once', kind: 'allow_once' }],
+        tool_call: {
+          tool_call_id: 'call-array',
+          title: { label: 'execute' },
+          kind: 'execute',
+          raw_input: {
+            command: ['/usr/bin/bash', '-lc', 'pwd && rg -n GSE144735 .'],
+            description: { reason: 'Read project files' },
+          },
+        },
+      },
+    } as never;
+
+    render(<MessageAcpPermission message={message} />);
+
+    expect(screen.getByText('pwd → rg')).toBeInTheDocument();
+    expect(screen.getByText('pwd && rg -n GSE144735 .')).toBeInTheDocument();
+  });
 });

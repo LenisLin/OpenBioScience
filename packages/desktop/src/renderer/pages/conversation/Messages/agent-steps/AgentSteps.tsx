@@ -17,6 +17,7 @@ import type {
   AgentWebStep,
   ToolMessage,
 } from '@/common/chat/agentStep';
+import { summarizeShellCommand } from '@/common/chat/agentStep';
 import {
   hasRunningAgentSteps,
   normalizeAgentSteps,
@@ -348,7 +349,11 @@ const compactJsonValue = (value: unknown): string => {
 };
 
 const normalizeComparableText = (value?: string): string =>
-  value?.replace(/\s+/g, ' ').replace(/[.…]+$/u, '').trim().toLowerCase() || '';
+  value
+    ?.replace(/\s+/g, ' ')
+    .replace(/[.…]+$/u, '')
+    .trim()
+    .toLowerCase() || '';
 
 const isLikelyMachineId = (value: string): boolean => {
   const text = value.trim();
@@ -481,19 +486,14 @@ const isInlineRedundantJsonSummary = (summary: JsonOutputSummary | undefined, in
     if (!inline) return false;
     const valuePrefix = value.slice(0, Math.min(value.length, 48));
     const inlinePrefix = inline.slice(0, Math.min(inline.length, 48));
-    return inline.includes(value) || value.includes(inline) || inline.includes(valuePrefix) || value.includes(inlinePrefix);
+    return (
+      inline.includes(value) || value.includes(inline) || inline.includes(valuePrefix) || value.includes(inlinePrefix)
+    );
   });
 };
 
 const commandSummary = (command?: string): string => {
-  if (!command?.trim()) return '';
-  return command
-    .replace(/\\\s*\n\s*/g, ' ')
-    .split('|')
-    .map((part) => part.trim().split(/\s+/)[0])
-    .filter(Boolean)
-    .slice(0, 4)
-    .join(' | ');
+  return summarizeShellCommand(command);
 };
 
 const commandStatusLabel = (
@@ -908,10 +908,7 @@ const AgentCommandTool: React.FC<{ step: AgentCommandStep; liveRunning: boolean 
     step.subtitle ||
     t('messages.agentSteps.commandFallback', { defaultValue: 'command' });
   const visibleStdoutSummary = useMemo(
-    () =>
-      isInlineRedundantJsonSummary(stdoutSummary, `${step.title} ${summary}`)
-        ? undefined
-        : stdoutSummary,
+    () => (isInlineRedundantJsonSummary(stdoutSummary, `${step.title} ${summary}`) ? undefined : stdoutSummary),
     [step.title, stdoutSummary, summary]
   );
   const hasVisibleStdout = !!step.stdout && (!stdoutIsJson || !!visibleStdoutSummary);
@@ -922,7 +919,7 @@ const AgentCommandTool: React.FC<{ step: AgentCommandStep; liveRunning: boolean 
   const statusLabel = commandStatusLabel(step.status, t);
   const hasExpandableContent = hasOutput || !!step.command || hasMore;
   const singleLineOnly = !hasExpandableContent;
-  const hasBody = expanded || hasOutput || !!step.command;
+  const hasBody = expanded || hasOutput;
   const bodyTitle =
     step.stderr && !hasVisibleStdout ? 'Error' : visibleStdoutSummary?.title || (step.command ? 'Shell' : 'Output');
 
@@ -974,7 +971,7 @@ const AgentCommandTool: React.FC<{ step: AgentCommandStep; liveRunning: boolean 
               ))}
             </div>
           )}
-          {step.command && <pre className='agent-command-code'>$ {step.command}</pre>}
+          {step.command && expanded && <pre className='agent-command-code'>$ {step.command}</pre>}
           {showRawStdout && (
             <pre className={classNames('agent-command-output', showFullOutput && 'agent-command-output--full')}>
               {showFullOutput ? step.stdout : stdout.text}

@@ -26,6 +26,9 @@ const formatValue = (value: unknown): string => {
   }
 };
 
+const formatCommand = (value: string | string[]): string =>
+  Array.isArray(value) ? value.map((part) => (/\s/u.test(part) ? JSON.stringify(part) : part)).join(' ') : value;
+
 // ===== tool_group → NormalizedToolCall[] =====
 
 function normalizeToolGroupStatus(status: string): NormalizedToolStatus {
@@ -61,7 +64,7 @@ export function normalizeToolGroup(message: IMessageToolGroup): NormalizedToolCa
     let desc = typeof description === 'string' ? description.slice(0, 100) : '';
     const type = confirmationDetails?.type;
     if (type === 'edit') desc = confirmationDetails.file_name;
-    if (type === 'exec') desc = confirmationDetails.command;
+    if (type === 'exec') desc = formatCommand(confirmationDetails.command);
     if (type === 'info') desc = confirmationDetails.urls?.join(';') || confirmationDetails.title;
     if (type === 'mcp') desc = confirmationDetails.server_name + ':' + confirmationDetails.tool_name;
 
@@ -70,7 +73,7 @@ export function normalizeToolGroup(message: IMessageToolGroup): NormalizedToolCa
       const { title: _title, type: _type, ...rest } = confirmationDetails;
       if (Object.keys(rest).length) input = formatValue(rest);
     } else if (description) {
-      input = description;
+      input = formatValue(description);
     }
 
     return {
@@ -87,12 +90,15 @@ export function normalizeToolGroup(message: IMessageToolGroup): NormalizedToolCa
 
 // ===== acp_tool_call → NormalizedToolCall =====
 
-function normalizeAcpStatus(status: string): NormalizedToolStatus {
+export function normalizeAcpToolStatus(status: string): NormalizedToolStatus {
   switch (status) {
     case 'completed':
       return 'completed';
     case 'failed':
       return 'error';
+    case 'canceled':
+    case 'cancelled':
+      return 'canceled';
     case 'in_progress':
       return 'running';
     case 'pending':
@@ -172,7 +178,7 @@ export function normalizeAcpToolCall(message: IMessageAcpToolCall): NormalizedTo
   return {
     key: update.tool_call_id,
     name: update.title,
-    status: normalizeAcpStatus(update.status),
+    status: normalizeAcpToolStatus(update.status),
     description: keyParam || (rawInput?.command as string) || update.kind,
     input,
     output,
@@ -191,7 +197,11 @@ function normalizeToolCallStatus(status?: string): NormalizedToolStatus {
     case 'completed':
       return 'completed';
     case 'error':
+    case 'failed':
       return 'error';
+    case 'canceled':
+    case 'cancelled':
+      return 'canceled';
     case 'running':
       return 'running';
     default:
@@ -241,7 +251,7 @@ export function hasRunningToolMessages(messages: ToolMessage[]): boolean {
       return Array.isArray(m.content) && m.content.some((t) => normalizeToolGroupStatus(t.status) === 'running');
     }
     if (m.type === 'acp_tool_call') {
-      return m.content?.update && normalizeAcpStatus(m.content.update.status) === 'running';
+      return m.content?.update && normalizeAcpToolStatus(m.content.update.status) === 'running';
     }
     if (m.type === 'tool_call') {
       return normalizeToolCallStatus(m.content?.status) === 'running';

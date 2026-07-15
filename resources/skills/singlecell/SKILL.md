@@ -14,15 +14,20 @@ trajectory/velocity, and Vitessce-style exploration.
 - Handwritten OpenBioScience scRNA-seq runbooks are not owned by generated
   manifests or `scienceSkills.generated.ts`; route to them explicitly here.
 - Full paper/demo reproduction planning: `bio-omics-reproduction-planning`.
+- Local/private data-driven analysis without a paper target: `bio-omics-analysis`.
 - Scoped scRNA-seq reproduction modules after planning:
   `bio-scrna-reproduction`.
 - Runtime choice and reproducibility routing: `bio-environment-routing`.
+- User environment gap resolution and registration: `bio-environment-manager`.
+- Human-readable R/Python analysis script authoring:
+  `bio-analysis-script-authoring`.
 - Dataset/accession/source-file resolution: `bio-data-resolution`.
 - Input import and raw/processed matrix semantics: `bio-singlecell-import`.
 - QC and preprocessing: `bio-qc-preprocess`.
 - Batch correction, dimensionality reduction, and clustering:
   `bio-batch-dim-cluster`.
 - Marker ranking and threshold tuning: `bio-marker-optimization`.
+- Replicate-aware condition differential expression: `bio-scrna-differential-expression`.
 - Cell type annotation and confidence grading: `bio-cell-annotation`.
 - Data-backed scRNA-seq figures: `bio-scrna-plotting`.
 - Claim-boundary review and final interpretation: `bio-result-interpretation`.
@@ -40,20 +45,25 @@ trajectory/velocity, and Vitessce-style exploration.
 1. If the user asks for full paper/demo reproduction, source/data/code audit,
    or figure/panel feasibility, start with
    `bio-omics-reproduction-planning`; if a Planning Package already scopes a
-   scRNA-seq module, route that module to `bio-scrna-reproduction`. Otherwise
-   route to the narrowest matching `bio-*` runbook.
+   scRNA-seq module, route that module to `bio-scrna-reproduction`. If the user
+   supplies local/private data without a paper target, start with
+   `bio-omics-analysis` and use `bio-singlecell-baseline`; do not call
+   `bio_reproduction`. Otherwise route to the narrowest matching `bio-*` runbook.
 2. Resolve accessions, repository files, local pointers, metadata availability,
    and raw-versus-processed status with `bio-data-resolution`.
 3. Select or probe official execution environments with
    `bio-environment-routing`; refer to runtimes by `environmentRef`, not host
-   paths.
+   paths. If official environments do not satisfy the planned module, route the
+   environment gap to `bio-environment-manager` before script work.
 4. Import local objects and classify matrix semantics with
    `bio-singlecell-import`.
-5. Run analysis only through real Python/R/project code via MCP/runner; skills
-   are runbooks, not executors. Do not summarize imagined Scanpy/Seurat outputs.
+5. Before execution, write or review human-readable sequential R/Python scripts
+   with `bio-analysis-script-authoring`. Run analysis only through real
+   Python/R/project code via MCP/runner; skills are runbooks, not executors. Do
+   not summarize imagined Scanpy/Seurat outputs.
 6. Follow the step skills in order when applicable: `bio-qc-preprocess` ->
    `bio-batch-dim-cluster` -> `bio-marker-optimization` ->
-   `bio-cell-annotation` -> `bio-scrna-plotting` ->
+   `bio-cell-annotation` -> `bio-scrna-differential-expression` -> `bio-scrna-plotting` ->
    `bio-result-interpretation`.
 7. Register evidence for input dataset, preprocessing, QC, model commands,
    logs, parameters, package versions, generated tables/figures, warnings, and

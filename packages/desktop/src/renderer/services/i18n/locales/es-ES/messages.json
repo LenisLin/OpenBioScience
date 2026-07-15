@@ -204,6 +204,28 @@
     },
     "progressLog": "Registro de progreso"
   },
+  "scienceDelivery": {
+    "title": "Estado de entrega",
+    "coverageSummary": "Cobertura: {{completed}}/{{total}} completados · {{actionRequired}} requieren acción · {{blocked}} bloqueados",
+    "coverageDetails": "Detalles de cobertura",
+    "blockers": "Bloqueos externos",
+    "nextActions": "Próximas acciones",
+    "states": {
+      "running": "En curso",
+      "actionRequired": "Acción requerida",
+      "completed": "Completado",
+      "partial": "Completado con límites",
+      "blocked": "Bloqueado",
+      "failed": "Fallido",
+      "awaitingUser": "A la espera de revisión del usuario"
+    },
+    "analysis": {
+      "analysisId": "ID de análisis",
+      "stage": "Etapa actual",
+      "checkpoint": "Punto de control",
+      "baseline": "Línea base actual"
+    }
+  },
   "codexMemory": {
     "title": "Memoria de Codex",
     "fallbackTitle": "Instantánea de memoria",

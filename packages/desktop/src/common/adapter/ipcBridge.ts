@@ -2709,6 +2709,7 @@ export interface ICreateConversationParams {
     mcp_servers?: string[];
     mcp_statuses?: import('@/common/config/storage').IConversationMcpStatus[];
     session_mcp_servers?: ISessionMcpServer[];
+    auto_mcp_sources?: Record<string, string[]>;
     session_mode?: string;
     codex_model?: string;
     current_model_id?: string;

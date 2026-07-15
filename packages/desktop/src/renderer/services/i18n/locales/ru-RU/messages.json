@@ -73,6 +73,28 @@
   "atFile.menuLabel": "Упоминания файлов",
   "atFile.loading": "Загрузка...",
   "agentProgressSummary": "Шаг {{current}} / {{total}} · изменено файлов: {{count}}",
+  "scienceDelivery": {
+    "title": "Статус доставки",
+    "coverageSummary": "Покрытие: завершено {{completed}}/{{total}} · требуют действий {{actionRequired}} · заблокировано {{blocked}}",
+    "coverageDetails": "Детали покрытия",
+    "blockers": "Внешние блокировки",
+    "nextActions": "Следующие действия",
+    "states": {
+      "running": "Выполняется",
+      "actionRequired": "Требуется действие",
+      "completed": "Завершено",
+      "partial": "Завершено с ограничениями",
+      "blocked": "Заблокировано",
+      "failed": "Ошибка",
+      "awaitingUser": "Ожидается проверка пользователя"
+    },
+    "analysis": {
+      "analysisId": "Идентификатор анализа",
+      "stage": "Текущий этап",
+      "checkpoint": "Контрольная точка",
+      "baseline": "Текущая база"
+    }
+  },
   "codexMemory": {
     "title": "Codex Memory",
     "fallbackTitle": "Memory snapshot",

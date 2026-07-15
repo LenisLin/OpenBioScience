@@ -17,6 +17,12 @@ interface MessagePermissionProps {
   message: IMessagePermission;
 }
 
+const displayText = (value: unknown): string | undefined => {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return undefined;
+};
+
 const actionIcons: Record<string, string> = {
   exec: '⚡',
   edit: '✏️',
@@ -32,8 +38,13 @@ const MessagePermission: React.FC<MessagePermissionProps> = React.memo(({ messag
   const [isResponding, setIsResponding] = useState(false);
   const [hasResponded, setHasResponded] = useState(false);
 
-  const icon = actionIcons[action || ''] || '🔐';
-  const displayTitle = title || description || t('messages.permissionRequest');
+  const actionText = displayText(action);
+  const commandTypeText = displayText(command_type);
+  const callIdText = displayText(call_id);
+  const descriptionText = displayText(description);
+  const icon = actionIcons[actionText || ''] || '🔐';
+  const displayTitle = displayText(title) || descriptionText || t('messages.permissionRequest');
+  const requestIdentity = [actionText, commandTypeText, callIdText].filter(Boolean).join(' · ');
 
   const handleConfirm = async () => {
     if (hasResponded || !selected) return;
@@ -66,15 +77,16 @@ const MessagePermission: React.FC<MessagePermissionProps> = React.memo(({ messag
           <span className='text-2xl'>{icon}</span>
           <Text className='block'>{displayTitle}</Text>
         </div>
-        {command_type && (
+        {requestIdentity && <code className='text-xs text-t-secondary break-all'>{requestIdentity}</code>}
+        {commandTypeText && (
           <div>
             <Text className='text-xs text-t-secondary mb-1'>{t('messages.command')}</Text>
-            <code className='text-xs bg-1 p-2 rounded block text-t-primary break-all'>{command_type}</code>
+            <code className='text-xs bg-1 p-2 rounded block text-t-primary break-all'>{commandTypeText}</code>
           </div>
         )}
-        {description && description !== displayTitle && (
+        {descriptionText && descriptionText !== displayTitle && (
           <div>
-            <Text className='text-xs text-t-secondary'>{description}</Text>
+            <Text className='text-xs text-t-secondary'>{descriptionText}</Text>
           </div>
         )}
         {!hasResponded && (

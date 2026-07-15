@@ -7,6 +7,11 @@
   "send": {
     "failed": "Nachricht konnte nicht gesendet werden: {{error}}"
   },
+  "stall": {
+    "warning": "Der Agent hat nach Abschluss des letzten Werkzeugs nicht weiter reagiert. OpenBioScience überwacht den Vorgang.",
+    "recovered": "Der nicht reagierende Vorgang wurde beendet. Sie können mit dem letzten Werkzeugergebnis fortfahren.",
+    "failed": "Der Vorgang reagiert nicht, aber das automatische Beenden ist fehlgeschlagen. Verwenden Sie Stopp oder laden Sie die Unterhaltung neu."
+  },
   "sendbox": {
     "placeholder": "Nachricht an {{backend}} senden..."
   },

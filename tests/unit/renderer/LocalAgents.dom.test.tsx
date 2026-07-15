@@ -11,6 +11,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
 import React from 'react';
 import { LEGACY_LOCAL_RUNTIME_ID, LEGACY_LOCAL_RUNTIME_NAME } from '@/common/config/legacyIdentifiers';
 
@@ -64,7 +65,7 @@ const makeAgents = () => [
 
 describe('LocalAgents', () => {
   it('reads the managed-agents view and renders detected + custom sections', () => {
-    useManagedAgents.mockReturnValue({ agents: makeAgents(), revalidate: vi.fn() });
+    useManagedAgents.mockReturnValue({ agents: makeAgents(), revalidate: vi.fn(), refreshCustomAgents: vi.fn() });
 
     render(<LocalAgents />);
 
@@ -76,10 +77,38 @@ describe('LocalAgents', () => {
   });
 
   it('shows the empty state when no detected agents are present', () => {
-    useManagedAgents.mockReturnValue({ agents: [], revalidate: vi.fn() });
+    const refreshCustomAgents = vi.fn();
+    useManagedAgents.mockReturnValue({ agents: [], revalidate: vi.fn(), refreshCustomAgents });
 
     render(<LocalAgents />);
 
     expect(screen.getByText('settings.agentManagement.localAgentsEmpty')).toBeTruthy();
+    expect(screen.getByText('settings.agentManagement.codexStartupCheckTitle')).toBeTruthy();
+    expect(screen.getByText('settings.agentManagement.codexStartupCheckDesktop')).toBeTruthy();
+
+    fireEvent.click(screen.getByText('settings.agentManagement.codexStartupCheckRefresh'));
+    expect(refreshCustomAgents).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides the Codex warning when Codex is available', () => {
+    useManagedAgents.mockReturnValue({
+      agents: [
+        ...makeAgents(),
+        {
+          id: 'acp-codex',
+          name: 'Codex CLI',
+          agent_type: 'acp',
+          agent_source: 'builtin',
+          backend: 'codex',
+          available: true,
+        },
+      ],
+      revalidate: vi.fn(),
+      refreshCustomAgents: vi.fn(),
+    });
+
+    render(<LocalAgents />);
+
+    expect(screen.queryByText('settings.agentManagement.codexStartupCheckTitle')).toBeNull();
   });
 });
