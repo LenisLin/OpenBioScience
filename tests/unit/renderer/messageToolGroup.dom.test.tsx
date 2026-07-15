@@ -82,6 +82,38 @@ describe('MessageToolGroup command output', () => {
     expect(screen.queryByText(/"stdout"/)).not.toBeInTheDocument();
   });
 
+  it('renders structured execution metadata without leaking protocol fields', () => {
+    const message = {
+      id: 'tool-group-structured',
+      conversation_id: 'conversation-1',
+      type: 'tool_group',
+      content: [
+        {
+          call_id: 'call-secret',
+          description: {
+            available_decisions: ['approved', 'abort'],
+            call_id: 'call-secret',
+            command: ['/usr/bin/bash', '-lc', 'pwd && rg -n CRC .'],
+            cwd: '/workspace/human_CRC',
+            reason: 'Inspect local reproduction materials.',
+            turn_id: 'turn-secret',
+          },
+          name: 'execute',
+          render_output_as_markdown: false,
+          status: 'Executing',
+        },
+      ],
+    } as unknown as IMessageToolGroup;
+
+    const { container } = render(<MessageToolGroup message={message} />);
+
+    expect(container).toHaveTextContent('$ /usr/bin/bash -lc pwd && rg -n CRC .');
+    expect(container).toHaveTextContent('cwd: /workspace/human_CRC');
+    expect(container).toHaveTextContent('Inspect local reproduction materials.');
+    expect(screen.queryByText(/available_decisions/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/turn-secret/)).not.toBeInTheDocument();
+  });
+
   it('passes always_allow when an MCP tool is allowed permanently', () => {
     const message: IMessageToolGroup = {
       id: 'tool-group-2',
@@ -118,5 +150,38 @@ describe('MessageToolGroup command output', () => {
         always_allow: true,
       })
     );
+  });
+
+  it('submits the same confirmation only once while the request is pending', () => {
+    mocks.confirmMessageInvoke.mockReturnValue(new Promise(() => undefined));
+    const message: IMessageToolGroup = {
+      id: 'tool-group-3',
+      conversation_id: 'conversation-1',
+      type: 'tool_group',
+      content: [
+        {
+          call_id: 'call-mcp-2',
+          description: '{"path":"planning/source_audit.json"}',
+          name: 'science_artifact',
+          render_output_as_markdown: false,
+          status: 'Confirming',
+          confirmationDetails: {
+            type: 'mcp',
+            title: 'Allow MCP',
+            tool_name: 'publish_report',
+            tool_display_name: 'Publish science report',
+            server_name: 'openscience-science-artifact',
+          },
+        },
+      ],
+    };
+
+    render(<MessageToolGroup message={message} />);
+    fireEvent.click(screen.getByLabelText('messages.confirmation.yesAllowOnce'));
+    const confirm = screen.getByText('messages.confirm');
+    fireEvent.click(confirm);
+    fireEvent.click(confirm);
+
+    expect(mocks.confirmMessageInvoke).toHaveBeenCalledTimes(1);
   });
 });

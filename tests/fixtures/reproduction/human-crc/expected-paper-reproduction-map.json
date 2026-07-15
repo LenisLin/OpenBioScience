@@ -1,0 +1,716 @@
+{
+  "schema": "openbioscience.paper_reproduction_map.v1",
+  "createdAt": "2026-07-14T00:00:00.000Z",
+  "sources": [
+    {
+      "id": "source-lee-2020-excerpts",
+      "kind": "paper_excerpt_fixture",
+      "path": "tests/fixtures/reproduction/human-crc/paper-excerpts.txt",
+      "contentHash": "34c9f1417999a14d9691b4a5c25aeeb079479a95b049e350a9b2674d19dffc8a"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evidence-figure-1c",
+      "sourceId": "source-lee-2020-excerpts",
+      "sourceHash": "34c9f1417999a14d9691b4a5c25aeeb079479a95b049e350a9b2674d19dffc8a",
+      "path": "tests/fixtures/reproduction/human-crc/paper-excerpts.txt",
+      "lineStart": 4,
+      "lineEnd": 4,
+      "section": "Figure 1c legend",
+      "excerptHash": "b64e5b6ac76a6ac0007858b9a9f4e0efbcd75edf3c9a2b5c63c16f8ba410a950",
+      "basis": "explicit"
+    },
+    {
+      "id": "evidence-figure-2",
+      "sourceId": "source-lee-2020-excerpts",
+      "sourceHash": "34c9f1417999a14d9691b4a5c25aeeb079479a95b049e350a9b2674d19dffc8a",
+      "path": "tests/fixtures/reproduction/human-crc/paper-excerpts.txt",
+      "lineStart": 7,
+      "lineEnd": 7,
+      "section": "Figure 2 legend and methods",
+      "excerptHash": "76db3880cadcbc52360f95f72e5af01c186bee736f37dab6b2f66d206dbc8e13",
+      "basis": "explicit"
+    },
+    {
+      "id": "evidence-figure-3",
+      "sourceId": "source-lee-2020-excerpts",
+      "sourceHash": "34c9f1417999a14d9691b4a5c25aeeb079479a95b049e350a9b2674d19dffc8a",
+      "path": "tests/fixtures/reproduction/human-crc/paper-excerpts.txt",
+      "lineStart": 10,
+      "lineEnd": 10,
+      "section": "Figure 3 legend",
+      "excerptHash": "699be754ccc32d5a7dcd9455c0feb662def8d9c0ded2c1fd3c0da0be19dbc6bb",
+      "basis": "explicit"
+    },
+    {
+      "id": "evidence-figure-4bc",
+      "sourceId": "source-lee-2020-excerpts",
+      "sourceHash": "34c9f1417999a14d9691b4a5c25aeeb079479a95b049e350a9b2674d19dffc8a",
+      "path": "tests/fixtures/reproduction/human-crc/paper-excerpts.txt",
+      "lineStart": 13,
+      "lineEnd": 13,
+      "section": "Figure 4b/c legend",
+      "excerptHash": "675b356b746227cb07950f46e50cbb55fd215a7633bc9367504cc99731ccf88b",
+      "basis": "explicit"
+    },
+    {
+      "id": "evidence-figure-4d",
+      "sourceId": "source-lee-2020-excerpts",
+      "sourceHash": "34c9f1417999a14d9691b4a5c25aeeb079479a95b049e350a9b2674d19dffc8a",
+      "path": "tests/fixtures/reproduction/human-crc/paper-excerpts.txt",
+      "lineStart": 16,
+      "lineEnd": 16,
+      "section": "Figure 4d legend and methods",
+      "excerptHash": "d4045c4ce445f19b32f2d2f88de4401574a3f4aa045fb6e7f03f5d4d34d4e6b5",
+      "basis": "explicit"
+    },
+    {
+      "id": "evidence-figure-5",
+      "sourceId": "source-lee-2020-excerpts",
+      "sourceHash": "34c9f1417999a14d9691b4a5c25aeeb079479a95b049e350a9b2674d19dffc8a",
+      "path": "tests/fixtures/reproduction/human-crc/paper-excerpts.txt",
+      "lineStart": 19,
+      "lineEnd": 19,
+      "section": "Figure 5 legend",
+      "excerptHash": "8723816a61ff80c754a254401a03cb1430e78a6b497b3f7f97c587bd3468833c",
+      "basis": "explicit"
+    },
+    {
+      "id": "evidence-scrna-methods",
+      "sourceId": "source-lee-2020-excerpts",
+      "sourceHash": "34c9f1417999a14d9691b4a5c25aeeb079479a95b049e350a9b2674d19dffc8a",
+      "path": "tests/fixtures/reproduction/human-crc/paper-excerpts.txt",
+      "lineStart": 22,
+      "lineEnd": 22,
+      "section": "scRNA-seq methods",
+      "excerptHash": "670ab0043cd7db833f610feb781f856c2995afcb5e49b7efac5853eee4e1ae3f",
+      "basis": "explicit"
+    },
+    {
+      "id": "evidence-data-availability",
+      "sourceId": "source-lee-2020-excerpts",
+      "sourceHash": "34c9f1417999a14d9691b4a5c25aeeb079479a95b049e350a9b2674d19dffc8a",
+      "path": "tests/fixtures/reproduction/human-crc/paper-excerpts.txt",
+      "lineStart": 25,
+      "lineEnd": 25,
+      "section": "Data availability",
+      "excerptHash": "1857765b06099f841caec40244468b4ebaeaae1f11f7abe7363b319a69488bf9",
+      "basis": "explicit"
+    }
+  ],
+  "figures": [
+    {
+      "id": "figure-1",
+      "label": "Figure 1",
+      "title": "Cell type identification in CRC",
+      "panelIds": ["panel-1c"],
+      "evidenceIds": ["evidence-figure-1c"]
+    },
+    {
+      "id": "figure-2",
+      "label": "Figure 2",
+      "title": "Normal and tumor epithelial programs",
+      "panelIds": ["panel-2-all"],
+      "evidenceIds": ["evidence-figure-2"]
+    },
+    {
+      "id": "figure-3",
+      "label": "Figure 3",
+      "title": "Stromal dynamics and myofibroblast phenotypes",
+      "panelIds": ["panel-3-all"],
+      "evidenceIds": ["evidence-figure-3"]
+    },
+    {
+      "id": "figure-4",
+      "label": "Figure 4",
+      "title": "Tumor-associated macrophage reprogramming",
+      "panelIds": ["panel-4bc", "panel-4d"],
+      "evidenceIds": ["evidence-figure-4bc", "evidence-figure-4d"]
+    },
+    {
+      "id": "figure-5",
+      "label": "Figure 5",
+      "title": "Adaptive immune profiles",
+      "panelIds": ["panel-5abc-e", "panel-5d"],
+      "evidenceIds": ["evidence-figure-5"]
+    }
+  ],
+  "panels": [
+    {
+      "id": "panel-1c",
+      "figureId": "figure-1",
+      "label": "Figure 1c",
+      "claimIds": ["claim-1c-global-landscape"],
+      "cohortIds": ["cohort-kul3"],
+      "methodUnitIds": ["method-global-cell-types"],
+      "dependencyIds": ["dependency-kul3-scrna", "dependency-kul3-clinical-genotyping"],
+      "expectedOutputIds": ["output-1c-landscape"],
+      "evidenceIds": ["evidence-figure-1c", "evidence-scrna-methods"]
+    },
+    {
+      "id": "panel-2-all",
+      "figureId": "figure-2",
+      "label": "Figure 2a-f",
+      "claimIds": ["claim-2-epithelial-programs"],
+      "cohortIds": ["cohort-smc"],
+      "methodUnitIds": ["method-epithelial-trajectory-cms"],
+      "dependencyIds": ["dependency-smc-scrna", "dependency-smc-clinical-genomic"],
+      "expectedOutputIds": ["output-2-epithelial-programs"],
+      "evidenceIds": ["evidence-figure-2", "evidence-scrna-methods"]
+    },
+    {
+      "id": "panel-3-all",
+      "figureId": "figure-3",
+      "label": "Figure 3a-e",
+      "claimIds": ["claim-3-stromal-mf"],
+      "cohortIds": ["cohort-smc"],
+      "methodUnitIds": ["method-stromal-subclustering-deg"],
+      "dependencyIds": ["dependency-smc-scrna"],
+      "expectedOutputIds": ["output-3-mf1-mf4"],
+      "evidenceIds": ["evidence-figure-3", "evidence-scrna-methods"]
+    },
+    {
+      "id": "panel-4bc",
+      "figureId": "figure-4",
+      "label": "Figure 4b/c",
+      "claimIds": ["claim-4bc-myeloid-spp1"],
+      "cohortIds": ["cohort-smc", "cohort-kul3"],
+      "methodUnitIds": ["method-myeloid-subclustering-signatures"],
+      "dependencyIds": ["dependency-smc-scrna", "dependency-kul3-scrna"],
+      "expectedOutputIds": ["output-4bc-myeloid"],
+      "evidenceIds": ["evidence-figure-4bc", "evidence-scrna-methods"]
+    },
+    {
+      "id": "panel-4d",
+      "figureId": "figure-4",
+      "label": "Figure 4d",
+      "claimIds": ["claim-4d-survival"],
+      "cohortIds": ["cohort-tcga-crc"],
+      "methodUnitIds": ["method-tcga-survival-cms"],
+      "dependencyIds": ["dependency-tcga-expression-clinical"],
+      "expectedOutputIds": ["output-4d-survival"],
+      "evidenceIds": ["evidence-figure-4d"]
+    },
+    {
+      "id": "panel-5abc-e",
+      "figureId": "figure-5",
+      "label": "Figure 5a-c/e",
+      "claimIds": ["claim-5-adaptive-composition"],
+      "cohortIds": ["cohort-smc"],
+      "methodUnitIds": ["method-adaptive-subclustering-composition"],
+      "dependencyIds": ["dependency-smc-scrna", "dependency-smc-clinical-genomic"],
+      "expectedOutputIds": ["output-5-adaptive-composition"],
+      "evidenceIds": ["evidence-figure-5", "evidence-scrna-methods"]
+    },
+    {
+      "id": "panel-5d",
+      "figureId": "figure-5",
+      "label": "Figure 5d",
+      "claimIds": ["claim-5d-cd8-comparison"],
+      "cohortIds": ["cohort-smc", "cohort-kul3", "cohort-smc-lung", "cohort-pku-liver"],
+      "methodUnitIds": ["method-cd8-function-scores"],
+      "dependencyIds": ["dependency-multicancer-cd8"],
+      "expectedOutputIds": ["output-5d-cd8-scores"],
+      "evidenceIds": ["evidence-figure-5", "evidence-data-availability"]
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-1c-global-landscape",
+      "text": "KUL3 core, border, and normal samples contain six major cell lineages with sample-level composition summaries.",
+      "claimKind": "descriptive",
+      "evidenceIds": ["evidence-figure-1c"]
+    },
+    {
+      "id": "claim-2-epithelial-programs",
+      "text": "SMC epithelial cells occupy differentiation and tumor trajectories associated with CMS-like transcriptional programs.",
+      "claimKind": "associational",
+      "evidenceIds": ["evidence-figure-2"]
+    },
+    {
+      "id": "claim-3-stromal-mf",
+      "text": "SMC stromal cells include tumor-associated myofibroblast phenotypes MF1, MF2, MF3, and MF4 defined by cluster expression patterns.",
+      "claimKind": "descriptive",
+      "evidenceIds": ["evidence-figure-3"]
+    },
+    {
+      "id": "claim-4bc-myeloid-spp1",
+      "text": "SMC and KUL3 tumors contain related myeloid subtypes, including an SPP1-positive macrophage population with mixed inflammatory features.",
+      "claimKind": "associational",
+      "evidenceIds": ["evidence-figure-4bc"]
+    },
+    {
+      "id": "claim-4d-survival",
+      "text": "SPP1 and CD68 expression patterns in TCGA COAD and READ are associated with CMS class and survival.",
+      "claimKind": "inferential",
+      "evidenceIds": ["evidence-figure-4d"]
+    },
+    {
+      "id": "claim-5-adaptive-composition",
+      "text": "SMC tumor and normal tissues differ in T-cell and B-cell subtype composition.",
+      "claimKind": "associational",
+      "evidenceIds": ["evidence-figure-5"]
+    },
+    {
+      "id": "claim-5d-cd8-comparison",
+      "text": "CD8 cytotoxicity and exhaustion scores differ across CRC, lung cancer, and liver cancer cohorts.",
+      "claimKind": "associational",
+      "evidenceIds": ["evidence-figure-5"]
+    }
+  ],
+  "cohorts": [
+    {
+      "id": "cohort-smc",
+      "label": "Samsung Medical Center colorectal cancer cohort",
+      "datasetIds": ["GSE132465", "GSE132257"],
+      "evidenceIds": ["evidence-data-availability"]
+    },
+    {
+      "id": "cohort-kul3",
+      "label": "KU Leuven KUL3 colorectal cancer cohort",
+      "datasetIds": ["GSE144735", "E-MTAB-8410", "E-MTAB-8412"],
+      "evidenceIds": ["evidence-figure-1c", "evidence-data-availability"]
+    },
+    {
+      "id": "cohort-tcga-crc",
+      "label": "TCGA colon and rectal adenocarcinoma cohort",
+      "datasetIds": ["TCGA-COAD", "TCGA-READ", "Broad-GDAC-Firehose"],
+      "evidenceIds": ["evidence-figure-4d"]
+    },
+    {
+      "id": "cohort-smc-lung",
+      "label": "Samsung Medical Center lung cancer cohort",
+      "datasetIds": ["GSE131907"],
+      "evidenceIds": ["evidence-figure-5", "evidence-data-availability"]
+    },
+    {
+      "id": "cohort-pku-liver",
+      "label": "Peking University liver cancer cohort",
+      "datasetIds": ["GSE140228"],
+      "evidenceIds": ["evidence-figure-5", "evidence-data-availability"]
+    }
+  ],
+  "methodUnits": [
+    {
+      "id": "method-global-cell-types",
+      "analysisFamily": "joint_reference_and_correlation_annotation",
+      "lineage": "all major lineages",
+      "reportedMethod": "RCA and Seurat multiple CCA concordance followed by marker-based major cell-type annotation and t-SNE visualization.",
+      "parameterIds": [],
+      "evidenceIds": ["evidence-figure-1c", "evidence-scrna-methods"]
+    },
+    {
+      "id": "method-epithelial-trajectory-cms",
+      "analysisFamily": "trajectory_and_gene_program_scoring",
+      "lineage": "epithelial",
+      "reportedMethod": "Seurat subclustering, Monocle v2 trajectories, differential expression, and CMS centroid correlation.",
+      "parameterIds": [],
+      "evidenceIds": ["evidence-figure-2", "evidence-scrna-methods"]
+    },
+    {
+      "id": "method-stromal-subclustering-deg",
+      "analysisFamily": "graph_subclustering_and_differential_expression",
+      "lineage": "stromal and myofibroblast",
+      "reportedMethod": "Seurat graph subclustering with lineage markers and top differentially expressed genes for MF1, MF2, MF3, and MF4 phenotypes.",
+      "parameterIds": [],
+      "evidenceIds": ["evidence-figure-3", "evidence-scrna-methods"]
+    },
+    {
+      "id": "method-myeloid-subclustering-signatures",
+      "analysisFamily": "myeloid_subclustering_and_signature_scoring",
+      "lineage": "myeloid",
+      "reportedMethod": "Myeloid subclustering with canonical markers, inflammatory and anti-inflammatory mean-expression scores, and CMS composition.",
+      "parameterIds": [],
+      "evidenceIds": ["evidence-figure-4bc"]
+    },
+    {
+      "id": "method-tcga-survival-cms",
+      "analysisFamily": "bulk_survival_and_cms_association",
+      "reportedMethod": "Kaplan-Meier survival and two-sided log-rank testing with SPP1, CD68, and SPP1/CD68 groups plus CMS-class expression comparison.",
+      "parameterIds": [],
+      "evidenceIds": ["evidence-figure-4d"]
+    },
+    {
+      "id": "method-adaptive-subclustering-composition",
+      "analysisFamily": "adaptive_immune_subclustering_and_composition",
+      "lineage": "T and B lymphocytes",
+      "reportedMethod": "T-cell and B-cell subclustering with tissue, MSI, clinical, and genetic composition comparisons.",
+      "parameterIds": [],
+      "evidenceIds": ["evidence-figure-5"]
+    },
+    {
+      "id": "method-cd8-function-scores",
+      "analysisFamily": "cytotoxicity_and_exhaustion_scoring",
+      "lineage": "CD8 T cells",
+      "reportedMethod": "Mean scaled expression of six cytotoxicity genes and five exhaustion genes across four cancer cohorts.",
+      "parameterIds": [],
+      "evidenceIds": ["evidence-figure-5"]
+    }
+  ],
+  "dataDependencies": [
+    {
+      "id": "dependency-kul3-scrna",
+      "label": "KUL3 processed raw UMI matrix and cell annotation",
+      "cohortIds": ["cohort-kul3"],
+      "modality": "10x scRNA-seq",
+      "requiredFields": ["raw_counts", "cell_barcode", "sample", "patient", "tissue_class", "cell_type"],
+      "localSupport": "available",
+      "evidenceIds": ["evidence-figure-1c", "evidence-data-availability"]
+    },
+    {
+      "id": "dependency-kul3-clinical-genotyping",
+      "label": "KUL3 tissue CMS, clinical, and selected mutation metadata",
+      "cohortIds": ["cohort-kul3"],
+      "modality": "clinical and genotyping metadata",
+      "requiredFields": ["tissue_cms", "anatomical_region", "msi_status", "selected_mutations"],
+      "localSupport": "missing",
+      "evidenceIds": ["evidence-figure-1c"]
+    },
+    {
+      "id": "dependency-smc-scrna",
+      "label": "SMC processed raw UMI matrix and cell annotation",
+      "cohortIds": ["cohort-smc"],
+      "modality": "10x scRNA-seq",
+      "requiredFields": [
+        "raw_counts",
+        "cell_barcode",
+        "sample",
+        "patient",
+        "tissue_class",
+        "cell_type",
+        "cell_subtype"
+      ],
+      "localSupport": "available",
+      "evidenceIds": ["evidence-data-availability"]
+    },
+    {
+      "id": "dependency-smc-clinical-genomic",
+      "label": "SMC bulk CMS, MSI, clinical, mutation, and whole-genome metadata",
+      "cohortIds": ["cohort-smc"],
+      "modality": "bulk RNA-seq, whole-genome, and clinical metadata",
+      "requiredFields": ["bulk_cms", "msi_status", "anatomical_region", "mutations", "clinical_covariates"],
+      "localSupport": "partial",
+      "evidenceIds": ["evidence-figure-2", "evidence-figure-5"]
+    },
+    {
+      "id": "dependency-tcga-expression-clinical",
+      "label": "TCGA COAD/READ expression, CMS, stage, survival, and follow-up",
+      "cohortIds": ["cohort-tcga-crc"],
+      "modality": "bulk RNA-seq and clinical survival",
+      "requiredFields": ["SPP1", "CD68", "cms_class", "stage", "survival_time", "survival_event", "follow_up"],
+      "localSupport": "missing",
+      "evidenceIds": ["evidence-figure-4d"]
+    },
+    {
+      "id": "dependency-multicancer-cd8",
+      "label": "CRC, lung, and liver CD8 expression with tissue origin",
+      "cohortIds": ["cohort-smc", "cohort-kul3", "cohort-smc-lung", "cohort-pku-liver"],
+      "modality": "multi-cohort scRNA-seq",
+      "requiredFields": [
+        "scaled_expression",
+        "cancer_type",
+        "sample_origin",
+        "CD8A",
+        "CD8B",
+        "cytotoxicity_genes",
+        "exhaustion_genes"
+      ],
+      "localSupport": "partial",
+      "evidenceIds": ["evidence-figure-5", "evidence-data-availability"]
+    }
+  ],
+  "expectedOutputs": [
+    {
+      "id": "output-1c-landscape",
+      "label": "KUL3 global-lineage embedding and sample composition",
+      "artifactKind": "figure",
+      "evidenceIds": ["evidence-figure-1c"]
+    },
+    {
+      "id": "output-2-epithelial-programs",
+      "label": "Epithelial subtype, trajectory, CMS program, and association panels",
+      "artifactKind": "figure",
+      "evidenceIds": ["evidence-figure-2"]
+    },
+    {
+      "id": "output-3-mf1-mf4",
+      "label": "Stromal embedding, marker heatmap, composition, and MF1-MF4 DEG summary",
+      "artifactKind": "figure",
+      "evidenceIds": ["evidence-figure-3"]
+    },
+    {
+      "id": "output-4bc-myeloid",
+      "label": "KUL3 myeloid embedding and SMC/KUL3 macrophage signature summary",
+      "artifactKind": "figure",
+      "evidenceIds": ["evidence-figure-4bc"]
+    },
+    {
+      "id": "output-4d-survival",
+      "label": "TCGA SPP1/CD68 survival curves and CMS comparison",
+      "artifactKind": "statistical_result",
+      "evidenceIds": ["evidence-figure-4d"]
+    },
+    {
+      "id": "output-5-adaptive-composition",
+      "label": "SMC T-cell and B-cell subtype composition panels",
+      "artifactKind": "figure",
+      "evidenceIds": ["evidence-figure-5"]
+    },
+    {
+      "id": "output-5d-cd8-scores",
+      "label": "Multi-cancer CD8 cytotoxicity and exhaustion comparison",
+      "artifactKind": "figure",
+      "evidenceIds": ["evidence-figure-5"]
+    }
+  ],
+  "scopeDecisions": [
+    {
+      "id": "scope-figure-1c",
+      "targetIds": ["figure-1", "panel-1c", "claim-1c-global-landscape"],
+      "reproductionMode": "exact",
+      "status": "conditional",
+      "reason": "The target preserves the KUL3 cohort, panel semantics, and reported lineage workflow, but its clinical and genotyping dependency remains externally blocked."
+    },
+    {
+      "id": "scope-figure-2",
+      "targetIds": ["figure-2", "panel-2-all", "claim-2-epithelial-programs"],
+      "reproductionMode": "scoped_reimplementation",
+      "status": "conditional",
+      "reason": "Local SMC single-cell data support epithelial subclustering and proxy program analysis, but the complete clinical, mutation, bulk CMS, and legacy trajectory dependencies are not locally represented."
+    },
+    {
+      "id": "scope-figure-3",
+      "targetIds": ["figure-3", "panel-3-all", "claim-3-stromal-mf"],
+      "reproductionMode": "scoped_reimplementation",
+      "status": "ready",
+      "reason": "Local SMC counts and annotations support modern stromal subclustering, marker review, and MF1-MF4 phenotype summaries without claiming legacy figure identity."
+    },
+    {
+      "id": "scope-figure-4",
+      "targetIds": ["figure-4"],
+      "reproductionMode": "exact",
+      "status": "conditional",
+      "reason": "Both mapped Figure 4 panel targets retain the paper cohorts, methods, comparisons, and output semantics, although Figure 4d is externally blocked."
+    },
+    {
+      "id": "scope-figure-4bc",
+      "targetIds": ["panel-4bc", "claim-4bc-myeloid-spp1"],
+      "reproductionMode": "exact",
+      "status": "ready",
+      "reason": "Both paper scRNA-seq cohorts and the reported myeloid subtype and signature output semantics are locally represented."
+    },
+    {
+      "id": "scope-figure-4d",
+      "targetIds": ["panel-4d", "claim-4d-survival"],
+      "reproductionMode": "exact",
+      "status": "external_data_block",
+      "reason": "The same TCGA survival and CMS analysis is mapped, but the required TCGA expression and clinical files are not included in the local fixture."
+    },
+    {
+      "id": "scope-figure-5",
+      "targetIds": ["figure-5"],
+      "reproductionMode": "scoped_reimplementation",
+      "status": "conditional",
+      "reason": "SMC adaptive-immune panels are locally supportable, while the full multi-cancer CD8 comparison has missing external cohorts."
+    },
+    {
+      "id": "scope-figure-5abc-e",
+      "targetIds": ["panel-5abc-e", "claim-5-adaptive-composition"],
+      "reproductionMode": "scoped_reimplementation",
+      "status": "ready",
+      "reason": "Local SMC counts and annotations support modern T-cell and B-cell composition summaries."
+    },
+    {
+      "id": "scope-figure-5d",
+      "targetIds": ["panel-5d", "claim-5d-cd8-comparison"],
+      "reproductionMode": "analogous",
+      "status": "conditional",
+      "reason": "A local CRC-only CD8 score comparison is analogous to the scientific question, but exact Figure 5d also requires the absent lung and liver cohorts."
+    },
+    {
+      "id": "scope-cohort-smc",
+      "targetIds": ["cohort-smc"],
+      "reproductionMode": "exact",
+      "status": "ready",
+      "reason": "The local SMC processed single-cell cohort maps to the paper cohort and accessions."
+    },
+    {
+      "id": "scope-cohort-kul3",
+      "targetIds": ["cohort-kul3"],
+      "reproductionMode": "exact",
+      "status": "ready",
+      "reason": "The local KUL3 processed single-cell cohort maps to the paper cohort and accession."
+    },
+    {
+      "id": "scope-cohort-tcga",
+      "targetIds": ["cohort-tcga-crc"],
+      "reproductionMode": "exact",
+      "status": "external_data_block",
+      "reason": "The paper's TCGA COAD/READ cohort is identified but not localized in this fixture."
+    },
+    {
+      "id": "scope-cohort-smc-lung",
+      "targetIds": ["cohort-smc-lung"],
+      "reproductionMode": "analogous",
+      "status": "external_data_block",
+      "reason": "The lung cohort is required for the analogous multi-cancer comparison but is not localized."
+    },
+    {
+      "id": "scope-cohort-pku-liver",
+      "targetIds": ["cohort-pku-liver"],
+      "reproductionMode": "analogous",
+      "status": "external_data_block",
+      "reason": "The liver cohort is required for the analogous multi-cancer comparison but is not localized."
+    },
+    {
+      "id": "scope-method-global-cell-types",
+      "targetIds": ["method-global-cell-types"],
+      "reproductionMode": "exact",
+      "status": "conditional",
+      "reason": "The reported RCA and CCA method family is mapped, with exact execution dependent on the legacy environment and complete metadata."
+    },
+    {
+      "id": "scope-method-epithelial",
+      "targetIds": ["method-epithelial-trajectory-cms"],
+      "reproductionMode": "scoped_reimplementation",
+      "status": "conditional",
+      "reason": "A modern bounded trajectory and CMS proxy is planned rather than legacy Monocle v2 figure reconstruction."
+    },
+    {
+      "id": "scope-method-stromal",
+      "targetIds": ["method-stromal-subclustering-deg"],
+      "reproductionMode": "scoped_reimplementation",
+      "status": "ready",
+      "reason": "Modern graph subclustering and DEG summaries can retain the MF1-MF4 phenotype semantics."
+    },
+    {
+      "id": "scope-method-myeloid",
+      "targetIds": ["method-myeloid-subclustering-signatures"],
+      "reproductionMode": "exact",
+      "status": "ready",
+      "reason": "The reported myeloid subtype and signature scoring method is explicitly mapped."
+    },
+    {
+      "id": "scope-method-survival",
+      "targetIds": ["method-tcga-survival-cms"],
+      "reproductionMode": "exact",
+      "status": "ready",
+      "reason": "The reported Kaplan-Meier, log-rank, ratio, and CMS comparison method is explicitly mapped."
+    },
+    {
+      "id": "scope-method-adaptive",
+      "targetIds": ["method-adaptive-subclustering-composition"],
+      "reproductionMode": "scoped_reimplementation",
+      "status": "ready",
+      "reason": "Local data support modern adaptive-immune subclustering and composition summaries."
+    },
+    {
+      "id": "scope-method-cd8-scores",
+      "targetIds": ["method-cd8-function-scores"],
+      "reproductionMode": "analogous",
+      "status": "conditional",
+      "reason": "The score definitions are mapped, but only a reduced local-cohort comparison is currently possible."
+    },
+    {
+      "id": "scope-dependency-kul3-scrna",
+      "targetIds": ["dependency-kul3-scrna"],
+      "reproductionMode": "exact",
+      "status": "ready",
+      "reason": "The KUL3 count and annotation dependency is locally available."
+    },
+    {
+      "id": "scope-dependency-kul3-clinical",
+      "targetIds": ["dependency-kul3-clinical-genotyping"],
+      "reproductionMode": "exact",
+      "status": "external_data_block",
+      "reason": "The exact panel dependency is identified but not included locally."
+    },
+    {
+      "id": "scope-dependency-smc-scrna",
+      "targetIds": ["dependency-smc-scrna"],
+      "reproductionMode": "exact",
+      "status": "ready",
+      "reason": "The SMC count and annotation dependency is locally available."
+    },
+    {
+      "id": "scope-dependency-smc-clinical",
+      "targetIds": ["dependency-smc-clinical-genomic"],
+      "reproductionMode": "scoped_reimplementation",
+      "status": "conditional",
+      "reason": "Only a subset of the clinical and genomic fields is represented locally."
+    },
+    {
+      "id": "scope-dependency-tcga",
+      "targetIds": ["dependency-tcga-expression-clinical"],
+      "reproductionMode": "exact",
+      "status": "external_data_block",
+      "reason": "The exact TCGA expression and survival dependency is not localized."
+    },
+    {
+      "id": "scope-dependency-multicancer",
+      "targetIds": ["dependency-multicancer-cd8"],
+      "reproductionMode": "analogous",
+      "status": "conditional",
+      "reason": "CRC data are local, while the lung and liver comparison cohorts remain external."
+    },
+    {
+      "id": "scope-output-1c",
+      "targetIds": ["output-1c-landscape"],
+      "reproductionMode": "exact",
+      "status": "conditional",
+      "reason": "The complete paper output requires the absent clinical and genotyping tracks."
+    },
+    {
+      "id": "scope-output-2",
+      "targetIds": ["output-2-epithelial-programs"],
+      "reproductionMode": "scoped_reimplementation",
+      "status": "conditional",
+      "reason": "A bounded modern epithelial program output is feasible, not the full legacy panel."
+    },
+    {
+      "id": "scope-output-3",
+      "targetIds": ["output-3-mf1-mf4"],
+      "reproductionMode": "scoped_reimplementation",
+      "status": "ready",
+      "reason": "A modern stromal and MF1-MF4 summary can be generated from local SMC data."
+    },
+    {
+      "id": "scope-output-4bc",
+      "targetIds": ["output-4bc-myeloid"],
+      "reproductionMode": "exact",
+      "status": "ready",
+      "reason": "The paper's myeloid embedding and signature output semantics are mapped to local cohorts."
+    },
+    {
+      "id": "scope-output-4d",
+      "targetIds": ["output-4d-survival"],
+      "reproductionMode": "exact",
+      "status": "external_data_block",
+      "reason": "The exact survival output is blocked by absent TCGA files."
+    },
+    {
+      "id": "scope-output-5-composition",
+      "targetIds": ["output-5-adaptive-composition"],
+      "reproductionMode": "scoped_reimplementation",
+      "status": "ready",
+      "reason": "Local SMC data support modern adaptive-immune composition outputs."
+    },
+    {
+      "id": "scope-output-5d",
+      "targetIds": ["output-5d-cd8-scores"],
+      "reproductionMode": "analogous",
+      "status": "conditional",
+      "reason": "A reduced CRC-only score output is analogous while external cohorts are absent."
+    }
+  ],
+  "conflicts": [],
+  "unresolvedItems": [
+    {
+      "id": "unresolved-multicancer-cd8",
+      "targetIds": ["panel-5d"],
+      "message": "The SMC lung and PKU liver expression objects are not distributed with the fixture.",
+      "nextAction": "Resolve GSE131907 and GSE140228 under the source localization policy before an exact attempt."
+    }
+  ]
+}

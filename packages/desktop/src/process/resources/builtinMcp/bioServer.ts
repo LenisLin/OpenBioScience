@@ -4,11 +4,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import type {
+  BioBlocker,
+  BioControlReceipt,
+  BioNextAction,
+  MethodAlignmentReceipt,
+  MethodParameterReceipt,
+  ReproductionCompletionReceipt,
+  ReproductionModuleReadiness,
+} from '@/common/chat/science';
 import {
   BIO_ENVIRONMENTS,
   BIO_MCP_PROFILES,
@@ -18,12 +29,297 @@ import {
   type BioMcpCatalogItem,
   type BioMcpProfile,
 } from './bio/catalog';
-import { safeAbsolutePathStatus } from './bio/pathSafety';
+import {
+  hasCredentialLikeUrl,
+  publicHttpUrlStatus,
+  redactCredentialText,
+  redactCredentialUrl,
+  resolveSafeProjectWritePath,
+  safeAbsolutePathStatus,
+  safeChildPathStatus,
+  safeOutputDirectoryStatus,
+} from './bio/pathSafety';
+import {
+  buildCompletionReceipt,
+  buildDesignReceipt,
+  validateDeDesign,
+  validateDeOutputs,
+  validateExpressionContract,
+} from './bio/reproduction/statisticsContract';
+import {
+  buildMethodContract,
+  buildMethodParameterReceipt,
+  inspectMethodSources,
+  METHOD_CONTRACT_SCHEMA,
+  methodContractSchema,
+  validateMethodAlignment,
+} from './bio/reproduction/methodContract';
+import { completeExecution, prepareExecutionContract } from './bio/reproduction/executionContract';
+import { recordExecution } from './bio/reproduction/executionRun';
+import {
+  indexPaperSources,
+  validatePaperReproductionMap,
+  validateReproductionScope,
+} from './bio/reproduction/paperReproductionMap';
+import { preflightExecutionScripts } from './bio/reproduction/scriptPreflight';
+import { validateSkillCompliance } from './bio/reproduction/skillContract';
+import { handleAnalysisAction } from './bio/analysis/workflow';
+import { persistReceiptsFromResult, readCachedReceipt, readReceipt, receiptInputFingerprint } from './bio/receipts';
 
 type JsonRecord = Record<string, unknown>;
+type SourceAuditDataItem = {
+  id: string;
+  kind: string;
+  modality: string;
+  source: string;
+  accession: string;
+  url: string;
+  localPath: string;
+  sizeBytes: number | null;
+  access: string;
+  licenseOrTerms: string;
+  status: string;
+  supports: string[];
+  blocks: string[];
+  notes: string;
+};
+type SourceAuditCodeItem = {
+  id: string;
+  repository: string;
+  commitOrRelease: string;
+  license: string;
+  environmentFiles: string[];
+  scriptIndex: string[];
+  notebooks: string[];
+  runnableAsIs: boolean;
+  status: string;
+  notes: string;
+};
+type SourceAuditReferenceResourceItem = {
+  id: string;
+  kind: string;
+  name: string;
+  version: string;
+  source: string;
+  url: string;
+  localPath: string;
+  status: string;
+  requiredBy: string[];
+  notes: string;
+};
+type UserEnvironmentRecord = {
+  environmentRef: string;
+  path: string;
+  build: JsonRecord;
+  keyResources: unknown;
+  keySupports: unknown;
+  owner: string;
+  status: string;
+};
+type UserEnvironmentIndex = {
+  schema: string;
+  userId: string;
+  environments: UserEnvironmentRecord[];
+  updatedAt: string;
+};
+type EnvironmentPathStatus = 'configured' | 'available' | 'missing' | 'unavailable';
+type EnvironmentResolution = {
+  environmentRef: string;
+  pathStatus: EnvironmentPathStatus;
+  path: string;
+  catalog?: BioMcpCatalogItem;
+  userEnvironment?: UserEnvironmentRecord;
+  warnings: string[];
+};
+type EnvironmentProbeCheck = {
+  id: string;
+  executable: string;
+  status: 'passed' | 'failed' | 'missing';
+  exitCode: number | null;
+  stdout: string;
+  stderr: string;
+};
 
 const RESULT_SCHEMA = 'openbioscience.bio_mcp.result.v1';
+const USER_ENVIRONMENT_INDEX_SCHEMA = 'openbioscience.bio_mcp.user_environment_index.v1';
 const DEFAULT_RUNTIME_ROOT = '${OPENBIOSCIENCE_RUNTIME_ROOT}';
+const DEFAULT_REPRODUCTION_FILE_LIMIT_BYTES = 50 * 1024 * 1024;
+const ENVIRONMENT_PROBE_TIMEOUT_MS = 20_000;
+const REPRODUCTION_PLANNING_STATUSES = [
+  'ready',
+  'partial_ready',
+  'conditional_continue',
+  'planned_only',
+  'blocked_for_localization',
+  'blocked_for_execution',
+  'unresolved',
+  'fatal_block',
+] as const;
+const REPRODUCTION_PLAN_SECTIONS = [
+  'reproduction objective',
+  'paper and source summary',
+  'data, code, and reference availability',
+  'ready, conditional, and blocked scope',
+  'planned execution modules',
+  'expected outputs',
+  'environmentRef candidates',
+  'skill and MCP route',
+  'execution boundary',
+] as const;
+const REPRODUCTION_PLAN_SECTION_ALIASES: Array<{ section: string; aliases: string[] }> = [
+  { section: 'reproduction objective', aliases: ['reproduction objective', 'objective and scope'] },
+  { section: 'paper and source summary', aliases: ['paper and source summary', 'source summary'] },
+  {
+    section: 'data, code, and reference availability',
+    aliases: ['data, code, and reference availability', 'availability summary'],
+  },
+  {
+    section: 'ready, conditional, and blocked scope',
+    aliases: ['ready, conditional, and blocked scope', 'reproducible scope'],
+  },
+  { section: 'planned execution modules', aliases: ['planned execution modules', 'execution modules'] },
+  { section: 'expected outputs', aliases: ['expected outputs'] },
+  { section: 'environmentRef candidates', aliases: ['environmentref candidates', 'environment and route'] },
+  { section: 'skill and MCP route', aliases: ['skill and mcp route', 'environment and route'] },
+  { section: 'execution boundary', aliases: ['execution boundary'] },
+];
+const BIO_RECEIPT_SCHEMA = 'openbioscience.bio.receipt.v1' as const;
+const SOURCE_AUDIT_SCHEMA = 'openbioscience.omics_reproduction.source_audit.v1';
+
+const reproductionModuleSchema = z
+  .object({
+    id: z.string().min(1),
+    objective: z.string().min(1).optional(),
+    status: z.enum(REPRODUCTION_PLANNING_STATUSES),
+    sourceStatus: z.enum(REPRODUCTION_PLANNING_STATUSES),
+    environmentRef: z.string().min(1),
+    skillRoute: z.array(z.string().min(1)).min(1),
+    mcpRoute: z.array(z.string().min(1)).min(1),
+    expectedOutputs: z.array(z.string().min(1)).min(1),
+    targetIds: z.array(z.string().min(1)).optional(),
+    cohortIds: z.array(z.string().min(1)).optional(),
+    required: z.boolean().optional(),
+  })
+  .strict();
+
+const controlReceiptSchema = z
+  .object({
+    schema: z.literal(BIO_RECEIPT_SCHEMA),
+    receiptId: z.string().min(1),
+    producer: z.enum(['bio_source', 'bio_runtime', 'bio_reproduction', 'bio_statistics', 'bio_analysis']),
+    action: z.string().min(1),
+    status: z.string().min(1),
+    projectRoot: z.string(),
+    createdAt: z.number(),
+    details: z.record(z.unknown()).optional(),
+  })
+  .passthrough();
+
+const validateReproductionPayloadSchema = z
+  .object({
+    planPath: z.string().min(1),
+    sourceAuditPath: z.string().min(1),
+    paperMapReceiptId: z.string().min(1),
+    scopeReceiptId: z.string().min(1),
+    methodParameterReceiptId: z.string().min(1),
+    sourceReceiptIds: z.array(z.string().min(1)).min(1),
+    runtimeReceiptIds: z.array(z.string().min(1)),
+    skillComplianceReceiptIds: z.array(z.string().min(1)),
+    localizedPaths: z.array(z.string().min(1)).optional(),
+    approvedExistingData: z.boolean().optional(),
+    modules: z.array(reproductionModuleSchema).min(1),
+    methodContractPath: z.string().min(1),
+  })
+  .strict();
+
+const validatePaperMapByIdPayloadSchema = z
+  .object({
+    mapPath: z.literal('case_reproduction/planning/paper_reproduction_map.json'),
+    sourceReceiptIds: z.array(z.string().min(1)).min(1),
+  })
+  .strict();
+
+const validateScopeByIdPayloadSchema = z
+  .object({
+    mapPath: z.literal('case_reproduction/planning/paper_reproduction_map.json'),
+    paperMapReceiptId: z.string().min(1),
+  })
+  .strict();
+
+const extractMethodParametersByIdPayloadSchema = z
+  .object({
+    methodContractPath: z
+      .literal('case_reproduction/planning/method_parameter_contract.json')
+      .default('case_reproduction/planning/method_parameter_contract.json'),
+    methodSourceReceiptId: z.string().min(1),
+    paperMapReceiptId: z.string().min(1).optional(),
+    scopeReceiptId: z.string().min(1).optional(),
+  })
+  .strict();
+
+const validateMethodAlignmentByIdPayloadSchema = z
+  .object({
+    methodParameterReceiptId: z.string().min(1),
+    executedParameterPath: z.string().min(1),
+    scriptPaths: z.array(z.string().min(1)).min(1),
+  })
+  .strict();
+
+const prepareExecutionByIdPayloadSchema = z
+  .object({
+    contractVersion: z.literal(2),
+    objective: z.string().min(1),
+    datasetIds: z.array(z.string().min(1)).min(1),
+    executionContractPath: z.string().min(1).optional(),
+    annotationMode: z.enum(['independent_annotation', 'reference_review', 'label_transfer']).optional(),
+    annotationPolicy: z.record(z.unknown()).optional(),
+    planningReceiptId: z.string().min(1),
+    paperMapReceiptId: z.string().min(1),
+    scopeReceiptId: z.string().min(1),
+  })
+  .strict();
+
+const scriptPreflightByIdPayloadSchema = z
+  .object({
+    executionContractReceiptId: z.string().min(1),
+    methodParameterReceiptId: z.string().min(1),
+    scripts: z.array(z.unknown()).min(1).optional(),
+    scriptPaths: z.array(z.string().min(1)).min(1).optional(),
+    skillComplianceReceiptIds: z.array(z.string().min(1)),
+    statisticalDesignReceiptIds: z.array(z.string().min(1)).optional(),
+    skillContents: z.record(z.string()).optional(),
+  })
+  .strict();
+
+const completeExecutionByIdPayloadSchema = z
+  .object({
+    contractVersion: z.literal(2),
+    executionContractReceiptId: z.string().min(1),
+    planningReceiptId: z.string().min(1),
+    paperMapReceiptId: z.string().min(1),
+    scopeReceiptId: z.string().min(1),
+    methodAlignmentReceiptId: z.string().min(1),
+    scriptValidationReceiptId: z.string().min(1),
+    executionRunReceiptIds: z.array(z.string().min(1)).min(1),
+    statisticalCompletionReceiptIds: z.array(z.string().min(1)).optional(),
+    moduleResults: z.array(z.record(z.unknown())),
+    skillUses: z.array(z.record(z.unknown())).optional(),
+    externalBlockers: z.array(z.record(z.unknown())).optional(),
+  })
+  .strict();
+
+const recordExecutionByIdPayloadSchema = z
+  .object({
+    scriptValidationReceiptId: z.string().min(1),
+    startedAt: z.number().int().positive(),
+    finishedAt: z.number().int().positive(),
+    exitCode: z.number().int(),
+    scriptFiles: z.array(z.record(z.unknown())).min(1),
+    configFiles: z.array(z.record(z.unknown())),
+    logFiles: z.array(z.record(z.unknown())).min(1),
+    outputFiles: z.array(z.record(z.unknown())),
+  })
+  .strict();
 
 const jsonText = (value: unknown) => ({
   content: [{ type: 'text' as const, text: JSON.stringify(value, null, 2) }],
@@ -40,19 +336,483 @@ const asArray = (value: unknown): unknown[] => (Array.isArray(value) ? value : [
 const uniqueStrings = (values: unknown[]): string[] =>
   Array.from(new Set(values.map((value) => asString(value)).filter(Boolean))).sort();
 
+const asBoolean = (value: unknown): boolean => value === true;
+
+const stableValue = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(stableValue);
+  if (!isRecord(value)) return value;
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort()
+      .map((key) => [key, stableValue(value[key])])
+  );
+};
+
+const contentHash = (value: string | Buffer): string => crypto.createHash('sha256').update(value).digest('hex');
+
+const workspaceRoot = (): string => path.resolve(process.env.OPENBIOSCIENCE_WORKSPACE_ROOT || process.cwd());
+
+const invalidActionPayload = (
+  action: string,
+  error: z.ZodError,
+  correctedPayload: JsonRecord,
+  tool: BioNextAction['tool'] = 'bio_reproduction'
+) => {
+  const inputFingerprint = contentHash(JSON.stringify(stableValue({ action, correctedPayload })));
+  const nextAction: BioNextAction = {
+    id: `correct-${action}-payload`,
+    tool,
+    action,
+    reason: `Use the strict action payload: ${formatZodIssues(error).join('; ')}`,
+    payload: correctedPayload,
+    actionFingerprint: inputFingerprint,
+    preconditionHash: inputFingerprint,
+    expectedMutation: ['mcp_payload'],
+    maxAttempts: 1,
+    stopWhenUnchanged: true,
+  };
+  return {
+    schema: 'openbioscience.bio_mcp.result.v2',
+    action,
+    status: 'invalid_request',
+    error: { code: 'INVALID_ACTION_PAYLOAD', issues: formatZodIssues(error) },
+    correctedCall: { action, payload: correctedPayload },
+    nextActions: [nextAction],
+    actionFingerprint: inputFingerprint,
+    maxAttempts: 1,
+    stopWhenUnchanged: true,
+    timestamp: Date.now(),
+  };
+};
+
+const readStoredReceipt = (
+  receiptId: string,
+  expectation: { producer: BioControlReceipt['producer']; action?: string; status?: string }
+): BioControlReceipt => {
+  const receipt = readReceipt(workspaceRoot(), receiptId);
+  const parsed = controlReceiptSchema.parse(receipt) as BioControlReceipt;
+  if (parsed.producer !== expectation.producer) {
+    throw new Error(`Receipt ${receiptId} must be produced by ${expectation.producer}.`);
+  }
+  if (expectation.action && parsed.action !== expectation.action) {
+    throw new Error(`Receipt ${receiptId} must be for ${expectation.action}.`);
+  }
+  if (expectation.status && parsed.status !== expectation.status) {
+    throw new Error(`Receipt ${receiptId} must have status ${expectation.status}.`);
+  }
+  return parsed;
+};
+
+const writeCanonicalJson = (relativePath: string, value: unknown): string => {
+  const root = workspaceRoot();
+  const target = resolveSafeProjectWritePath(root, relativePath);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  const content = `${JSON.stringify(value, null, 2)}\n`;
+  const temporary = `${target}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`;
+  fs.writeFileSync(temporary, content, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+  fs.renameSync(temporary, target);
+  return contentHash(content);
+};
+
+const receiptLookupFailure = (action: string, error: unknown) => ({
+  schema: 'openbioscience.bio_mcp.result.v2',
+  action,
+  status: 'invalid_request',
+  error: {
+    code: 'INVALID_RECEIPT_REFERENCE',
+    issues: [error instanceof Error ? error.message : String(error)],
+  },
+  nextActions: [] as BioNextAction[],
+  maxAttempts: 1,
+  stopWhenUnchanged: true,
+  timestamp: Date.now(),
+});
+
+const receiptCanonicalFiles = (receipt: BioControlReceipt): Array<{ path: string; contentHash: string }> => {
+  const record = receipt as unknown as JsonRecord;
+  const files = asArray(record.canonicalFiles).filter(
+    (file): file is JsonRecord =>
+      isRecord(file) && typeof file.path === 'string' && typeof file.contentHash === 'string'
+  );
+  if (isRecord(record.canonicalFile)) files.push(record.canonicalFile);
+  return files.map((file) => ({ path: asString(file.path), contentHash: asString(file.contentHash) }));
+};
+
+const cachedReceiptIsCurrent = (receipt: BioControlReceipt): boolean => {
+  // Analysis actions are state-machine transitions; replaying a cached prepare/complete action can bypass a checkpoint.
+  if (receipt.producer === 'bio_analysis') return false;
+  if (!['ready', 'supported', 'partial'].includes(receipt.status)) return false;
+  if (receipt.producer === 'bio_runtime' && Date.now() - receipt.createdAt > 24 * 60 * 60 * 1000) return false;
+  if (receipt.producer === 'bio_runtime' && receipt.action === 'probe_environment') {
+    const checks = isRecord(receipt.details?.probe) ? asArray(receipt.details.probe.checks) : [];
+    for (const check of checks) {
+      if (!isRecord(check)) continue;
+      const executable = asString(check.executable);
+      if (check.status === 'passed' && executable && !fs.existsSync(executable)) return false;
+      if (check.status === 'missing' && executable && fs.existsSync(executable)) return false;
+    }
+  }
+  for (const file of receiptCanonicalFiles(receipt)) {
+    const resolved = resolveWorkspacePath(file.path);
+    if (resolved.status !== 'available' || !fs.existsSync(resolved.path) || !fs.statSync(resolved.path).isFile()) {
+      return false;
+    }
+    if (contentHash(fs.readFileSync(resolved.path)) !== file.contentHash) return false;
+  }
+  return true;
+};
+
+const receiptProducerForProfile = (profile: BioMcpProfile): BioControlReceipt['producer'] | undefined => {
+  if (profile === 'source') return 'bio_source';
+  if (profile === 'runtime') return 'bio_runtime';
+  if (profile === 'reproduction') return 'bio_reproduction';
+  if (profile === 'analysis') return 'bio_analysis';
+  if (profile === 'statistics') return 'bio_statistics';
+  return undefined;
+};
+
+const resolveWorkspacePath = (candidate: string): { path: string; status: 'available' | 'unverified' } => {
+  const root = workspaceRoot();
+  const resolved = path.isAbsolute(candidate) ? path.resolve(candidate) : path.resolve(root, candidate);
+  const relative = path.relative(root, resolved);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) return { path: resolved, status: 'unverified' };
+  return { path: resolved, status: safeAbsolutePathStatus(resolved) };
+};
+
+const makeControlReceipt = (
+  producer: BioControlReceipt['producer'],
+  action: string,
+  status: string,
+  details: JsonRecord
+): BioControlReceipt => {
+  const projectRoot = workspaceRoot();
+  const identity = JSON.stringify(stableValue({ producer, action, status, projectRoot, details }));
+  return {
+    schema: BIO_RECEIPT_SCHEMA,
+    receiptId: `bio_receipt_${contentHash(identity).slice(0, 20)}`,
+    producer,
+    action,
+    status,
+    projectRoot,
+    createdAt: Date.now(),
+    ...(typeof details.validationFingerprint === 'string'
+      ? { validationFingerprint: details.validationFingerprint }
+      : {}),
+    details,
+  };
+};
+
+const withControlReceipt = <T extends JsonRecord>(
+  producer: BioControlReceipt['producer'],
+  result: T,
+  details: JsonRecord
+): T & { receipt: BioControlReceipt } => ({
+  ...result,
+  receipt: makeControlReceipt(producer, asString(result.action), asString(result.status), details),
+});
+
+const firstNumber = (...values: unknown[]): number | undefined => {
+  const found = values.find((value) => typeof value === 'number' && Number.isFinite(value));
+  return typeof found === 'number' ? found : undefined;
+};
+
+const asPositiveInteger = (value: unknown, fallback: number): number => {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return Math.floor(value);
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number.parseInt(value.trim(), 10);
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+  return fallback;
+};
+
 const runtimeRoot = (): string =>
   process.env.OPENBIOSCIENCE_RUNTIME_ROOT ||
   process.env.OPENSCIENCE_RUNTIME_ROOT ||
   process.env.DEEPORGANISER_WORK_DIR ||
   DEFAULT_RUNTIME_ROOT;
 
+const isCredentialKey = (key: string): boolean => {
+  const normalized = key.toLowerCase();
+  return (
+    normalized.includes('token') ||
+    normalized.includes('cookie') ||
+    normalized.includes('credential') ||
+    normalized.includes('password') ||
+    normalized.includes('secret') ||
+    normalized.includes('apikey') ||
+    normalized.includes('api_key') ||
+    normalized === 'key' ||
+    normalized === 'authorization' ||
+    normalized === 'auth' ||
+    normalized === 'signature' ||
+    normalized === 'sig' ||
+    normalized.startsWith('x-amz-')
+  );
+};
+
+const sanitizeSourceValue = (value: unknown): { value: unknown; redacted: boolean } => {
+  if (Array.isArray(value)) {
+    let redacted = false;
+    const sanitized = value.map((item) => {
+      const result = sanitizeSourceValue(item);
+      redacted ||= result.redacted;
+      return result.value;
+    });
+    return { value: sanitized, redacted };
+  }
+  if (typeof value === 'string') return redactCredentialText(value);
+  if (!isRecord(value)) return { value, redacted: false };
+
+  let redacted = false;
+  const sanitized = Object.fromEntries(
+    Object.entries(value).map(([key, nested]) => {
+      if (isCredentialKey(key) && nested) {
+        redacted = true;
+        return [key, '[redacted]'];
+      }
+      const result = sanitizeSourceValue(nested);
+      redacted ||= result.redacted;
+      return [key, result.value];
+    })
+  );
+  return { value: sanitized, redacted };
+};
+
+const uniqueSanitizedStrings = (values: unknown[]): string[] =>
+  Array.from(new Set(values.map((value) => asString(sanitizeSourceValue(value).value)).filter(Boolean))).sort();
+
 const environmentPath = (environmentRef: string): string =>
   runtimeRoot() === DEFAULT_RUNTIME_ROOT
     ? `${DEFAULT_RUNTIME_ROOT}/environments/official/${environmentRef}`
     : path.join(runtimeRoot(), 'environments', 'official', environmentRef);
 
-const pathStatus = (candidate: string): 'configured' | 'available' | 'missing' =>
+const pathStatus = (candidate: string): Exclude<EnvironmentPathStatus, 'unavailable'> =>
   candidate.includes('${') ? 'configured' : fs.existsSync(candidate) ? 'available' : 'missing';
+
+const compactProbeOutput = (value: string | Buffer | null | undefined): string =>
+  String(value || '')
+    .trim()
+    .slice(0, 4_000);
+
+const runEnvironmentProbeCheck = (
+  environmentPathValue: string,
+  id: string,
+  executableName: string,
+  args: string[]
+): EnvironmentProbeCheck => {
+  const executable = path.join(environmentPathValue, 'bin', executableName);
+  if (!fs.existsSync(executable)) {
+    return { id, executable, status: 'missing', exitCode: null, stdout: '', stderr: 'Executable not found.' };
+  }
+  const result = spawnSync(executable, args, {
+    cwd: environmentPathValue,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      PATH: [path.join(environmentPathValue, 'bin'), process.env.PATH || ''].filter(Boolean).join(path.delimiter),
+    },
+    timeout: ENVIRONMENT_PROBE_TIMEOUT_MS,
+    maxBuffer: 1024 * 1024,
+  });
+  const stderr = compactProbeOutput(result.stderr || result.error?.message);
+  return {
+    id,
+    executable,
+    status: result.status === 0 ? 'passed' : 'failed',
+    exitCode: result.status,
+    stdout: compactProbeOutput(result.stdout),
+    stderr,
+  };
+};
+
+const probeEnvironment = (resolved: EnvironmentResolution) => {
+  if (resolved.pathStatus !== 'available') {
+    return {
+      mode: 'execution',
+      status: 'not_run',
+      importChecksRun: false,
+      checks: [] as EnvironmentProbeCheck[],
+      reason: 'The resolved environment path is not available.',
+    };
+  }
+
+  const pythonPackagesByEnvironment: Record<string, string[]> = {
+    'sc-py-singlecell': ['scanpy', 'anndata'],
+  };
+  const rPackagesByEnvironment: Record<string, string[]> = {
+    'sc-r-singlecell': ['Seurat'],
+    'sc-r-plot': ['ggplot2', 'ComplexHeatmap'],
+    'sc-r-clinical': ['survival'],
+    'sc-cci-r': ['CellChat'],
+    'sc-r-trajectory': ['slingshot'],
+    'sc-network-grn-r': ['GENIE3', 'decoupleR'],
+    'sc-r-tumor-cnv': ['infercnv'],
+  };
+  const checks: EnvironmentProbeCheck[] = [];
+  const pythonPackages = pythonPackagesByEnvironment[resolved.environmentRef];
+  const rPackages = rPackagesByEnvironment[resolved.environmentRef];
+
+  if (pythonPackages) {
+    const importLines = pythonPackages.map((packageName) => `import ${packageName}`).join('; ');
+    checks.push(
+      runEnvironmentProbeCheck(resolved.path, 'python-imports', 'python', [
+        '-c',
+        `${importLines}; import sys; print(sys.version.split()[0]); print('${pythonPackages.join(',')}')`,
+      ])
+    );
+  } else if (rPackages) {
+    const packageVector = rPackages.map((packageName) => `\"${packageName}\"`).join(',');
+    checks.push(
+      runEnvironmentProbeCheck(resolved.path, 'r-imports', 'Rscript', [
+        '-e',
+        `pkgs <- c(${packageVector}); invisible(lapply(pkgs, function(pkg) suppressPackageStartupMessages(library(pkg, character.only=TRUE)))); cat(R.version.string, \"\\n\"); cat(paste(pkgs, collapse=\",\"), \"\\n\")`,
+      ])
+    );
+  } else {
+    const pythonExecutable = path.join(resolved.path, 'bin', 'python');
+    const rExecutable = path.join(resolved.path, 'bin', 'Rscript');
+    if (fs.existsSync(pythonExecutable)) {
+      checks.push(runEnvironmentProbeCheck(resolved.path, 'python-version', 'python', ['--version']));
+    } else if (fs.existsSync(rExecutable)) {
+      checks.push(runEnvironmentProbeCheck(resolved.path, 'r-version', 'Rscript', ['--version']));
+    }
+  }
+
+  const passed = checks.length > 0 && checks.every((check) => check.status === 'passed');
+  return {
+    mode: 'execution',
+    status: passed ? 'passed' : 'failed',
+    importChecksRun: Boolean(pythonPackages || rPackages),
+    checks,
+    reason: checks.length ? undefined : 'No supported Python or R executable was found in the environment prefix.',
+  };
+};
+
+const userEnvironmentIndexDir = (): string =>
+  runtimeRoot() === DEFAULT_RUNTIME_ROOT
+    ? `${DEFAULT_RUNTIME_ROOT}/manifests/environments/users`
+    : path.join(runtimeRoot(), 'manifests', 'environments', 'users');
+
+const userEnvironmentIndexPath = (userId: string): string => path.join(userEnvironmentIndexDir(), `${userId}.json`);
+
+const officialEnvironmentRoot = (): string =>
+  runtimeRoot() === DEFAULT_RUNTIME_ROOT
+    ? `${DEFAULT_RUNTIME_ROOT}/environments/official`
+    : path.join(runtimeRoot(), 'environments', 'official');
+
+const userEnvironmentRoot = (userId: string): string =>
+  runtimeRoot() === DEFAULT_RUNTIME_ROOT
+    ? `${DEFAULT_RUNTIME_ROOT}/environments/custom/users/${userId}`
+    : path.join(runtimeRoot(), 'environments', 'custom', 'users', userId);
+
+const userEnvironmentSuggestedPath = (userId: string, environmentName: string, version: string): string =>
+  runtimeRoot() === DEFAULT_RUNTIME_ROOT
+    ? `${DEFAULT_RUNTIME_ROOT}/environments/custom/users/${userId}/${environmentName}/${version}`
+    : path.join(userEnvironmentRoot(userId), environmentName, version);
+
+const isSafeIdentifier = (value: string): boolean =>
+  /^[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(value) && !value.includes('..');
+
+const userEnvironmentRef = (userId: string, environmentName: string, version: string): string =>
+  `user:${userId}/${environmentName}:${version}`;
+
+const parseUserEnvironmentRef = (
+  environmentRef: string
+): { userId: string; environmentName: string; version: string } | undefined => {
+  const match = /^user:([^/]+)\/([^:]+):(.+)$/u.exec(environmentRef);
+  if (!match) return undefined;
+  return {
+    userId: match[1] || '',
+    environmentName: match[2] || '',
+    version: match[3] || '',
+  };
+};
+
+const normalizeUserEnvironmentMetadata = (value: unknown): unknown => {
+  const sanitized = sanitizeSourceValue(value).value;
+  if (Array.isArray(sanitized)) return uniqueStrings(sanitized);
+  if (isRecord(sanitized)) return sanitized;
+  return {};
+};
+
+const pathStartsWith = (candidate: string, parent: string): boolean => {
+  const relative = path.relative(path.resolve(parent), path.resolve(candidate));
+  return relative === '' || (relative && !relative.startsWith('..') && !path.isAbsolute(relative));
+};
+
+const usesOfficialEnvironmentPrefix = (candidate: string): boolean =>
+  Boolean(candidate && runtimeRoot() !== DEFAULT_RUNTIME_ROOT && pathStartsWith(candidate, officialEnvironmentRoot()));
+
+const usesUserEnvironmentPrefix = (userId: string, candidate: string): boolean =>
+  Boolean(
+    candidate &&
+    runtimeRoot() !== DEFAULT_RUNTIME_ROOT &&
+    isSafeIdentifier(userId) &&
+    pathStartsWith(candidate, userEnvironmentRoot(userId))
+  );
+
+const safeUserEnvironmentRecord = (userId: string, value: unknown): UserEnvironmentRecord | undefined => {
+  if (!isRecord(value)) return undefined;
+  const environmentRef = asString(value.environmentRef);
+  const environmentPathValue = asString(value.path);
+  const owner = asString(value.owner);
+  if (!environmentRef || !environmentPathValue || !owner) return undefined;
+  const parsed = parseUserEnvironmentRef(environmentRef);
+  if (
+    !parsed ||
+    parsed.userId !== userId ||
+    owner !== userId ||
+    !isSafeIdentifier(parsed.userId) ||
+    !isSafeIdentifier(parsed.environmentName) ||
+    !isSafeIdentifier(parsed.version) ||
+    !usesUserEnvironmentPrefix(userId, environmentPathValue)
+  ) {
+    return undefined;
+  }
+  return {
+    environmentRef,
+    path: environmentPathValue,
+    build: isRecord(value.build) ? value.build : {},
+    keyResources: normalizeUserEnvironmentMetadata(value.keyResources),
+    keySupports: normalizeUserEnvironmentMetadata(value.keySupports),
+    owner,
+    status: asString(value.status, 'ready'),
+  };
+};
+
+const emptyUserEnvironmentIndex = (userId: string): UserEnvironmentIndex => ({
+  schema: USER_ENVIRONMENT_INDEX_SCHEMA,
+  userId,
+  environments: [],
+  updatedAt: new Date(0).toISOString(),
+});
+
+const readUserEnvironmentIndex = (userId: string): UserEnvironmentIndex => {
+  if (!isSafeIdentifier(userId) || runtimeRoot() === DEFAULT_RUNTIME_ROOT) return emptyUserEnvironmentIndex(userId);
+  const indexPath = userEnvironmentIndexPath(userId);
+  if (!fs.existsSync(indexPath)) return emptyUserEnvironmentIndex(userId);
+  try {
+    const parsed: unknown = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+    if (!isRecord(parsed)) return emptyUserEnvironmentIndex(userId);
+    return {
+      schema: asString(parsed.schema, USER_ENVIRONMENT_INDEX_SCHEMA),
+      userId,
+      environments: asArray(parsed.environments)
+        .map((record) => safeUserEnvironmentRecord(userId, record))
+        .filter((record): record is UserEnvironmentRecord => Boolean(record)),
+      updatedAt: asString(parsed.updatedAt, new Date(0).toISOString()),
+    };
+  } catch {
+    return emptyUserEnvironmentIndex(userId);
+  }
+};
+
+const writeUserEnvironmentIndex = (index: UserEnvironmentIndex): string => {
+  const indexPath = userEnvironmentIndexPath(index.userId);
+  fs.mkdirSync(path.dirname(indexPath), { recursive: true });
+  fs.writeFileSync(indexPath, `${JSON.stringify(index, null, 2)}\n`, 'utf8');
+  return indexPath;
+};
 
 const profileFromEnv = (): BioMcpProfile => resolveBioProfile(process.env.OPENBIOSCIENCE_BIO_MCP_PROFILE);
 
@@ -64,14 +824,35 @@ const missingFields = (payload: JsonRecord | undefined, fields: string[]): strin
 const catalogById = (items: BioMcpCatalogItem[], id?: string): BioMcpCatalogItem | undefined =>
   id ? items.find((item) => item.id === id) : undefined;
 
-const resolveEnvironment = (environmentRef: string) => {
+const resolveEnvironment = (environmentRef: string): EnvironmentResolution => {
+  const userRef = parseUserEnvironmentRef(environmentRef);
+  if (userRef) {
+    const record = readUserEnvironmentIndex(userRef.userId).environments.find(
+      (environment) => environment.environmentRef === environmentRef
+    );
+    if (!record) {
+      return {
+        environmentRef,
+        pathStatus: 'unavailable',
+        path: '',
+        warnings: [`Unknown user environmentRef "${environmentRef}".`],
+      };
+    }
+    return {
+      environmentRef,
+      pathStatus: pathStatus(record.path),
+      path: record.path,
+      userEnvironment: record,
+      warnings: [],
+    };
+  }
   const catalog = catalogById(BIO_ENVIRONMENTS, environmentRef);
   const resolvedPath = environmentPath(environmentRef);
   return {
     environmentRef,
-    status: pathStatus(resolvedPath),
+    pathStatus: pathStatus(resolvedPath),
     path: resolvedPath,
-    catalog,
+    ...(catalog ? { catalog } : {}),
     warnings: catalog ? [] : [`Unknown environmentRef "${environmentRef}".`],
   };
 };
@@ -81,7 +862,7 @@ const statusPayload = (profile: BioMcpProfile) => {
   return {
     schema: RESULT_SCHEMA,
     action: 'status',
-    status: 'supported',
+    status: profile === 'reproduction' || profile === 'analysis' || profile === 'statistics' ? 'ready' : 'supported',
     profile,
     serverName: definition.serverName,
     toolName: definition.toolName,
@@ -93,23 +874,229 @@ const statusPayload = (profile: BioMcpProfile) => {
       'Use science_artifact to record concrete evidence, outputs, warnings, and blocked claims.',
       'Official environment paths are resolved from OPENBIOSCIENCE_RUNTIME_ROOT when configured.',
     ],
+    ...(profile === 'reproduction'
+      ? {
+          planningOnly: true,
+          planningStatuses: REPRODUCTION_PLANNING_STATUSES,
+          localizationPolicy: {
+            defaultSingleFileLimitBytes: DEFAULT_REPRODUCTION_FILE_LIMIT_BYTES,
+            publicHttpOnly: true,
+            noCredentialsCookiesOrTokens: true,
+            overwriteDefault: false,
+            executesAnalysis: false,
+            installsPackages: false,
+            clonesRepositories: false,
+            performsHeavyDownloads: false,
+          },
+        }
+      : {}),
     timestamp: Date.now(),
   };
 };
 
+const handleStatisticsAction = (action: string, payload?: JsonRecord) => {
+  if (action === 'status') {
+    return {
+      ...statusPayload('statistics'),
+      minimumBiologicalReplicates: 3,
+      supportedConditionDeMethod: 'edgeR pseudobulk quasi-likelihood',
+      contrastStatuses: ['tested', 'blocked_insufficient_replicates', 'blocked_invalid_design', 'failed'],
+    };
+  }
+
+  if (action === 'validate_expression_contract') {
+    const result = validateExpressionContract(workspaceRoot(), payload || {});
+    return withControlReceipt(
+      'bio_statistics',
+      {
+        schema: RESULT_SCHEMA,
+        action,
+        ...result,
+        timestamp: Date.now(),
+      },
+      {
+        validationFingerprint: result.validationFingerprint,
+        checks: result.checks,
+      }
+    );
+  }
+
+  if (action === 'validate_de_design') {
+    const result = validateDeDesign(workspaceRoot(), payload || {});
+    const response = {
+      schema: RESULT_SCHEMA,
+      action,
+      ...result,
+      minimumReplicates: 3,
+      timestamp: Date.now(),
+    };
+    if (!result.value || !result.contrasts) return response;
+    const receipt = buildDesignReceipt(
+      makeControlReceipt('bio_statistics', action, result.status, {
+        validationFingerprint: result.validationFingerprint,
+        checks: result.checks,
+      }),
+      result.value,
+      result.contrasts,
+      result.nextActions
+    );
+    return { ...response, receipt };
+  }
+
+  if (action === 'validate_de_outputs') {
+    const result = validateDeOutputs(workspaceRoot(), payload || {});
+    const response = {
+      schema: RESULT_SCHEMA,
+      action,
+      ...result,
+      timestamp: Date.now(),
+    };
+    if (result.status !== 'ready' || !result.value || !result.canonicalFiles) return response;
+    const completionReceipt = buildCompletionReceipt(
+      makeControlReceipt('bio_statistics', action, result.status, {
+        validationFingerprint: result.validationFingerprint,
+        checks: result.checks,
+      }),
+      result.value,
+      result.canonicalFiles,
+      result.nextActions
+    );
+    return { ...response, completionReceipt };
+  }
+
+  throw new Error(`Unsupported statistics action "${action}".`);
+};
+
 const handleRuntimeAction = (action: string, payload?: JsonRecord) => {
   if (action === 'status') return statusPayload('runtime');
+  if (action === 'record_execution') {
+    const parsed = recordExecutionByIdPayloadSchema.safeParse(payload || {});
+    if (!parsed.success) {
+      return invalidActionPayload(
+        action,
+        parsed.error,
+        {
+          scriptValidationReceiptId: asString(
+            payload?.scriptValidationReceiptId,
+            isRecord(payload?.scriptValidationReceipt) ? asString(payload.scriptValidationReceipt.receiptId) : ''
+          ),
+          startedAt: payload?.startedAt,
+          finishedAt: payload?.finishedAt,
+          exitCode: payload?.exitCode,
+          scriptFiles: asArray(payload?.scriptFiles),
+          configFiles: asArray(payload?.configFiles),
+          logFiles: asArray(payload?.logFiles),
+          outputFiles: asArray(payload?.outputFiles),
+        },
+        'bio_runtime'
+      );
+    }
+    try {
+      return recordExecution(workspaceRoot(), {
+        scriptValidationReceipt: readStoredReceipt(parsed.data.scriptValidationReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'preflight_execution_scripts',
+          status: 'ready',
+        }),
+        startedAt: parsed.data.startedAt,
+        finishedAt: parsed.data.finishedAt,
+        exitCode: parsed.data.exitCode,
+        scriptFiles: parsed.data.scriptFiles,
+        configFiles: parsed.data.configFiles,
+        logFiles: parsed.data.logFiles,
+        outputFiles: parsed.data.outputFiles,
+      });
+    } catch (error) {
+      return receiptLookupFailure(action, error);
+    }
+  }
   if (action === 'list_environments') {
+    const userId = asString(payload?.userId || payload?.user_id);
+    const userEnvironments = userId
+      ? readUserEnvironmentIndex(userId).environments.map((environment) => ({
+          ...environment,
+          pathStatus: pathStatus(environment.path),
+          source: 'user',
+        }))
+      : [];
     return {
       schema: RESULT_SCHEMA,
       action,
       status: 'supported',
       runtimeRoot: runtimeRoot(),
-      environments: BIO_ENVIRONMENTS.map((environment) => ({
-        ...environment,
-        path: environmentPath(environment.id),
-        pathStatus: pathStatus(environmentPath(environment.id)),
-      })),
+      environments: [
+        ...BIO_ENVIRONMENTS.map((environment) => ({
+          ...environment,
+          environmentRef: environment.id,
+          path: environmentPath(environment.id),
+          pathStatus: pathStatus(environmentPath(environment.id)),
+          source: 'official',
+        })),
+        ...userEnvironments,
+      ],
+      timestamp: Date.now(),
+    };
+  }
+  if (action === 'probe_environments') {
+    const parsed = z
+      .object({ environmentRefs: z.array(z.string().min(1)).min(1) })
+      .strict()
+      .safeParse(payload || {});
+    if (!parsed.success) {
+      return invalidActionPayload(
+        action,
+        parsed.error,
+        {
+          environmentRefs: uniqueStrings([
+            ...asArray(payload?.environmentRefs),
+            ...(asString(payload?.environmentRef) ? [asString(payload?.environmentRef)] : []),
+          ]),
+        },
+        'bio_runtime'
+      );
+    }
+    const probes = uniqueStrings(parsed.data.environmentRefs).map((environmentRef) => {
+      const resolved = resolveEnvironment(environmentRef);
+      const probe = probeEnvironment(resolved);
+      const blocked = resolved.pathStatus === 'unavailable';
+      const probeFailed = probe.status === 'failed';
+      const result = {
+        schema: RESULT_SCHEMA,
+        action: 'probe_environment',
+        ...resolved,
+        status: blocked ? 'blocked' : resolved.pathStatus === 'missing' || probeFailed ? 'conditional' : 'supported',
+        probe,
+        timestamp: Date.now(),
+      };
+      return withControlReceipt('bio_runtime', result, {
+        environmentRef,
+        path: resolved.path,
+        pathStatus: resolved.pathStatus,
+        probe,
+      });
+    });
+    const compositeReceipt = makeControlReceipt(
+      'bio_runtime',
+      action,
+      probes.every((item) => item.probe.status === 'passed') ? 'ready' : 'partial',
+      {
+        probes: probes.map((item) => ({
+          environmentRef: item.environmentRef,
+          path: item.path,
+          pathStatus: item.pathStatus,
+          probe: item.probe,
+          receiptId: item.receipt.receiptId,
+        })),
+      }
+    );
+    return {
+      schema: 'openbioscience.bio_mcp.result.v2',
+      action,
+      status: compositeReceipt.status,
+      receiptId: compositeReceipt.receiptId,
+      receipt: compositeReceipt,
+      probes,
+      nextActions: [] as BioNextAction[],
       timestamp: Date.now(),
     };
   }
@@ -117,18 +1104,34 @@ const handleRuntimeAction = (action: string, payload?: JsonRecord) => {
     const environmentRef = asString(payload?.environmentRef || payload?.environment_ref);
     if (!environmentRef) throw new Error(`${action} requires environmentRef.`);
     const resolved = resolveEnvironment(environmentRef);
-    return {
+    const blocked = resolved.pathStatus === 'unavailable';
+    const probe =
+      action === 'probe_environment'
+        ? probeEnvironment(resolved)
+        : {
+            mode: 'not_run',
+            status: 'not_run',
+            importChecksRun: false,
+            checks: [] as EnvironmentProbeCheck[],
+            reason: 'Use probe_environment to run executable and package import checks.',
+          };
+    const probeFailed = action === 'probe_environment' && probe.status === 'failed';
+    const result = {
       schema: RESULT_SCHEMA,
       action,
-      status: resolved.status === 'missing' ? 'conditional' : 'supported',
       ...resolved,
-      probe: {
-        mode: 'path_only',
-        importChecksRun: false,
-        reason: 'This first-pass MCP skeleton records environment resolution without running package imports.',
-      },
+      status: blocked ? 'blocked' : resolved.pathStatus === 'missing' || probeFailed ? 'conditional' : 'supported',
+      probe,
       timestamp: Date.now(),
     };
+    return action === 'probe_environment'
+      ? withControlReceipt('bio_runtime', result, {
+          environmentRef,
+          path: resolved.path,
+          pathStatus: resolved.pathStatus,
+          probe,
+        })
+      : result;
   }
   if (action === 'list_workflows') {
     return {
@@ -222,12 +1225,193 @@ const validatePlotInputs = (action: string, payload?: JsonRecord) => {
   };
 };
 
-const handleSourceAction = (action: string, payload?: JsonRecord) => {
+const userEnvironmentRequiredFields = [
+  'userId',
+  'environmentName',
+  'version',
+  'path',
+  'build',
+  'keyResources',
+  'keySupports',
+];
+
+const userEnvironmentPlan = (action: string, payload?: JsonRecord) => {
+  const userId = asString(payload?.userId || payload?.user_id);
+  const environmentName = asString(payload?.environmentName || payload?.environment_name);
+  const version = asString(payload?.version, 'v1');
+  const environmentRef =
+    userId && environmentName && version ? userEnvironmentRef(userId, environmentName, version) : '';
+  const parentEnvironmentRef = asString(
+    payload?.parentEnvironmentRef ||
+      payload?.parent_environment_ref ||
+      payload?.baseEnvironmentRef ||
+      payload?.base_environment_ref
+  );
+  const invalidIdentifiers = [
+    userId && !isSafeIdentifier(userId) ? 'userId' : '',
+    environmentName && !isSafeIdentifier(environmentName) ? 'environmentName' : '',
+    version && !isSafeIdentifier(version) ? 'version' : '',
+  ].filter(Boolean);
+  return {
+    schema: RESULT_SCHEMA,
+    action,
+    status: userId && environmentName && version && !invalidIdentifiers.length ? 'planned_only' : 'blocked',
+    planningOnly: true,
+    environmentRef,
+    parentEnvironmentRef: parentEnvironmentRef || undefined,
+    path: userId && environmentName && version ? userEnvironmentSuggestedPath(userId, environmentName, version) : '',
+    requiredFields: userEnvironmentRequiredFields,
+    agentExecutesBuild: true,
+    executesCondaOrMamba: false,
+    registerWithAction: 'register_user_environment',
+    warnings: invalidIdentifiers.length
+      ? [`Invalid identifier fields: ${invalidIdentifiers.join(', ')}.`]
+      : [
+          'This MCP returns a user environment contract only. The agent/runtime must create, derive, and debug the actual environment outside this MCP.',
+        ],
+    timestamp: Date.now(),
+  };
+};
+
+const handleEnvironmentManagerAction = (action: string, payload?: JsonRecord) => {
+  if (action === 'status') {
+    return {
+      ...statusPayload('environment_manager'),
+      userEnvironmentIndex: userEnvironmentIndexDir(),
+      officialEnvironmentsImmutable: true,
+      agentExecutesBuild: true,
+    };
+  }
+
+  if (action === 'create_user_environment' || action === 'derive_user_environment') {
+    return userEnvironmentPlan(action, payload);
+  }
+
+  if (action === 'list_user_environments') {
+    const userId = asString(payload?.userId || payload?.user_id);
+    if (!userId || !isSafeIdentifier(userId)) {
+      return {
+        schema: RESULT_SCHEMA,
+        action,
+        status: 'blocked',
+        userId,
+        environments: [] as UserEnvironmentRecord[],
+        warnings: ['list_user_environments requires a safe userId.'],
+        timestamp: Date.now(),
+      };
+    }
+    const index = readUserEnvironmentIndex(userId);
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: 'ready',
+      userId,
+      indexPath: runtimeRoot() === DEFAULT_RUNTIME_ROOT ? '' : userEnvironmentIndexPath(userId),
+      environments: index.environments,
+      timestamp: Date.now(),
+    };
+  }
+
+  if (action === 'register_user_environment') {
+    const userId = asString(payload?.userId || payload?.user_id);
+    const environmentName = asString(payload?.environmentName || payload?.environment_name);
+    const version = asString(payload?.version);
+    const environmentPathValue = asString(payload?.path || payload?.environmentPath || payload?.environment_path);
+    const build = isRecord(payload?.build) ? payload.build : {};
+    const keyResourcesPayload = payload?.keyResources ?? payload?.key_resources;
+    const keySupportsPayload = payload?.keySupports ?? payload?.key_supports;
+    const keyResources = normalizeUserEnvironmentMetadata(keyResourcesPayload);
+    const keySupports = normalizeUserEnvironmentMetadata(keySupportsPayload);
+    const hasKeyResources = Array.isArray(keyResourcesPayload) || isRecord(keyResourcesPayload);
+    const hasKeySupports = Array.isArray(keySupportsPayload) || isRecord(keySupportsPayload);
+    const missing = [
+      userId ? '' : 'userId',
+      environmentName ? '' : 'environmentName',
+      version ? '' : 'version',
+      environmentPathValue ? '' : 'path',
+      isRecord(payload?.build) ? '' : 'build',
+      hasKeyResources ? '' : 'keyResources',
+      hasKeySupports ? '' : 'keySupports',
+    ].filter(Boolean);
+    const invalidIdentifiers = [
+      userId && !isSafeIdentifier(userId) ? 'userId' : '',
+      environmentName && !isSafeIdentifier(environmentName) ? 'environmentName' : '',
+      version && !isSafeIdentifier(version) ? 'version' : '',
+    ].filter(Boolean);
+    const officialPrefixBlocked = usesOfficialEnvironmentPrefix(environmentPathValue);
+    const userPrefixBlocked = Boolean(
+      userId &&
+      isSafeIdentifier(userId) &&
+      environmentPathValue &&
+      !usesUserEnvironmentPrefix(userId, environmentPathValue)
+    );
+    const warnings = [
+      ...missing.map((field) => `Missing required field: ${field}.`),
+      invalidIdentifiers.length ? `Invalid identifier fields: ${invalidIdentifiers.join(', ')}.` : '',
+      officialPrefixBlocked ? 'User environment path must not use official env prefix.' : '',
+      userPrefixBlocked ? 'User environment path must live under the owner custom env root.' : '',
+    ].filter(Boolean);
+    const environmentRef =
+      userId && environmentName && version ? userEnvironmentRef(userId, environmentName, version) : '';
+    if (warnings.length || !environmentRef) {
+      return {
+        schema: RESULT_SCHEMA,
+        action,
+        status: 'blocked',
+        environmentRef,
+        path: environmentPathValue,
+        warnings,
+        timestamp: Date.now(),
+      };
+    }
+
+    const record: UserEnvironmentRecord = {
+      environmentRef,
+      path: environmentPathValue,
+      build,
+      keyResources,
+      keySupports,
+      owner: userId,
+      status: pathStatus(environmentPathValue) === 'available' ? 'ready' : 'blocked',
+    };
+    const index = readUserEnvironmentIndex(userId);
+    const nextIndex: UserEnvironmentIndex = {
+      schema: USER_ENVIRONMENT_INDEX_SCHEMA,
+      userId,
+      environments: [
+        ...index.environments.filter((environment) => environment.environmentRef !== environmentRef),
+        record,
+      ].sort((left, right) => left.environmentRef.localeCompare(right.environmentRef)),
+      updatedAt: new Date().toISOString(),
+    };
+    const indexPath = writeUserEnvironmentIndex(nextIndex);
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: record.status,
+      environmentRef,
+      path: environmentPathValue,
+      pathStatus: pathStatus(environmentPathValue),
+      indexPath,
+      environment: record,
+      warnings:
+        record.status === 'ready'
+          ? []
+          : ['Registered path is not currently available; runtime resolve/probe will remain conditional.'],
+      timestamp: Date.now(),
+    };
+  }
+
+  throw new Error(`Unsupported environment_manager action "${action}".`);
+};
+
+const handleSourceAction = async (action: string, payload?: JsonRecord) => {
+  if (action === 'index_paper_sources') return indexPaperSources(workspaceRoot(), payload || {});
   if (action === 'status') return statusPayload('source');
   if (action === 'resolve_accession') {
     const accession = asString(payload?.accession);
     const sourceHint = asString(payload?.source || payload?.sourceHint || payload?.source_hint, 'auto');
-    return {
+    const result = {
       schema: RESULT_SCHEMA,
       action,
       status: accession ? 'conditional' : 'blocked',
@@ -242,21 +1426,28 @@ const handleSourceAction = (action: string, payload?: JsonRecord) => {
         : ['Provide GEO/SRA/ArrayExpress/EGA/BioStudies/Zenodo/Figshare accession or local path.'],
       timestamp: Date.now(),
     };
+    return withControlReceipt('bio_source', result, {
+      accession,
+      sourceHint,
+      candidateSources: result.candidateSources,
+    });
   }
   if (action === 'verify_local_assets' || action === 'build_data_manifest') {
     const paths = uniqueStrings(asArray(payload?.paths || payload?.inputPaths || payload?.input_paths));
-    return {
+    const assets = paths.map((assetPath) => {
+      const resolved = resolveWorkspacePath(assetPath);
+      return { path: assetPath, resolvedPath: resolved.path, status: resolved.status };
+    });
+    const result = {
       schema: RESULT_SCHEMA,
       action,
       status: paths.length ? 'conditional' : 'blocked',
-      assets: paths.map((assetPath) => ({
-        path: assetPath,
-        status: safeAbsolutePathStatus(assetPath),
-      })),
+      assets,
       manifestSchema: 'openbioscience.data_manifest.v1',
       warnings: paths.length ? [] : [`${action} requires paths.`],
       timestamp: Date.now(),
     };
+    return withControlReceipt('bio_source', result, { assets });
   }
   if (action === 'plan_download') {
     const accession = asString(payload?.accession);
@@ -275,6 +1466,44 @@ const handleSourceAction = (action: string, payload?: JsonRecord) => {
       warnings: accession ? [] : ['plan_download requires accession.'],
       timestamp: Date.now(),
     };
+  }
+  if (action === 'inspect_method_sources') {
+    const paperTextPaths = uniqueStrings(asArray(payload?.paperTextPaths || payload?.paper_text_paths));
+    const supplementPaths = uniqueStrings(asArray(payload?.supplementPaths || payload?.supplement_paths));
+    const repositoryUrls = uniqueStrings(asArray(payload?.repositoryUrls || payload?.repository_urls));
+    const inspection = await inspectMethodSources({
+      projectRoot: workspaceRoot(),
+      paperTextPaths,
+      supplementPaths,
+      repositoryUrls,
+    });
+    const result = {
+      schema: RESULT_SCHEMA,
+      action,
+      ...inspection,
+      nextActions:
+        inspection.status === 'blocked'
+          ? [
+              {
+                id: 'provide-method-sources',
+                tool: 'bio_source',
+                action: 'inspect_method_sources',
+                reason:
+                  'Provide at least one project-relative paper text, supplement, or public GitHub repository URL.',
+                payload: { paperTextPaths, supplementPaths, repositoryUrls },
+              },
+            ]
+          : [],
+      warnings: inspection.externalBlockers.map((blocker) => blocker.message),
+      timestamp: Date.now(),
+    };
+    return withControlReceipt('bio_source', result, {
+      sources: inspection.sources,
+      candidates: inspection.candidates,
+      repositories: inspection.repositories,
+      externalBlockers: inspection.externalBlockers,
+      validationFingerprint: inspection.validationFingerprint,
+    });
   }
   throw new Error(`Unsupported source action "${action}".`);
 };
@@ -354,6 +1583,1469 @@ const handlePlotAction = (action: string, payload?: JsonRecord) => {
   throw new Error(`Unsupported plot action "${action}".`);
 };
 
+const sourceMaterialsFromPayload = (payload?: JsonRecord) => {
+  const paper = isRecord(payload?.paper) ? payload.paper : {};
+  const supplements = asArray(payload?.supplements || payload?.supplementary || payload?.supplementaryFiles);
+  const sanitizedSupplementsResult = sanitizeSourceValue(
+    supplements.map((item) => (isRecord(item) ? item : { value: item }))
+  );
+  const sanitizedSupplements = Array.isArray(sanitizedSupplementsResult.value) ? sanitizedSupplementsResult.value : [];
+  const accessionsResult = sanitizeSourceValue(uniqueStrings(asArray(payload?.accessions)));
+  const accessions = Array.isArray(accessionsResult.value)
+    ? uniqueStrings(accessionsResult.value)
+    : uniqueStrings(asArray(payload?.accessions));
+  const linksResult = sanitizeSourceValue(uniqueSanitizedStrings(asArray(payload?.links || payload?.urls)));
+  const links = Array.isArray(linksResult.value) ? uniqueStrings(linksResult.value) : [];
+  const localPaths = uniqueStrings(asArray(payload?.localPaths || payload?.local_paths || payload?.paths));
+  const codeLinksResult = sanitizeSourceValue(
+    uniqueSanitizedStrings(asArray(payload?.codeLinks || payload?.code_links || payload?.repositories))
+  );
+  const codeLinks = Array.isArray(codeLinksResult.value) ? uniqueStrings(codeLinksResult.value) : [];
+  const referenceResourcesResult = sanitizeSourceValue(
+    uniqueStrings(asArray(payload?.referenceResources || payload?.reference_resources || payload?.references))
+  );
+  const referenceResources = Array.isArray(referenceResourcesResult.value)
+    ? uniqueStrings(referenceResourcesResult.value)
+    : [];
+  const paperUrlResult = sanitizeSourceValue(paper.url || payload?.paperUrl || payload?.paper_url);
+  const methodsResult = sanitizeSourceValue(payload?.methods || payload?.methodsSummary || payload?.methods_summary);
+  const dataAvailabilityResult = sanitizeSourceValue(
+    payload?.dataAvailability || payload?.data_availability || payload?.dataAvailabilityStatement
+  );
+  const codeAvailabilityResult = sanitizeSourceValue(
+    payload?.codeAvailability || payload?.code_availability || payload?.codeAvailabilityStatement
+  );
+  const credentialFieldsRedacted =
+    sanitizedSupplementsResult.redacted ||
+    accessionsResult.redacted ||
+    linksResult.redacted ||
+    codeLinksResult.redacted ||
+    referenceResourcesResult.redacted ||
+    paperUrlResult.redacted ||
+    methodsResult.redacted ||
+    dataAvailabilityResult.redacted ||
+    codeAvailabilityResult.redacted ||
+    containsCredentialField({ paper, supplements, links, codeLinks, referenceResources });
+
+  return {
+    paper: {
+      title: asString(paper.title || payload?.paperTitle || payload?.paper_title),
+      doi: asString(paper.doi || payload?.doi),
+      pmid: asString(paper.pmid || payload?.pmid),
+      url: asString(paperUrlResult.value),
+      localPath: asString(paper.localPath || paper.local_path || payload?.paperPath || payload?.paper_path),
+    },
+    methods: asString(methodsResult.value),
+    dataAvailability: asString(dataAvailabilityResult.value),
+    codeAvailability: asString(codeAvailabilityResult.value),
+    supplements: sanitizedSupplements,
+    credentialFieldsRedacted,
+    accessions,
+    links,
+    localPaths,
+    codeLinks,
+    referenceResources,
+  };
+};
+
+const hasSourceMaterial = (sources: ReturnType<typeof sourceMaterialsFromPayload>): boolean =>
+  Boolean(
+    sources.paper.title ||
+    sources.paper.doi ||
+    sources.paper.pmid ||
+    sources.paper.url ||
+    sources.paper.localPath ||
+    sources.methods ||
+    sources.dataAvailability ||
+    sources.codeAvailability ||
+    sources.supplements.length ||
+    sources.accessions.length ||
+    sources.links.length ||
+    sources.localPaths.length ||
+    sources.codeLinks.length ||
+    sources.referenceResources.length
+  );
+
+const reproductionPackageLayout = (caseName: string) => ({
+  root: caseName || 'case_reproduction',
+  planning: {
+    plan: 'planning/reproduction_plan.md',
+    sourceAudit: 'planning/source_audit.json',
+    methodParameterContract: 'planning/method_parameter_contract.json',
+    localized: 'planning/localized/',
+  },
+  execution: {
+    scripts: 'execution/scripts/',
+    configs: 'execution/configs/',
+    results: [
+      'execution/results/tables/',
+      'execution/results/figures/',
+      'execution/results/objects/',
+      'execution/results/reports/',
+    ],
+    logs: ['execution/logs/execution.log', 'execution/logs/review.md'],
+  },
+});
+
+const containsCredentialField = (value: unknown): boolean => {
+  if (Array.isArray(value)) return value.some((item) => containsCredentialField(item));
+  if (typeof value === 'string') return hasCredentialLikeUrl(value);
+  if (!isRecord(value)) return false;
+  return Object.entries(value).some(([key, nested]) => {
+    if (isCredentialKey(key)) {
+      return Boolean(nested);
+    }
+    return containsCredentialField(nested);
+  });
+};
+
+const classifySourceAvailability = (sources: ReturnType<typeof sourceMaterialsFromPayload>) => ({
+  paper:
+    sources.paper.localPath || sources.paper.url || sources.paper.doi || sources.paper.pmid
+      ? 'conditional_continue'
+      : 'blocked_for_execution',
+  data:
+    sources.accessions.length || sources.localPaths.length || sources.dataAvailability
+      ? 'conditional_continue'
+      : 'blocked_for_execution',
+  code: sources.codeLinks.length || sources.codeAvailability ? 'conditional_continue' : 'blocked_for_execution',
+  referenceResources: sources.referenceResources.length ? 'conditional_continue' : 'blocked_for_execution',
+});
+
+const READY_FOR_SCRIPT_STATUSES = new Set(['ready', 'partial_ready', 'conditional_continue']);
+const BLOCKING_MODULE_STATUSES = new Set([
+  'blocked_for_localization',
+  'blocked_for_execution',
+  'fatal_block',
+  'planned_only',
+  'unresolved',
+]);
+
+const moduleReadiness = (modules: unknown[]): ReproductionModuleReadiness[] =>
+  modules.map((item, index) => {
+    const record = isRecord(item) ? item : { objective: item };
+    const environmentRef = asString(record.environmentRef || record.environment_ref);
+    const declaredStatus = asString(record.status, environmentRef ? 'conditional_continue' : 'blocked_for_execution');
+    const sourceStatus = asString(
+      record.sourceStatus ||
+        record.source_status ||
+        record.inputStatus ||
+        record.input_status ||
+        record.dataStatus ||
+        record.data_status
+    );
+    const skillRoute = uniqueStrings(asArray(record.skillRoute || record.skill_route));
+    const mcpRoute = uniqueStrings(asArray(record.mcpRoute || record.mcp_route));
+    const expectedOutputs = uniqueStrings(asArray(record.expectedOutputs || record.expected_outputs));
+    const contractReasons = [
+      environmentRef ? '' : 'environmentRef is required.',
+      skillRoute.length ? '' : 'skillRoute is required.',
+      mcpRoute.length ? '' : 'mcpRoute is required.',
+      expectedOutputs.length ? '' : 'expectedOutputs is required.',
+      sourceStatus ? '' : 'sourceStatus is required.',
+    ].filter(Boolean);
+    const executionBlocked =
+      BLOCKING_MODULE_STATUSES.has(declaredStatus) || !sourceStatus || !READY_FOR_SCRIPT_STATUSES.has(sourceStatus);
+    const executionStatus: ReproductionModuleReadiness['executionStatus'] = executionBlocked
+      ? 'blocked'
+      : declaredStatus === 'ready' && sourceStatus === 'ready'
+        ? 'ready'
+        : 'conditional';
+    const blockingReasons = [
+      ...contractReasons,
+      BLOCKING_MODULE_STATUSES.has(declaredStatus) ? `Module status "${declaredStatus}" is not script-ready.` : '',
+      sourceStatus && !READY_FOR_SCRIPT_STATUSES.has(sourceStatus)
+        ? `sourceStatus "${sourceStatus}" is not script-ready.`
+        : '',
+    ].filter(Boolean);
+    return {
+      id: asString(record.id, `module-${index + 1}`),
+      environmentRef,
+      declaredStatus,
+      sourceStatus,
+      skillRoute,
+      mcpRoute,
+      expectedOutputs,
+      contractStatus: contractReasons.length ? 'incomplete' : 'complete',
+      executionStatus,
+      status: executionStatus === 'blocked' ? 'blocked_for_execution' : 'ready',
+      blockingReasons,
+    };
+  });
+
+const sourceAuditStatusSchema = z.enum(REPRODUCTION_PLANNING_STATUSES);
+const sourceAuditItemSchema = z.object({ status: sourceAuditStatusSchema }).passthrough();
+const sourceAuditSchema = z
+  .object({
+    schema: z.literal(SOURCE_AUDIT_SCHEMA),
+    paper: z.object({ status: sourceAuditStatusSchema }).passthrough(),
+    data: z.array(sourceAuditItemSchema),
+    code: z.array(sourceAuditItemSchema),
+    referenceResources: z.array(sourceAuditItemSchema),
+    localized: z.array(z.record(z.unknown())),
+    plannedOnly: z.array(z.record(z.unknown())),
+    warnings: z.array(z.record(z.unknown())),
+    timestamp: z.string().min(1),
+  })
+  .passthrough();
+
+const readValidatedJson = (candidate: string): { value?: unknown; error?: string } => {
+  try {
+    return { value: JSON.parse(fs.readFileSync(candidate, 'utf8')) };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : String(error) };
+  }
+};
+
+const formatZodIssues = (error: z.ZodError): string[] =>
+  error.issues.map((issue) => `${issue.path.join('.') || '<root>'}: ${issue.message}`);
+
+const validatePlanDocument = (candidate: string): string[] => {
+  try {
+    const normalized = fs.readFileSync(candidate, 'utf8').toLowerCase();
+    return REPRODUCTION_PLAN_SECTION_ALIASES.filter(
+      ({ aliases }) => !aliases.some((alias) => normalized.includes(alias))
+    ).map(({ section }) => section);
+  } catch {
+    return [...REPRODUCTION_PLAN_SECTIONS];
+  }
+};
+
+const validReceiptForProject = (receipt: BioControlReceipt, producer: BioControlReceipt['producer']): boolean =>
+  receipt.producer === producer && path.resolve(receipt.projectRoot) === workspaceRoot();
+
+const validMethodParameterReceipt = (value: unknown): value is MethodParameterReceipt => {
+  if (!isRecord(value)) return false;
+  return (
+    value.schema === BIO_RECEIPT_SCHEMA &&
+    value.producer === 'bio_reproduction' &&
+    value.action === 'extract_method_parameters' &&
+    value.status === 'ready' &&
+    typeof value.receiptId === 'string' &&
+    typeof value.projectRoot === 'string' &&
+    isRecord(value.canonicalFile) &&
+    typeof value.canonicalFile.path === 'string' &&
+    typeof value.canonicalFile.contentHash === 'string' &&
+    Array.isArray(value.sourceReceiptIds) &&
+    Array.isArray(value.moduleCoverage) &&
+    Array.isArray(value.conflicts) &&
+    Array.isArray(value.nextActions)
+  );
+};
+
+const runtimeReceiptFor = (receipts: BioControlReceipt[], environmentRef: string): BioControlReceipt | undefined => {
+  const direct = receipts.find(
+    (receipt) =>
+      validReceiptForProject(receipt, 'bio_runtime') &&
+      receipt.action === 'probe_environment' &&
+      asString(receipt.details?.environmentRef) === environmentRef
+  );
+  if (direct) return direct;
+  for (const receipt of receipts) {
+    if (!validReceiptForProject(receipt, 'bio_runtime') || receipt.action !== 'probe_environments') continue;
+    const probe = asArray(receipt.details?.probes).find(
+      (candidate) => isRecord(candidate) && asString(candidate.environmentRef) === environmentRef
+    );
+    if (isRecord(probe)) {
+      return {
+        ...receipt,
+        action: 'probe_environment',
+        details: probe,
+      };
+    }
+  }
+  return undefined;
+};
+
+const runtimeProbePassed = (receipt?: BioControlReceipt): boolean =>
+  Boolean(receipt && isRecord(receipt.details?.probe) && receipt.details.probe.status === 'passed');
+
+const localizationItems = (payload?: JsonRecord) => {
+  const candidates = asArray(payload?.sources || payload?.items || payload?.urls);
+  return candidates.map((item, index) => {
+    const record = isRecord(item) ? item : { url: item };
+    const url = asString(record.url || record.href || record.sourceUrl || record.source_url);
+    const fallbackTargetName = (() => {
+      try {
+        const basename = path.basename(new URL(url).pathname);
+        return basename && basename !== '/' ? basename : `source-${index + 1}`;
+      } catch {
+        return `source-${index + 1}`;
+      }
+    })();
+    return {
+      id: asString(record.id, `source-${index + 1}`),
+      url,
+      kind: asString(record.kind || record.type, 'source'),
+      expectedBytes: firstNumber(record.expectedBytes, record.expected_bytes),
+      targetName: asString(record.targetName || record.target_name || record.filename, fallbackTargetName),
+      credentialsRequested: containsCredentialField(record),
+    };
+  });
+};
+
+const handleReproductionAction = (action: string, payload?: JsonRecord) => {
+  if (action === 'status') return statusPayload('reproduction');
+  if (action === 'validate_paper_reproduction_map') {
+    const parsed = validatePaperMapByIdPayloadSchema.safeParse(payload || {});
+    if (!parsed.success) {
+      const legacyReceipts = asArray(payload?.sourceReceipts)
+        .map((receipt) => (isRecord(receipt) ? asString(receipt.receiptId) : ''))
+        .filter(Boolean);
+      return invalidActionPayload(action, parsed.error, {
+        mapPath: 'case_reproduction/planning/paper_reproduction_map.json',
+        sourceReceiptIds: uniqueStrings([...asArray(payload?.sourceReceiptIds), ...legacyReceipts]),
+      });
+    }
+    try {
+      const sourceReceipts = parsed.data.sourceReceiptIds.map((receiptId) =>
+        readStoredReceipt(receiptId, {
+          producer: 'bio_source',
+          action: 'index_paper_sources',
+          status: 'ready',
+        })
+      );
+      const result = validatePaperReproductionMap(workspaceRoot(), {
+        mapPath: parsed.data.mapPath,
+        sourceReceipts,
+      });
+      const nextActions = asArray(result.nextActions).map((nextAction) => {
+        if (!isRecord(nextAction) || !isRecord(nextAction.payload)) return nextAction;
+        const nextPayload = { ...nextAction.payload };
+        if (isRecord(nextPayload.onSuccess)) {
+          nextPayload.onSuccess = {
+            ...nextPayload.onSuccess,
+            payload: {
+              mapPath: parsed.data.mapPath,
+              sourceReceiptIds: parsed.data.sourceReceiptIds,
+            },
+          };
+        }
+        return { ...nextAction, payload: nextPayload };
+      });
+      return { ...result, nextActions };
+    } catch (error) {
+      return receiptLookupFailure(action, error);
+    }
+  }
+  if (action === 'validate_reproduction_scope') {
+    const parsed = validateScopeByIdPayloadSchema.safeParse(payload || {});
+    if (!parsed.success) {
+      const legacyReceipt = isRecord(payload?.paperMapReceipt) ? asString(payload.paperMapReceipt.receiptId) : '';
+      return invalidActionPayload(action, parsed.error, {
+        mapPath: 'case_reproduction/planning/paper_reproduction_map.json',
+        paperMapReceiptId: asString(payload?.paperMapReceiptId, legacyReceipt),
+      });
+    }
+    try {
+      const paperMapReceipt = readStoredReceipt(parsed.data.paperMapReceiptId, {
+        producer: 'bio_reproduction',
+        action: 'validate_paper_reproduction_map',
+        status: 'ready',
+      });
+      const paperMapReceiptRecord = paperMapReceipt as unknown as JsonRecord;
+      const result = validateReproductionScope(workspaceRoot(), {
+        mapPath: parsed.data.mapPath,
+        paperMapReceipt,
+      });
+      const nextActions = asArray(result.nextActions).map((nextAction) => {
+        if (!isRecord(nextAction)) return nextAction;
+        if (nextAction.action !== 'validate_paper_reproduction_map') return nextAction;
+        return {
+          ...nextAction,
+          payload: {
+            mapPath: parsed.data.mapPath,
+            sourceReceiptIds: asArray(paperMapReceiptRecord.sourceReceiptIds),
+          },
+        };
+      });
+      return { ...result, nextActions };
+    } catch (error) {
+      return receiptLookupFailure(action, error);
+    }
+  }
+  if (action === 'validate_skill_compliance') return validateSkillCompliance(workspaceRoot(), payload || {});
+  if (action === 'preflight_execution_scripts') {
+    const parsed = scriptPreflightByIdPayloadSchema.safeParse(payload || {});
+    if (!parsed.success) {
+      return invalidActionPayload(action, parsed.error, {
+        executionContractReceiptId: asString(payload?.executionContractReceiptId),
+        methodParameterReceiptId: asString(payload?.methodParameterReceiptId),
+        scripts: asArray(payload?.scripts),
+        scriptPaths: uniqueStrings(asArray(payload?.scriptPaths)),
+        skillComplianceReceiptIds: uniqueStrings(asArray(payload?.skillComplianceReceiptIds)),
+        statisticalDesignReceiptIds: uniqueStrings(asArray(payload?.statisticalDesignReceiptIds)),
+      });
+    }
+    try {
+      return preflightExecutionScripts(workspaceRoot(), {
+        executionContractReceipt: readStoredReceipt(parsed.data.executionContractReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'prepare_execution_contract',
+          status: 'ready',
+        }),
+        methodParameterReceipt: readStoredReceipt(parsed.data.methodParameterReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'extract_method_parameters',
+          status: 'ready',
+        }),
+        scripts: parsed.data.scripts,
+        scriptPaths: parsed.data.scriptPaths,
+        skillComplianceReceipts: parsed.data.skillComplianceReceiptIds.map((receiptId) =>
+          readStoredReceipt(receiptId, {
+            producer: 'bio_reproduction',
+            action: 'validate_skill_compliance',
+            status: 'ready',
+          })
+        ),
+        statisticalDesignReceipts: (parsed.data.statisticalDesignReceiptIds || []).map((receiptId) =>
+          readStoredReceipt(receiptId, {
+            producer: 'bio_statistics',
+            action: 'validate_de_design',
+            status: 'ready',
+          })
+        ),
+        skillContents: parsed.data.skillContents,
+      });
+    } catch (error) {
+      return receiptLookupFailure(action, error);
+    }
+  }
+  if (action === 'prepare_execution_contract') {
+    const parsed = prepareExecutionByIdPayloadSchema.safeParse(payload || {});
+    if (!parsed.success) {
+      return invalidActionPayload(action, parsed.error, {
+        contractVersion: 2,
+        objective: asString(payload?.objective),
+        datasetIds: uniqueStrings(asArray(payload?.datasetIds)),
+        executionContractPath: asString(
+          payload?.executionContractPath,
+          'case_reproduction/execution/execution_contract.json'
+        ),
+        planningReceiptId: asString(payload?.planningReceiptId),
+        paperMapReceiptId: asString(payload?.paperMapReceiptId),
+        scopeReceiptId: asString(payload?.scopeReceiptId),
+      });
+    }
+    try {
+      const executionPayload = {
+        contractVersion: 2 as const,
+        objective: parsed.data.objective,
+        datasetIds: parsed.data.datasetIds,
+        executionContractPath: parsed.data.executionContractPath,
+        annotationMode: parsed.data.annotationMode,
+        annotationPolicy: parsed.data.annotationPolicy,
+        planningReceipt: readStoredReceipt(parsed.data.planningReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'validate_reproduction_plan',
+          status: 'ready',
+        }),
+        paperMapReceipt: readStoredReceipt(parsed.data.paperMapReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'validate_paper_reproduction_map',
+          status: 'ready',
+        }),
+        scopeReceipt: readStoredReceipt(parsed.data.scopeReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'validate_reproduction_scope',
+          status: 'ready',
+        }),
+      };
+      const first = prepareExecutionContract(workspaceRoot(), executionPayload);
+      const firstRecord = first as unknown as JsonRecord;
+      if (
+        firstRecord.status === 'needs_completion' &&
+        isRecord(firstRecord.canonicalContent) &&
+        !asArray(firstRecord.issues).length
+      ) {
+        writeCanonicalJson(
+          asString(firstRecord.canonicalPath, 'case_reproduction/execution/execution_contract.json'),
+          firstRecord.canonicalContent
+        );
+        return prepareExecutionContract(workspaceRoot(), executionPayload);
+      }
+      return first;
+    } catch (error) {
+      return receiptLookupFailure(action, error);
+    }
+  }
+  if (action === 'complete_execution') {
+    const parsed = completeExecutionByIdPayloadSchema.safeParse(payload || {});
+    if (!parsed.success) {
+      return invalidActionPayload(action, parsed.error, {
+        contractVersion: 2,
+        executionContractReceiptId: asString(payload?.executionContractReceiptId),
+        planningReceiptId: asString(payload?.planningReceiptId),
+        paperMapReceiptId: asString(payload?.paperMapReceiptId),
+        scopeReceiptId: asString(payload?.scopeReceiptId),
+        methodAlignmentReceiptId: asString(payload?.methodAlignmentReceiptId),
+        scriptValidationReceiptId: asString(payload?.scriptValidationReceiptId),
+        executionRunReceiptIds: uniqueStrings(asArray(payload?.executionRunReceiptIds)),
+        statisticalCompletionReceiptIds: uniqueStrings(asArray(payload?.statisticalCompletionReceiptIds)),
+        moduleResults: asArray(payload?.moduleResults),
+      });
+    }
+    try {
+      const statisticalReceipts = (parsed.data.statisticalCompletionReceiptIds || []).map((receiptId) =>
+        readStoredReceipt(receiptId, {
+          producer: 'bio_statistics',
+          action: 'validate_de_outputs',
+          status: 'ready',
+        })
+      );
+      return completeExecution(workspaceRoot(), {
+        executionContractReceipt: readStoredReceipt(parsed.data.executionContractReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'prepare_execution_contract',
+          status: 'ready',
+        }),
+        planningReceipt: readStoredReceipt(parsed.data.planningReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'validate_reproduction_plan',
+          status: 'ready',
+        }),
+        paperMapReceipt: readStoredReceipt(parsed.data.paperMapReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'validate_paper_reproduction_map',
+          status: 'ready',
+        }),
+        scopeReceipt: readStoredReceipt(parsed.data.scopeReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'validate_reproduction_scope',
+          status: 'ready',
+        }),
+        methodAlignmentReceipt: readStoredReceipt(parsed.data.methodAlignmentReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'validate_method_alignment',
+          status: 'ready',
+        }),
+        scriptValidationReceipt: readStoredReceipt(parsed.data.scriptValidationReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'preflight_execution_scripts',
+          status: 'ready',
+        }),
+        executionRunReceipts: parsed.data.executionRunReceiptIds.map((receiptId) =>
+          readStoredReceipt(receiptId, { producer: 'bio_runtime', action: 'record_execution' })
+        ),
+        statisticalCompletionReceipts: statisticalReceipts,
+        moduleResults: parsed.data.moduleResults,
+        skillUses: parsed.data.skillUses,
+        externalBlockers: parsed.data.externalBlockers,
+      });
+    } catch (error) {
+      return receiptLookupFailure(action, error);
+    }
+  }
+
+  if (action === 'build_source_package') {
+    const sources = sourceMaterialsFromPayload(payload);
+    const caseName = asString(payload?.caseName || payload?.case_name, 'case_reproduction');
+    const hasMaterials = hasSourceMaterial(sources);
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: hasMaterials ? 'conditional_continue' : 'blocked_for_execution',
+      planningOnly: true,
+      packageLayout: reproductionPackageLayout(caseName),
+      sourcePackageDraft: {
+        paper: sources.paper,
+        methods: sources.methods,
+        dataAvailability: sources.dataAvailability,
+        codeAvailability: sources.codeAvailability,
+        supplements: sources.supplements,
+        accessions: sources.accessions,
+        links: sources.links,
+        localPaths: sources.localPaths.map((candidate) => ({
+          path: candidate,
+          status: safeAbsolutePathStatus(candidate),
+        })),
+        codeLinks: sources.codeLinks,
+        referenceResources: sources.referenceResources,
+      },
+      requiredArtifacts: [
+        'planning/reproduction_plan.md',
+        'planning/source_audit.json',
+        'planning/method_parameter_contract.json',
+        'planning/localized/',
+      ],
+      warnings: hasMaterials
+        ? [
+            'Source package is a planning draft. Register concrete localized files and audit outputs through science_artifact.',
+            ...(sources.credentialFieldsRedacted
+              ? ['Credential-like source fields were redacted and must not be stored in the Planning Package.']
+              : []),
+          ]
+        : [
+            'build_source_package requires at least one paper, supplement, method, accession, link, code reference, or local path.',
+          ],
+      timestamp: Date.now(),
+    };
+  }
+
+  if (action === 'localize_source_package') {
+    const outputDir = asString(payload?.outputDir || payload?.output_dir);
+    const outputStatus = safeOutputDirectoryStatus(outputDir);
+    const overwrite = asBoolean(payload?.overwrite);
+    const defaultLimit = DEFAULT_REPRODUCTION_FILE_LIMIT_BYTES;
+    const maxBytes = asPositiveInteger(payload?.maxBytes || payload?.max_bytes, defaultLimit);
+    const items = localizationItems(payload);
+    const credentialRequest = containsCredentialField(payload);
+    const plannedItems = items.map((item) => {
+      const urlStatus = publicHttpUrlStatus(item.url);
+      const targetPathStatus =
+        outputStatus.status === 'allowed'
+          ? safeChildPathStatus(outputStatus.resolvedPath || outputDir, item.targetName)
+          : undefined;
+      const exceedsLimit = typeof item.expectedBytes === 'number' && item.expectedBytes > maxBytes;
+      const sizeUnknown = typeof item.expectedBytes !== 'number';
+      const blockedReasons = [
+        outputStatus.status === 'blocked' ? outputStatus.reason : '',
+        urlStatus.status === 'blocked' ? urlStatus.reason : '',
+        targetPathStatus?.status === 'blocked' ? targetPathStatus.reason : '',
+        targetPathStatus?.exists && !overwrite ? 'Target file already exists and overwrite is false.' : '',
+        exceedsLimit ? `Expected file size exceeds limit of ${maxBytes} bytes.` : '',
+        overwrite ? 'overwrite=true is not allowed by default for lightweight localization planning.' : '',
+        item.credentialsRequested ? 'Credentials, cookies, tokens, and authorization material are not allowed.' : '',
+      ].filter(Boolean);
+      const requiredBeforeLocalization = sizeUnknown
+        ? ['Verify Content-Length or otherwise confirm file size before download.']
+        : [];
+      return {
+        ...item,
+        url: urlStatus.url,
+        urlStatus,
+        outputDirStatus: outputStatus,
+        targetPathStatus,
+        maxBytes,
+        overwrite,
+        plannedOnly: true,
+        downloadAttempted: false,
+        status: blockedReasons.length ? 'blocked_for_localization' : sizeUnknown ? 'conditional_continue' : 'ready',
+        blockedReasons,
+        requiredBeforeLocalization,
+      };
+    });
+    const blockedCount = plannedItems.filter((item) => item.status === 'blocked_for_localization').length;
+    const readyCount = plannedItems.filter((item) => item.status === 'ready').length;
+    const conditionalCount = plannedItems.filter((item) => item.status === 'conditional_continue').length;
+    const securityBlockedCount = plannedItems.filter(
+      (item) => item.urlStatus.status === 'blocked' || item.targetPathStatus?.status === 'blocked'
+    ).length;
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status:
+        outputStatus.status === 'blocked' || credentialRequest || overwrite || securityBlockedCount
+          ? 'fatal_block'
+          : !plannedItems.length
+            ? 'blocked_for_localization'
+            : blockedCount
+              ? blockedCount === plannedItems.length
+                ? 'blocked_for_localization'
+                : 'partial_ready'
+              : conditionalCount && !readyCount
+                ? 'conditional_continue'
+                : conditionalCount
+                  ? 'partial_ready'
+                  : 'ready',
+      planningOnly: true,
+      localizationPolicy: {
+        defaultSingleFileLimitBytes: defaultLimit,
+        requestedSingleFileLimitBytes: maxBytes,
+        publicHttpOnly: true,
+        noCredentialsCookiesOrTokens: true,
+        overwriteDefault: false,
+        allowedResourceTypes: [
+          'paper PDF',
+          'small supplement table or document',
+          'public repository README/LICENSE/environment/script index',
+          'public metadata manifest',
+        ],
+        rejectedResourceTypes: [
+          'FASTQ/BAM/CRAM/SRA/fragments',
+          'large image data',
+          'controlled-access data',
+          'login, token, cookie, or institution-gated resources',
+        ],
+      },
+      outputDirStatus: outputStatus,
+      plannedItems,
+      warnings: plannedItems.length
+        ? ['No network request, repository clone, package installation, analysis, or filesystem write was performed.']
+        : ['localize_source_package requires sources, items, or urls.'],
+      timestamp: Date.now(),
+    };
+  }
+
+  if (action === 'audit_data_code_availability') {
+    const sources = sourceMaterialsFromPayload(payload);
+    const availability = classifySourceAvailability(sources);
+    const blocked = Object.values(availability).filter((status) => status === 'blocked_for_execution').length;
+    const dataAvailabilityItem: SourceAuditDataItem = {
+      id: 'data-availability-statement',
+      kind: 'unknown',
+      modality: 'unknown',
+      source: 'paper',
+      accession: '',
+      url: '',
+      localPath: '',
+      sizeBytes: null,
+      access: 'unknown',
+      licenseOrTerms: '',
+      status: availability.data,
+      supports: [],
+      blocks: [],
+      notes: sources.dataAvailability,
+    };
+    const codeAvailabilityItem: SourceAuditCodeItem = {
+      id: 'code-availability-statement',
+      repository: '',
+      commitOrRelease: '',
+      license: '',
+      environmentFiles: [],
+      scriptIndex: [],
+      notebooks: [],
+      runnableAsIs: false,
+      status: availability.code,
+      notes: sources.codeAvailability,
+    };
+    const dataItems: SourceAuditDataItem[] = [
+      ...sources.accessions.map(
+        (accession): SourceAuditDataItem => ({
+          id: accession,
+          kind: 'unknown',
+          modality: 'unknown',
+          source: inferAccessionSources(accession)[0] || 'unknown',
+          accession,
+          url: '',
+          localPath: '',
+          sizeBytes: null,
+          access: inferControlledAccess(accession) ? 'controlled' : 'unknown',
+          licenseOrTerms: '',
+          status: availability.data,
+          supports: [],
+          blocks: [],
+          notes: '',
+        })
+      ),
+      ...sources.localPaths.map(
+        (candidate, index): SourceAuditDataItem => ({
+          id: `local-data-${index + 1}`,
+          kind: 'unknown',
+          modality: 'unknown',
+          source: 'local',
+          accession: '',
+          url: '',
+          localPath: candidate,
+          sizeBytes: null,
+          access: 'unknown',
+          licenseOrTerms: '',
+          status: safeAbsolutePathStatus(candidate) === 'available' ? 'ready' : 'unresolved',
+          supports: [],
+          blocks: [],
+          notes: '',
+        })
+      ),
+      ...(sources.dataAvailability && !sources.accessions.length && !sources.localPaths.length
+        ? [dataAvailabilityItem]
+        : []),
+    ];
+    const codeItems: SourceAuditCodeItem[] = [
+      ...sources.codeLinks.map(
+        (repository, index): SourceAuditCodeItem => ({
+          id: `code-${index + 1}`,
+          repository,
+          commitOrRelease: '',
+          license: '',
+          environmentFiles: [],
+          scriptIndex: [],
+          notebooks: [],
+          runnableAsIs: false,
+          status: availability.code,
+          notes: '',
+        })
+      ),
+      ...(sources.codeAvailability && !sources.codeLinks.length ? [codeAvailabilityItem] : []),
+    ];
+    const sourceAudit = {
+      schema: SOURCE_AUDIT_SCHEMA,
+      caseId: asString(payload?.caseId || payload?.case_id),
+      createdAt: new Date().toISOString(),
+      timestamp: new Date().toISOString(),
+      paper: {
+        ...sources.paper,
+        preprint: '',
+        sourceUrl: sources.paper.url,
+        supplements: sources.supplements,
+        methodsLocated: Boolean(sources.methods),
+        dataAvailabilityLocated: Boolean(sources.dataAvailability),
+        codeAvailabilityLocated: Boolean(sources.codeAvailability),
+        status: availability.paper,
+      },
+      data: dataItems,
+      code: codeItems,
+      referenceResources: sources.referenceResources.map(
+        (resource, index): SourceAuditReferenceResourceItem => ({
+          id: `reference-${index + 1}`,
+          kind: 'other',
+          name: resource,
+          version: '',
+          source: '',
+          url: '',
+          localPath: '',
+          status: availability.referenceResources,
+          requiredBy: [],
+          notes: '',
+        })
+      ),
+      localized: [] as JsonRecord[],
+      plannedOnly: [] as JsonRecord[],
+      warnings: [
+        {
+          severity: 'warning',
+          scope: 'availability',
+          message: 'Availability does not imply reproducibility or scientific success.',
+          affectedItems: [],
+        },
+        {
+          severity: 'info',
+          scope: 'source',
+          message: 'Use bio_source for accession and local asset details before execution.',
+          affectedItems: [],
+        },
+        ...(sources.credentialFieldsRedacted
+          ? [
+              {
+                severity: 'warning',
+                scope: 'source',
+                message: 'Credential-like source fields were redacted and must not be stored in the Planning Package.',
+                affectedItems: ['paper', 'supplements'],
+              },
+            ]
+          : []),
+      ],
+    };
+    const sourceAuditPath = asString(payload?.sourceAuditPath, 'case_reproduction/planning/source_audit.json');
+    writeCanonicalJson(sourceAuditPath, sourceAudit);
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: blocked ? 'partial_ready' : 'conditional_continue',
+      planningOnly: true,
+      sourceAudit,
+      canonicalPath: sourceAuditPath,
+      timestamp: Date.now(),
+    };
+  }
+
+  if (action === 'extract_method_parameters') {
+    const parsed = extractMethodParametersByIdPayloadSchema.safeParse(payload || {});
+    if (!parsed.success) {
+      const legacyReceipt = isRecord(payload?.methodSourceReceipt)
+        ? asString(payload.methodSourceReceipt.receiptId)
+        : isRecord(asArray(payload?.sourceReceipts)[0])
+          ? asString((asArray(payload?.sourceReceipts)[0] as JsonRecord).receiptId)
+          : '';
+      return invalidActionPayload(action, parsed.error, {
+        methodContractPath: 'case_reproduction/planning/method_parameter_contract.json',
+        methodSourceReceiptId: asString(payload?.methodSourceReceiptId, legacyReceipt),
+        ...(asString(payload?.paperMapReceiptId) ? { paperMapReceiptId: asString(payload?.paperMapReceiptId) } : {}),
+        ...(asString(payload?.scopeReceiptId) ? { scopeReceiptId: asString(payload?.scopeReceiptId) } : {}),
+      });
+    }
+    try {
+      const sourceReceipt = readStoredReceipt(parsed.data.methodSourceReceiptId, {
+        producer: 'bio_source',
+        action: 'inspect_method_sources',
+        status: 'ready',
+      });
+      if (parsed.data.paperMapReceiptId) {
+        readStoredReceipt(parsed.data.paperMapReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'validate_paper_reproduction_map',
+          status: 'ready',
+        });
+      }
+      if (parsed.data.scopeReceiptId) {
+        readStoredReceipt(parsed.data.scopeReceiptId, {
+          producer: 'bio_reproduction',
+          action: 'validate_reproduction_scope',
+          status: 'ready',
+        });
+      }
+      const contract = buildMethodContract([sourceReceipt]);
+      if (!contract.sourceReceiptIds.length) {
+        throw new Error('The stored method-source receipt does not contain validated method evidence.');
+      }
+      const canonicalHash = writeCanonicalJson(parsed.data.methodContractPath, contract);
+      const methodParameterReceipt = buildMethodParameterReceipt({
+        projectRoot: workspaceRoot(),
+        canonicalPath: parsed.data.methodContractPath,
+        canonicalHash,
+        contract,
+      });
+      return {
+        schema: 'openbioscience.bio_mcp.result.v2',
+        action,
+        status: 'ready',
+        contractSchema: METHOD_CONTRACT_SCHEMA,
+        canonicalPath: parsed.data.methodContractPath,
+        receiptId: methodParameterReceipt.receiptId,
+        moduleCoverage: contract.moduleCoverage,
+        conflicts: contract.conflicts,
+        eligibleClaims: contract.eligibleClaims,
+        nextActions: [] as BioNextAction[],
+        methodParameterReceipt,
+        validationFingerprint: methodParameterReceipt.validationFingerprint,
+        warnings: [] as string[],
+        timestamp: Date.now(),
+      };
+    } catch (error) {
+      return receiptLookupFailure(action, error);
+    }
+  }
+
+  if (action === 'validate_method_alignment') {
+    const parsed = validateMethodAlignmentByIdPayloadSchema.safeParse(payload || {});
+    if (!parsed.success) {
+      return invalidActionPayload(action, parsed.error, {
+        methodParameterReceiptId: asString(
+          payload?.methodParameterReceiptId,
+          isRecord(payload?.methodParameterReceipt) ? asString(payload.methodParameterReceipt.receiptId) : ''
+        ),
+        executedParameterPath: asString(
+          payload?.executedParameterPath,
+          'case_reproduction/execution/configs/executed_parameters.json'
+        ),
+        scriptPaths: uniqueStrings(asArray(payload?.scriptPaths)),
+      });
+    }
+    let methodReceipt: MethodParameterReceipt;
+    try {
+      methodReceipt = readStoredReceipt(parsed.data.methodParameterReceiptId, {
+        producer: 'bio_reproduction',
+        action: 'extract_method_parameters',
+        status: 'ready',
+      }) as MethodParameterReceipt;
+    } catch (error) {
+      return receiptLookupFailure(action, error);
+    }
+    if (!validMethodParameterReceipt(methodReceipt)) {
+      return receiptLookupFailure(action, new Error('Stored MethodParameterReceipt is malformed.'));
+    }
+    const executedParameterPath = parsed.data.executedParameterPath;
+    const scriptPaths = parsed.data.scriptPaths;
+    const contractPath = resolveWorkspacePath(methodReceipt.canonicalFile.path);
+    const contractRead = contractPath.status === 'available' ? readValidatedJson(contractPath.path) : {};
+    const contractValidation = methodContractSchema.safeParse(contractRead.value);
+    const receiptIssues = [
+      path.resolve(methodReceipt.projectRoot) === workspaceRoot() ? '' : 'Method receipt belongs to another project.',
+      contractPath.status === 'available' ? '' : 'Method contract is unavailable.',
+      contractPath.status === 'available' && fs.existsSync(contractPath.path)
+        ? contentHash(fs.readFileSync(contractPath.path)) === methodReceipt.canonicalFile.contentHash
+          ? ''
+          : 'Method contract changed after extraction.'
+        : '',
+      contractValidation.success ? '' : 'Method contract schema is invalid.',
+    ].filter(Boolean);
+    if (receiptIssues.length || !contractValidation.success) {
+      return {
+        schema: RESULT_SCHEMA,
+        action,
+        status: 'needs_completion',
+        nextActions: [
+          {
+            id: 'refresh-method-parameter-contract',
+            tool: 'bio_reproduction',
+            action: 'extract_method_parameters',
+            reason: receiptIssues.join(' '),
+            payload: {
+              methodContractPath: methodReceipt.canonicalFile.path,
+              methodSourceReceiptId: methodReceipt.sourceReceiptIds[0] || '',
+            },
+          },
+        ],
+        warnings: receiptIssues,
+        timestamp: Date.now(),
+      };
+    }
+    const alignment = validateMethodAlignment({
+      projectRoot: workspaceRoot(),
+      methodReceipt,
+      methodContract: contractValidation.data,
+      executedParameterPath,
+      scriptPaths,
+    });
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: alignment.receipt ? 'ready' : 'needs_completion',
+      alignmentLevel: alignment.receipt?.alignmentLevel,
+      eligibleClaims: alignment.receipt?.eligibleClaims || [],
+      alignedParameters: alignment.receipt?.alignedParameters || [],
+      substitutedParameters: alignment.receipt?.substitutedParameters || [],
+      conflicts: alignment.receipt?.conflicts || contractValidation.data.conflicts,
+      nextActions: alignment.nextActions,
+      methodAlignmentReceipt: alignment.receipt,
+      warnings: alignment.issues,
+      timestamp: Date.now(),
+    };
+  }
+
+  if (action === 'draft_reproduction_plan') {
+    const objective = asString(payload?.objective || payload?.reproductionObjective || payload?.reproduction_objective);
+    const moduleInputs = asArray(payload?.modules || payload?.executionModules || payload?.execution_modules);
+    const modules = moduleInputs.map((item, index) => {
+      const record = isRecord(item) ? item : { objective: item };
+      const moduleObjective = asString(record.objective || record.name, `module-${index + 1}`);
+      const environmentRef = asString(record.environmentRef || record.environment_ref);
+      return {
+        id: asString(record.id, `module-${index + 1}`),
+        objective: moduleObjective,
+        status: environmentRef ? 'conditional_continue' : 'blocked_for_execution',
+        environmentRef,
+        skillRoute: uniqueStrings(asArray(record.skillRoute || record.skill_route)),
+        mcpRoute: uniqueStrings(asArray(record.mcpRoute || record.mcp_route)),
+        expectedOutputs: uniqueStrings(asArray(record.expectedOutputs || record.expected_outputs)),
+        executeNow: false,
+        warnings: environmentRef ? [] : ['Execution module requires an environmentRef before script-stage work.'],
+      };
+    });
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status:
+        objective && modules.some((module) => module.status !== 'blocked_for_execution')
+          ? 'conditional_continue'
+          : 'blocked_for_execution',
+      planningOnly: true,
+      planDraft: {
+        schema: 'openbioscience.reproduction.plan.v1',
+        objective,
+        requiredSections: REPRODUCTION_PLAN_SECTIONS,
+        modules,
+        scriptBoundary: {
+          scriptWritingAllowed: false,
+          executionAllowed: false,
+          requiredBeforeExecution: [
+            'planning/reproduction_plan.md reviewed',
+            'planning/source_audit.json reviewed',
+            'planning/method_parameter_contract.json reviewed',
+            'localized source files or approved existing demo data available',
+            'official environmentRef selected',
+          ],
+        },
+      },
+      warnings: objective
+        ? ['Draft is a planning structure only. Do not treat it as evidence or a successful reproduction result.']
+        : ['draft_reproduction_plan requires objective or reproductionObjective.'],
+      timestamp: Date.now(),
+    };
+  }
+
+  if (action === 'validate_reproduction_plan') {
+    const parsedPayload = validateReproductionPayloadSchema.safeParse(payload || {});
+    if (!parsedPayload.success) {
+      const legacySourceReceiptIds = asArray(payload?.sourceReceipts)
+        .map((receipt) => (isRecord(receipt) ? asString(receipt.receiptId) : ''))
+        .filter(Boolean);
+      const legacyRuntimeReceiptIds = asArray(payload?.runtimeReceipts)
+        .map((receipt) => (isRecord(receipt) ? asString(receipt.receiptId) : ''))
+        .filter(Boolean);
+      const suggestedPayload = {
+        planPath: asString(payload?.planPath || payload?.plan_path, 'case_reproduction/planning/reproduction_plan.md'),
+        sourceAuditPath: asString(
+          payload?.sourceAuditPath || payload?.source_audit_path,
+          'case_reproduction/planning/source_audit.json'
+        ),
+        localizedPaths: uniqueStrings(asArray(payload?.localizedPaths || payload?.localized_paths)),
+        approvedExistingData: asBoolean(
+          payload?.approvedExistingData ||
+            payload?.approved_existing_data ||
+            payload?.approvedExistingDemoData ||
+            payload?.approved_existing_demo_data
+        ),
+        modules: asArray(payload?.modules || payload?.executionModules || payload?.execution_modules),
+        paperMapReceiptId: asString(
+          payload?.paperMapReceiptId,
+          isRecord(payload?.paperMapReceipt) ? asString(payload.paperMapReceipt.receiptId) : ''
+        ),
+        scopeReceiptId: asString(
+          payload?.scopeReceiptId,
+          isRecord(payload?.scopeReceipt) ? asString(payload.scopeReceipt.receiptId) : ''
+        ),
+        methodParameterReceiptId: asString(
+          payload?.methodParameterReceiptId,
+          isRecord(payload?.methodParameterReceipt) ? asString(payload.methodParameterReceipt.receiptId) : ''
+        ),
+        sourceReceiptIds: uniqueStrings([...asArray(payload?.sourceReceiptIds), ...legacySourceReceiptIds]),
+        runtimeReceiptIds: uniqueStrings([...asArray(payload?.runtimeReceiptIds), ...legacyRuntimeReceiptIds]),
+        skillComplianceReceiptIds: uniqueStrings(asArray(payload?.skillComplianceReceiptIds)),
+        methodContractPath: asString(
+          payload?.methodContractPath || payload?.method_contract_path,
+          'case_reproduction/planning/method_parameter_contract.json'
+        ),
+      };
+      return invalidActionPayload(action, parsedPayload.error, suggestedPayload);
+    }
+
+    const {
+      planPath: requestedPlanPath,
+      sourceAuditPath: requestedAuditPath,
+      localizedPaths = [],
+      approvedExistingData = false,
+      modules,
+      paperMapReceiptId,
+      scopeReceiptId,
+      methodParameterReceiptId,
+      sourceReceiptIds,
+      runtimeReceiptIds,
+      skillComplianceReceiptIds,
+      methodContractPath: requestedMethodContractPath,
+    } = parsedPayload.data;
+    let paperMapReceipt: BioControlReceipt;
+    let scopeReceipt: BioControlReceipt;
+    let typedMethodReceipt: MethodParameterReceipt;
+    let typedSourceReceipts: BioControlReceipt[];
+    let typedRuntimeReceipts: BioControlReceipt[];
+    let skillComplianceReceipts: BioControlReceipt[];
+    try {
+      paperMapReceipt = readStoredReceipt(paperMapReceiptId, {
+        producer: 'bio_reproduction',
+        action: 'validate_paper_reproduction_map',
+        status: 'ready',
+      });
+      scopeReceipt = readStoredReceipt(scopeReceiptId, {
+        producer: 'bio_reproduction',
+        action: 'validate_reproduction_scope',
+        status: 'ready',
+      });
+      typedMethodReceipt = readStoredReceipt(methodParameterReceiptId, {
+        producer: 'bio_reproduction',
+        action: 'extract_method_parameters',
+        status: 'ready',
+      }) as MethodParameterReceipt;
+      typedSourceReceipts = sourceReceiptIds.map((receiptId) =>
+        readStoredReceipt(receiptId, { producer: 'bio_source' })
+      );
+      typedRuntimeReceipts = runtimeReceiptIds.map((receiptId) =>
+        readStoredReceipt(receiptId, { producer: 'bio_runtime' })
+      );
+      skillComplianceReceipts = skillComplianceReceiptIds.map((receiptId) =>
+        readStoredReceipt(receiptId, {
+          producer: 'bio_reproduction',
+          action: 'validate_skill_compliance',
+          status: 'ready',
+        })
+      );
+    } catch (error) {
+      return receiptLookupFailure(action, error);
+    }
+    const planPath = resolveWorkspacePath(requestedPlanPath);
+    const auditPath = resolveWorkspacePath(requestedAuditPath);
+    const methodPath = resolveWorkspacePath(requestedMethodContractPath);
+    const localizedPathStatuses = localizedPaths.map((localizedPath) => {
+      const resolved = resolveWorkspacePath(localizedPath);
+      return { path: localizedPath, resolvedPath: resolved.path, status: resolved.status };
+    });
+    const moduleReadinessItems = moduleReadiness(modules);
+    const validSourceReceipts = typedSourceReceipts.filter((receipt) => validReceiptForProject(receipt, 'bio_source'));
+    const methodReceiptValid =
+      validMethodParameterReceipt(typedMethodReceipt) &&
+      path.resolve(typedMethodReceipt.projectRoot) === workspaceRoot() &&
+      typedMethodReceipt.canonicalFile.path === requestedMethodContractPath &&
+      methodPath.status === 'available' &&
+      fs.existsSync(methodPath.path) &&
+      contentHash(fs.readFileSync(methodPath.path)) === typedMethodReceipt.canonicalFile.contentHash &&
+      methodContractSchema.safeParse(readValidatedJson(methodPath.path).value).success;
+    const sourceDocumented =
+      localizedPathStatuses.some((item) => item.status === 'available') ||
+      approvedExistingData ||
+      validSourceReceipts.length > 0;
+    const planMissingSections = planPath.status === 'available' ? validatePlanDocument(planPath.path) : [];
+    const auditRead = auditPath.status === 'available' ? readValidatedJson(auditPath.path) : {};
+    const auditValidation = auditRead.value ? sourceAuditSchema.safeParse(auditRead.value) : undefined;
+    const auditIssues = auditRead.error
+      ? [auditRead.error]
+      : auditValidation && !auditValidation.success
+        ? formatZodIssues(auditValidation.error)
+        : [];
+    const missingRuntimeRefs = Array.from(new Set(moduleReadinessItems.map((item) => item.environmentRef))).filter(
+      (environmentRef) => !runtimeReceiptFor(typedRuntimeReceipts, environmentRef)
+    );
+    const nextActions: BioNextAction[] = [];
+    if (planPath.status !== 'available') {
+      nextActions.push({
+        id: 'create-reproduction-plan',
+        tool: 'runtime',
+        action: 'write_file',
+        reason: 'Create the canonical reproduction plan under the authorized project root.',
+        payload: { path: requestedPlanPath, requiredSections: REPRODUCTION_PLAN_SECTIONS },
+      });
+    } else if (planMissingSections.length) {
+      nextActions.push({
+        id: 'complete-reproduction-plan-sections',
+        tool: 'runtime',
+        action: 'patch_file',
+        reason: `Add the missing required plan sections: ${planMissingSections.join(', ')}.`,
+        payload: { path: requestedPlanPath, missingSections: planMissingSections },
+      });
+    }
+    if (auditPath.status !== 'available' || auditIssues.length) {
+      nextActions.push({
+        id: 'write-canonical-source-audit',
+        tool: 'runtime',
+        action: 'write_file',
+        reason: auditIssues.length
+          ? `Rewrite source_audit.json using the bio_reproduction audit result: ${auditIssues.join('; ')}`
+          : 'Write the canonical source audit returned by audit_data_code_availability.',
+        payload: { path: requestedAuditPath, schema: SOURCE_AUDIT_SCHEMA },
+      });
+    }
+    if (!sourceDocumented) {
+      nextActions.push({
+        id: 'verify-reproduction-sources',
+        tool: 'bio_source',
+        action: 'verify_local_assets',
+        reason: 'Resolve or verify at least one source before validating the planning package.',
+        payload: { paths: localizedPaths },
+      });
+    }
+    if (!methodReceiptValid) {
+      nextActions.push({
+        id: 'complete-method-parameter-contract',
+        tool: 'bio_reproduction',
+        action: 'extract_method_parameters',
+        reason:
+          'Inspect method sources and write a current canonical method_parameter_contract.json before entering the script stage.',
+        payload: {
+          methodContractPath: requestedMethodContractPath,
+          methodSourceReceiptId:
+            validSourceReceipts.find((receipt) => receipt.action === 'inspect_method_sources')?.receiptId || '',
+          paperMapReceiptId: paperMapReceipt.receiptId,
+          scopeReceiptId: scopeReceipt.receiptId,
+        },
+      });
+    }
+    if (missingRuntimeRefs.length) {
+      nextActions.push({
+        id: 'probe-reproduction-environments',
+        tool: 'bio_runtime',
+        action: 'probe_environments',
+        reason: 'Probe all selected environmentRefs once; a failed probe remains a valid readiness observation.',
+        payload: { environmentRefs: missingRuntimeRefs },
+      });
+    }
+    const incompleteModules = moduleReadinessItems.filter((item) => item.contractStatus === 'incomplete');
+    if (incompleteModules.length) {
+      nextActions.push({
+        id: 'complete-execution-module-contracts',
+        tool: 'bio_reproduction',
+        action: 'draft_reproduction_plan',
+        reason: `Complete module contracts for: ${incompleteModules.map((item) => item.id).join(', ')}.`,
+        payload: { modules },
+      });
+    }
+
+    const planningCompletion = nextActions.length ? 'incomplete' : 'complete';
+    const executionModules = moduleReadinessItems.map((item) => {
+      const runtimeReceipt = runtimeReceiptFor(typedRuntimeReceipts, item.environmentRef);
+      if (!runtimeProbePassed(runtimeReceipt)) {
+        return {
+          ...item,
+          executionStatus: 'blocked' as const,
+          status: 'blocked_for_execution',
+          blockingReasons: [...item.blockingReasons, `Runtime probe for ${item.environmentRef} did not pass.`],
+        };
+      }
+      return item;
+    });
+    const runnableCount = executionModules.filter((item) => item.executionStatus !== 'blocked').length;
+    const readyCount = executionModules.filter((item) => item.executionStatus === 'ready').length;
+    const executionReadiness: ReproductionCompletionReceipt['executionReadiness'] = runnableCount
+      ? readyCount === executionModules.length
+        ? 'ready'
+        : 'partial'
+      : 'blocked';
+    const externalBlockers: BioBlocker[] = executionModules
+      .filter((item) => item.executionStatus === 'blocked')
+      .map((item) => ({
+        id: `blocker-${item.id}`,
+        kind: runtimeProbePassed(runtimeReceiptFor(typedRuntimeReceipts, item.environmentRef)) ? 'data' : 'environment',
+        message: item.blockingReasons.join(' ') || `Module ${item.id} is not executable with current inputs.`,
+        moduleId: item.id,
+        external: true,
+      }));
+    const checks = [
+      {
+        id: 'reproduction_plan',
+        status: planPath.status === 'available' && !planMissingSections.length ? 'available' : 'unverified',
+        required: true,
+      },
+      {
+        id: 'source_audit',
+        status: auditPath.status === 'available' && auditValidation?.success ? 'available' : 'unverified',
+        required: true,
+      },
+      {
+        id: 'method_parameter_contract',
+        status: methodReceiptValid ? 'available' : 'unverified',
+        required: true,
+      },
+      {
+        id: 'localized_sources_or_demo_data',
+        status: sourceDocumented ? 'available' : 'unverified',
+        required: true,
+      },
+      {
+        id: 'execution_modules',
+        status: incompleteModules.length ? 'unverified' : 'available',
+        required: true,
+      },
+      {
+        id: 'runtime_probes',
+        status: missingRuntimeRefs.length ? 'unverified' : 'available',
+        required: true,
+      },
+    ];
+    const canonicalFiles = [
+      ...(isRecord((paperMapReceipt as unknown as JsonRecord).canonicalFile) &&
+      typeof ((paperMapReceipt as unknown as JsonRecord).canonicalFile as JsonRecord).path === 'string' &&
+      typeof ((paperMapReceipt as unknown as JsonRecord).canonicalFile as JsonRecord).contentHash === 'string'
+        ? [
+            {
+              path: asString(((paperMapReceipt as unknown as JsonRecord).canonicalFile as JsonRecord).path),
+              contentHash: asString(
+                ((paperMapReceipt as unknown as JsonRecord).canonicalFile as JsonRecord).contentHash
+              ),
+            },
+          ]
+        : []),
+      ...(planPath.status === 'available'
+        ? [
+            {
+              path: path.relative(workspaceRoot(), planPath.path),
+              contentHash: contentHash(fs.readFileSync(planPath.path)),
+            },
+          ]
+        : []),
+      ...(auditPath.status === 'available'
+        ? [
+            {
+              path: path.relative(workspaceRoot(), auditPath.path),
+              contentHash: contentHash(fs.readFileSync(auditPath.path)),
+            },
+          ]
+        : []),
+      ...(methodReceiptValid
+        ? [
+            {
+              path: path.relative(workspaceRoot(), methodPath.path),
+              contentHash: contentHash(fs.readFileSync(methodPath.path)),
+            },
+          ]
+        : []),
+    ];
+    const skillIds = Array.from(
+      new Set([
+        'bio-omics-reproduction-planning',
+        'bio-method-parameter-reconstruction',
+        ...modules.flatMap((module) => module.skillRoute),
+        ...skillComplianceReceipts
+          .map((receipt) => asString((receipt as unknown as JsonRecord).skillId))
+          .filter(Boolean),
+      ])
+    );
+    const skillUses = skillIds.map((skillId, index) => ({
+      id: `skill_use_${contentHash(skillId).slice(0, 12)}`,
+      skillId,
+      skillName: skillId,
+      source: 'local' as const,
+      purpose: index === 0 ? ('replication' as const) : ('pipeline' as const),
+      status: 'used' as const,
+      triggeredBy: 'bio_reproduction completion receipt',
+      createdAt: Date.now(),
+    }));
+    const receiptDetails = {
+      workflowKind: 'omics_reproduction',
+      planningCompletion,
+      executionReadiness,
+      canonicalFiles,
+      sourceReceiptIds: validSourceReceipts.map((receipt) => receipt.receiptId),
+      runtimeReceiptIds: typedRuntimeReceipts
+        .filter((receipt) => validReceiptForProject(receipt, 'bio_runtime'))
+        .map((receipt) => receipt.receiptId),
+      methodParameterReceiptId: methodReceiptValid ? typedMethodReceipt.receiptId : '',
+      methodModuleCoverage: methodReceiptValid ? typedMethodReceipt.moduleCoverage : [],
+      eligibleClaims: methodReceiptValid
+        ? ['data_layer_reproduction', 'method_structure_reproduction', 'scoped_reimplementation']
+        : [],
+      moduleReadiness: executionModules,
+      nextActions,
+      externalBlockers,
+    };
+    const validationFingerprint = contentHash(JSON.stringify(stableValue(receiptDetails)));
+    const baseReceipt = makeControlReceipt(
+      'bio_reproduction',
+      'validate_reproduction_plan',
+      planningCompletion === 'complete' ? 'ready' : 'needs_completion',
+      receiptDetails
+    );
+    const completionReceipt: ReproductionCompletionReceipt = {
+      ...baseReceipt,
+      producer: 'bio_reproduction',
+      action: 'validate_reproduction_plan',
+      workflowKind: 'omics_reproduction',
+      planningCompletion,
+      executionReadiness,
+      validationFingerprint,
+      canonicalFiles,
+      sourceReceiptIds: receiptDetails.sourceReceiptIds,
+      runtimeReceiptIds: receiptDetails.runtimeReceiptIds,
+      methodParameterReceiptId: receiptDetails.methodParameterReceiptId,
+      methodModuleCoverage: receiptDetails.methodModuleCoverage,
+      eligibleClaims: receiptDetails.eligibleClaims,
+      skillUses,
+      moduleReadiness: executionModules,
+      nextActions,
+      externalBlockers,
+    };
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: planningCompletion === 'complete' ? 'ready' : 'needs_completion',
+      planningOnly: true,
+      workflowKind: 'omics_reproduction',
+      planningCompletion,
+      executionReadiness,
+      validationFingerprint,
+      checks,
+      localizedPaths: localizedPathStatuses,
+      moduleReadiness: executionModules,
+      nextActions,
+      externalBlockers,
+      completionReceipt,
+      scriptBoundary: {
+        mayEnterScriptStage: planningCompletion === 'complete' && runnableCount > 0,
+        analysisExecuted: false,
+        scientificSuccessClaim: false,
+      },
+      warnings:
+        planningCompletion === 'complete'
+          ? [
+              'Planning completion is separate from execution readiness and does not validate scientific results.',
+              ...(executionReadiness === 'ready'
+                ? []
+                : ['One or more planned modules remain conditional or externally blocked.']),
+            ]
+          : ['Follow nextActions to complete the workflow; do not replace required MCP stages with an ad hoc audit.'],
+      timestamp: Date.now(),
+    };
+  }
+
+  throw new Error(`Unsupported reproduction action "${action}".`);
+};
+
 async function main() {
   const profile = profileFromEnv();
   const definition = definitionFor(profile);
@@ -367,14 +3059,58 @@ async function main() {
     definition.description,
     {
       action: z.enum(definition.actions as [string, ...string[]]),
-      payload: z.record(z.unknown()).optional(),
+      payload: z.object({}).passthrough().optional(),
     },
     async ({ action, payload }) => {
       const recordPayload = isRecord(payload) ? payload : {};
-      if (profile === 'runtime') return jsonText(handleRuntimeAction(action, recordPayload));
-      if (profile === 'source') return jsonText(handleSourceAction(action, recordPayload));
-      if (profile === 'knowledge') return jsonText(handleKnowledgeAction(action, recordPayload));
-      return jsonText(handlePlotAction(action, recordPayload));
+      const inputFingerprint = receiptInputFingerprint({ profile, action, payload: recordPayload });
+      const producer = receiptProducerForProfile(profile);
+      if (producer) {
+        try {
+          const cachedReceipt = readCachedReceipt(workspaceRoot(), producer, action, inputFingerprint);
+          if (cachedReceipt && cachedReceiptIsCurrent(cachedReceipt)) {
+            return jsonText({
+              schema: 'openbioscience.bio_mcp.result.v2',
+              action,
+              status: cachedReceipt.status,
+              ...(cachedReceipt.details || {}),
+              receiptId: cachedReceipt.receiptId,
+              receipt: cachedReceipt,
+              details: cachedReceipt.details,
+              validationFingerprint: cachedReceipt.validationFingerprint,
+              nextActions: asArray((cachedReceipt as unknown as JsonRecord).nextActions),
+              cache: { hit: true, inputFingerprint },
+              timestamp: Date.now(),
+            });
+          }
+        } catch {
+          // A missing or invalid cache entry falls through to normal action handling.
+        }
+      }
+      const result =
+        profile === 'runtime'
+          ? handleRuntimeAction(action, recordPayload)
+          : profile === 'source'
+            ? await handleSourceAction(action, recordPayload)
+            : profile === 'knowledge'
+              ? handleKnowledgeAction(action, recordPayload)
+              : profile === 'plot'
+                ? handlePlotAction(action, recordPayload)
+                : profile === 'statistics'
+                  ? handleStatisticsAction(action, recordPayload)
+                  : profile === 'environment_manager'
+                    ? handleEnvironmentManagerAction(action, recordPayload)
+                    : profile === 'analysis'
+                      ? await handleAnalysisAction(workspaceRoot(), action, recordPayload)
+                      : handleReproductionAction(action, recordPayload);
+      const receiptIds = persistReceiptsFromResult(workspaceRoot(), result, { inputFingerprint, action });
+      return jsonText({
+        ...result,
+        ...(receiptIds.length ? { receiptIds } : {}),
+        cache: isRecord((result as unknown as JsonRecord).cache)
+          ? (result as unknown as JsonRecord).cache
+          : { hit: false, inputFingerprint },
+      });
     }
   );
 

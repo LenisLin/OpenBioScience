@@ -220,6 +220,14 @@ describe('buildSpawnEnv', () => {
     expect(backendPath).toContain('/usr/bin');
     expect(backendPath).toContain('/bin');
   });
+
+  it('restores standard POSIX command directories when the parent PATH is restricted', () => {
+    if (process.platform === 'win32') return;
+
+    const backendPath = buildBackendPath({ HOME: '/home/alice', PATH: '/custom/runtime/bin' });
+
+    expect(backendPath.split(':')).toEqual(expect.arrayContaining(['/usr/local/bin', '/usr/bin', '/bin']));
+  });
 });
 
 describe('findAvailablePort', () => {

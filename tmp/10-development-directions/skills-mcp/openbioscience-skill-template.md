@@ -51,6 +51,10 @@ resources/skills/bio-<topic>/
 - `scripts/` 放可重复执行脚本；脚本应由 MCP runner 或明确 runtime 调用，而不是让 agent 临时拼 shell。
 - `kernel.py` 只做确定性辅助，例如 config validation、manifest generation、path normalization、matrix metadata sanity check。
 
+对于 planning 类 skill，尤其是 `bio-omics-reproduction-planning`，`SKILL.md` 应进一步压缩为短入口 runbook。字段模板、矩阵 rubric、modality-specific routing 和 task plan 示例应放入 `references/`，并由 MCP/schema 做结构化约束。详见：
+
+- `tmp/10-development-directions/skills-mcp/omics-reproduction-planning-skill-mcp-plan.md`
+
 ## Frontmatter 模板
 
 当前产品 skills 至少需要 `name` 和 `description`。下面的扩展字段建议用于 Bio 自定义 skill，但在进入正式 materialization / settings UI 前需要做加载验证。
@@ -252,9 +256,10 @@ The summary must include:
 
 首轮围绕 demo reproduction，建议按下面顺序制作：
 
-| Skill | 角色 | 首个验证 case |
+| Skill / MCP surface | 角色 | 首个验证 case |
 | --- | --- | --- |
-| `bio-reproduction` | 总路由；paper/data/environment/MCP/artifact 串联 | `human_CRC` |
+| `bio-omics-reproduction-planning` | omics 文献复现规划强入口；paper/data/code/method/environment/task 先审计和拆解 | `human_CRC` |
+| `bio_reproduction` MCP action surface | 由 `bio-omics-reproduction-planning` 调用的 reproduction MCP 控制面；paper/data/environment/MCP/artifact 串联 | `human_CRC` |
 | `bio-singlecell-import` | 输入语义和对象准备 | `human_CRC`、`human_ICI`、`mouse_SARC` |
 | `bio-seurat-core` | R/Seurat QC、normalization、clustering、marker | `human_CRC` |
 | `bio-immune-annotation` | marker-based immune annotation | 三个 case |
@@ -264,6 +269,7 @@ The summary must include:
 
 scRNA-seq 专项拆分和 MCP 边界详见：
 
+- `tmp/10-development-directions/skills-mcp/omics-reproduction-planning-skill-mcp-plan.md`
 - `tmp/10-development-directions/skills-mcp/scrna-seq-skill-mcp-plan.md`
 
 ## Review Checklist

@@ -23,6 +23,7 @@ import { copyText } from '@/renderer/utils/ui/clipboard';
 import CollapsibleContent from '@renderer/components/chat/CollapsibleContent';
 import FilePreview from '@renderer/components/media/FilePreview';
 import HorizontalFileList from '@renderer/components/media/HorizontalFileList';
+import LocalImageView from '@renderer/components/media/LocalImageView';
 import MarkdownView from '@renderer/components/Markdown';
 import { stripThinkTags, hasThinkTags } from '@renderer/utils/chat/thinkTagFilter';
 import { stripSkillSuggest, hasSkillSuggest } from '@renderer/utils/chat/skillSuggestParser';
@@ -291,7 +292,8 @@ const MessageText: React.FC<{
   }
 
   const handleCopy = () => {
-    const baseText = larkIncomingMessage?.message ?? (shouldRenderPlainText ? text : json ? JSON.stringify(data, null, 2) : text);
+    const baseText =
+      larkIncomingMessage?.message ?? (shouldRenderPlainText ? text : json ? JSON.stringify(data, null, 2) : text);
     const fileList = files.length ? `Files:\n${files.map((path) => `- ${path}`).join('\n')}\n\n` : '';
     const textToCopy = fileList + baseText;
     copyText(textToCopy)
@@ -376,22 +378,32 @@ const MessageText: React.FC<{
             ) : json ? (
               <CollapsibleContent maxHeight={200} defaultCollapsed={true}>
                 <div data-testid='message-text-content'>
-                  <MarkdownView
-                    codeStyle={CODE_STYLE}
-                    onLocalFileLink={handleLocalFileLink}
-                    onLinkPreview={handleLinkPreview}
-                  >{`\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\``}</MarkdownView>
+                  <LocalImageView.Provider
+                    key={conversationContext?.workspace || 'no-workspace'}
+                    value={{ root: conversationContext?.workspace || '' }}
+                  >
+                    <MarkdownView
+                      codeStyle={CODE_STYLE}
+                      onLocalFileLink={handleLocalFileLink}
+                      onLinkPreview={handleLinkPreview}
+                    >{`\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\``}</MarkdownView>
+                  </LocalImageView.Provider>
                 </div>
               </CollapsibleContent>
             ) : (
               <div data-testid='message-text-content'>
-                <MarkdownView
-                  codeStyle={CODE_STYLE}
-                  onLocalFileLink={handleLocalFileLink}
-                  onLinkPreview={handleLinkPreview}
+                <LocalImageView.Provider
+                  key={conversationContext?.workspace || 'no-workspace'}
+                  value={{ root: conversationContext?.workspace || '' }}
                 >
-                  {data}
-                </MarkdownView>
+                  <MarkdownView
+                    codeStyle={CODE_STYLE}
+                    onLocalFileLink={handleLocalFileLink}
+                    onLinkPreview={handleLinkPreview}
+                  >
+                    {data}
+                  </MarkdownView>
+                </LocalImageView.Provider>
               </div>
             )}
             {!isUserMessage && typeof data === 'string' && (

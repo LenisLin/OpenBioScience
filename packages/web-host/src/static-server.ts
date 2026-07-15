@@ -166,6 +166,27 @@ function isStaticAssetRequest(url: string): boolean {
   );
 }
 
+export function getSpaDocumentCacheHeaders(url: string | undefined): Record<string, string> | null {
+  if (!url || isStaticAssetRequest(url)) {
+    return null;
+  }
+
+  return {
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    Pragma: 'no-cache',
+    Expires: '0',
+  };
+}
+
+function setSpaDocumentCacheHeaders(req: IncomingMessage, res: ServerResponse): void {
+  const headers = getSpaDocumentCacheHeaders(req.url);
+  if (!headers) return;
+
+  for (const [key, value] of Object.entries(headers)) {
+    res.setHeader(key, value);
+  }
+}
+
 export async function startStaticServer(opts: StaticServerOptions): Promise<StaticServerHandle> {
   const port = opts.port ?? DEFAULT_PORT;
   const allowRemote = opts.allowRemote === true;
@@ -201,6 +222,7 @@ export async function startStaticServer(opts: StaticServerOptions): Promise<Stat
       // Static files + SPA fallback. Asset-like URLs must not fall back to
       // index.html: stale lazy chunks should fail as 404 instead of returning
       // unrelated HTML/JS that can surface as visible text in the renderer.
+      setSpaDocumentCacheHeaders(req, res);
       const rewrites = isStaticAssetRequest(req.url) ? [] : [{ source: '**', destination: '/index.html' }];
       await serveHandler(req, res, {
         public: opts.staticDir,

@@ -142,7 +142,7 @@ export interface ToolCallUpdate extends BaseSessionUpdate {
   update: {
     sessionUpdate: 'tool_call' | 'tool_call_update';
     tool_call_id: string;
-    status: 'pending' | 'in_progress' | 'completed' | 'failed';
+    status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'canceled' | 'cancelled';
     title: string;
     kind: 'read' | 'edit' | 'execute';
     rawInput?: Record<string, unknown>;
@@ -263,8 +263,8 @@ export interface AcpPermissionRequest {
   tool_call: {
     tool_call_id: string;
     raw_input?: {
-      command?: string;
-      description?: string;
+      command?: string | string[];
+      description?: unknown;
       [key: string]: unknown;
     };
     status?: string;

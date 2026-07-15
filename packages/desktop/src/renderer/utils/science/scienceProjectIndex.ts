@@ -7,6 +7,7 @@
 import { ipcBridge } from '@/common';
 import {
   SCIENCE_PANEL_SCHEMA,
+  normalizeSciencePanelData,
   type ScienceArtifact,
   type ScienceArtifactFileProvenanceRecord,
   type ScienceArtifactGitFile,
@@ -131,6 +132,41 @@ const storedPathFromGitFile = (
   return normalizePath(`${git.repoPath.replace(/\/$/u, '')}/${file.storedPath.replace(/^\/+/u, '')}`);
 };
 
+export const resolveScienceAttachmentStoredPath = (
+  workspace: string | undefined,
+  panel: SciencePanelData | undefined,
+  maybePath: string | undefined
+): string | undefined => {
+  if (!maybePath || !panel?.attachments?.length) return undefined;
+  const comparablePath = normalizeComparablePath(maybePath);
+  const attachment = panel.attachments.find(
+    (candidate) =>
+      candidate.uri === maybePath ||
+      (candidate.sourcePath && normalizeComparablePath(candidate.sourcePath) === comparablePath)
+  );
+  if (!attachment) return undefined;
+
+  const artifact = panel.artifacts.find(
+    (candidate) => candidate.id === attachment.artifactId && (candidate.version || 1) === attachment.version
+  );
+  for (const git of [artifact?.git, panel.git]) {
+    const file = git?.files?.find(
+      (candidate) =>
+        candidate.mode === 'copied' &&
+        candidate.artifactId === attachment.artifactId &&
+        (candidate.artifactVersion || 1) === attachment.version &&
+        candidate.sha256 === attachment.contentHash
+    );
+    if (!file) continue;
+    const storedPath = storedPathFromGitFile(git, file);
+    if (storedPath) return storedPath;
+  }
+
+  return attachment.sourcePath
+    ? resolveSciencePreviewPath(workspace || panel.projectRoot, attachment.sourcePath)
+    : undefined;
+};
+
 export const resolveScienceArtifactStoredPath = (
   workspace: string | undefined,
   panel: SciencePanelData | undefined,
@@ -138,6 +174,8 @@ export const resolveScienceArtifactStoredPath = (
   artifact?: ScienceArtifact
 ): string | undefined => {
   if (!maybePath || !panel) return undefined;
+  const attachmentPath = resolveScienceAttachmentStoredPath(workspace, panel, maybePath);
+  if (attachmentPath) return attachmentPath;
   const directPath = resolveSciencePreviewPath(workspace || panel.projectRoot, maybePath);
   const keys = new Set<string>(
     [maybePath, directPath, workspace ? toWorkspaceRelativePath(workspace, directPath) : undefined]
@@ -172,7 +210,7 @@ const safeParsePanel = (raw: string | null): SciencePanelData | undefined => {
   if (!raw) return undefined;
   try {
     const parsed = JSON.parse(raw) as unknown;
-    return isSciencePanelData(parsed) ? parsed : undefined;
+    return isSciencePanelData(parsed) ? normalizeSciencePanelData(parsed) : undefined;
   } catch {
     return undefined;
   }
@@ -239,10 +277,15 @@ export const collectScienceArtifactFiles = (workspace: string, artifact: Science
 };
 
 export const collectSciencePanelFiles = (workspace: string, panel: SciencePanelData): ScienceArtifactFileRef[] =>
-  panel.artifacts.flatMap((artifact) => collectScienceArtifactFiles(workspace, artifact));
+  (Array.isArray(panel.artifacts) ? panel.artifacts : []).flatMap((artifact) =>
+    collectScienceArtifactFiles(workspace, artifact)
+  );
 
 const panelSortTime = (panel: SciencePanelData): number =>
-  Math.max(panel.generatedAt || 0, ...panel.artifacts.map((artifact) => artifact.createdAt || 0));
+  Math.max(
+    panel.generatedAt || 0,
+    ...(Array.isArray(panel.artifacts) ? panel.artifacts : []).map((artifact) => artifact.createdAt || 0)
+  );
 
 type ProjectRunEntry = { runId: string; panelPath?: string; updatedAt?: number };
 
@@ -333,9 +376,7 @@ export async function loadScienceProjectIndex(workspace: string, limitRuns = 12)
     /(^|\/)\.openscience\/science-artifacts\/file-index\.json$/u.test(normalizePath(item.relativePath || item.fullPath))
   );
   const fileRecords = safeParseFileRecords(await readFileOrNull(directFileIndexPath, workspace)).concat(
-    fileIndexEntry
-      ? safeParseFileRecords(await readFileOrNull(fileIndexEntry.fullPath, workspace))
-      : []
+    fileIndexEntry ? safeParseFileRecords(await readFileOrNull(fileIndexEntry.fullPath, workspace)) : []
   );
   const fileRecordsByKey = new Map<string, ScienceArtifactFileProvenanceRecord>();
   for (const record of fileRecords) {

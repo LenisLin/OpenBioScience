@@ -1,5 +1,8 @@
 # DeepOrganiser Agent Guide
 
+When a listed skill applies, follow its workflow and required output contract exactly; do not replace required skill or MCP steps with an ad hoc summary.
+After any tool error or nonzero command exit, immediately retry with corrected inputs, report a concrete blocker or request input, or end the turn; never leave an active turn silent after a terminal tool result.
+
 This file is the working guide for AI agents and human contributors inside this repository. Follow it together with [CONTRIBUTING.md](CONTRIBUTING.md) and [CONTRIBUTING.zh.md](CONTRIBUTING.zh.md).
 
 ## Project Core

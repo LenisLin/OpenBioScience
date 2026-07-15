@@ -27,6 +27,7 @@ import { buildLocalFileSrc } from '../../Preview/previewUrls';
 import { getContentTypeByExtension } from '../../Preview/fileUtils';
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './MedicalEvidencePanel.css';
 import './ScienceReportPanel.css';
 
@@ -533,9 +534,7 @@ const ScienceArtifactEmbeddedMedia: React.FC<{
       )}
       style={{ animationDelay: `${Math.min(blockIndex * 42, 220)}ms` }}
     >
-      <div className='science-report-embed__media'>
-        {renderMedia()}
-      </div>
+      <div className='science-report-embed__media'>{renderMedia()}</div>
       <figcaption>
         <div className='science-report-embed__captionHead'>
           <span>
@@ -788,10 +787,11 @@ const ScienceEvidenceChain: React.FC<{
   evidenceById: Map<string, ScienceEvidenceItem>;
   artifactsById: Map<string, ScienceArtifact>;
 }> = ({ panel, evidenceById, artifactsById }) => {
-  const nodesById = useMemo(() => new Map(panel.provenance.map((node) => [node.id, node])), [panel.provenance]);
-  const edges = panel.edges?.slice(0, 28) || [];
-  const visibleNodes = panel.provenance.slice(0, 10);
-  const warnings = panel.graphWarnings?.slice(0, 8) || [];
+  const provenance = Array.isArray(panel.provenance) ? panel.provenance : [];
+  const nodesById = useMemo(() => new Map(provenance.map((node) => [node.id, node])), [provenance]);
+  const edges = Array.isArray(panel.edges) ? panel.edges.slice(0, 28) : [];
+  const visibleNodes = provenance.slice(0, 10);
+  const warnings = Array.isArray(panel.graphWarnings) ? panel.graphWarnings.slice(0, 8) : [];
 
   if (!edges.length && !visibleNodes.length && !warnings.length) return null;
 
@@ -950,21 +950,150 @@ const ScienceArtifactList: React.FC<{
   );
 };
 
+const DELIVERY_STATE_KEYS = {
+  running: 'messages.scienceDelivery.states.running',
+  awaiting_user: 'messages.scienceDelivery.states.awaitingUser',
+  action_required: 'messages.scienceDelivery.states.actionRequired',
+  completed: 'messages.scienceDelivery.states.completed',
+  partial: 'messages.scienceDelivery.states.partial',
+  blocked: 'messages.scienceDelivery.states.blocked',
+  failed: 'messages.scienceDelivery.states.failed',
+} as const;
+
+const ScienceDeliverySummary: React.FC<{ panel: SciencePanelData; compact?: boolean }> = ({
+  panel,
+  compact = false,
+}) => {
+  const { t } = useTranslation();
+  const deliveryState = panel.deliveryState?.state || (panel.status === 'draft' ? 'running' : panel.status);
+  const coverageItems = Array.isArray(panel.coverageItems) ? panel.coverageItems : [];
+  const blockers = Array.isArray(panel.externalBlockers) ? panel.externalBlockers : [];
+  const nextActions = Array.isArray(panel.nextActions) ? panel.nextActions : [];
+  const coverage = panel.coverageSummary;
+  if (!panel.deliveryState && !coverageItems.length && !blockers.length && !nextActions.length) return null;
+
+  const visibleCoverageItems = compact ? coverageItems.slice(0, 3) : coverageItems;
+  const visibleBlockers = compact ? blockers.slice(0, 2) : blockers;
+  const visibleNextActions = compact ? nextActions.slice(0, 2) : nextActions;
+
+  return (
+    <section
+      className={classNames(
+        'mt-12px border border-solid border-border-2 bg-bg-2 p-12px rd-6px',
+        compact ? 'text-12px' : 'medical-evidence-section'
+      )}
+      data-testid='science-delivery-summary'
+    >
+      <header className='flex flex-wrap items-center justify-between gap-8px'>
+        <b className='text-t-primary'>{t('messages.scienceDelivery.title')}</b>
+        <span
+          className={classNames(
+            'rd-4px px-8px py-3px font-600',
+            deliveryState === 'completed' && 'bg-success-1 text-success-6',
+            deliveryState === 'partial' && 'bg-warning-1 text-warning-6',
+            deliveryState === 'action_required' && 'bg-warning-1 text-warning-6',
+            deliveryState === 'blocked' && 'bg-danger-1 text-danger-6',
+            deliveryState === 'failed' && 'bg-danger-1 text-danger-6',
+            deliveryState === 'running' && 'bg-fill-1 text-brand',
+            deliveryState === 'awaiting_user' && 'bg-fill-1 text-brand'
+          )}
+        >
+          {t(DELIVERY_STATE_KEYS[deliveryState])}
+        </span>
+      </header>
+
+      {panel.workflowKind === 'omics_analysis' ? (
+        <dl className='mb-0 mt-8px grid grid-cols-[auto_1fr] gap-x-10px gap-y-4px text-t-secondary'>
+          <dt>{t('messages.scienceDelivery.analysis.analysisId')}</dt>
+          <dd className='m-0 break-all text-t-primary'>{panel.analysisId || '-'}</dd>
+          <dt>{t('messages.scienceDelivery.analysis.stage')}</dt>
+          <dd className='m-0 text-t-primary'>{panel.analysisStage || '-'}</dd>
+          <dt>{t('messages.scienceDelivery.analysis.checkpoint')}</dt>
+          <dd className='m-0 text-t-primary'>{panel.analysisCheckpointStatus || '-'}</dd>
+          <dt>{t('messages.scienceDelivery.analysis.baseline')}</dt>
+          <dd className='m-0 break-all text-t-primary'>{panel.baselineReceiptId || '-'}</dd>
+        </dl>
+      ) : null}
+
+      {coverage?.total ? (
+        <p className='mb-0 mt-8px text-t-secondary'>
+          {t('messages.scienceDelivery.coverageSummary', {
+            completed: coverage.completed,
+            total: coverage.total,
+            actionRequired: coverage.actionRequired,
+            blocked: coverage.externalBlocked,
+          })}
+        </p>
+      ) : null}
+
+      {visibleCoverageItems.length ? (
+        <details className='mt-10px' open={!compact}>
+          <summary className='cursor-pointer font-600 text-t-primary'>
+            {t('messages.scienceDelivery.coverageDetails')}
+          </summary>
+          <div className='mt-8px grid gap-6px'>
+            {visibleCoverageItems.map((item) => (
+              <div key={item.id} className='border-l-2 border-l-solid border-border-3 pl-8px'>
+                <div className='flex flex-wrap items-baseline justify-between gap-6px'>
+                  <b className='break-all text-t-primary'>{item.targetId}</b>
+                  <code>{item.status.replace(/_/g, ' ')}</code>
+                </div>
+                <p className='mb-0 mt-2px text-t-secondary'>{item.reason}</p>
+              </div>
+            ))}
+          </div>
+        </details>
+      ) : null}
+
+      {visibleBlockers.length ? (
+        <div className='mt-10px'>
+          <b className='text-t-primary'>{t('messages.scienceDelivery.blockers')}</b>
+          <ul className='mb-0 mt-4px pl-18px text-t-secondary'>
+            {visibleBlockers.map((blocker) => (
+              <li key={blocker.id}>{blocker.message}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {visibleNextActions.length ? (
+        <div className='mt-10px'>
+          <b className='text-t-primary'>{t('messages.scienceDelivery.nextActions')}</b>
+          <ul className='mb-0 mt-4px pl-18px text-t-secondary'>
+            {visibleNextActions.map((action) => (
+              <li key={action.id}>
+                <code>{action.action}</code> {action.reason}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </section>
+  );
+};
+
 export const ScienceReportPreviewPanel: React.FC<{ panel: SciencePanelData }> = ({ panel }) => {
   const conversationContext = useConversationContextSafe();
   const workspace = panel.projectRoot || conversationContext?.workspace;
   const openLocalFilePreview = useLocalFilePreview(workspace);
   const { openPreview } = usePreviewContext();
-  const artifactsById = useMemo(() => new Map(panel.artifacts.map((item) => [item.id, item])), [panel.artifacts]);
-  const evidenceById = useMemo(() => new Map(panel.evidence.map((item) => [item.id, item])), [panel.evidence]);
-  const references = panel.evidence;
+  const artifacts = Array.isArray(panel.artifacts) ? panel.artifacts : [];
+  const evidence = Array.isArray(panel.evidence) ? panel.evidence : [];
+  const sections = Array.isArray(panel.report?.sections) ? panel.report.sections : [];
+  const claims = Array.isArray(panel.claims) ? panel.claims : [];
+  const methodsQueryPlan = Array.isArray(panel.methods?.queryPlan) ? panel.methods.queryPlan : [];
+  const methodsCommands = Array.isArray(panel.methods?.commands) ? panel.methods.commands : [];
+  const methodsLimitations = Array.isArray(panel.methods?.limitations) ? panel.methods.limitations : [];
+  const artifactsById = useMemo(() => new Map(artifacts.map((item) => [item.id, item])), [artifacts]);
+  const evidenceById = useMemo(() => new Map(evidence.map((item) => [item.id, item])), [evidence]);
+  const references = evidence;
   const hasFiles = useScienceFilesAvailable(panel, workspace);
 
   const openArtifact = useCallback(
     (artifact: ScienceArtifact) => {
       const filePath = getArtifactPreviewPath(artifact);
       if (!filePath) return;
-      const resolvedPath = resolveSciencePreviewPath(workspace, filePath) || filePath;
+      const resolvedPath = getArtifactResolvedPreviewPath(artifact, panel, workspace) || filePath;
       void openLocalFilePreview(
         resolvedPath,
         undefined,
@@ -1027,50 +1156,54 @@ export const ScienceReportPreviewPanel: React.FC<{ panel: SciencePanelData }> = 
             </button>
           </div>
         ) : null}
+        <ScienceDeliverySummary panel={panel} />
         <div className='medical-evidence-report'>
-          <h3>{panel.report.title}</h3>
+          <h3>{panel.report?.title || 'Science report'}</h3>
           {panel.summary || panel.question ? (
             <section className='medical-evidence-report__section medical-evidence-report__section--lead'>
               <h4>Research question</h4>
               <p className='medical-evidence-report__paragraph'>{panel.summary || panel.question}</p>
             </section>
           ) : null}
-          {panel.report.sections.map((section, sectionIndex) => (
-            <section
-              key={section.id}
-              className={classNames(
-                'medical-evidence-report__section',
-                !panel.summary && sectionIndex === 0 && 'medical-evidence-report__section--lead'
-              )}
-              style={{ animationDelay: `${Math.min(sectionIndex * 70, 320)}ms` }}
-            >
-              <h4>{section.heading}</h4>
-              {section.blocks.map((block, blockIndex) => (
-                <ScienceReportBlockView
-                  key={`${section.id}-${blockIndex}`}
-                  block={block}
-                  blockIndex={blockIndex}
-                  artifactsById={artifactsById}
-                  evidenceById={evidenceById}
-                  panel={panel}
-                  workspace={workspace}
-                  onOpenArtifact={openArtifact}
-                />
-              ))}
-            </section>
-          ))}
+          {sections.map((section, sectionIndex) => {
+            const blocks = Array.isArray(section.blocks) ? section.blocks : [];
+            return (
+              <section
+                key={section.id}
+                className={classNames(
+                  'medical-evidence-report__section',
+                  !panel.summary && sectionIndex === 0 && 'medical-evidence-report__section--lead'
+                )}
+                style={{ animationDelay: `${Math.min(sectionIndex * 70, 320)}ms` }}
+              >
+                <h4>{section.heading}</h4>
+                {blocks.map((block, blockIndex) => (
+                  <ScienceReportBlockView
+                    key={`${section.id}-${blockIndex}`}
+                    block={block}
+                    blockIndex={blockIndex}
+                    artifactsById={artifactsById}
+                    evidenceById={evidenceById}
+                    panel={panel}
+                    workspace={workspace}
+                    onOpenArtifact={openArtifact}
+                  />
+                ))}
+              </section>
+            );
+          })}
         </div>
 
         <section className='medical-evidence-section science-report-artifactsSection'>
           <div className='medical-evidence-section__title'>Artifacts</div>
-          <ScienceArtifactList artifacts={panel.artifacts} onOpenArtifact={openArtifact} />
+          <ScienceArtifactList artifacts={artifacts} onOpenArtifact={openArtifact} />
         </section>
 
-        {panel.claims?.length ? (
+        {claims.length ? (
           <section className='medical-evidence-section'>
             <div className='medical-evidence-section__title'>Claims</div>
             <div className='medical-evidence-report__checklist'>
-              {panel.claims.map((claim) => (
+              {claims.map((claim) => (
                 <div
                   key={claim.id}
                   className={`medical-evidence-report__check medical-evidence-report__check--${checklistTone(claim.status)}`}
@@ -1118,21 +1251,21 @@ export const ScienceReportPreviewPanel: React.FC<{ panel: SciencePanelData }> = 
           <details className='medical-evidence-methods'>
             <summary>Methods</summary>
             <div className='medical-evidence-methods__body'>
-              {panel.methods.queryPlan?.length ? (
+              {methodsQueryPlan.length ? (
                 <div className='medical-evidence-methodBlock'>
                   <b>Query plan</b>
                   <ul>
-                    {panel.methods.queryPlan.map((query) => (
+                    {methodsQueryPlan.map((query) => (
                       <li key={query}>{query}</li>
                     ))}
                   </ul>
                 </div>
               ) : null}
-              {panel.methods.commands?.length ? (
+              {methodsCommands.length ? (
                 <div className='medical-evidence-methodBlock'>
                   <b>Commands</b>
                   <ul>
-                    {panel.methods.commands.map((command) => (
+                    {methodsCommands.map((command) => (
                       <li key={command}>
                         <code>{command}</code>
                       </li>
@@ -1146,11 +1279,11 @@ export const ScienceReportPreviewPanel: React.FC<{ panel: SciencePanelData }> = 
                   <p>{panel.methods.environmentSummary}</p>
                 </div>
               ) : null}
-              {panel.methods.limitations?.length ? (
+              {methodsLimitations.length ? (
                 <div className='medical-evidence-methodBlock'>
                   <b>Limitations</b>
                   <ul>
-                    {panel.methods.limitations.map((limitation) => (
+                    {methodsLimitations.map((limitation) => (
                       <li key={limitation}>{limitation}</li>
                     ))}
                   </ul>
@@ -1169,7 +1302,8 @@ export const ScienceReportPanel: React.FC<{ panel: SciencePanelData }> = ({ pane
   const workspace = panel.projectRoot || conversationContext?.workspace;
   const openLocalFilePreview = useLocalFilePreview(workspace);
   const { openPreview } = usePreviewContext();
-  const featuredArtifacts = panel.artifacts.slice(0, 4);
+  const artifacts = Array.isArray(panel.artifacts) ? panel.artifacts : [];
+  const featuredArtifacts = artifacts.slice(0, 4);
   const [exportState, setExportState] = useState<'idle' | 'running' | 'success' | 'failed'>('idle');
   const [exportNotice, setExportNotice] = useState<{ tone: 'success' | 'error'; text: string }>();
   const hasFiles = useScienceFilesAvailable(panel, workspace);
@@ -1179,7 +1313,7 @@ export const ScienceReportPanel: React.FC<{ panel: SciencePanelData }> = ({ pane
       '',
       'science_report',
       {
-        title: panel.report.title || 'Science report',
+        title: panel.report?.title || 'Science report',
         science: {
           panel,
           artifactId: 'report',
@@ -1196,7 +1330,7 @@ export const ScienceReportPanel: React.FC<{ panel: SciencePanelData }> = ({ pane
         openReport();
         return;
       }
-      const resolvedPath = resolveSciencePreviewPath(workspace, filePath) || filePath;
+      const resolvedPath = getArtifactResolvedPreviewPath(artifact, panel, workspace) || filePath;
       void openLocalFilePreview(
         resolvedPath,
         undefined,
@@ -1271,7 +1405,7 @@ export const ScienceReportPanel: React.FC<{ panel: SciencePanelData }> = ({ pane
             <OpenScienceIcon name='scienceReport' size={14} visualScale={1.05} />
             Science report
           </span>
-          <h3>{panel.report.title}</h3>
+          <h3>{panel.report?.title || 'Science report'}</h3>
         </div>
         <div className='science-report-cardHeader__actions'>
           <button type='button' onClick={openReport}>
@@ -1309,6 +1443,7 @@ export const ScienceReportPanel: React.FC<{ panel: SciencePanelData }> = ({ pane
       {panel.summary || panel.question ? (
         <p className='science-report-cardSummary'>{panel.summary || panel.question}</p>
       ) : null}
+      <ScienceDeliverySummary panel={panel} compact />
       {featuredArtifacts.length ? (
         <div className='science-report-cardArtifacts'>
           {featuredArtifacts.map((artifact) => (

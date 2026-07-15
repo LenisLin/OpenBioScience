@@ -4,13 +4,18 @@ import {
   getGuidModeSelectableBuiltinMcpNames,
   getGuidModeRequiredMcpNames,
   isGuidMcpServerVisible,
+  resolveSkillRequiredMcpSources,
+  resolveSkillRequiredMcpNames,
   resolveGuidCapabilityMode,
 } from '@/renderer/pages/guid/utils/modeCapabilities';
 import {
+  BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
   BUILTIN_BIO_KNOWLEDGE_NAME,
   BUILTIN_BIO_PLOT_NAME,
+  BUILTIN_BIO_REPRODUCTION_NAME,
   BUILTIN_BIO_RUNTIME_NAME,
   BUILTIN_BIO_SOURCE_NAME,
+  BUILTIN_BIO_STATISTICS_NAME,
   BUILTIN_IMAGE_GEN_NAME,
   BUILTIN_LAB_SKILL_NAME,
   BUILTIN_MEDICAL_EVIDENCE_NAME,
@@ -38,6 +43,9 @@ describe('guid capability mode MCP requirements', () => {
       BUILTIN_BIO_SOURCE_NAME,
       BUILTIN_BIO_KNOWLEDGE_NAME,
       BUILTIN_BIO_PLOT_NAME,
+      BUILTIN_BIO_REPRODUCTION_NAME,
+      BUILTIN_BIO_STATISTICS_NAME,
+      BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
     ]);
     expect(getGuidModeRequiredMcpNames('science')).not.toEqual(
       expect.arrayContaining([
@@ -45,6 +53,9 @@ describe('guid capability mode MCP requirements', () => {
         BUILTIN_BIO_SOURCE_NAME,
         BUILTIN_BIO_KNOWLEDGE_NAME,
         BUILTIN_BIO_PLOT_NAME,
+        BUILTIN_BIO_REPRODUCTION_NAME,
+        BUILTIN_BIO_STATISTICS_NAME,
+        BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
       ])
     );
   });
@@ -53,6 +64,55 @@ describe('guid capability mode MCP requirements', () => {
     expect(isGuidMcpServerVisible({ builtin: true, name: BUILTIN_BIO_RUNTIME_NAME }, 'science')).toBe(true);
     expect(isGuidMcpServerVisible({ builtin: true, name: 'unrelated-builtin' }, 'science')).toBe(false);
     expect(isGuidMcpServerVisible({ builtin: false, name: 'user-mcp' }, 'science')).toBe(true);
+  });
+
+  it('loads Bio MCP dependencies from enabled reproduction skills', () => {
+    expect(resolveSkillRequiredMcpNames(['bio-omics-reproduction-planning'])).toEqual([
+      BUILTIN_BIO_RUNTIME_NAME,
+      BUILTIN_BIO_SOURCE_NAME,
+      BUILTIN_BIO_REPRODUCTION_NAME,
+      BUILTIN_BIO_STATISTICS_NAME,
+    ]);
+    expect(resolveSkillRequiredMcpNames(['bio-scrna-differential-expression'])).toEqual([
+      BUILTIN_BIO_RUNTIME_NAME,
+      BUILTIN_BIO_STATISTICS_NAME,
+    ]);
+    expect(resolveSkillRequiredMcpNames(['bio-data-resolution', 'bio-environment-routing'])).toEqual([
+      BUILTIN_BIO_RUNTIME_NAME,
+      BUILTIN_BIO_SOURCE_NAME,
+    ]);
+    expect(resolveSkillRequiredMcpNames(['bio-environment-manager', 'bio-analysis-script-authoring'])).toEqual([
+      BUILTIN_BIO_RUNTIME_NAME,
+      BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
+    ]);
+    expect(resolveSkillRequiredMcpNames(['bio-scrna-reproduction'])).toEqual([
+      BUILTIN_BIO_RUNTIME_NAME,
+      BUILTIN_BIO_SOURCE_NAME,
+      BUILTIN_BIO_KNOWLEDGE_NAME,
+      BUILTIN_BIO_PLOT_NAME,
+      BUILTIN_BIO_REPRODUCTION_NAME,
+      BUILTIN_BIO_STATISTICS_NAME,
+    ]);
+  });
+
+  it('does not add Bio MCPs for unrelated skills and removes duplicates', () => {
+    expect(resolveSkillRequiredMcpNames(['openscience-writing'])).toEqual([]);
+    expect(resolveSkillRequiredMcpNames(['bio-data-resolution', 'bio-data-resolution'])).toEqual([
+      BUILTIN_BIO_SOURCE_NAME,
+    ]);
+  });
+
+  it('records which skills caused each automatic Bio MCP dependency', () => {
+    expect(
+      resolveSkillRequiredMcpSources(['bio-data-resolution', 'bio-scrna-reproduction', 'bio-data-resolution'])
+    ).toEqual({
+      [BUILTIN_BIO_RUNTIME_NAME]: ['bio-scrna-reproduction'],
+      [BUILTIN_BIO_SOURCE_NAME]: ['bio-data-resolution', 'bio-scrna-reproduction'],
+      [BUILTIN_BIO_KNOWLEDGE_NAME]: ['bio-scrna-reproduction'],
+      [BUILTIN_BIO_PLOT_NAME]: ['bio-scrna-reproduction'],
+      [BUILTIN_BIO_REPRODUCTION_NAME]: ['bio-scrna-reproduction'],
+      [BUILTIN_BIO_STATISTICS_NAME]: ['bio-scrna-reproduction'],
+    });
   });
 
   it('loads the shared user-input MCP for Medical Evidence Mode', () => {

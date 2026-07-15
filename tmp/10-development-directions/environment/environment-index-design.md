@@ -91,6 +91,41 @@ Environment Resolver 的最小行为：
 5. 如果用户有匹配的 user env，可作为候选或覆盖项返回。
 6. 对 heavy step 允许 workflow 指定 step-level `environmentRef`。
 
+## User Environment Index
+
+本轮决策：官方环境 immutable；用户需要额外包时，由 agent 在 MCP 外层创建或派生用户私有 conda 环境，MCP 只负责注册/index。注册后由 `bio_runtime` 提供 list/resolve/probe 能力，使下游脚本、workflow 或 skill 只依赖 `environmentRef`。
+
+首版 user env 只对 agent/runtime 可见，不做前台 UI 管理，也不引入复杂环境状态机。包来源不做固定白名单，但必须记录 conda channel、pip/R repository、GitHub URL、commit/tag、许可证或凭证风险。
+
+用户环境索引仍保持轻量 routing contract：
+
+```yaml
+userEnvironments:
+  user:lyx/scanpy-custom:1:
+    path:
+      conda: /srv/openbioscience/users/lyx/envs/scanpy-custom-1
+      entry: conda run -p /srv/openbioscience/users/lyx/envs/scanpy-custom-1
+    build:
+      baseEnvironmentRef: sc-py-singlecell
+      packageDelta: /srv/openbioscience/users/lyx/env-specs/scanpy-custom-1.yml
+      createdBy: agent
+    resources:
+      cpu: "4+"
+      memory: "16GB+"
+      gpu: false
+    supports:
+      skills:
+        - openscience-singlecell
+      tools:
+        - scanpy
+        - squidpy
+      workflows:
+        - spatial-singlecell
+    probe:
+      status: passed
+      log: execution/logs/environment_probe.log
+```
+
 ## Current Bootstrap Manifest
 
 当前仓库已经新增一个操作层 manifest：
@@ -133,3 +168,4 @@ LLM 或 agent 不应默认加载完整 index。更推荐：
 2. 定义 TypeScript/Rust DTO，保证前后端字段一致。
 3. 给 resolver 增加最小单元测试：按 skill、tool、workflow 匹配。
 4. 在 Bio skills/MCP 文档中引用 `environmentRef`，不要嵌入完整安装说明。
+5. 增加 user env 注册/index schema，并由 `bio_runtime` 提供 list/resolve/probe。

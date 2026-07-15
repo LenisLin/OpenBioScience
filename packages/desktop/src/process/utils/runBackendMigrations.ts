@@ -34,10 +34,18 @@ import {
 import {
   BUILTIN_IMAGE_GEN_NAME,
   BUILTIN_IMAGE_GEN_LEGACY_NAMES,
+  BUILTIN_BIO_ENVIRONMENT_MANAGER_LEGACY_NAMES,
+  BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
   BUILTIN_BIO_KNOWLEDGE_NAME,
   BUILTIN_BIO_KNOWLEDGE_LEGACY_NAMES,
   BUILTIN_BIO_PLOT_NAME,
   BUILTIN_BIO_PLOT_LEGACY_NAMES,
+  BUILTIN_BIO_ANALYSIS_NAME,
+  BUILTIN_BIO_ANALYSIS_LEGACY_NAMES,
+  BUILTIN_BIO_REPRODUCTION_NAME,
+  BUILTIN_BIO_REPRODUCTION_LEGACY_NAMES,
+  BUILTIN_BIO_STATISTICS_NAME,
+  BUILTIN_BIO_STATISTICS_LEGACY_NAMES,
   BUILTIN_BIO_RUNTIME_NAME,
   BUILTIN_BIO_RUNTIME_LEGACY_NAMES,
   BUILTIN_BIO_SOURCE_NAME,
@@ -62,6 +70,7 @@ import { legacyEnvName } from '@/common/config/legacyIdentifiers';
 import { getProjectAgentDataDir } from '@/deepscientist_lark/project_agent/store';
 import { getBuiltinMcpScriptPath, type ProcessConfig as ProcessConfigType } from './initStorage';
 import { migrateAssistantsToBackend } from './migrateAssistants';
+import { buildOpenBioScienceRuntimeEnv } from './openBioScienceRuntimeEnv';
 import { getUserInputGatewayEnv, startUserInputGateway } from '../bridge/userInputBridge';
 import { syncCodexOpenScienceMcpConfig, type ManagedCodexMcpServer } from './syncCodexOpenScienceMcpConfig';
 
@@ -69,7 +78,15 @@ type ConfigFile = typeof ProcessConfigType;
 type MigrationStepResult = boolean;
 type McpImportServer = Partial<IMcpServer> & Pick<IMcpServer, 'name' | 'transport'>;
 type BackendClientPreferences = Record<string, unknown>;
-type BioMcpProfile = 'runtime' | 'source' | 'knowledge' | 'plot';
+type BioMcpProfile =
+  | 'runtime'
+  | 'source'
+  | 'knowledge'
+  | 'plot'
+  | 'reproduction'
+  | 'analysis'
+  | 'statistics'
+  | 'environment_manager';
 const BUILTIN_CHROME_DEVTOOLS_NAME = 'chrome-devtools';
 
 const BIO_MCP_SERVERS: Array<{
@@ -98,6 +115,29 @@ const BIO_MCP_SERVERS: Array<{
     name: BUILTIN_BIO_PLOT_NAME,
     description: 'Built-in OpenBioScience scRNA-seq plot template and plot artifact manifest contracts.',
   },
+  {
+    profile: 'reproduction',
+    name: BUILTIN_BIO_REPRODUCTION_NAME,
+    description:
+      'Built-in OpenBioScience omics reproduction planning control plane for source packaging, availability audit, lightweight localization planning, and script-boundary validation.',
+  },
+  {
+    profile: 'analysis',
+    name: BUILTIN_BIO_ANALYSIS_NAME,
+    description:
+      'Built-in OpenBioScience private omics analysis control plane for human checkpoints, scRNA-seq baseline, episodes, and closure.',
+  },
+  {
+    profile: 'statistics',
+    name: BUILTIN_BIO_STATISTICS_NAME,
+    description:
+      'Built-in OpenBioScience statistical contract control plane for expression semantics and replicate-aware edgeR differential expression.',
+  },
+  {
+    profile: 'environment_manager',
+    name: BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
+    description: 'Built-in OpenBioScience bio environment manager control plane for runtime environments.',
+  },
 ];
 
 const BUILTIN_SERVER_LEGACY_NAMES = new Map<string, readonly string[]>([
@@ -112,6 +152,10 @@ const BUILTIN_SERVER_LEGACY_NAMES = new Map<string, readonly string[]>([
   [BUILTIN_BIO_SOURCE_NAME, BUILTIN_BIO_SOURCE_LEGACY_NAMES],
   [BUILTIN_BIO_KNOWLEDGE_NAME, BUILTIN_BIO_KNOWLEDGE_LEGACY_NAMES],
   [BUILTIN_BIO_PLOT_NAME, BUILTIN_BIO_PLOT_LEGACY_NAMES],
+  [BUILTIN_BIO_ANALYSIS_NAME, BUILTIN_BIO_ANALYSIS_LEGACY_NAMES],
+  [BUILTIN_BIO_REPRODUCTION_NAME, BUILTIN_BIO_REPRODUCTION_LEGACY_NAMES],
+  [BUILTIN_BIO_STATISTICS_NAME, BUILTIN_BIO_STATISTICS_LEGACY_NAMES],
+  [BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME, BUILTIN_BIO_ENVIRONMENT_MANAGER_LEGACY_NAMES],
 ]);
 
 function findExistingBuiltinServer(existingByName: Map<string, IMcpServer>, name: string): IMcpServer | undefined {
@@ -463,9 +507,12 @@ function logScienceArtifactEnvResolution(
   );
 }
 
-function buildBuiltinScienceArtifactServer(resolution: ScienceArtifactMcpEnvResolveResult): McpImportServer {
+function buildBuiltinScienceArtifactServer(
+  resolution: ScienceArtifactMcpEnvResolveResult,
+  userInputEnv: Record<string, string>
+): McpImportServer {
   const scriptPath = getBuiltinMcpScriptPath('builtin-mcp-science-artifact');
-  const env = resolution.env || {};
+  const env = { ...resolution.env, ...userInputEnv };
   const serverConfig = {
     command: 'node',
     args: [scriptPath],
@@ -544,9 +591,9 @@ function buildBuiltinUserInputServer(env: Record<string, string>): McpImportServ
 
 function buildBuiltinBioServer(definition: (typeof BIO_MCP_SERVERS)[number]): McpImportServer {
   const scriptPath = getBuiltinMcpScriptPath('builtin-mcp-bio');
-  const env = {
+  const env = buildOpenBioScienceRuntimeEnv({
     OPENBIOSCIENCE_BIO_MCP_PROFILE: definition.profile,
-  };
+  });
   const serverConfig = {
     command: 'node',
     args: [scriptPath],
@@ -556,7 +603,7 @@ function buildBuiltinBioServer(definition: (typeof BIO_MCP_SERVERS)[number]): Mc
   return {
     name: definition.name,
     description: definition.description,
-    enabled: false,
+    enabled: true,
     builtin: true,
     transport: {
       type: 'stdio',
@@ -815,12 +862,13 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   const imageServer = buildBuiltinImageGenerationServer(imageEnvResolution, imageConfig);
   const medicalEvidenceServer = buildBuiltinMedicalEvidenceServer(medicalEvidenceEnvResolution);
   const researchEvidenceServer = buildBuiltinResearchEvidenceServer(researchEvidenceEnvResolution);
-  const scienceArtifactServer = buildBuiltinScienceArtifactServer(scienceArtifactEnvResolution);
+  await startUserInputGateway();
+  const userInputEnv = getUserInputGatewayEnv();
+  const scienceArtifactServer = buildBuiltinScienceArtifactServer(scienceArtifactEnvResolution, userInputEnv);
   const labSkillServer = buildBuiltinLabSkillServer();
   const larkProjectAgentServer = buildBuiltinLarkProjectAgentServer();
   const bioServers = BIO_MCP_SERVERS.map(buildBuiltinBioServer);
-  await startUserInputGateway();
-  const userInputServer = buildBuiltinUserInputServer(getUserInputGatewayEnv());
+  const userInputServer = buildBuiltinUserInputServer(userInputEnv);
   const defaultServers = [...buildDefaultMcpServers(), larkProjectAgentServer];
   const missing = [
     ...defaultServers,
@@ -1034,6 +1082,10 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
           original_json: bioServer.original_json,
         },
       });
+      bioServerUpdated = true;
+    }
+    if (existingBioServer && existingBioServer.enabled !== bioServer.enabled) {
+      await mcpService.toggleServer.invoke({ id: existingBioServer.id });
       bioServerUpdated = true;
     }
   }

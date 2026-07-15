@@ -72,6 +72,28 @@
     "no": "Ні (esc)"
   },
   "agentProgressSummary": "Крок {{current}} / {{total}} · змінено файлів: {{count}}",
+  "scienceDelivery": {
+    "title": "Статус доставки",
+    "coverageSummary": "Покриття: завершено {{completed}}/{{total}} · потребують дій {{actionRequired}} · заблоковано {{blocked}}",
+    "coverageDetails": "Деталі покриття",
+    "blockers": "Зовнішні блокування",
+    "nextActions": "Наступні дії",
+    "states": {
+      "running": "Виконується",
+      "actionRequired": "Потрібна дія",
+      "completed": "Завершено",
+      "partial": "Завершено з обмеженнями",
+      "blocked": "Заблоковано",
+      "failed": "Помилка",
+      "awaitingUser": "Очікується перевірка користувача"
+    },
+    "analysis": {
+      "analysisId": "Ідентифікатор аналізу",
+      "stage": "Поточний етап",
+      "checkpoint": "Контрольна точка",
+      "baseline": "Поточна база"
+    }
+  },
   "codexMemory": {
     "title": "Codex Memory",
     "fallbackTitle": "Memory snapshot",

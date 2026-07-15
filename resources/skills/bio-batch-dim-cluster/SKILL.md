@@ -6,6 +6,12 @@ description: >
 
 # Bio Batch Dimensionality Clustering
 
+## Reproduction Parameters
+
+- Consume reported integration method, components, embeddings, neighbor graph settings, clustering algorithm, and resolution from the method contract.
+- A Scanpy/Leiden/UMAP workflow is not parameter-aligned with a reported Seurat CCA/t-SNE workflow unless an explicit validated mapping supports that claim.
+- Record explored and selected values separately in the executed parameter manifest.
+
 This skill specifies reproducible batch handling, dimensionality reduction, and clustering for scRNA-seq objects. It defines decision points and artifacts; execution is deferred to an approved runner when available; the current bio MCP layer only validates and plans contracts.
 
 ## OpenBioScience Adapter

@@ -171,6 +171,27 @@ const valueToString = (value: unknown): string | undefined => {
   return undefined;
 };
 
+const shellCommandToString = (value: unknown): string | undefined => {
+  const scalar = valueToString(value);
+  if (scalar !== undefined) return scalar;
+  if (!Array.isArray(value)) return undefined;
+
+  const parts = value.map(valueToString).filter((part): part is string => part !== undefined);
+  if (!parts.length) return undefined;
+  const executable = parts[0]?.split(/[\\/]/u).at(-1)?.toLowerCase();
+  if ((executable === 'bash' || executable === 'sh') && parts[1] === '-lc') return parts[2] || '';
+
+  return parts.map((part) => (/\s/u.test(part) ? JSON.stringify(part) : part)).join(' ');
+};
+
+const stableToolTitle = (...candidates: unknown[]): string => {
+  for (const candidate of candidates) {
+    const title = valueToString(candidate)?.trim();
+    if (title) return title;
+  }
+  return 'Tool';
+};
+
 const stringify = (value: unknown): string | undefined => {
   if (value === undefined || value === null) return undefined;
   if (typeof value === 'string') return value;
@@ -181,14 +202,14 @@ const stringify = (value: unknown): string | undefined => {
   }
 };
 
-const compact = (value?: string, max = 120): string | undefined => {
-  const trimmed = value?.replace(/\s+/g, ' ').trim();
+const compact = (value: unknown, max = 120): string | undefined => {
+  const trimmed = valueToString(value)?.replace(/\s+/g, ' ').trim();
   if (!trimmed) return undefined;
   return trimmed.length > max ? `${trimmed.slice(0, max - 1)}...` : trimmed;
 };
 
-const stripMarkdownCodeFence = (value?: string): string | undefined => {
-  const trimmed = value?.trim();
+const stripMarkdownCodeFence = (value: unknown): string | undefined => {
+  const trimmed = valueToString(value)?.trim();
   if (!trimmed) return undefined;
   const openingFence = trimmed.match(/^```[^\r\n`]*\r?\n?/);
   if (!openingFence) return trimmed;
@@ -196,6 +217,26 @@ const stripMarkdownCodeFence = (value?: string): string | undefined => {
     .slice(openingFence[0].length)
     .replace(/\r?\n?```\s*$/u, '')
     .trim();
+};
+
+export const unwrapShellCommand = (command?: unknown): string => {
+  const commandText = shellCommandToString(command);
+  if (!commandText?.trim()) return '';
+  const normalized = commandText.replace(/\\\s*\n\s*/g, ' ').trim();
+  const shellWrapped = normalized.match(/^(?:\/usr\/bin\/|\/bin\/)?(?:bash|sh)\s+-lc\s+(["'])([\s\S]*)\1$/u);
+  return shellWrapped?.[2] || normalized;
+};
+
+export const summarizeShellCommand = (command?: unknown): string => {
+  const effectiveCommand = unwrapShellCommand(command);
+  if (!effectiveCommand) return '';
+  const tools = effectiveCommand
+    .split(/\||&&|;/u)
+    .map((part) => part.trim().split(/\s+/)[0]?.replace(/^.*\//u, ''))
+    .filter((tool): tool is string => Boolean(tool) && !['do', 'done', 'then', 'fi', 'else'].includes(tool))
+    .filter((tool, index, values) => values.indexOf(tool) === index)
+    .slice(0, 5);
+  return tools.join(' → ');
 };
 
 const basename = (path?: string): string | undefined => {
@@ -305,6 +346,9 @@ const statusFromAcp = (status: string): AgentStepStatus => {
       return 'completed';
     case 'failed':
       return 'error';
+    case 'canceled':
+    case 'cancelled':
+      return 'canceled';
     case 'in_progress':
       return 'running';
     case 'pending':
@@ -318,7 +362,11 @@ const statusFromToolCall = (status?: string): AgentStepStatus => {
     case 'completed':
       return 'completed';
     case 'error':
+    case 'failed':
       return 'error';
+    case 'canceled':
+    case 'cancelled':
+      return 'canceled';
     case 'running':
       return 'running';
     default:
@@ -335,6 +383,15 @@ const getFirstString = (record: AnyRecord | undefined, keys: string[]): string |
   return undefined;
 };
 
+const getFirstCommand = (record: AnyRecord | undefined, keys: string[]): string | undefined => {
+  if (!record) return undefined;
+  for (const key of keys) {
+    const value = stripMarkdownCodeFence(shellCommandToString(record[key]));
+    if (value) return value;
+  }
+  return undefined;
+};
+
 const parseJsonObject = (value?: string): AnyRecord | undefined => {
   if (!value) return undefined;
   try {
@@ -344,8 +401,8 @@ const parseJsonObject = (value?: string): AnyRecord | undefined => {
   }
 };
 
-const normalizeName = (name?: string): string =>
-  (name || '')
+const normalizeName = (name?: unknown): string =>
+  (valueToString(name) || '')
     .trim()
     .toLowerCase()
     .replace(/[\s_-]+/g, '');
@@ -376,7 +433,7 @@ const getToolGroupInputRecord = (tool: IMessageToolGroup['content'][0]): AnyReco
   const details = tool.confirmationDetails;
   if (details?.type === 'exec') {
     return {
-      command: stripMarkdownCodeFence(details.command),
+      command: stripMarkdownCodeFence(shellCommandToString(details.command)),
       rootCommand: details.rootCommand,
     };
   }
@@ -590,7 +647,7 @@ const stepFromToolGroupItem = (
 
   if (details?.type === 'exec' || isCommandName(tool.name)) {
     const command = stripMarkdownCodeFence(
-      details?.type === 'exec' ? details.command : getFirstString(input, ['command'])
+      details?.type === 'exec' ? shellCommandToString(details.command) : getFirstString(input, ['command'])
     );
     return {
       ...base,
@@ -674,20 +731,22 @@ const stepFromAcpToolCall = (message: IMessageAcpToolCall): AgentStep | undefine
   const firstDiff = update.content?.find((item) => item.type === 'diff');
   const filePath =
     getFirstString(rawInput, ['file_path', 'path', 'file_name']) || firstDiff?.path || update.locations?.[0]?.path;
-  const title = update.title || update.kind;
+  const title = stableToolTitle(update.title, update.kind);
   const base: AgentStepBase = {
     id: update.tool_call_id,
     kind: 'generic',
     status,
     title,
-    subtitle: compact(filePath || getFirstString(rawInput, ['command', 'query', 'pattern', 'url'])),
+    subtitle: compact(
+      filePath || getFirstCommand(rawInput, ['command', 'cmd']) || getFirstString(rawInput, ['query', 'pattern', 'url'])
+    ),
     input: stringify(rawInput),
     output,
     createdAt: messageCreatedAt(message),
     messageId: message.id,
     conversationId: message.conversation_id,
     source: 'acp_tool_call',
-    rawName: title || update.kind,
+    rawName: title,
     raw: message.content,
   };
 
@@ -702,7 +761,7 @@ const stepFromAcpToolCall = (message: IMessageAcpToolCall): AgentStep | undefine
   }
 
   if (update.kind === 'execute' || isCommandName(title)) {
-    const command = getFirstString(rawInput, ['command', 'cmd']);
+    const command = getFirstCommand(rawInput, ['command', 'cmd']);
     return {
       ...base,
       kind: 'command',
@@ -751,15 +810,16 @@ const stepFromAcpToolCall = (message: IMessageAcpToolCall): AgentStep | undefine
 const stepFromToolCall = (message: IMessageToolCall): AgentStep | undefined => {
   const { call_id, name, status, output, description } = message.content;
   if (!call_id) return undefined;
+  const toolName = stableToolTitle(name);
   const input = getToolCallInputRecord(message);
   const stepStatus = statusFromToolCall(status);
   const filePath = getFirstString(input, ['file_path', 'path', 'file_name']);
-  const command = getFirstString(input, ['command', 'cmd']);
+  const command = getFirstCommand(input, ['command', 'cmd']);
   const base: AgentStepBase = {
     id: call_id,
     kind: 'generic',
     status: stepStatus,
-    title: name,
+    title: toolName,
     subtitle: compact(description || filePath || command || getFirstString(input, ['pattern', 'query', 'url'])),
     input: stringify(input),
     output,
@@ -767,11 +827,11 @@ const stepFromToolCall = (message: IMessageToolCall): AgentStep | undefined => {
     messageId: message.id,
     conversationId: message.conversation_id,
     source: 'tool_call',
-    rawName: name,
+    rawName: toolName,
     raw: message.content,
   };
 
-  if (isCommandName(name)) {
+  if (isCommandName(toolName)) {
     return {
       ...base,
       kind: 'command',
@@ -783,11 +843,11 @@ const stepFromToolCall = (message: IMessageToolCall): AgentStep | undefined => {
     } satisfies AgentCommandStep;
   }
 
-  if (isWriteName(name) || isEditName(name)) {
+  if (isWriteName(toolName) || isEditName(toolName)) {
     return {
       ...base,
       kind: 'file_change',
-      title: fileIntent(stepStatus, isWriteName(name), basename(filePath)),
+      title: fileIntent(stepStatus, isWriteName(toolName), basename(filePath)),
       subtitle: basename(filePath) || compact(description),
       fileName: basename(filePath),
       filePath,
@@ -797,16 +857,16 @@ const stepFromToolCall = (message: IMessageToolCall): AgentStep | undefined => {
     } satisfies AgentFileChangeStep;
   }
 
-  if (isTodoName(name) || isPlanName(name)) {
+  if (isTodoName(toolName) || isPlanName(toolName)) {
     return {
       ...base,
-      kind: isPlanName(name) ? 'plan' : 'todo',
-      title: isPlanName(name) ? 'Updated plan' : 'Updated to-dos',
+      kind: isPlanName(toolName) ? 'plan' : 'todo',
+      title: isPlanName(toolName) ? 'Updated plan' : 'Updated to-dos',
       items: extractTodoItems(input, output),
     } satisfies AgentTodoPlanStep;
   }
 
-  if (isWebSearchName(name) || isWebFetchName(name)) {
+  if (isWebSearchName(toolName) || isWebFetchName(toolName)) {
     const url = getFirstString(input, ['url', 'href']);
     const query = getFirstString(input, ['query', 'search', 'prompt', 'pattern']);
     return {
@@ -814,8 +874,8 @@ const stepFromToolCall = (message: IMessageToolCall): AgentStep | undefined => {
       kind: 'web',
       title: webIntent(
         stepStatus,
-        isWebSearchName(name),
-        compact(query || hostnameFromUrl(url), isWebSearchName(name) ? 42 : 28)
+        isWebSearchName(toolName),
+        compact(query || hostnameFromUrl(url), isWebSearchName(toolName) ? 42 : 28)
       ),
       subtitle: compact(query || hostnameFromUrl(url) || description),
       url,

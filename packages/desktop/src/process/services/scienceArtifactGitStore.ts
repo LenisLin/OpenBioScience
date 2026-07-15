@@ -20,6 +20,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { isSensitiveScienceArtifactPath } from './scienceArtifactAuthorization';
 
 const OPENSCIENCE_DIR = '.openscience';
 const SCIENCE_ARTIFACTS_DIR = 'science-artifacts';
@@ -50,6 +51,7 @@ export interface ScienceArtifactSnapshotRequest {
   event?: ScienceArtifactEvent;
   target?: ScienceArtifactEvent['target'];
   includePaths?: ScienceArtifactSnapshotIncludePath[];
+  authorizedExternalPaths?: string[];
   message?: string;
 }
 
@@ -295,22 +297,9 @@ export function ensureScienceArtifactRepo(projectRoot?: string): ScienceProjectI
   return project;
 }
 
-const deniedName = (name: string): boolean =>
-  name === '.git' ||
-  name === 'node_modules' ||
-  name === '.venv' ||
-  name === 'venv' ||
-  name === '__pycache__' ||
-  name === '.DS_Store' ||
-  /^\.env(?:\.|$)/iu.test(name) ||
-  /(?:^|[._-])(?:secret|token|credential|passwd|password)(?:[._-]|$)/iu.test(name) ||
-  /(?:id_rsa|id_dsa|id_ed25519|\.pem$|\.key$|\.p12$|\.pfx$)/iu.test(name);
-
 const shouldIgnorePath = (filePath: string, project: ScienceProjectInfo): boolean => {
   if (isInside(project.artifactRepoPath, filePath)) return true;
-  const rel = relativeToProject(project.projectRoot, filePath);
-  const segments = toPosix(rel || filePath).split('/');
-  return segments.some((segment) => deniedName(segment));
+  return isSensitiveScienceArtifactPath(filePath);
 };
 
 const collectDeclaredArtifactPaths = (artifact: ScienceArtifact): ScienceArtifactSnapshotIncludePath[] => {
@@ -345,8 +334,8 @@ const walkDirectory = (dirPath: string, project: ScienceProjectInfo): string[] =
   const files: string[] = [];
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
   for (const entry of entries) {
-    if (deniedName(entry.name)) continue;
     const child = path.join(dirPath, entry.name);
+    if (isSensitiveScienceArtifactPath(child)) continue;
     if (shouldIgnorePath(child, project)) continue;
     if (entry.isDirectory()) {
       files.push(...walkDirectory(child, project));
@@ -394,7 +383,8 @@ const materializeFile = (
   include: ScienceArtifactSnapshotIncludePath,
   sourcePath: string,
   basePath: string,
-  maxCopyBytes: number
+  maxCopyBytes: number,
+  authorizedExternalPaths: ReadonlySet<string>
 ): ScienceArtifactGitFile => {
   const relativePath = relativeToProject(project.projectRoot, sourcePath);
   if (shouldIgnorePath(sourcePath, project)) {
@@ -417,6 +407,20 @@ const materializeFile = (
       artifactVersion: artifact?.version || include.artifactVersion,
       mode: 'missing',
       reason: 'not_found',
+    };
+  }
+  const realSourcePath = fs.realpathSync(sourcePath);
+  const realProjectRoot = fs.realpathSync(project.projectRoot);
+  const isExternalPath = !isInside(realProjectRoot, realSourcePath);
+  if (isExternalPath && !authorizedExternalPaths.has(realSourcePath)) {
+    return {
+      path: sourcePath,
+      relativePath,
+      role: include.role,
+      artifactId: artifact?.id || include.artifactId,
+      artifactVersion: artifact?.version || include.artifactVersion,
+      mode: 'ignored',
+      reason: 'external_path_not_authorized',
     };
   }
   const stat = fs.statSync(sourcePath);
@@ -448,13 +452,16 @@ const materializeIncludePath = (
   artifactsById: Map<string, ScienceArtifact>,
   include: ScienceArtifactSnapshotIncludePath,
   defaultArtifact?: ScienceArtifact,
-  maxCopyBytes = DEFAULT_MAX_COPY_BYTES
+  maxCopyBytes = DEFAULT_MAX_COPY_BYTES,
+  authorizedExternalPaths: ReadonlySet<string> = new Set()
 ): ScienceArtifactGitFile[] => {
   const resolved = resolveProjectPath(project.projectRoot, include.path);
   const artifact = include.artifactId ? artifactsById.get(include.artifactId) || defaultArtifact : defaultArtifact;
   if (!resolved) return [];
   if (!fs.existsSync(resolved)) {
-    return [materializeFile(project, runRoot, artifact, include, resolved, resolved, maxCopyBytes)];
+    return [
+      materializeFile(project, runRoot, artifact, include, resolved, resolved, maxCopyBytes, authorizedExternalPaths),
+    ];
   }
   const stat = fs.statSync(resolved);
   if (stat.isDirectory()) {
@@ -472,10 +479,12 @@ const materializeIncludePath = (
       ];
     }
     return walkDirectory(resolved, project).map((filePath) =>
-      materializeFile(project, runRoot, artifact, include, filePath, resolved, maxCopyBytes)
+      materializeFile(project, runRoot, artifact, include, filePath, resolved, maxCopyBytes, authorizedExternalPaths)
     );
   }
-  return [materializeFile(project, runRoot, artifact, include, resolved, resolved, maxCopyBytes)];
+  return [
+    materializeFile(project, runRoot, artifact, include, resolved, resolved, maxCopyBytes, authorizedExternalPaths),
+  ];
 };
 
 const groupFilesForArtifact = (files: ScienceArtifactGitFile[], artifact: ScienceArtifact): ScienceArtifactGitFile[] =>
@@ -694,6 +703,15 @@ export function commitScienceArtifactSnapshot(request: ScienceArtifactSnapshotRe
   }
 
   const maxCopyBytes = Number(process.env.OPENSCIENCE_ARTIFACT_GIT_MAX_COPY_BYTES || DEFAULT_MAX_COPY_BYTES);
+  const authorizedExternalPaths = new Set(
+    (request.authorizedExternalPaths || []).map((candidate) => {
+      try {
+        return fs.realpathSync(candidate);
+      } catch {
+        return path.resolve(candidate);
+      }
+    })
+  );
   const panel = {
     ...request.panel,
     projectRoot: request.panel.projectRoot || project.projectRoot,
@@ -742,8 +760,17 @@ export function commitScienceArtifactSnapshot(request: ScienceArtifactSnapshotRe
     return next;
   });
   const files = [...declaredPaths, ...manualPaths].flatMap((include) =>
-    materializeIncludePath(project, runRoot, artifactsById, include, targetArtifact, maxCopyBytes)
+    materializeIncludePath(
+      project,
+      runRoot,
+      artifactsById,
+      include,
+      targetArtifact,
+      maxCopyBytes,
+      authorizedExternalPaths
+    )
   );
+  const hasUnauthorizedExternalFiles = files.some((file) => file.reason === 'external_path_not_authorized');
 
   for (const artifact of panel.artifacts) {
     const artifactRoot = path.join(
@@ -796,6 +823,9 @@ export function commitScienceArtifactSnapshot(request: ScienceArtifactSnapshotRe
     files,
     changedFiles,
     status: hadChanges ? 'committed' : 'unchanged',
+    warning: hasUnauthorizedExternalFiles
+      ? 'One or more external files were not copied. Authorize each exact file before retrying the snapshot.'
+      : undefined,
   };
   updateProjectIndex(project, panel, result);
   updateFileIndex(project, panel, result, files, request.event);

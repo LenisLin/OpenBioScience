@@ -19,6 +19,7 @@
 - server-native / SSH / remote runtime 的执行语义统一
 - 官方分析环境与用户自定义环境的 resolver / UI / skill-MCP 绑定
 - demo-driven reproduction：用固定 demo case 反推 environment / skill / MCP 的最小升级闭环
+- omics 文献复现规划层：在脚本和执行前先完成 paper / data / code / method / environment / task planning
 
 ## Directory Layout
 
@@ -97,6 +98,7 @@ tmp/
 - `10-development-directions/skills-mcp/agent-mcp-skill-map.md`
 - `10-development-directions/skills-mcp/cs-skill-and-mcp-style-study.md`
 - `10-development-directions/skills-mcp/openbioscience-skill-template.md`
+- `10-development-directions/skills-mcp/omics-reproduction-planning-skill-mcp-plan.md`
 - `10-development-directions/skills-mcp/scrna-seq-skill-mcp-plan.md`
 - `10-development-directions/skills-mcp/scrna-seq-skill-mcp-implementation-log.md`
 
@@ -156,12 +158,14 @@ tmp/
 
 - `10-development-directions/demo-reproduction/demo-driven-iteration.md`
 - `10-development-directions/demo-reproduction/p0-case-capability-matrix.md`
+- `10-development-directions/skills-mcp/omics-reproduction-planning-skill-mcp-plan.md`
 
 当前已明确：
 
 - `demo/<case>/README.md` 负责记录单篇文章如何被当前 harness 接住，以及当前可复现边界。
 - `tmp/` 负责记录跨 case 的平台迭代逻辑，而不是替代 case 文档。
 - 从本地证据强弱看，`human_CRC` 是当前最适合驱动第一轮 environment / skill / MCP 迭代的主导 case。
+- 在进入具体脚本和执行前，应先补齐 `bio-omics-reproduction-planning` skill 与 `bio_reproduction` MCP 规划控制面，用于平衡科学性解读、实现规划和基础审计。
 
 ### SSH / Runtime
 

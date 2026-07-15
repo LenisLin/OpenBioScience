@@ -7,6 +7,11 @@
   "send": {
     "failed": "發送訊息失敗：{{error}}"
   },
+  "stall": {
+    "warning": "最後一個工具結束後，Agent 尚未繼續回應。OpenBioScience 正在監測本輪執行。",
+    "recovered": "無回應的執行已自動停止。你可以從最後一個工具結果繼續。",
+    "failed": "本輪執行可能已無回應，但自動停止失敗。請使用停止按鈕或重新載入對話。"
+  },
   "sendbox": {
     "placeholder": "發送訊息到 {{backend}}..."
   },

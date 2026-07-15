@@ -212,7 +212,7 @@ export type IMessageToolCall = IMessage<
     name: string;
     args: Record<string, any>;
     error?: string;
-    status?: 'running' | 'completed' | 'error';
+    status?: 'running' | 'completed' | 'error' | 'failed' | 'canceled' | 'cancelled';
     input?: Record<string, any>;
     output?: string;
     description?: string;
@@ -270,7 +270,7 @@ export type IMessageToolGroup = IMessage<
           'exec',
           {
             rootCommand: string;
-            command: string;
+            command: string | string[];
           }
         >
       | IMessageToolGroupConfirmationDetailsBase<

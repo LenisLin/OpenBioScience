@@ -9,7 +9,7 @@ import type { IMessageToolGroup } from '@/common/chat/chatLib';
 import { iconColors } from '@/renderer/styles/colors';
 import { Alert, Button, Image, Message, Radio, Tag, Tooltip } from '@arco-design/web-react';
 import { Copy, Download, LoadingOne } from '@icon-park/react';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import FileChangesPanel from '@/renderer/components/base/FileChangesPanel';
 import { useDiffPreviewHandlers } from '@/renderer/hooks/file/useDiffPreviewHandlers';
@@ -54,6 +54,33 @@ type CommandLikeResult = {
 const toRecord = (value: unknown): Record<string, unknown> | undefined =>
   value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
 
+const stringifyUnknown = (value: unknown): string | undefined => {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+};
+
+const readableToolDescription = (value: unknown): string | undefined => {
+  const direct = stringifyUnknown(value);
+  if (!direct?.trim()) return undefined;
+
+  const record = toRecord(value);
+  if (!record) return direct;
+
+  const command = Array.isArray(record.command)
+    ? record.command.filter((part): part is string => typeof part === 'string').join(' ')
+    : getStringValue(record, ['command', 'cmd']);
+  const cwd = getStringValue(record, ['cwd', 'workdir']);
+  const reason = getStringValue(record, ['reason', 'justification']);
+  const summary = [command ? `$ ${command}` : undefined, cwd ? `cwd: ${cwd}` : undefined, reason].filter(Boolean);
+  return summary.length > 0 ? summary.join('\n') : direct;
+};
+
 const getStringValue = (record: Record<string, unknown> | undefined, keys: string[]): string | undefined => {
   if (!record) return undefined;
   for (const key of keys) {
@@ -72,6 +99,7 @@ const getCommandLikeResult = (
     if (content.confirmationDetails?.type === 'exec') {
       return { command: content.confirmationDetails.command };
     }
+    if (typeof content.description !== 'string') return toRecord(content.description);
     if (!content.description) return undefined;
     try {
       return toRecord(JSON.parse(content.description));
@@ -225,10 +253,11 @@ const EditConfirmationDiff: React.FC<{ diff: string; file_name: string; title: s
 
 const ConfirmationDetails: React.FC<{
   content: IMessageToolGroupProps['message']['content'][number];
-  onConfirm: (outcome: ToolConfirmationOutcome) => void;
+  onConfirm: (outcome: ToolConfirmationOutcome) => Promise<void>;
 }> = ({ content, onConfirm }) => {
   const { t } = useTranslation();
   const { confirmationDetails } = content;
+  const description = readableToolDescription(content.description);
   if (!confirmationDetails) return;
   const node = useMemo(() => {
     if (!confirmationDetails) return null;
@@ -246,15 +275,43 @@ const ConfirmationDetails: React.FC<{
       case 'info':
         return <span className='text-t-primary'>{confirmationDetails.prompt}</span>;
       case 'mcp':
-        return <span className='text-t-primary'>{confirmationDetails.tool_display_name}</span>;
+        return (
+          <div className='w-full min-w-0'>
+            <div className='text-t-primary'>{confirmationDetails.tool_display_name}</div>
+            <div className='text-xs text-t-secondary'>
+              {confirmationDetails.server_name} · {confirmationDetails.tool_name}
+            </div>
+            {description ? (
+              <div className='mt-6px'>
+                <div className='text-xs text-t-secondary'>{t('messages.agentSteps.input')}</div>
+                <pre className='message-tool-command-result__command'>{description}</pre>
+              </div>
+            ) : null}
+          </div>
+        );
     }
-  }, [confirmationDetails]);
+  }, [confirmationDetails, description, t]);
 
   const { question = '', options = [] } = useConfirmationButtons(confirmationDetails, t);
 
   const [selected, setSelected] = useState<ToolConfirmationOutcome | null>(null);
+  const [isResponding, setIsResponding] = useState(false);
+  const [hasResponded, setHasResponded] = useState(false);
+  const respondingRef = useRef(false);
 
   const isConfirm = content.status === 'Confirming';
+  const handleConfirm = async () => {
+    if (!selected || respondingRef.current || hasResponded) return;
+    respondingRef.current = true;
+    setIsResponding(true);
+    try {
+      await onConfirm(selected);
+      setHasResponded(true);
+    } finally {
+      respondingRef.current = false;
+      setIsResponding(false);
+    }
+  };
 
   return (
     <div>
@@ -262,12 +319,12 @@ const ConfirmationDetails: React.FC<{
         <EditConfirmationDiff
           diff={confirmationDetails?.file_diff || ''}
           file_name={confirmationDetails.file_name}
-          title={isConfirm ? confirmationDetails.title : content.description}
+          title={isConfirm ? confirmationDetails.title : description || confirmationDetails.title}
         />
       ) : (
         node
       )}
-      {content.status === 'Confirming' && (
+      {content.status === 'Confirming' && !hasResponded && (
         <>
           <div className='mt-10px text-t-primary'>{question}</div>
           <Radio.Group direction='vertical' size='mini' value={selected} onChange={setSelected}>
@@ -280,12 +337,15 @@ const ConfirmationDetails: React.FC<{
             })}
           </Radio.Group>
           <div className='flex justify-start pl-20px'>
-            <Button type='primary' size='mini' disabled={!selected} onClick={() => onConfirm(selected)}>
-              {t('messages.confirm')}
+            <Button type='primary' size='mini' disabled={!selected || isResponding} onClick={handleConfirm}>
+              {isResponding ? t('messages.processing') : t('messages.confirm')}
             </Button>
           </div>
         </>
       )}
+      {hasResponded ? (
+        <div className='mt-10px text-xs text-t-secondary'>{t('messages.responseSentSuccessfully')}</div>
+      ) : null}
     </div>
   );
 };
@@ -555,7 +615,8 @@ const MessageToolGroup: React.FC<IMessageToolGroupProps> = ({ message }) => {
   return (
     <div>
       {message.content.map((content, index) => {
-        const { status, call_id, name, description, result_display, confirmationDetails } = content;
+        const { status, call_id, name, result_display, confirmationDetails } = content;
+        const description = readableToolDescription(content.description);
         const isLoading = status !== 'Success' && status !== 'Error' && status !== 'Canceled';
         // status === "Confirming" &&
         if (confirmationDetails) {
@@ -563,21 +624,14 @@ const MessageToolGroup: React.FC<IMessageToolGroupProps> = ({ message }) => {
             <ConfirmationDetails
               key={call_id}
               content={content}
-              onConfirm={(outcome) => {
-                ipcBridge.conversation.confirmMessage
-                  .invoke({
-                    confirm_key: outcome,
-                    msg_id: message.id,
-                    call_id: call_id,
-                    conversation_id: message.conversation_id,
-                    always_allow: isAlwaysAllowOutcome(outcome),
-                  })
-                  .then(() => {
-                    // confirmation sent successfully
-                  })
-                  .catch((error) => {
-                    console.error('Failed to confirm message:', error);
-                  });
+              onConfirm={async (outcome) => {
+                await ipcBridge.conversation.confirmMessage.invoke({
+                  confirm_key: outcome,
+                  msg_id: message.id,
+                  call_id: call_id,
+                  conversation_id: message.conversation_id,
+                  always_allow: isAlwaysAllowOutcome(outcome),
+                });
               }}
             ></ConfirmationDetails>
           );

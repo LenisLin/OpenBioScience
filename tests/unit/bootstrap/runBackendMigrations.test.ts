@@ -4,6 +4,8 @@ import { IMAGE_GEN_ENV_KEYS } from '@/common/config/imageGenerationMcpEnv';
 import {
   BUILTIN_BIO_KNOWLEDGE_NAME,
   BUILTIN_BIO_PLOT_NAME,
+  BUILTIN_BIO_REPRODUCTION_NAME,
+  BUILTIN_BIO_REPRODUCTION_LEGACY_NAMES,
   BUILTIN_BIO_RUNTIME_NAME,
   BUILTIN_BIO_RUNTIME_LEGACY_NAMES,
   BUILTIN_BIO_SOURCE_NAME,
@@ -86,6 +88,7 @@ const imageEnv = {
   [IMAGE_GEN_ENV_KEYS.apiKey]: 'provider-key',
   [IMAGE_GEN_ENV_KEYS.model]: 'gemini-image',
 };
+const openBioScienceRuntimeRoot = '/mnt/NAS_21T/ProjectData/OpenBioScience';
 
 const imageServer = (): IMcpServer => ({
   id: 'image-server-id',
@@ -221,28 +224,60 @@ describe('runBackendMigrations', () => {
           name: BUILTIN_BIO_RUNTIME_NAME,
           transport: expect.objectContaining({
             args: ['/mock/builtin-mcp-bio.js'],
-            env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime' },
+            env: expect.objectContaining({
+              OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime',
+              OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+            }),
           }),
         }),
         expect.objectContaining({
           name: BUILTIN_BIO_SOURCE_NAME,
           transport: expect.objectContaining({
             args: ['/mock/builtin-mcp-bio.js'],
-            env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source' },
+            env: expect.objectContaining({
+              OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source',
+              OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+            }),
           }),
         }),
         expect.objectContaining({
           name: BUILTIN_BIO_KNOWLEDGE_NAME,
           transport: expect.objectContaining({
             args: ['/mock/builtin-mcp-bio.js'],
-            env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'knowledge' },
+            env: expect.objectContaining({
+              OPENBIOSCIENCE_BIO_MCP_PROFILE: 'knowledge',
+              OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+            }),
           }),
         }),
         expect.objectContaining({
           name: BUILTIN_BIO_PLOT_NAME,
           transport: expect.objectContaining({
             args: ['/mock/builtin-mcp-bio.js'],
-            env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'plot' },
+            env: expect.objectContaining({
+              OPENBIOSCIENCE_BIO_MCP_PROFILE: 'plot',
+              OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+            }),
+          }),
+        }),
+        expect.objectContaining({
+          name: BUILTIN_BIO_REPRODUCTION_NAME,
+          transport: expect.objectContaining({
+            args: ['/mock/builtin-mcp-bio.js'],
+            env: expect.objectContaining({
+              OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction',
+              OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+            }),
+          }),
+        }),
+        expect.objectContaining({
+          name: 'openscience-bio-environment-manager',
+          transport: expect.objectContaining({
+            args: ['/mock/builtin-mcp-bio.js'],
+            env: expect.objectContaining({
+              OPENBIOSCIENCE_BIO_MCP_PROFILE: 'environment_manager',
+              OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+            }),
           }),
         }),
       ])
@@ -261,25 +296,55 @@ describe('runBackendMigrations', () => {
           name: BUILTIN_BIO_RUNTIME_NAME,
           command: 'node',
           args: ['/mock/builtin-mcp-bio.js'],
-          env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime' },
+          env: expect.objectContaining({
+            OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime',
+            OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+          }),
         }),
         expect.objectContaining({
           name: BUILTIN_BIO_SOURCE_NAME,
           command: 'node',
           args: ['/mock/builtin-mcp-bio.js'],
-          env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source' },
+          env: expect.objectContaining({
+            OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source',
+            OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+          }),
         }),
         expect.objectContaining({
           name: BUILTIN_BIO_KNOWLEDGE_NAME,
           command: 'node',
           args: ['/mock/builtin-mcp-bio.js'],
-          env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'knowledge' },
+          env: expect.objectContaining({
+            OPENBIOSCIENCE_BIO_MCP_PROFILE: 'knowledge',
+            OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+          }),
         }),
         expect.objectContaining({
           name: BUILTIN_BIO_PLOT_NAME,
           command: 'node',
           args: ['/mock/builtin-mcp-bio.js'],
-          env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'plot' },
+          env: expect.objectContaining({
+            OPENBIOSCIENCE_BIO_MCP_PROFILE: 'plot',
+            OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+          }),
+        }),
+        expect.objectContaining({
+          name: BUILTIN_BIO_REPRODUCTION_NAME,
+          command: 'node',
+          args: ['/mock/builtin-mcp-bio.js'],
+          env: expect.objectContaining({
+            OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction',
+            OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+          }),
+        }),
+        expect.objectContaining({
+          name: 'openscience-bio-environment-manager',
+          command: 'node',
+          args: ['/mock/builtin-mcp-bio.js'],
+          env: expect.objectContaining({
+            OPENBIOSCIENCE_BIO_MCP_PROFILE: 'environment_manager',
+            OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+          }),
         }),
       ])
     );
@@ -318,7 +383,52 @@ describe('runBackendMigrations', () => {
         builtin: true,
         transport: expect.objectContaining({
           args: ['/mock/builtin-mcp-bio.js'],
-          env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime' },
+          env: expect.objectContaining({
+            OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime',
+            OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+          }),
+        }),
+      }),
+    });
+  });
+
+  it('updates an existing legacy-name reproduction MCP server instead of importing a duplicate', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const legacyReproductionServer: IMcpServer = {
+      id: 'legacy-bio-reproduction-id',
+      name: BUILTIN_BIO_REPRODUCTION_LEGACY_NAMES[0],
+      description: 'Legacy bio reproduction MCP server.',
+      enabled: false,
+      builtin: false,
+      transport: {
+        type: 'stdio',
+        command: 'node',
+        args: ['/mock/old-bio.js'],
+        env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction' },
+      },
+      created_at: 1,
+      updated_at: 1,
+      original_json: '{}',
+    };
+    listServersMock.mockResolvedValue([imageServer(), legacyReproductionServer]);
+
+    await runBackendMigrations(configFile as never);
+
+    const importedServers = batchImportServersMock.mock.calls.flatMap((call) => call[0]?.servers ?? []);
+    expect(importedServers).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: BUILTIN_BIO_REPRODUCTION_NAME })])
+    );
+    expect(updateServerMock).toHaveBeenCalledWith({
+      id: 'legacy-bio-reproduction-id',
+      data: expect.objectContaining({
+        name: BUILTIN_BIO_REPRODUCTION_NAME,
+        builtin: true,
+        transport: expect.objectContaining({
+          args: ['/mock/builtin-mcp-bio.js'],
+          env: expect.objectContaining({
+            OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction',
+            OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+          }),
         }),
       }),
     });

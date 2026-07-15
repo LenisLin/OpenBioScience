@@ -5,19 +5,19 @@ current demo-driven OpenBioScience reproduction scope.
 
 ## Official Environment Set
 
-| Environment | Primary role | Current phase |
-| --- | --- | --- |
-| `sc-r-singlecell` | R-side single-cell mainline analysis | active |
-| `sc-py-singlecell` | Python-side single-cell IO and preprocessing | active |
-| `sc-r-plot` | dedicated R scientific plotting stack | active |
-| `sc-r-clinical` | survival / clinical biomarker downstream analysis | active |
-| `sc-cci-r` | R-first interaction analysis | active |
-| `sc-r-trajectory` | trajectory inference and pseudotime | active |
-| `sc-r-tumor-cnv` | tumor CNV-focused analysis | active |
-| `sc-network-grn-r` | R-first GRN and activity inference | active |
-| `sc-r-cytof` | CyTOF analysis with local FCS inputs | planned |
-| `sc-spatial-multiome` | spatial and multiome analysis | planned |
-| `sc-legacy-repro` | legacy workflow reproduction pack | planned |
+| Environment           | Primary role                                      | Current phase |
+| --------------------- | ------------------------------------------------- | ------------- |
+| `sc-r-singlecell`     | R-side single-cell mainline analysis              | active        |
+| `sc-py-singlecell`    | Python-side single-cell IO and preprocessing      | active        |
+| `sc-r-plot`           | dedicated R scientific plotting stack             | active        |
+| `sc-r-clinical`       | survival / clinical biomarker downstream analysis | active        |
+| `sc-cci-r`            | R-first interaction analysis                      | active        |
+| `sc-r-trajectory`     | trajectory inference and pseudotime               | active        |
+| `sc-r-tumor-cnv`      | tumor CNV-focused analysis                        | active        |
+| `sc-network-grn-r`    | R-first GRN and activity inference                | active        |
+| `sc-r-cytof`          | CyTOF analysis with local FCS inputs              | planned       |
+| `sc-spatial-multiome` | spatial and multiome analysis                     | planned       |
+| `sc-legacy-repro`     | legacy workflow reproduction pack                 | planned       |
 
 ## Installed Official Prefixes
 
@@ -33,16 +33,16 @@ Current official Conda prefix root:
 <OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official
 ```
 
-| Environment | Installed prefix | Current size | Current validation |
-| --- | --- | --- | --- |
-| `sc-py-singlecell` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-py-singlecell` | 7.0G | import smoke completed for `torch`, CUDA runtime, `torchvision`, `torchaudio`, `scvi-tools` |
-| `sc-r-singlecell` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-singlecell` | 1.1G | prefix installed; package-level smoke remains pending |
-| `sc-r-plot` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-plot` | 294M | prefix installed; package-level smoke remains pending |
-| `sc-r-clinical` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-clinical` | 579M | prefix installed; package-level smoke remains pending |
-| `sc-cci-r` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-cci-r` | 1.8G | prefix installed; package-level smoke remains pending |
-| `sc-r-trajectory` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-trajectory` | 65M | prefix installed; package-level smoke remains pending |
-| `sc-r-tumor-cnv` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-tumor-cnv` | 161M | prefix installed; package-level smoke remains pending |
-| `sc-network-grn-r` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-network-grn-r` | 368M | prefix installed; package-level smoke remains pending |
+| Environment        | Installed prefix                                                       | Current size | Current validation                                                                          |
+| ------------------ | ---------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------- |
+| `sc-py-singlecell` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-py-singlecell` | 7.0G         | import smoke completed for `torch`, CUDA runtime, `torchvision`, `torchaudio`, `scvi-tools` |
+| `sc-r-singlecell`  | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-singlecell`  | 1.1G         | prefix installed; package-level smoke remains pending                                       |
+| `sc-r-plot`        | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-plot`        | 294M         | prefix installed; package-level smoke remains pending                                       |
+| `sc-r-clinical`    | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-clinical`    | 579M         | prefix installed; package-level smoke remains pending                                       |
+| `sc-cci-r`         | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-cci-r`         | 1.8G         | prefix installed; package-level smoke remains pending                                       |
+| `sc-r-trajectory`  | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-trajectory`  | 65M          | prefix installed; package-level smoke remains pending                                       |
+| `sc-r-tumor-cnv`   | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-r-tumor-cnv`   | 161M         | prefix installed; package-level smoke remains pending                                       |
+| `sc-network-grn-r` | `<OPENBIOSCIENCE_RUNTIME_ROOT>/environments/official/sc-network-grn-r` | 368M         | prefix installed; package-level smoke remains pending                                       |
 
 Bootstrap metadata:
 
@@ -70,6 +70,10 @@ Naming decisions in this phase:
 7. `Seurat` and `SeuratObject` compatibility is reviewed as a matched pair.
 8. Workflow-specific Seurat v4 or v5 pinning is recorded at the
    environment revision that owns that workflow.
+9. `sc-py-singlecell` also carries shared planning utilities: Poppler
+   (`pdfinfo`, `pdftotext`), Binutils (`strings`), and Git. Git-backed
+   provenance remains optional; project execution must provide a non-git
+   fallback when Git is absent or the workspace is not a repository.
 
 ## Current Execution Notes
 

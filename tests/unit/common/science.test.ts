@@ -3,6 +3,7 @@ import {
   SCIENCE_PANEL_SCHEMA,
   buildScienceModePrompt,
   latestSciencePanel,
+  normalizeSciencePanelData,
   resolveScienceDisplayTarget,
   summarizeScienceRuntime,
 } from '@/common/chat/science';
@@ -15,10 +16,88 @@ describe('Science Mode payload parsing', () => {
     expect(prompt).toContain('user_input');
     expect(prompt).toContain('artifact Files view');
     expect(prompt).toContain('openscience-onboarding');
+    expect(prompt).toContain('case_reproduction/planning/reproduction_plan.md');
+    expect(prompt).toContain('build_source_package');
+    expect(prompt).toContain('probe_environment');
+    expect(prompt).toContain('Do not report the default shell as the analysis environment');
+    expect(prompt).toContain('probe `pdftotext` directly');
+    expect(prompt).toContain('${OPENBIOSCIENCE_RUNTIME_ROOT}/environments/official/sc-py-singlecell/bin/pdftotext');
+    expect(prompt).toContain('Skill selection or loading is not Skill completion');
+    expect(prompt).toContain('derive scope from the current validated PaperReproductionMap');
+    expect(prompt).toContain('/data/builtin-skills/<id>/SKILL.md');
     expect(prompt).toContain('openscience-writing');
     expect(prompt).toContain('openscience-databases');
     expect(prompt).not.toContain('openscience-user-input');
     expect(prompt).not.toContain('Project shelf');
+    expect(prompt).toContain('correctable workflow step, not a provenance limitation');
+  });
+
+  it('normalizes the legacy completed_with_warnings status to completed', () => {
+    const panel = normalizeSciencePanelData({
+      schema: SCIENCE_PANEL_SCHEMA,
+      runId: 'run-warning-alias',
+      question: 'Can this be reproduced?',
+      generatedAt: 1,
+      status: 'completed_with_warnings',
+      stats: {},
+      report: { title: 'Assessment', sections: [] },
+      evidence: [],
+      artifacts: [],
+      provenance: [],
+    });
+
+    expect(panel?.status).toBe('completed');
+  });
+
+  it('preserves authoritative delivery and coverage fields', () => {
+    const panel = normalizeSciencePanelData({
+      schema: SCIENCE_PANEL_SCHEMA,
+      runId: 'run-v2-coverage',
+      question: 'Reproduce Figure 4',
+      generatedAt: 1,
+      status: 'running',
+      stats: {},
+      report: { title: 'Figure 4', sections: [] },
+      evidence: [],
+      artifacts: [],
+      provenance: [],
+      deliveryState: {
+        state: 'action_required',
+        phase: 'execution',
+        authoritativeLabel: 'Script preflight required',
+        reasonCodes: ['missing_script_preflight'],
+        publicationDisposition: 'pending',
+      },
+      coverageSummary: {
+        total: 2,
+        completed: 1,
+        exact: 0,
+        analogous: 1,
+        scoped: 0,
+        actionRequired: 1,
+        externalBlocked: 0,
+        excluded: 0,
+      },
+      coverageItems: [
+        {
+          id: 'coverage-figure4b',
+          targetType: 'paper_panel',
+          targetId: 'figure4b',
+          moduleIds: ['figure4.myeloid.subclustering'],
+          cohortIds: ['KUL3'],
+          reproductionMode: 'analogous',
+          status: 'completed',
+          reason: 'KUL3 myeloid cells are locally available.',
+          artifactIds: [],
+          evidenceIds: [],
+          receiptIds: [],
+        },
+      ],
+    });
+
+    expect(panel?.deliveryState?.state).toBe('action_required');
+    expect(panel?.coverageSummary?.analogous).toBe(1);
+    expect(panel?.coverageItems?.[0]?.targetId).toBe('figure4b');
   });
 
   it('extracts the latest published Science panel from tool output', () => {
@@ -164,6 +243,60 @@ describe('Science Mode payload parsing', () => {
     expect(summary?.hasPanel).toBe(true);
     expect(summary?.stats.artifacts).toBe(2);
     expect(summary?.trace.at(-1)?.kind).toBe('publish');
+  });
+
+  it('upgrades legacy Science panel sections before callers render them', () => {
+    const legacyPanel = {
+      schema: SCIENCE_PANEL_SCHEMA,
+      runId: 'sci_run_legacy',
+      question: 'Can this paper be reproduced?',
+      generatedAt: 42,
+      status: 'in_progress',
+      stats: { searches: 1 },
+      report: {
+        title: 'Legacy reproduction plan',
+        sections: [{ title: '目标', content: '判断论文中哪些分析内容可以复现。' }],
+      },
+      methods: {
+        queryPlan: 'PubMed + local PDF',
+        commands: 'Rscript scripts/01_qc.R',
+        limitations: ['No raw FASTQ files'],
+      },
+      workflowKind: 'omics_reproduction',
+      planningCompletion: 'complete',
+      executionReadiness: 'partial',
+      nextActions: [],
+      externalBlockers: [{ id: 'missing-fastq', kind: 'data', message: 'No raw FASTQ files', external: true }],
+    };
+    const messages = [
+      {
+        type: 'tool_call',
+        content: {
+          output: JSON.stringify(legacyPanel),
+        },
+      },
+    ] as never;
+
+    const panel = latestSciencePanel(messages);
+    const normalized = normalizeSciencePanelData(legacyPanel);
+
+    expect(panel?.status).toBe('running');
+    expect(normalized?.status).toBe('running');
+    expect(panel?.report.sections[0]).toEqual({
+      id: 'section-1',
+      heading: '目标',
+      blocks: [{ type: 'paragraph', text: '判断论文中哪些分析内容可以复现。' }],
+    });
+    expect(panel?.artifacts).toEqual([]);
+    expect(panel?.evidence).toEqual([]);
+    expect(panel?.methods?.queryPlan).toEqual(['PubMed + local PDF']);
+    expect(panel?.methods?.commands).toEqual(['Rscript scripts/01_qc.R']);
+    expect(panel).toMatchObject({
+      workflowKind: 'omics_reproduction',
+      planningCompletion: 'complete',
+      executionReadiness: 'partial',
+      externalBlockers: [expect.objectContaining({ id: 'missing-fastq', external: true })],
+    });
   });
 
   it('extracts a Science panel from nested MCP content in a tool group result object', () => {

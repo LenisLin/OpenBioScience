@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type BioMcpProfile = 'runtime' | 'source' | 'knowledge' | 'plot';
+export type BioMcpProfile =
+  | 'runtime'
+  | 'source'
+  | 'knowledge'
+  | 'plot'
+  | 'reproduction'
+  | 'analysis'
+  | 'statistics'
+  | 'environment_manager';
 
 export type BioMcpCatalogItem = {
   id: string;
@@ -34,11 +42,13 @@ export const BIO_MCP_PROFILES: Record<BioMcpProfile, BioMcpProfileDefinition> = 
       'list_environments',
       'resolve_environment',
       'probe_environment',
+      'probe_environments',
       'list_workflows',
       'validate_workflow',
       'list_plot_templates',
       'validate_plot_inputs',
       'summarize_outputs',
+      'record_execution',
     ],
   },
   source: {
@@ -47,7 +57,15 @@ export const BIO_MCP_PROFILES: Record<BioMcpProfile, BioMcpProfileDefinition> = 
     toolName: 'bio_source',
     description:
       'OpenBioScience data-source control plane for accession triage, local asset verification, download planning, and data manifests.',
-    actions: ['status', 'resolve_accession', 'verify_local_assets', 'plan_download', 'build_data_manifest'],
+    actions: [
+      'status',
+      'resolve_accession',
+      'verify_local_assets',
+      'plan_download',
+      'build_data_manifest',
+      'inspect_method_sources',
+      'index_paper_sources',
+    ],
   },
   knowledge: {
     profile: 'knowledge',
@@ -72,6 +90,74 @@ export const BIO_MCP_PROFILES: Record<BioMcpProfile, BioMcpProfileDefinition> = 
     description:
       'OpenBioScience scRNA-seq plotting control plane for local plot template catalogs, input validation, and plot artifact manifests.',
     actions: ['status', 'list_plot_templates', 'validate_plot_inputs', 'render_plan', 'summarize_plot_outputs'],
+  },
+  reproduction: {
+    profile: 'reproduction',
+    serverName: 'openscience-bio-reproduction',
+    toolName: 'bio_reproduction',
+    description:
+      'OpenBioScience omics reproduction planning control plane for source packaging, availability audit, lightweight localization planning, and script-boundary validation.',
+    actions: [
+      'status',
+      'build_source_package',
+      'localize_source_package',
+      'audit_data_code_availability',
+      'draft_reproduction_plan',
+      'extract_method_parameters',
+      'validate_method_alignment',
+      'validate_paper_reproduction_map',
+      'validate_reproduction_scope',
+      'validate_skill_compliance',
+      'preflight_execution_scripts',
+      'validate_reproduction_plan',
+      'prepare_execution_contract',
+      'complete_execution',
+    ],
+  },
+  analysis: {
+    profile: 'analysis',
+    serverName: 'openscience-bio-analysis',
+    toolName: 'bio_analysis',
+    description:
+      'OpenBioScience human-in-the-loop private omics analysis control plane for intake, scRNA-seq baseline, reviewed episodes, and closure.',
+    actions: [
+      'status',
+      'start_analysis',
+      'prepare_intake',
+      'complete_intake',
+      'prepare_qc',
+      'complete_qc',
+      'prepare_baseline',
+      'complete_baseline',
+      'prepare_episode',
+      'complete_episode',
+      'request_checkpoint',
+      'preflight_scripts',
+      'prepare_closure',
+      'close_analysis',
+    ],
+  },
+  statistics: {
+    profile: 'statistics',
+    serverName: 'openscience-bio-statistics',
+    toolName: 'bio_statistics',
+    description:
+      'OpenBioScience statistical contract control plane for expression semantics, replicate-aware differential-expression designs, and edgeR output validation.',
+    actions: ['status', 'validate_expression_contract', 'validate_de_design', 'validate_de_outputs'],
+  },
+  environment_manager: {
+    profile: 'environment_manager',
+    serverName: 'openscience-bio-environment-manager',
+    toolName: 'bio_environment_manager',
+    description:
+      'OpenBioScience user environment index control plane for planning, deriving, registering, and listing runtime-visible user environments.',
+    actions: [
+      'status',
+      'create_user_environment',
+      'derive_user_environment',
+      'register_user_environment',
+      'list_user_environments',
+    ],
   },
 };
 
@@ -217,7 +303,17 @@ export const BIO_PLOT_TEMPLATES: BioMcpCatalogItem[] = [
 
 export function resolveBioProfile(value?: string | null): BioMcpProfile {
   if (!value) return 'runtime';
-  if (value === 'source' || value === 'knowledge' || value === 'plot') return value;
+  if (
+    value === 'source' ||
+    value === 'knowledge' ||
+    value === 'plot' ||
+    value === 'reproduction' ||
+    value === 'analysis' ||
+    value === 'statistics' ||
+    value === 'environment_manager'
+  ) {
+    return value;
+  }
   if (value === 'runtime') return value;
   throw new Error(`Invalid OpenBioScience bio MCP profile "${value}".`);
 }

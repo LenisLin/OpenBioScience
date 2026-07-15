@@ -7,6 +7,11 @@
   "send": {
     "failed": "发送消息失败：{{error}}"
   },
+  "stall": {
+    "warning": "最后一个工具结束后，Agent 尚未继续响应。OpenBioScience 正在监测本轮执行。",
+    "recovered": "无响应的执行已自动停止，但本轮没有生成最终回答。请发送“继续完成当前任务”，Agent 将从已保存的工具结果继续。",
+    "failed": "本轮执行可能已无响应，但自动停止失败。请使用停止按钮或重新加载对话。"
+  },
   "sendbox": {
     "placeholder": "发送消息到 {{backend}}..."
   },

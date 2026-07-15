@@ -766,7 +766,6 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
   const [scienceArtifactReports, setScienceArtifactReports] = useState<ScienceArtifactReportRecord[]>([]);
   const [workspaceSciencePanel, setWorkspaceSciencePanel] = useState<SciencePanelData | undefined>();
   const handledScienceDisplayKeysRef = useRef<Set<string> | null>(null);
-  const restoredSciencePreviewKeyRef = useRef<string>('');
 
   const openScienceReportPreview = React.useCallback(
     (panel: SciencePanelData, replace = false) => {
@@ -1222,41 +1221,6 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
     }
     return panelsByItemId;
   }, [renderableList, resultSciencePanelByTextId, scienceArtifactReports]);
-
-  const latestRestorableSciencePanel = useMemo(() => {
-    const candidates: Array<{ panel: SciencePanelData; updatedAt: number }> = [];
-    for (const report of scienceArtifactReports) {
-      candidates.push({
-        panel: report.panel,
-        updatedAt: report.updatedAt || report.createdAt || getSciencePanelUpdatedAt(report.panel),
-      });
-    }
-    for (const panel of resultSciencePanelByTextId.values()) {
-      candidates.push({ panel, updatedAt: getSciencePanelUpdatedAt(panel) });
-    }
-    for (const panel of sciencePanelByRenderableItemId.values()) {
-      candidates.push({ panel, updatedAt: getSciencePanelUpdatedAt(panel) });
-    }
-    if (workspaceSciencePanel) {
-      candidates.push({ panel: workspaceSciencePanel, updatedAt: getSciencePanelUpdatedAt(workspaceSciencePanel) });
-    }
-    candidates.sort((a, b) => a.updatedAt - b.updatedAt);
-    return candidates.at(-1)?.panel;
-  }, [resultSciencePanelByTextId, scienceArtifactReports, sciencePanelByRenderableItemId, workspaceSciencePanel]);
-
-  useEffect(() => {
-    if (!conversationContext?.conversation_id || !latestRestorableSciencePanel) {
-      return;
-    }
-    const restoreKey = getScienceReportPreviewKey(conversationContext.conversation_id, latestRestorableSciencePanel);
-    if (restoredSciencePreviewKeyRef.current === restoreKey) return;
-    restoredSciencePreviewKeyRef.current = restoreKey;
-    openScienceReportPreview(latestRestorableSciencePanel, false);
-  }, [
-    conversationContext?.conversation_id,
-    latestRestorableSciencePanel,
-    openScienceReportPreview,
-  ]);
 
   useEffect(() => {
     const toolMessages = list.filter(
