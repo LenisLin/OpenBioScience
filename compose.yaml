@@ -4,41 +4,49 @@ services:
       context: .
       dockerfile: Dockerfile
     image: openbioscience-webui:local
-    container_name: openbioscience-webui
-    working_dir: /app
-    command:
-      - /opt/bun/bun.exe
-      - scripts/webui.ts
-      - --no-build
-      - --no-open
-      - --remote
-      - --port
-      - '25808'
+    command: ['bun', 'scripts/webui.ts', '--no-build', '--no-open', '--remote', '--port', '25808']
     ports:
       - '25808:25808'
     volumes:
-      - ./:/app
-      - ./data:/data
-      - ./demo:/workspace/demo
-      - /mnt/NAS_21T/ProjectData/OpenBioScience:/env:ro
-      # Compatibility alias for existing Conda prefixes that embed their original build prefix.
-      - /mnt/NAS_21T/ProjectData/OpenBioScience:/mnt/NAS_21T/ProjectData/OpenBioScience:ro
-      - /home/lenislin/.nvm/versions/node/v22.18.0/lib/node_modules/bun/bin:/opt/bun:ro
-      - /home/lenislin/.nvm/versions/node/v22.18.0:/opt/node:ro
-      - ./tmp/docker-bin/codex:/usr/local/bin/codex:ro
-      - ./tmp/codex-container-home:/data/codex-home
-      - /home/lenislin/.codex/config.toml:/data/codex-home/config.toml:ro
-      - /home/lenislin/.codex/auth.json:/data/codex-home/auth.json:ro
-      - /usr/bin/bwrap:/usr/local/bin/bwrap:ro
+      - openbioscience-data:/data
+      - openbioscience-environments:/opt/openbioscience/env:ro
     environment:
-      CODEX_HOME: /data/codex-home
       DEEPORGANISER_ALLOW_REMOTE: 'true'
-      DEEPORGANISER_CORE_BIN: /app/resources/bundled-deeporganiser-core/linux-x64/deeporganiser-core.real
       DEEPORGANISER_DATA_DIR: /data
       DEEPORGANISER_LOG_DIR: /data/logs
       DEEPORGANISER_NO_BUILD: '1'
       DEEPORGANISER_OPEN_BROWSER: '0'
       DEEPORGANISER_STATIC_DIR: /app/out/renderer
-      OPENBIOSCIENCE_RUNTIME_ROOT: /env
-      PATH: /opt/node/bin:/opt/bun:/usr/local/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      OPENBIOSCIENCE_ENV_ROOT: /opt/openbioscience/env
     restart: unless-stopped
+
+  environment-bootstrap:
+    image: openbioscience-webui:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    profiles: ['bootstrap']
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    command: ['bun', 'scripts/bootstrap-official-environment.ts']
+    volumes:
+      - openbioscience-environments:/opt/openbioscience/env
+    environment:
+      OPENBIOSCIENCE_ENV_ROOT: /opt/openbioscience/env
+      OPENBIOSCIENCE_ENV_REPOSITORY: ${OPENBIOSCIENCE_ENV_REPOSITORY:-}
+      OPENBIOSCIENCE_ENV_REVISION: ${OPENBIOSCIENCE_ENV_REVISION:-}
+      OPENBIOSCIENCE_ENVIRONMENT: ${OPENBIOSCIENCE_ENVIRONMENT:-sc-py-singlecell}
+      HF_TOKEN: ${HF_TOKEN:-}
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      ALL_PROXY: ${ALL_PROXY:-}
+      NO_PROXY: ${NO_PROXY:-}
+      http_proxy: ${http_proxy:-}
+      https_proxy: ${https_proxy:-}
+      all_proxy: ${all_proxy:-}
+      no_proxy: ${no_proxy:-}
+    restart: 'no'
+
+volumes:
+  openbioscience-data:
+  openbioscience-environments:

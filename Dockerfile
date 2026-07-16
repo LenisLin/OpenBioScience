@@ -2,6 +2,10 @@ FROM oven/bun:1.3.14 AS builder
 
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl tar unzip xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY package.json bun.lock ./
 COPY patches ./patches
 COPY packages ./packages
@@ -9,6 +13,7 @@ RUN bun install --frozen-lockfile --ignore-scripts
 
 COPY . .
 RUN bun run package
+RUN node scripts/prepareDeepOrganiserCore.js
 
 FROM oven/bun:1.3.14 AS runtime
 
@@ -18,11 +23,14 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
       bubblewrap \
       ca-certificates \
+      curl \
       file \
       git \
       libicu-dev \
       procps \
       ripgrep \
+      tar \
+      zstd \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/node_modules ./node_modules
@@ -31,7 +39,8 @@ COPY --from=builder /app/out ./out
 COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/resources/skills ./resources/skills
 COPY --from=builder /app/scripts/webui.ts ./scripts/webui.ts
-COPY --from=builder /app/resources/bundled-deeporganiser-core/linux-x64/deeporganiser-core.real /opt/deeporganiser/deeporganiser-core
+COPY --from=builder /app/scripts/bootstrap-official-environment.ts ./scripts/bootstrap-official-environment.ts
+COPY --from=builder /app/resources/bundled-deeporganiser-core/linux-x64/deeporganiser-core /opt/deeporganiser/deeporganiser-core
 COPY --from=builder /app/resources/bundled-deeporganiser-core/linux-x64/managed-resources /opt/deeporganiser/managed-resources
 
 RUN chmod +x /opt/deeporganiser/deeporganiser-core
@@ -44,9 +53,10 @@ ENV NODE_ENV=production \
     DEEPORGANISER_NO_BUILD=1 \
     DEEPORGANISER_OPEN_BROWSER=0 \
     DEEPORGANISER_PORT=25808 \
-    DEEPORGANISER_STATIC_DIR=/app/out/renderer
+    DEEPORGANISER_STATIC_DIR=/app/out/renderer \
+    OPENBIOSCIENCE_ENV_ROOT=/opt/openbioscience/env
 
-VOLUME ["/data"]
+VOLUME ["/data", "/opt/openbioscience/env"]
 EXPOSE 25808
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
