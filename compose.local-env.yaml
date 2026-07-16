@@ -1,0 +1,9 @@
+# Optional local-development override. It is not loaded by the standard Docker flow.
+# Set OPENBIOSCIENCE_LOCAL_ENV_ROOT to an existing runtime root before using it.
+services:
+  openbioscience:
+    volumes:
+      - type: bind
+        source: ${OPENBIOSCIENCE_LOCAL_ENV_ROOT:?Set OPENBIOSCIENCE_LOCAL_ENV_ROOT to a local runtime root.}
+        target: /opt/openbioscience/env
+        read_only: true
