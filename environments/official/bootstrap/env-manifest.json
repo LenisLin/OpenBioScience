@@ -1,50 +1,58 @@
 {
-  "storage_root": "/mnt/NAS_21T/ProjectData/OpenBioScience",
-  "official_root": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official",
-  "cache": {
-    "conda_pkgs_dirs": "/mnt/NAS_21T/ProjectData/OpenBioScience/cache/conda-pkgs",
-    "mamba_root_prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/cache/mamba-root"
+  "schema": "openbioscience.official_environment_catalog.v1",
+  "layout": {
+    "officialRoot": "environments/official",
+    "customRoot": "environments/custom",
+    "cacheRoot": "cache"
   },
   "environments": [
     {
       "name": "sc-py-singlecell",
       "yaml": "environments/official/sc-py-singlecell.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-py-singlecell"
+      "relativePrefix": "environments/official/sc-py-singlecell",
+      "requiredCommands": ["python", "python3"]
     },
     {
       "name": "sc-r-singlecell",
       "yaml": "environments/official/sc-r-singlecell.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-singlecell"
+      "relativePrefix": "environments/official/sc-r-singlecell",
+      "requiredCommands": ["Rscript"]
     },
     {
       "name": "sc-r-plot",
       "yaml": "environments/official/sc-r-plot.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-plot"
+      "relativePrefix": "environments/official/sc-r-plot",
+      "requiredCommands": ["Rscript"]
     },
     {
       "name": "sc-r-clinical",
       "yaml": "environments/official/sc-r-clinical.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-clinical"
+      "relativePrefix": "environments/official/sc-r-clinical",
+      "requiredCommands": ["Rscript"]
     },
     {
       "name": "sc-cci-r",
       "yaml": "environments/official/sc-cci-r.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-cci-r"
+      "relativePrefix": "environments/official/sc-cci-r",
+      "requiredCommands": ["Rscript"]
     },
     {
       "name": "sc-r-trajectory",
       "yaml": "environments/official/sc-r-trajectory.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-trajectory"
+      "relativePrefix": "environments/official/sc-r-trajectory",
+      "requiredCommands": ["Rscript"]
     },
     {
       "name": "sc-r-tumor-cnv",
       "yaml": "environments/official/sc-r-tumor-cnv.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-r-tumor-cnv"
+      "relativePrefix": "environments/official/sc-r-tumor-cnv",
+      "requiredCommands": ["Rscript"]
     },
     {
       "name": "sc-network-grn-r",
       "yaml": "environments/official/sc-network-grn-r.yml",
-      "prefix": "/mnt/NAS_21T/ProjectData/OpenBioScience/environments/official/sc-network-grn-r"
+      "relativePrefix": "environments/official/sc-network-grn-r",
+      "requiredCommands": ["Rscript"]
     }
   ]
 }

@@ -7,51 +7,33 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-type OpenBioScienceEnvManifest = {
-  storage_root?: unknown;
-};
-
+const OPENBIOSCIENCE_ENV_ROOT_ENV_KEY = 'OPENBIOSCIENCE_ENV_ROOT';
 const OPENBIOSCIENCE_RUNTIME_ENV_KEY = 'OPENBIOSCIENCE_RUNTIME_ROOT';
 const OPENSCIENCE_RUNTIME_ENV_KEY = 'OPENSCIENCE_RUNTIME_ROOT';
-const ENV_MANIFEST_RELATIVE_PATH = path.join('environments', 'official', 'bootstrap', 'env-manifest.json');
 const OFFICIAL_BASE_ENV_BIN_RELATIVE_PATH = path.join('environments', 'official', 'sc-py-singlecell', 'bin');
 
-const readManifestRuntimeRoot = (repoRoot: string): string | undefined => {
-  const manifestPath = path.join(repoRoot, ENV_MANIFEST_RELATIVE_PATH);
-  try {
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as OpenBioScienceEnvManifest;
-    return typeof manifest.storage_root === 'string' && path.isAbsolute(manifest.storage_root)
-      ? manifest.storage_root
-      : undefined;
-  } catch {
-    return undefined;
-  }
-};
-
-export const resolveOpenBioScienceRuntimeRoot = (
-  env: NodeJS.ProcessEnv = process.env,
-  repoRoot = process.cwd()
-): string | undefined => {
-  const configured = env[OPENBIOSCIENCE_RUNTIME_ENV_KEY]?.trim() || env[OPENSCIENCE_RUNTIME_ENV_KEY]?.trim();
+export const resolveOpenBioScienceRuntimeRoot = (env: NodeJS.ProcessEnv = process.env): string | undefined => {
+  const configured =
+    env[OPENBIOSCIENCE_ENV_ROOT_ENV_KEY]?.trim() ||
+    env[OPENBIOSCIENCE_RUNTIME_ENV_KEY]?.trim() ||
+    env[OPENSCIENCE_RUNTIME_ENV_KEY]?.trim();
   if (configured && path.isAbsolute(configured)) return configured;
-  return readManifestRuntimeRoot(repoRoot);
+  return undefined;
 };
 
 export const buildOpenBioScienceRuntimeEnv = (
   baseEnv: Record<string, string>,
-  env: NodeJS.ProcessEnv = process.env,
-  repoRoot = process.cwd()
+  env: NodeJS.ProcessEnv = process.env
 ): Record<string, string> => {
-  const runtimeRoot = resolveOpenBioScienceRuntimeRoot(env, repoRoot);
-  return runtimeRoot ? { ...baseEnv, [OPENBIOSCIENCE_RUNTIME_ENV_KEY]: runtimeRoot } : baseEnv;
+  const runtimeRoot = resolveOpenBioScienceRuntimeRoot(env);
+  return runtimeRoot ? { ...baseEnv, [OPENBIOSCIENCE_ENV_ROOT_ENV_KEY]: runtimeRoot } : baseEnv;
 };
 
 export const buildOpenBioScienceRuntimePath = (
   basePath: string | undefined,
-  env: NodeJS.ProcessEnv = process.env,
-  repoRoot = process.cwd()
+  env: NodeJS.ProcessEnv = process.env
 ): string => {
-  const runtimeRoot = resolveOpenBioScienceRuntimeRoot(env, repoRoot);
+  const runtimeRoot = resolveOpenBioScienceRuntimeRoot(env);
   if (!runtimeRoot) return basePath || '';
   const officialBin = path.join(runtimeRoot, OFFICIAL_BASE_ENV_BIN_RELATIVE_PATH);
   if (!fs.existsSync(officialBin)) return basePath || '';

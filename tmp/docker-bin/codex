@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /opt/node/bin/node /opt/node/lib/node_modules/@openai/codex/bin/codex.js "$@"

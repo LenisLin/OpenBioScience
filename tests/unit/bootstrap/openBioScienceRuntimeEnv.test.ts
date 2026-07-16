@@ -2,7 +2,10 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { buildOpenBioScienceRuntimePath } from '@/process/utils/openBioScienceRuntimeEnv';
+import {
+  buildOpenBioScienceRuntimePath,
+  resolveOpenBioScienceRuntimeRoot,
+} from '@/process/utils/openBioScienceRuntimeEnv';
 
 const tempDirs: string[] = [];
 
@@ -23,6 +26,15 @@ describe('buildOpenBioScienceRuntimePath', () => {
   });
 
   it('preserves the original PATH when the official base environment is absent', () => {
-    expect(buildOpenBioScienceRuntimePath('/usr/bin:/bin', {}, '/missing/repository')).toBe('/usr/bin:/bin');
+    expect(buildOpenBioScienceRuntimePath('/usr/bin:/bin', {})).toBe('/usr/bin:/bin');
+  });
+
+  it('prefers the portable environment root over legacy runtime-root variables', () => {
+    expect(
+      resolveOpenBioScienceRuntimeRoot({
+        OPENBIOSCIENCE_ENV_ROOT: '/portable/runtime',
+        OPENBIOSCIENCE_RUNTIME_ROOT: '/legacy/runtime',
+      })
+    ).toBe('/portable/runtime');
   });
 });
