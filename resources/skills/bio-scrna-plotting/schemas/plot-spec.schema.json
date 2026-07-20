@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openbioscience.scrna_plot.spec.v1",
+  "type": "object",
+  "required": ["recipe", "input", "mapping", "export"],
+  "properties": {
+    "recipe": { "type": "string" },
+    "objective": { "type": "string" },
+    "input": { "type": "object", "additionalProperties": true },
+    "mapping": { "type": "object", "additionalProperties": true },
+    "style": { "type": "object", "additionalProperties": true },
+    "export": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": true
+}

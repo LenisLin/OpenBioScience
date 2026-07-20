@@ -24,6 +24,13 @@ describe('Science Mode payload parsing', () => {
     expect(prompt).toContain('${OPENBIOSCIENCE_RUNTIME_ROOT}/environments/official/sc-py-singlecell/bin/pdftotext');
     expect(prompt).toContain('Skill selection or loading is not Skill completion');
     expect(prompt).toContain('derive scope from the current validated PaperReproductionMap');
+    expect(prompt).toContain('### Free Exploration Workflow');
+    expect(prompt).toContain('classify the task as `omics_analysis/free_exploration`');
+    expect(prompt).toContain('search TISCH2 or other curated cancer single-cell resources before broad GEO/ArrayExpress');
+    expect(prompt).toContain('bio_knowledge');
+    expect(prompt).toContain('bio_plot');
+    expect(prompt).toContain('script_manifest.json.workflowModules');
+    expect(prompt).toContain('result strength as `descriptive`, `exploratory_processed_expression`, or `replicate_aware_inference`');
     expect(prompt).toContain('/data/builtin-skills/<id>/SKILL.md');
     expect(prompt).toContain('openscience-writing');
     expect(prompt).toContain('openscience-databases');

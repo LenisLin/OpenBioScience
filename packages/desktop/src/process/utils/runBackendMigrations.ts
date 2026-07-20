@@ -70,7 +70,7 @@ import { legacyEnvName } from '@/common/config/legacyIdentifiers';
 import { getProjectAgentDataDir } from '@/deepscientist_lark/project_agent/store';
 import { getBuiltinMcpScriptPath, type ProcessConfig as ProcessConfigType } from './initStorage';
 import { migrateAssistantsToBackend } from './migrateAssistants';
-import { buildOpenBioScienceRuntimeEnv } from './openBioScienceRuntimeEnv';
+import { buildOpenBioScienceRuntimeEnv, resolveOpenBioScienceWorkspaceRoot } from './openBioScienceRuntimeEnv';
 import { getUserInputGatewayEnv, startUserInputGateway } from '../bridge/userInputBridge';
 import { syncCodexOpenScienceMcpConfig, type ManagedCodexMcpServer } from './syncCodexOpenScienceMcpConfig';
 
@@ -483,7 +483,7 @@ function buildBuiltinResearchEvidenceServer(resolution: ResearchEvidenceMcpEnvRe
   return {
     name: BUILTIN_RESEARCH_EVIDENCE_NAME,
     description: 'Unified research evidence bridge for PaperClip literature/files and Science database tools.',
-    enabled: false,
+    enabled: resolution.ok,
     builtin: true,
     transport: {
       type: 'stdio',
@@ -591,9 +591,14 @@ function buildBuiltinUserInputServer(env: Record<string, string>): McpImportServ
 
 function buildBuiltinBioServer(definition: (typeof BIO_MCP_SERVERS)[number]): McpImportServer {
   const scriptPath = getBuiltinMcpScriptPath('builtin-mcp-bio');
-  const env = buildOpenBioScienceRuntimeEnv({
-    OPENBIOSCIENCE_BIO_MCP_PROFILE: definition.profile,
-  });
+  const workspaceRoot = resolveOpenBioScienceWorkspaceRoot(process.env, process.cwd());
+  const env = buildOpenBioScienceRuntimeEnv(
+    {
+      OPENBIOSCIENCE_BIO_MCP_PROFILE: definition.profile,
+    },
+    process.env,
+    workspaceRoot
+  );
   const serverConfig = {
     command: 'node',
     args: [scriptPath],
@@ -788,6 +793,38 @@ function buildOriginalJsonFromTransport(server: Pick<IMcpServer, 'name' | 'descr
   );
 }
 
+function buildBuiltinMcpRefreshData(server: McpImportServer): Partial<IMcpServer> {
+  return {
+    name: server.name,
+    ...(server.description ? { description: server.description } : {}),
+    builtin: true,
+    transport: server.transport,
+    original_json: server.original_json,
+    tools: [],
+    last_test_status: 'disconnected',
+  };
+}
+
+async function refreshBuiltinMcpToolCaches(servers: IMcpServer[], names: Set<string>): Promise<void> {
+  const targets = servers.filter(
+    (server) =>
+      names.has(server.name) &&
+      server.enabled === true &&
+      server.builtin === true &&
+      server.name.startsWith('openscience-')
+  );
+
+  await Promise.all(
+    targets.map(async (server) => {
+      try {
+        await mcpService.testMcpConnection.invoke({ ...server, runtime_scope_id: server.id });
+      } catch (error) {
+        console.warn('[Migration] skipped MCP tool cache refresh for %s', server.name, error);
+      }
+    })
+  );
+}
+
 async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<void> {
   const [
     backendPrefs,
@@ -887,9 +924,13 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   let labSkillServerUpdated = false;
   let userInputServerUpdated = false;
   let bioServerUpdated = false;
+  const toolCacheRefreshNames = new Set<string>();
 
   if (missing.length > 0) {
     await mcpService.batchImportServers.invoke({ servers: missing });
+    for (const server of missing) {
+      if (server.enabled === true) toolCacheRefreshNames.add(server.name);
+    }
   }
 
   const existingChromeDevtools = existingByName.get(BUILTIN_CHROME_DEVTOOLS_NAME);
@@ -905,6 +946,8 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
       data: {
         builtin: true,
         original_json: buildOriginalJsonFromTransport(existingChromeDevtools),
+        tools: [],
+        last_test_status: 'disconnected',
       },
     });
   }
@@ -926,6 +969,8 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
           ...existingImageServer,
           name: BUILTIN_IMAGE_GEN_NAME,
         }),
+        tools: [],
+        last_test_status: 'disconnected',
       },
     });
     imageServerUpdated = true;
@@ -944,13 +989,9 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   ) {
     await mcpService.updateServer.invoke({
       id: existingLarkProjectAgentServer.id,
-      data: {
-        name: BUILTIN_LARK_PROJECT_AGENT_NAME,
-        builtin: true,
-        transport: larkProjectAgentServer.transport,
-        original_json: larkProjectAgentServer.original_json,
-      },
+      data: buildBuiltinMcpRefreshData(larkProjectAgentServer),
     });
+    toolCacheRefreshNames.add(BUILTIN_LARK_PROJECT_AGENT_NAME);
   }
 
   const existingUserInputServer = findExistingBuiltinServer(existingByName, BUILTIN_USER_INPUT_NAME);
@@ -966,13 +1007,9 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   ) {
     await mcpService.updateServer.invoke({
       id: existingUserInputServer.id,
-      data: {
-        name: BUILTIN_USER_INPUT_NAME,
-        builtin: true,
-        transport: userInputServer.transport,
-        original_json: userInputServer.original_json,
-      },
+      data: buildBuiltinMcpRefreshData(userInputServer),
     });
+    toolCacheRefreshNames.add(BUILTIN_USER_INPUT_NAME);
     userInputServerUpdated = true;
   }
 
@@ -987,13 +1024,9 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   ) {
     await mcpService.updateServer.invoke({
       id: existingMedicalEvidenceServer.id,
-      data: {
-        name: BUILTIN_MEDICAL_EVIDENCE_NAME,
-        builtin: true,
-        transport: medicalEvidenceServer.transport,
-        original_json: medicalEvidenceServer.original_json,
-      },
+      data: buildBuiltinMcpRefreshData(medicalEvidenceServer),
     });
+    toolCacheRefreshNames.add(BUILTIN_MEDICAL_EVIDENCE_NAME);
     medicalEvidenceServerUpdated = true;
   }
 
@@ -1008,13 +1041,19 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   ) {
     await mcpService.updateServer.invoke({
       id: existingResearchEvidenceServer.id,
-      data: {
-        name: BUILTIN_RESEARCH_EVIDENCE_NAME,
-        builtin: true,
-        transport: researchEvidenceServer.transport,
-        original_json: researchEvidenceServer.original_json,
-      },
+      data: buildBuiltinMcpRefreshData(researchEvidenceServer),
     });
+    toolCacheRefreshNames.add(BUILTIN_RESEARCH_EVIDENCE_NAME);
+    researchEvidenceServerUpdated = true;
+  }
+  if (
+    existingResearchEvidenceServer?.name === BUILTIN_RESEARCH_EVIDENCE_NAME &&
+    existingResearchEvidenceServer.enabled !== researchEvidenceServer.enabled
+  ) {
+    await mcpService.toggleServer.invoke({ id: existingResearchEvidenceServer.id });
+    if (researchEvidenceServer.enabled === true) {
+      toolCacheRefreshNames.add(BUILTIN_RESEARCH_EVIDENCE_NAME);
+    }
     researchEvidenceServerUpdated = true;
   }
 
@@ -1029,13 +1068,9 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   ) {
     await mcpService.updateServer.invoke({
       id: existingScienceArtifactServer.id,
-      data: {
-        name: BUILTIN_SCIENCE_ARTIFACT_NAME,
-        builtin: true,
-        transport: scienceArtifactServer.transport,
-        original_json: scienceArtifactServer.original_json,
-      },
+      data: buildBuiltinMcpRefreshData(scienceArtifactServer),
     });
+    toolCacheRefreshNames.add(BUILTIN_SCIENCE_ARTIFACT_NAME);
     scienceArtifactServerUpdated = true;
   }
 
@@ -1051,13 +1086,9 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   ) {
     await mcpService.updateServer.invoke({
       id: existingLabSkillServer.id,
-      data: {
-        name: BUILTIN_LAB_SKILL_NAME,
-        builtin: true,
-        transport: labSkillServer.transport,
-        original_json: labSkillServer.original_json,
-      },
+      data: buildBuiltinMcpRefreshData(labSkillServer),
     });
+    toolCacheRefreshNames.add(BUILTIN_LAB_SKILL_NAME);
     labSkillServerUpdated = true;
   }
 
@@ -1075,13 +1106,9 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
     ) {
       await mcpService.updateServer.invoke({
         id: existingBioServer.id,
-        data: {
-          name: bioServer.name,
-          builtin: true,
-          transport: bioServer.transport,
-          original_json: bioServer.original_json,
-        },
+        data: buildBuiltinMcpRefreshData(bioServer),
       });
+      toolCacheRefreshNames.add(bioServer.name);
       bioServerUpdated = true;
     }
     if (existingBioServer && existingBioServer.enabled !== bioServer.enabled) {
@@ -1136,10 +1163,14 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
         id: existingImageServer.id,
         data: {
           name: BUILTIN_IMAGE_GEN_NAME,
+          builtin: true,
           transport: updatedTransport,
           original_json,
+          tools: [],
+          last_test_status: 'disconnected',
         },
       });
+      toolCacheRefreshNames.add(BUILTIN_IMAGE_GEN_NAME);
       imageServerUpdated = true;
     }
   } else if (existingImageServer?.name === BUILTIN_IMAGE_GEN_NAME && imageEnvResolution.ok === false) {
@@ -1191,10 +1222,14 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
         id: existingMedicalEvidenceServer.id,
         data: {
           name: BUILTIN_MEDICAL_EVIDENCE_NAME,
+          builtin: true,
           transport: updatedTransport,
           original_json,
+          tools: [],
+          last_test_status: 'disconnected',
         },
       });
+      toolCacheRefreshNames.add(BUILTIN_MEDICAL_EVIDENCE_NAME);
       medicalEvidenceServerUpdated = true;
     }
   }
@@ -1240,10 +1275,14 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
         id: existingResearchEvidenceServer.id,
         data: {
           name: BUILTIN_RESEARCH_EVIDENCE_NAME,
+          builtin: true,
           transport: updatedTransport,
           original_json,
+          tools: [],
+          last_test_status: 'disconnected',
         },
       });
+      toolCacheRefreshNames.add(BUILTIN_RESEARCH_EVIDENCE_NAME);
       researchEvidenceServerUpdated = true;
     }
   }
@@ -1289,12 +1328,20 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
         id: existingScienceArtifactServer.id,
         data: {
           name: BUILTIN_SCIENCE_ARTIFACT_NAME,
+          builtin: true,
           transport: updatedTransport,
           original_json,
+          tools: [],
+          last_test_status: 'disconnected',
         },
       });
+      toolCacheRefreshNames.add(BUILTIN_SCIENCE_ARTIFACT_NAME);
       scienceArtifactServerUpdated = true;
     }
+  }
+
+  if (toolCacheRefreshNames.size > 0) {
+    await refreshBuiltinMcpToolCaches(await mcpService.listServers.invoke(), toolCacheRefreshNames);
   }
 
   try {

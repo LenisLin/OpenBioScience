@@ -122,6 +122,10 @@ extraResources:
       # not runtime skill bodies. Excluding them avoids broken symlinks on
       # Windows packaging and keeps installers substantially smaller.
       - '!vendor/**'
+  - from: resources/bio
+    to: bio
+    filter:
+      - '**/*'
 win:
   target:
     - nsis

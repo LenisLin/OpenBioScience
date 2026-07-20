@@ -55,6 +55,8 @@ import {
   type ScienceArtifactAuthorizationGatewayResult,
 } from '@/process/services/scienceArtifactAuthorization';
 import { BUILTIN_SCIENCE_ARTIFACT_NAME } from './constants';
+import { stageArtifactRequirements, stageOutputRelativePath } from './bio/analysis/contracts';
+import { FREE_EXPLORATION_MODULE_PLAN } from './bio/catalog';
 import { readReceipt } from './bio/receipts';
 
 type JsonRecord = Record<string, unknown>;
@@ -190,6 +192,11 @@ const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 const normalizeRelativePath = (candidate: string, projectRoot?: string): string => {
   if (!candidate || path.isAbsolute(candidate) || !projectRoot) return candidate;
   return path.join(projectRoot, candidate);
+};
+
+const isInsidePath = (root: string, candidate: string): boolean => {
+  const relative = path.relative(path.resolve(root), path.resolve(candidate));
+  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
 };
 
 const safeSegment = (value: string): string =>
@@ -895,6 +902,47 @@ const validateGraph = (run: ScienceRunState): ScienceGraphWarning[] => {
         createdAt: now(),
       });
     }
+    const referencedPaths = [
+      { role: 'primary', path: artifact.primaryPath },
+      { role: 'preview', path: artifact.previewPath },
+      { role: 'thumbnail', path: artifact.thumbnailPath },
+      { role: 'code', path: artifact.code?.path },
+      { role: 'execution_log', path: artifact.execution?.logPath },
+      ...(artifact.outputPaths || []).map((candidate) => ({ role: 'output', path: candidate })),
+    ].filter((item): item is { role: string; path: string } => Boolean(item.path));
+    for (const reference of referencedPaths) {
+      if (!run.projectRoot) continue;
+      const resolved = normalizeRelativePath(reference.path, run.projectRoot);
+      const projectLocal = isInsidePath(run.projectRoot, resolved);
+      const localFileAvailable = projectLocal && fs.existsSync(resolved);
+      const snapshotAvailable = (run.git?.files || []).some((file) => {
+        const sameArtifact = file.artifactId === artifact.id && (!file.role || file.role === reference.role);
+        const samePath =
+          file.path === reference.path ||
+          file.relativePath === reference.path ||
+          normalizeRelativePath(file.path, run.projectRoot) === resolved ||
+          (file.relativePath ? normalizeRelativePath(file.relativePath, run.projectRoot) === resolved : false);
+        return (
+          sameArtifact &&
+          samePath &&
+          file.mode === 'copied' &&
+          Boolean(file.storedPath) &&
+          file.reason !== 'external_path_not_authorized'
+        );
+      });
+      if (!localFileAvailable && !snapshotAvailable) {
+        warnings.push({
+          id: `warn_unopenable_artifact_${artifact.id}_${artifact.version}_${reference.role}`,
+          runId: run.runId,
+          severity: 'error',
+          code: 'unopenable_artifact',
+          message: `Artifact ${artifact.id} v${artifact.version} declares ${reference.role} path ${reference.path}, but the file is not available inside the project root or artifact snapshot.`,
+          target: { kind: 'artifact', id: artifact.id, version: artifact.version },
+          blocking: true,
+          createdAt: now(),
+        });
+      }
+    }
   }
   for (const claim of run.claims.values()) {
     if (claim.status !== 'hypothesis' && !claim.supportingEvidenceIds.length && !claim.artifactIds?.length) {
@@ -1009,6 +1057,13 @@ const deriveDeliveryState = (run: ScienceRunState): ScienceDeliveryStatus => {
   if (run.workflowKind === 'omics_analysis') {
     const receipt = run.analysisReceipt;
     if (!receipt) return deliveryStatus(run, 'running', ['analysis_receipt:missing']);
+    const graphBlockers = validateGraph(run).filter((warning) => warning.blocking);
+    if (graphBlockers.length) {
+      return deliveryStatus(run, 'action_required', [
+        ...graphBlockers.map((warning) => `graph_warning:${warning.code}`),
+        ...blockerReasons,
+      ]);
+    }
     const reasons = [
       `receipt_status:${receipt.status}`,
       `stage:${receipt.stage}`,
@@ -1021,6 +1076,9 @@ const deriveDeliveryState = (run: ScienceRunState): ScienceDeliveryStatus => {
     if (receipt.stageStatus === 'blocked' || receipt.projectStatus === 'blocked')
       return deliveryStatus(run, 'blocked', reasons);
     if (receipt.action === 'close_analysis' && receipt.projectStatus === 'closed') {
+      return deliveryStatus(run, 'completed', reasons);
+    }
+    if (receipt.stage === 'exploration' && receipt.stageStatus === 'accepted' && receipt.projectStatus === 'accepted') {
       return deliveryStatus(run, 'completed', reasons);
     }
     return deliveryStatus(run, 'running', reasons);
@@ -1051,6 +1109,11 @@ const artifactIdsForPaths = (run: ScienceRunState, paths: string[]): string[] =>
     if (artifactPaths.some((candidate) => normalizedPaths.has(candidate))) ids.add(artifact.id);
   }
   return [...ids];
+};
+
+const analysisWorkflowModules = (receipt?: OmicsAnalysisReceipt): JsonRecord[] => {
+  const modules = receipt?.summary?.workflowModules;
+  return Array.isArray(modules) ? modules.filter(isRecord) : [];
 };
 
 const deriveCoverageItems = (run: ScienceRunState): ScienceCoverageItem[] => {
@@ -1090,6 +1153,37 @@ const deriveCoverageItems = (run: ScienceRunState): ScienceCoverageItem[] => {
           (artifactId) => [...run.artifacts.values()].find((artifact) => artifact.id === artifactId)?.evidenceIds || []
         ),
         receiptIds: [receipt.receiptId, ...module.validationReceiptIds],
+      };
+    });
+  }
+
+  if (run.workflowKind === 'omics_analysis' && run.analysisReceipt) {
+    return analysisWorkflowModules(run.analysisReceipt).map((module): ScienceCoverageItem => {
+      const moduleId = asString(module.moduleId, 'unknown_module');
+      const status = asString(module.status);
+      const outputs = asArray(module.outputs)
+        .map((item) => asString(item))
+        .filter(Boolean);
+      const artifactIds = artifactIdsForPaths(run, outputs);
+      return {
+        id: `coverage-${moduleId}`,
+        targetType: 'user_objective',
+        targetId: moduleId,
+        moduleIds: [moduleId],
+        cohortIds: [],
+        reproductionMode: 'scoped_reimplementation',
+        status:
+          status === 'completed'
+            ? 'completed'
+            : status === 'blocked'
+              ? 'scientifically_blocked'
+              : 'conditional',
+        reason: asString(module.blockerReason, status || 'module declared in exploration workflow'),
+        artifactIds,
+        evidenceIds: artifactIds.flatMap(
+          (artifactId) => [...run.artifacts.values()].find((artifact) => artifact.id === artifactId)?.evidenceIds || []
+        ),
+        receiptIds: [run.analysisReceipt.receiptId],
       };
     });
   }
@@ -1160,11 +1254,30 @@ const deriveAttachments = (panel: SciencePanelData, git: ScienceArtifactGitRef |
       } satisfies ScienceAttachmentRef;
     });
 
+const applyArtifactDeliveryWarnings = (
+  artifacts: ScienceArtifact[],
+  warnings: ScienceGraphWarning[]
+): ScienceArtifact[] => {
+  const blocked = new Set(
+    warnings
+      .filter((warning) => warning.code === 'unopenable_artifact' && warning.target?.kind === 'artifact')
+      .map((warning) => warning.target?.id)
+      .filter((id): id is string => Boolean(id))
+  );
+  if (!blocked.size) return artifacts;
+  return artifacts.map((artifact) =>
+    blocked.has(artifact.id) && artifact.status !== 'missing' ? { ...artifact, status: 'missing' } : artifact
+  );
+};
+
 const buildPanel = (run: ScienceRunState): SciencePanelData => {
-  const artifacts = [...run.artifacts.values()];
+  const rawArtifacts = [...run.artifacts.values()];
   const evidence = [...run.evidence.values()];
   const claims = [...run.claims.values()];
   const warnings = validateGraph(run);
+  const artifacts = applyArtifactDeliveryWarnings(rawArtifacts, warnings);
+  const deliveryState = deriveDeliveryState(run);
+  const panelStatus = deliveryState.state === 'action_required' && run.status === 'completed' ? 'partial' : run.status;
   const stats = {
     searches:
       run.statsPatch?.searches || evidence.filter((item) => item.sourceType === 'paper' || item.database).length,
@@ -1206,7 +1319,7 @@ const buildPanel = (run: ScienceRunState): SciencePanelData => {
     question: run.question,
     generatedAt: now(),
     summary: run.summary,
-    status: run.status,
+    status: panelStatus,
     stats,
     report,
     evidence,
@@ -1224,7 +1337,7 @@ const buildPanel = (run: ScienceRunState): SciencePanelData => {
     completionReceipt: run.completionReceipt,
     executionReceipt: run.executionReceipt,
     statisticalCompletionReceipt: run.statisticalCompletionReceipt,
-    deliveryState: deriveDeliveryState(run),
+    deliveryState,
     coverageSummary: summarizeCoverage(coverageItems),
     coverageItems,
     methodAlignmentReceipt: run.methodAlignmentReceipt,
@@ -1244,6 +1357,9 @@ const buildPanel = (run: ScienceRunState): SciencePanelData => {
           .join(', ') ||
         run.completionReceipt?.moduleReadiness
           .map((item) => `${item.environmentRef}: ${item.executionStatus}`)
+          .join(', ') ||
+        analysisWorkflowModules(run.analysisReceipt)
+          .map((item) => `${asString(item.moduleId)}: ${asString(item.environmentRef, 'control-plane')}`)
           .join(', ') ||
         artifacts
           .map((item) => item.environment?.kind)
@@ -1288,7 +1404,7 @@ const analysisReceiptFrom = (value: unknown): OmicsAnalysisReceipt | undefined =
     value.producer !== 'bio_analysis' ||
     value.workflowKind !== 'omics_analysis' ||
     typeof value.analysisId !== 'string' ||
-    !['intake', 'qc', 'baseline', 'episode', 'closing'].includes(asString(value.stage)) ||
+    !['intake', 'qc', 'baseline', 'exploration', 'episode', 'closing'].includes(asString(value.stage)) ||
     !['running', 'awaiting_user', 'accepted', 'needs_revision', 'blocked'].includes(asString(value.stageStatus)) ||
     !Array.isArray(value.canonicalFiles) ||
     !Array.isArray(value.skillUses) ||
@@ -1731,6 +1847,167 @@ const applyExecutionReceipt = (run: ScienceRunState, receipt: ExecutionReceipt):
     },
   });
   run.provenance.set(completionNode.id, completionNode);
+};
+
+const isTerminalAnalysisReceipt = (receipt: OmicsAnalysisReceipt): boolean =>
+  (receipt.action === 'close_analysis' && receipt.projectStatus === 'closed') ||
+  (receipt.stageStatus === 'accepted' && receipt.projectStatus === 'accepted');
+
+const analysisReceiptStageRoot = (receipt: OmicsAnalysisReceipt): string => {
+  const episodeId = asString((receipt as unknown as JsonRecord).episodeId);
+  return stageOutputRelativePath(receipt.analysisId, receipt.stage, episodeId || undefined);
+};
+
+const validateAnalysisReceiptCanonicalFiles = (receipt: OmicsAnalysisReceipt, projectRoot: string): string[] => {
+  if (!isTerminalAnalysisReceipt(receipt)) return [];
+  const issues: string[] = [];
+  const stageRoot = analysisReceiptStageRoot(receipt);
+  if (!receipt.canonicalFiles.length) issues.push('The terminal analysis receipt has no canonical files.');
+  const receiptPaths = receipt.canonicalFiles.map((file) => file.path);
+  const missingCoverage = stageArtifactRequirements(receipt.stage).filter(
+    (required) => !receiptPaths.some((candidate) => candidate.includes(required))
+  );
+  for (const required of missingCoverage) {
+    issues.push(`The terminal analysis receipt is missing required output coverage: ${required}.`);
+  }
+  for (const file of receipt.canonicalFiles) {
+    const normalized = file.path.replaceAll('\\', '/');
+    if (path.isAbsolute(normalized) || !normalized.startsWith(`${stageRoot}/`)) {
+      issues.push(`Canonical analysis file is outside the UI-openable stage root ${stageRoot}: ${file.path}`);
+      continue;
+    }
+    const resolved = path.resolve(projectRoot, normalized);
+    const relative = path.relative(projectRoot, resolved);
+    if (relative.startsWith('..') || path.isAbsolute(relative)) {
+      issues.push(`Canonical analysis file escapes the project root: ${file.path}`);
+      continue;
+    }
+    if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
+      issues.push(`Canonical analysis file is missing: ${file.path}`);
+      continue;
+    }
+    const realRoot = fs.realpathSync(projectRoot);
+    const realFile = fs.realpathSync(resolved);
+    const realRelative = path.relative(realRoot, realFile);
+    if (realRelative.startsWith('..') || path.isAbsolute(realRelative)) {
+      issues.push(`Canonical analysis file resolves outside the project root: ${file.path}`);
+      continue;
+    }
+    const stat = fs.statSync(resolved);
+    if ((stat.mode & 0o444) === 0) issues.push(`Canonical analysis file is not host-readable: ${file.path}`);
+    const currentHash = crypto.createHash('sha256').update(fs.readFileSync(resolved)).digest('hex');
+    if (currentHash !== file.contentHash) issues.push(`Canonical analysis file changed after validation: ${file.path}`);
+    const sizeBytes = Number((file as unknown as JsonRecord).sizeBytes);
+    if (Number.isFinite(sizeBytes) && sizeBytes !== stat.size) {
+      issues.push(`Canonical analysis file size changed after validation: ${file.path}`);
+    }
+  }
+  if (receipt.stage === 'exploration') {
+    const modules = analysisWorkflowModules(receipt);
+    if (!modules.length) {
+      issues.push('The terminal exploration receipt has no workflowModules summary.');
+    }
+    const declared = new Set(modules.map((module) => asString(module.moduleId)).filter(Boolean));
+    for (const module of FREE_EXPLORATION_MODULE_PLAN) {
+      if (!declared.has(module.moduleId)) {
+        issues.push(`The terminal exploration receipt must declare workflow module: ${module.moduleId}.`);
+      }
+    }
+    for (const module of modules) {
+      const moduleId = asString(module.moduleId, 'unknown_module');
+      const status = asString(module.status);
+      if (!['completed', 'blocked', 'not_applicable'].includes(status)) {
+        issues.push(`Workflow module ${moduleId} has invalid status: ${status || '<missing>'}.`);
+      }
+      if (status === 'completed' && !asArray(module.outputs).length) {
+        issues.push(`Workflow module ${moduleId} is completed but declares no outputs.`);
+      }
+      if (status === 'blocked' && !asString(module.blockerReason)) {
+        issues.push(`Workflow module ${moduleId} is blocked but has no blockerReason.`);
+      }
+      if (status === 'not_applicable' && !asString(module.reason) && !asString(module.notApplicableReason)) {
+        issues.push(`Workflow module ${moduleId} is not_applicable but has no reason.`);
+      }
+    }
+  }
+  return issues;
+};
+
+const analysisArtifactGroup = (
+  analysisId: string,
+  filePath: string
+): { id: string; type: ScienceArtifact['type']; title: string; role: ScienceArtifactSnapshotIncludePath['role'] } => {
+  if (filePath.includes('/reports/')) {
+    return { id: `${analysisId}-report`, type: 'report', title: 'Analysis report', role: 'primary' };
+  }
+  if (filePath.includes('/scripts/')) {
+    return { id: `${analysisId}-scripts`, type: 'code', title: 'Analysis script package', role: 'code' };
+  }
+  if (filePath.includes('/results/tables/')) {
+    return { id: `${analysisId}-tables`, type: 'table', title: 'Analysis result tables', role: 'output' };
+  }
+  if (filePath.includes('/results/figures/')) {
+    return { id: `${analysisId}-figures`, type: 'figure', title: 'Analysis figures', role: 'output' };
+  }
+  if (filePath.includes('/results/objects/')) {
+    return { id: `${analysisId}-objects`, type: 'dataset', title: 'Analysis objects', role: 'output' };
+  }
+  if (filePath.includes('/logs/')) {
+    return { id: `${analysisId}-logs`, type: 'run_bundle', title: 'Analysis logs', role: 'log' };
+  }
+  return { id: `${analysisId}-manifest`, type: 'run_bundle', title: 'Analysis manifest', role: 'output' };
+};
+
+const applyAnalysisArtifacts = (
+  run: ScienceRunState,
+  receipt: OmicsAnalysisReceipt
+): ScienceArtifactSnapshotIncludePath[] => {
+  const grouped = new Map<
+    string,
+    {
+      id: string;
+      type: ScienceArtifact['type'];
+      title: string;
+      paths: string[];
+      role: ScienceArtifactSnapshotIncludePath['role'];
+    }
+  >();
+  for (const file of receipt.canonicalFiles || []) {
+    const group = analysisArtifactGroup(receipt.analysisId, file.path);
+    const current = grouped.get(group.id) || { ...group, paths: [] };
+    current.paths.push(file.path);
+    grouped.set(group.id, current);
+  }
+  const includePaths: ScienceArtifactSnapshotIncludePath[] = [];
+  for (const group of grouped.values()) {
+    const primaryPath =
+      group.paths.find((candidate) => candidate.includes('/reports/analysis_report')) ||
+      group.paths.find((candidate) => candidate.endsWith('results/output_manifest.json')) ||
+      group.paths[0];
+    if (!primaryPath) continue;
+    const artifact = normalizeArtifact(run, {
+      id: group.id,
+      type: group.type,
+      title: group.title,
+      primaryPath,
+      sourcePaths: group.paths,
+      outputPaths: group.paths,
+      status: 'available',
+      revision: revision(),
+      ...(group.type === 'code' ? { code: { path: primaryPath, language: 'python', entrypoint: primaryPath } } : {}),
+    });
+    run.artifacts.set(artifactKey(artifact.id, artifact.version), artifact);
+    syncArtifactEdges(run, artifact);
+    for (const filePath of group.paths) {
+      includePaths.push({
+        path: filePath,
+        role: group.role,
+        artifactId: artifact.id,
+        artifactVersion: artifact.version,
+      });
+    }
+  }
+  return includePaths;
 };
 
 const applyAnalysisReceipt = (run: ScienceRunState, receipt: OmicsAnalysisReceipt): void => {
@@ -2434,6 +2711,18 @@ async function main() {
         const methodAlignmentReceiptId = asString(body.methodAlignmentReceiptId || body.method_alignment_receipt_id);
         const executionReceiptId = asString(body.executionReceiptId || body.execution_receipt_id);
         const analysisReceiptId = asString(body.analysisReceiptId || body.analysis_receipt_id);
+        const requestedWorkflowKind = asString(body.workflowKind || body.workflow_kind);
+        if (requestedWorkflowKind && !['omics_reproduction', 'omics_analysis'].includes(requestedWorkflowKind)) {
+          run.status = 'running';
+          const panel = buildPanel(run);
+          const evt = eventFor(run, action, target, { panel, warnings: panel.graphWarnings });
+          return jsonText({
+            ...evt,
+            displayIntent: displayIntent || 'open',
+            status: 'invalid_request',
+            error: { code: 'UNSUPPORTED_WORKFLOW_KIND', workflowKind: requestedWorkflowKind },
+          });
+        }
         const legacyReceiptProvided = Boolean(
           body.completionReceipt ||
           body.completion_receipt ||
@@ -2502,22 +2791,93 @@ async function main() {
               nextActions: run.nextActions,
             });
           }
+          const canonicalIssues = validateAnalysisReceiptCanonicalFiles(incomingAnalysisReceipt, run.projectRoot || '');
+          if (canonicalIssues.length) {
+            run.status = 'running';
+            run.nextActions = [
+              {
+                id: 'repair-analysis-canonical-files',
+                tool: 'bio_analysis',
+                action: 'status',
+                reason:
+                  'The analysis receipt is terminal, but its canonical files are not complete, project-local, readable, and hash-stable.',
+                payload: { analysisId: incomingAnalysisReceipt.analysisId },
+                maxAttempts: 1,
+                stopWhenUnchanged: true,
+              },
+            ];
+            const panel = buildPanel(run);
+            const evt = eventFor(run, action, target, { panel, warnings: panel.graphWarnings });
+            return jsonText({
+              ...evt,
+              displayIntent: displayIntent || 'open',
+              status: 'invalid_request',
+              error: { code: 'ANALYSIS_CANONICAL_FILES_UNOPENABLE', issues: canonicalIssues },
+              nextActions: run.nextActions,
+            });
+          }
           applyAnalysisReceipt(run, incomingAnalysisReceipt);
+          const analysisIncludePaths = applyAnalysisArtifacts(run, incomingAnalysisReceipt);
           run.status =
             incomingAnalysisReceipt.stageStatus === 'awaiting_user'
               ? 'awaiting_user'
-              : incomingAnalysisReceipt.action === 'close_analysis' &&
-                  incomingAnalysisReceipt.projectStatus === 'closed'
+              : (incomingAnalysisReceipt.action === 'close_analysis' &&
+                    incomingAnalysisReceipt.projectStatus === 'closed') ||
+                  (incomingAnalysisReceipt.stage === 'exploration' &&
+                    incomingAnalysisReceipt.stageStatus === 'accepted' &&
+                    incomingAnalysisReceipt.projectStatus === 'accepted')
                 ? 'completed'
                 : 'running';
           if (body.question) run.question = asString(body.question, run.question);
           if (body.summary) run.summary = asString(body.summary, run.summary as string);
           const panel = buildPanel(run);
-          const evt = eventFor(run, action, target, {
-            panel,
-            artifactIds: panel.artifacts.map((item) => item.id),
-            warnings: panel.graphWarnings,
-          });
+          const evt = eventFor(
+            run,
+            action,
+            target,
+            {
+              panel,
+              artifactIds: panel.artifacts.map((item) => item.id),
+              warnings: panel.graphWarnings,
+              snapshot: { includePaths: analysisIncludePaths },
+            },
+            analysisIncludePaths
+          );
+          if (
+            writeProjectManifest() &&
+            run.status === 'completed' &&
+            (!evt.git || !evt.git.files?.some((file) => file.mode === 'copied'))
+          ) {
+            run.status = 'partial';
+            run.graphWarnings.set('warn_analysis_artifact_snapshot_empty', {
+              id: 'warn_analysis_artifact_snapshot_empty',
+              runId: run.runId,
+              code: 'analysis_artifact_snapshot_empty',
+              severity: 'error',
+              message: 'Completed omics analysis publishing requires copied, UI-openable canonical artifact files.',
+              blocking: true,
+              createdAt: now(),
+            });
+            const blockedPanel = buildPanel(run);
+            const blockedEvt = eventFor(
+              run,
+              action,
+              target,
+              {
+                panel: blockedPanel,
+                artifactIds: blockedPanel.artifacts.map((item) => item.id),
+                warnings: blockedPanel.graphWarnings,
+                snapshot: { includePaths: analysisIncludePaths },
+              },
+              analysisIncludePaths
+            );
+            return jsonText({
+              ...blockedEvt,
+              displayIntent: displayIntent || 'open',
+              status: 'invalid_request',
+              error: { code: 'ANALYSIS_ARTIFACT_SNAPSHOT_EMPTY' },
+            });
+          }
           return jsonText({
             ...evt,
             displayIntent: displayIntent || 'open',

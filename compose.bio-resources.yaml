@@ -1,0 +1,30 @@
+# Optional bio resource overlay.
+#
+# Use this when marker dictionaries, MSigDB GMT files, or other reusable
+# OpenBioScience bio resources are stored outside the image, for example on a
+# server workspace or NAS. The mounted directory must contain the same layout as
+# `resources/bio`.
+services:
+  openbioscience:
+    volumes:
+      - type: bind
+        source: ${OPENBIOSCIENCE_BIO_RESOURCE_ROOT_HOST:?Set OPENBIOSCIENCE_BIO_RESOURCE_ROOT_HOST to a host resources/bio directory.}
+        target: /opt/openbioscience/bio-resources
+        read_only: true
+    environment:
+      OPENBIOSCIENCE_BIO_RESOURCE_ROOT: /opt/openbioscience/bio-resources
+      OPENBIOSCIENCE_GENE_SET_ROOT: /opt/openbioscience/bio-resources/gene_sets
+      OPENBIOSCIENCE_MARKER_ROOT: /opt/openbioscience/bio-resources/markers
+      OPENBIOSCIENCE_MSIGDB_ROOT: /opt/openbioscience/bio-resources/gene_sets/msigdb
+
+  environment-bootstrap:
+    volumes:
+      - type: bind
+        source: ${OPENBIOSCIENCE_BIO_RESOURCE_ROOT_HOST:?Set OPENBIOSCIENCE_BIO_RESOURCE_ROOT_HOST to a host resources/bio directory.}
+        target: /opt/openbioscience/bio-resources
+        read_only: true
+    environment:
+      OPENBIOSCIENCE_BIO_RESOURCE_ROOT: /opt/openbioscience/bio-resources
+      OPENBIOSCIENCE_GENE_SET_ROOT: /opt/openbioscience/bio-resources/gene_sets
+      OPENBIOSCIENCE_MARKER_ROOT: /opt/openbioscience/bio-resources/markers
+      OPENBIOSCIENCE_MSIGDB_ROOT: /opt/openbioscience/bio-resources/gene_sets/msigdb

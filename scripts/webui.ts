@@ -25,12 +25,24 @@ import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { startWebHost } from '@deeporganiser/web-host';
+import { config as loadDotEnvConfig } from 'dotenv';
 import {
   buildOpenBioScienceRuntimeEnv,
   buildOpenBioScienceRuntimePath,
   resolveOpenBioScienceRuntimeRoot,
+  resolveOpenBioScienceWorkspaceRoot,
 } from '../packages/desktop/src/process/utils/openBioScienceRuntimeEnv';
 import { openBrowserUrl, shouldAutoOpenBrowser } from '../packages/web-cli/src/browser.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const repoRoot = path.resolve(path.dirname(__filename), '..');
+
+loadDotEnvConfig({ path: path.join(repoRoot, '.env') });
+
+const openBioScienceWorkspaceRoot = (): string => resolveOpenBioScienceWorkspaceRoot(process.env, repoRoot) || repoRoot;
+
+const buildStandaloneBioRuntimeEnv = (baseEnv: Record<string, string>): Record<string, string> =>
+  buildOpenBioScienceRuntimeEnv(baseEnv, process.env, openBioScienceWorkspaceRoot());
 
 const legacyEnvName = (suffix: string): string => `${['AI', 'ON', 'UI'].join('')}_${suffix}`;
 const readEnv = (suffix: string): string | undefined =>
@@ -78,6 +90,9 @@ const DEFAULT_SCIENCE_SKILL_IDS = [
   'bio-singlecell-baseline',
   'bio-environment-manager',
   'bio-analysis-script-authoring',
+  'bio-scrna-differential-expression',
+  'kdense-pathway-enrichment',
+  'kdense-scanpy',
   'bio-method-parameter-reconstruction',
   'openscience-compute',
 ];
@@ -88,6 +103,7 @@ const DEFAULT_RESEARCH_EVIDENCE_DOMAINS = [
   'structures-interactions',
   'omics-archives',
   'genes-ontologies',
+  'cancer-singlecell',
 ];
 
 type BackendEnvelope<T> = {
@@ -110,6 +126,8 @@ type WebuiMcpServerPayload = {
   builtin: boolean;
   transport: StdioMcpTransport;
   original_json: string;
+  tools?: unknown[];
+  last_test_status?: 'connected' | 'disconnected' | 'error' | 'testing';
 };
 
 type StoredWebuiMcpServer = WebuiMcpServerPayload & {
@@ -123,9 +141,6 @@ type StdioMcpServerBuildParams = {
   enabled?: boolean;
   env?: Record<string, string>;
 };
-
-const __filename = fileURLToPath(import.meta.url);
-const repoRoot = path.resolve(path.dirname(__filename), '..');
 
 const args = process.argv.slice(2);
 const has = (name: string): boolean => args.includes(name);
@@ -269,7 +284,7 @@ function readJsonFile<T>(filePath: string, fallback: T): T {
   }
 }
 
-function syncOpenBioScienceSkills(workDir: string): void {
+export function syncOpenBioScienceSkills(workDir: string): void {
   const sourceRoot = path.join(repoRoot, 'resources', 'skills');
   if (!fs.existsSync(sourceRoot)) {
     console.warn(`[webui] OpenBioScience skills source not found: ${sourceRoot}`);
@@ -354,7 +369,7 @@ export function buildStandaloneBioMcpServerSpecs(): StdioMcpServerBuildParams[] 
         'Built-in OpenBioScience scRNA-seq runtime control plane for environment, workflow, and output contracts.',
       scriptName: 'builtin-mcp-bio',
       enabled: true,
-      env: buildOpenBioScienceRuntimeEnv({
+      env: buildStandaloneBioRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime',
       }),
     },
@@ -363,7 +378,7 @@ export function buildStandaloneBioMcpServerSpecs(): StdioMcpServerBuildParams[] 
       description: 'Built-in OpenBioScience data-source control plane for accession triage and data manifests.',
       scriptName: 'builtin-mcp-bio',
       enabled: true,
-      env: buildOpenBioScienceRuntimeEnv({
+      env: buildStandaloneBioRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'source',
       }),
     },
@@ -372,7 +387,7 @@ export function buildStandaloneBioMcpServerSpecs(): StdioMcpServerBuildParams[] 
       description: 'Built-in OpenBioScience marker, atlas, gene-set, and ligand-receptor evidence contracts.',
       scriptName: 'builtin-mcp-bio',
       enabled: true,
-      env: buildOpenBioScienceRuntimeEnv({
+      env: buildStandaloneBioRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'knowledge',
       }),
     },
@@ -381,7 +396,7 @@ export function buildStandaloneBioMcpServerSpecs(): StdioMcpServerBuildParams[] 
       description: 'Built-in OpenBioScience scRNA-seq plot template and plot artifact manifest contracts.',
       scriptName: 'builtin-mcp-bio',
       enabled: true,
-      env: buildOpenBioScienceRuntimeEnv({
+      env: buildStandaloneBioRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'plot',
       }),
     },
@@ -391,7 +406,7 @@ export function buildStandaloneBioMcpServerSpecs(): StdioMcpServerBuildParams[] 
         'Built-in OpenBioScience omics reproduction planning control plane for source packaging, availability audit, lightweight localization planning, and script-boundary validation.',
       scriptName: 'builtin-mcp-bio',
       enabled: true,
-      env: buildOpenBioScienceRuntimeEnv({
+      env: buildStandaloneBioRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction',
       }),
     },
@@ -401,7 +416,7 @@ export function buildStandaloneBioMcpServerSpecs(): StdioMcpServerBuildParams[] 
         'Built-in OpenBioScience private omics analysis control plane for human checkpoints, scRNA-seq baseline, episodes, and closure.',
       scriptName: 'builtin-mcp-bio',
       enabled: true,
-      env: buildOpenBioScienceRuntimeEnv({
+      env: buildStandaloneBioRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'analysis',
       }),
     },
@@ -411,7 +426,7 @@ export function buildStandaloneBioMcpServerSpecs(): StdioMcpServerBuildParams[] 
         'Built-in OpenBioScience statistical contract control plane for expression semantics and replicate-aware edgeR differential expression.',
       scriptName: 'builtin-mcp-bio',
       enabled: true,
-      env: buildOpenBioScienceRuntimeEnv({
+      env: buildStandaloneBioRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'statistics',
       }),
     },
@@ -420,7 +435,7 @@ export function buildStandaloneBioMcpServerSpecs(): StdioMcpServerBuildParams[] 
       description: 'Built-in OpenBioScience bio environment manager control plane for runtime environments.',
       scriptName: 'builtin-mcp-bio',
       enabled: true,
-      env: buildOpenBioScienceRuntimeEnv({
+      env: buildStandaloneBioRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'environment_manager',
       }),
     },
@@ -444,13 +459,17 @@ export function buildStandaloneBuiltinMcpServers(backendPort: number): WebuiMcpS
       name: 'openscience-research-evidence',
       description: 'Unified research evidence bridge for PaperClip literature/files and Science database tools.',
       scriptName: 'builtin-mcp-research-evidence',
+      enabled: true,
       env: {
         PAPERCLIP_ENABLED: 'false',
         PAPERCLIP_BASE_URL: 'https://paperclip.gxl.ai',
         PAPERCLIP_DEFAULT_SOURCES: 'pmc,abstracts,biorxiv,medrxiv,arxiv',
         PAPERCLIP_TIMEOUT_MS: '30000',
-        OPENSCIENCE_RESEARCH_EVIDENCE_PROVIDERS: '',
-        OPENSCIENCE_BIO_TOOLS_ENABLED: 'false',
+        OPENSCIENCE_RESEARCH_EVIDENCE_PROVIDERS: 'bio_tools',
+        OPENSCIENCE_BIO_TOOLS_ENABLED: 'true',
+        OPENSCIENCE_BIO_TOOLS_PYTHON:
+          process.env.OPENSCIENCE_BIO_TOOLS_PYTHON ||
+          '/opt/openbioscience/env/environments/official/sc-py-singlecell/bin/python',
         OPENSCIENCE_BIO_TOOLS_DOMAINS: DEFAULT_RESEARCH_EVIDENCE_DOMAINS.join(','),
       },
     }),
@@ -529,6 +548,7 @@ async function bootstrapStandaloneMcpCatalog(backendPort: number): Promise<void>
     const existing = await fetchBackendJson<StoredWebuiMcpServer[]>(backendPort, '/api/mcp/servers');
     const existingByName = new Map((existing ?? []).map((server) => [server.name, server]));
     const desired = buildStandaloneBuiltinMcpServers(backendPort);
+    const toolCacheRefreshNames = new Set<string>();
     const missing = desired.filter((server) => !existingByName.has(server.name));
     const changed = desired.filter((server) => {
       const current = existingByName.get(server.name);
@@ -552,6 +572,9 @@ async function bootstrapStandaloneMcpCatalog(backendPort: number): Promise<void>
         method: 'POST',
         body: JSON.stringify({ servers: missing }),
       });
+      for (const server of missing) {
+        if (server.enabled) toolCacheRefreshNames.add(server.name);
+      }
       console.log(`[webui] OpenBioScience MCP catalog imported: ${missing.map((server) => server.name).join(', ')}`);
     }
 
@@ -566,8 +589,11 @@ async function bootstrapStandaloneMcpCatalog(backendPort: number): Promise<void>
           builtin: server.builtin,
           transport: server.transport,
           original_json: server.original_json,
+          tools: [],
+          last_test_status: 'disconnected',
         }),
       });
+      if (server.enabled) toolCacheRefreshNames.add(server.name);
       if (current.enabled !== server.enabled) {
         await fetchBackendJson(backendPort, `/api/mcp/servers/${encodeURIComponent(current.id)}/toggle`, {
           method: 'POST',
@@ -576,6 +602,31 @@ async function bootstrapStandaloneMcpCatalog(backendPort: number): Promise<void>
     }
     if (changed.length > 0) {
       console.log(`[webui] OpenBioScience MCP catalog updated: ${changed.map((server) => server.name).join(', ')}`);
+    }
+    if (toolCacheRefreshNames.size > 0) {
+      const refreshed = await fetchBackendJson<StoredWebuiMcpServer[]>(backendPort, '/api/mcp/servers');
+      const refreshTargets = (refreshed ?? []).filter(
+        (server) =>
+          toolCacheRefreshNames.has(server.name) &&
+          server.enabled === true &&
+          server.builtin === true &&
+          server.name.startsWith('openscience-')
+      );
+      await Promise.all(
+        refreshTargets.map(async (server) => {
+          try {
+            await fetchBackendJson(backendPort, '/api/mcp/test-connection', {
+              method: 'POST',
+              body: JSON.stringify({ ...server, runtime_scope_id: server.id }),
+            });
+          } catch (error) {
+            console.warn(`[webui] could not refresh MCP tool cache for ${server.name}:`, error);
+          }
+        })
+      );
+      if (refreshTargets.length > 0) {
+        console.log(`[webui] OpenBioScience MCP tool cache refreshed: ${refreshTargets.map((s) => s.name).join(', ')}`);
+      }
     }
   } catch (error) {
     console.warn('[webui] could not bootstrap OpenBioScience MCP catalog:', error);
@@ -611,7 +662,9 @@ function augmentPathWithNvm(): void {
 async function main(): Promise<void> {
   const runtimeRoot = resolveOpenBioScienceRuntimeRoot(process.env, repoRoot);
   if (runtimeRoot) {
+    process.env.OPENBIOSCIENCE_ENV_ROOT = runtimeRoot;
     process.env.OPENBIOSCIENCE_RUNTIME_ROOT = runtimeRoot;
+    process.env.OPENSCIENCE_RUNTIME_ROOT = runtimeRoot;
     process.env.PATH = buildOpenBioScienceRuntimePath(process.env.PATH, process.env, repoRoot);
     syncOpenBioScienceCliTools(runtimeRoot);
   }

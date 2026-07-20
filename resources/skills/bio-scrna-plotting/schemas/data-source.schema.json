@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openbioscience.scrna_plot.data_source.v1",
+  "type": "object",
+  "required": ["sourcePath", "sourceType"],
+  "properties": {
+    "sourcePath": { "type": "string" },
+    "sourceType": { "enum": ["rds", "h5seurat", "h5ad", "table_bundle", "tsv", "csv"] },
+    "assay": { "type": "string" },
+    "layer": { "type": "string" },
+    "metadataColumns": { "type": "array", "items": { "type": "string" } },
+    "reductions": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

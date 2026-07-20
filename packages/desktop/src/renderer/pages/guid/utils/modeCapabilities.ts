@@ -8,6 +8,7 @@ import { DEFAULT_MEDICAL_EVIDENCE_SKILL_IDS } from '@/common/chat/medicalEvidenc
 import { DEFAULT_SCIENCE_SKILL_IDS } from '@/common/chat/science';
 import { LAB_SKILL_DEPOSITION_SKILL_NAME } from '@/common/chat/labSkillDeposition';
 import {
+  BUILTIN_BIO_ANALYSIS_NAME,
   BUILTIN_BIO_KNOWLEDGE_NAME,
   BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
   BUILTIN_BIO_PLOT_NAME,
@@ -76,6 +77,7 @@ export function getGuidModeSelectableBuiltinMcpNames(mode: GuidCapabilityMode): 
       BUILTIN_BIO_KNOWLEDGE_NAME,
       BUILTIN_BIO_PLOT_NAME,
       BUILTIN_BIO_REPRODUCTION_NAME,
+      BUILTIN_BIO_ANALYSIS_NAME,
       BUILTIN_BIO_STATISTICS_NAME,
       BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
     ];
@@ -90,6 +92,7 @@ const BIO_SKILL_MCP_DEPENDENCIES: Record<string, string[]> = {
     BUILTIN_BIO_REPRODUCTION_NAME,
     BUILTIN_BIO_STATISTICS_NAME,
   ],
+  'bio-omics-analysis': [BUILTIN_BIO_RUNTIME_NAME, BUILTIN_BIO_SOURCE_NAME, BUILTIN_BIO_ANALYSIS_NAME],
   'bio-data-resolution': [BUILTIN_BIO_SOURCE_NAME],
   'bio-environment-routing': [BUILTIN_BIO_RUNTIME_NAME],
   'bio-environment-manager': [BUILTIN_BIO_RUNTIME_NAME, BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME],
@@ -132,7 +135,7 @@ export function resolveSkillRequiredMcpSources(skillIds: readonly string[] = [])
   return Object.fromEntries(
     getGuidModeSelectableBuiltinMcpNames('science')
       .filter((name) => sources.has(name))
-      .map((name) => [name, [...sources.get(name)!].sort()])
+      .map((name) => [name, [...sources.get(name)!].toSorted()])
   );
 }
 

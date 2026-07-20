@@ -10,6 +10,7 @@ import { LEGACY_LOCAL_RUNTIME_ID, LEGACY_LOCAL_RUNTIME_NAME } from '@/common/con
 import { LOOP_GOAL_SKILL_NAME } from '@/common/chat/loopGoal';
 import { DEFAULT_SCIENCE_SKILL_IDS } from '@/common/chat/science';
 import {
+  BUILTIN_BIO_ANALYSIS_NAME,
   BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
   BUILTIN_BIO_REPRODUCTION_NAME,
   BUILTIN_BIO_RUNTIME_NAME,
@@ -175,6 +176,18 @@ const createDeps = (): GuidSendDeps => ({
       },
     } as IMcpServer,
     {
+      id: 'mcp-bio-analysis',
+      name: BUILTIN_BIO_ANALYSIS_NAME,
+      enabled: false,
+      builtin: true,
+      transport: {
+        type: 'stdio',
+        command: 'node',
+        args: ['builtin-mcp-bio.js'],
+        env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'analysis' },
+      },
+    } as IMcpServer,
+    {
       id: 'mcp-bio-environment-manager',
       name: BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
       enabled: false,
@@ -230,6 +243,7 @@ describe('useGuidSend', () => {
         expect.objectContaining({ name: BUILTIN_BIO_RUNTIME_NAME }),
         expect.objectContaining({ name: BUILTIN_BIO_SOURCE_NAME }),
         expect.objectContaining({ name: BUILTIN_BIO_REPRODUCTION_NAME }),
+        expect.objectContaining({ name: BUILTIN_BIO_ANALYSIS_NAME }),
         expect.objectContaining({ name: BUILTIN_BIO_STATISTICS_NAME }),
         expect.objectContaining({ name: BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME }),
       ])
@@ -238,21 +252,29 @@ describe('useGuidSend', () => {
       expect.objectContaining({
         [BUILTIN_BIO_RUNTIME_NAME]: expect.arrayContaining([
           'bio-omics-reproduction-planning',
+          'bio-omics-analysis',
           'bio-environment-manager',
           'bio-analysis-script-authoring',
+          'bio-scrna-differential-expression',
         ]),
+        [BUILTIN_BIO_ANALYSIS_NAME]: ['bio-omics-analysis'],
         [BUILTIN_BIO_REPRODUCTION_NAME]: ['bio-omics-reproduction-planning'],
-        [BUILTIN_BIO_STATISTICS_NAME]: ['bio-omics-reproduction-planning'],
-        [BUILTIN_BIO_SOURCE_NAME]: ['bio-omics-reproduction-planning'],
+        [BUILTIN_BIO_STATISTICS_NAME]: expect.arrayContaining([
+          'bio-omics-reproduction-planning',
+          'bio-scrna-differential-expression',
+        ]),
+        [BUILTIN_BIO_SOURCE_NAME]: ['bio-omics-analysis', 'bio-omics-reproduction-planning'],
         [BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME]: ['bio-environment-manager'],
       })
     );
-    expect(payload.extra.auto_mcp_sources[BUILTIN_BIO_RUNTIME_NAME]).toHaveLength(3);
+    expect(payload.extra.auto_mcp_sources[BUILTIN_BIO_RUNTIME_NAME]).toHaveLength(5);
     expect(payload.extra.auto_mcp_sources[BUILTIN_BIO_RUNTIME_NAME]).toEqual(
       expect.arrayContaining([
         'bio-omics-reproduction-planning',
+        'bio-omics-analysis',
         'bio-environment-manager',
         'bio-analysis-script-authoring',
+        'bio-scrna-differential-expression',
       ])
     );
     const scienceArtifactServer = payload.extra.selected_session_mcp_servers.find(
@@ -607,6 +629,18 @@ describe('useGuidSend', () => {
           },
         },
         {
+          id: 'mcp-bio-analysis',
+          name: BUILTIN_BIO_ANALYSIS_NAME,
+          enabled: false,
+          builtin: true,
+          transport: {
+            type: 'stdio',
+            command: 'node',
+            args: ['builtin-mcp-bio.js'],
+            env: { OPENBIOSCIENCE_BIO_MCP_PROFILE: 'analysis' },
+          },
+        },
+        {
           id: 'mcp-bio-environment-manager',
           name: BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
           enabled: false,
@@ -637,6 +671,7 @@ describe('useGuidSend', () => {
         expect.objectContaining({ name: BUILTIN_BIO_RUNTIME_NAME }),
         expect.objectContaining({ name: BUILTIN_BIO_SOURCE_NAME }),
         expect.objectContaining({ name: BUILTIN_BIO_REPRODUCTION_NAME }),
+        expect.objectContaining({ name: BUILTIN_BIO_ANALYSIS_NAME }),
         expect.objectContaining({ name: BUILTIN_BIO_STATISTICS_NAME }),
         expect.objectContaining({ name: BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME }),
       ])
@@ -650,6 +685,7 @@ describe('useGuidSend', () => {
         BUILTIN_BIO_RUNTIME_NAME,
         BUILTIN_BIO_SOURCE_NAME,
         BUILTIN_BIO_REPRODUCTION_NAME,
+        BUILTIN_BIO_ANALYSIS_NAME,
         BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
       ])
     );
@@ -666,8 +702,8 @@ describe('useGuidSend', () => {
     expect(researchSession?.transport?.env).toEqual(
       expect.objectContaining({
         PAPERCLIP_ENABLED: 'false',
-        OPENSCIENCE_RESEARCH_EVIDENCE_PROVIDERS: '',
-        OPENSCIENCE_BIO_TOOLS_ENABLED: 'false',
+        OPENSCIENCE_RESEARCH_EVIDENCE_PROVIDERS: 'bio_tools',
+        OPENSCIENCE_BIO_TOOLS_ENABLED: 'true',
       })
     );
   });

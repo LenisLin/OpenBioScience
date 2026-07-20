@@ -1,0 +1,19 @@
+schema: openbioscience.marker_resource_meta.v1
+resourceId: scrna_atlas_markers.v1
+species: Homo sapiens; Mus musculus
+scope: Compact local marker-atlas dictionary derived from a user-provided extraction of 31 human, mouse, organ, tumor, and immune scRNA-seq atlas papers.
+version: 1
+status: localized_atlas_dictionary
+primaryFiles:
+  records: scrna_atlas_markers.v1.jsonl
+sourceWorkbook: user-provided scRNA_atlas_marker_dictionary.xlsx
+recordCount: 634
+sourcePaperCount: 31
+exactSignatureSourceRows: 5439
+embeddedExactSignatureGeneEntries: 5435
+licenseOrTerms: Derived from user-provided extraction of public atlas papers and supplementary markers; cite original sources and follow source/publisher/database terms for reuse.
+access_date: 2026-07-19
+recommendedUse: bio_knowledge marker search, cluster annotation evidence, marker panel selection, ambiguity review, and exploratory signature scoring.
+preferred_hierarchy: compartment -> major_type -> subtype -> state
+state_marker_policy: State, program, cycling, stress, interferon, exhaustion, hypoxia, metaprogram, and ecotype labels are state/program evidence and should not replace core identity markers.
+curation_warning: Evidence quality varies by source and extraction status; reports should retain source paper, evidence type, confidence, and unresolved labels when annotation is ambiguous.

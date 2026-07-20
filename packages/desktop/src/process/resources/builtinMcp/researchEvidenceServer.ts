@@ -74,6 +74,22 @@ type BioSearchRoute = {
   buildArguments: (query: string, maxResults: number) => Record<string, unknown>;
 };
 
+const CANCER_SINGLECELL_DOMAIN = 'cancer-singlecell';
+const CANCER_SINGLECELL_SOURCE_ALIASES = new Set([
+  'tisch2',
+  'tisch',
+  'cancer_singlecell',
+  'cancer-singlecell',
+  'cancer_singlecell_atlas',
+]);
+const CANCER_SINGLECELL_TOOL_CANDIDATES = [
+  'tisch2_search_datasets',
+  'tisch2_search_dataset',
+  'search_tisch2_datasets',
+  'cancer_singlecell_search',
+  'search_cancer_singlecell_datasets',
+];
+
 const jsonText = (value: unknown) => ({
   content: [{ type: 'text' as const, text: JSON.stringify(value, null, 2) }],
 });
@@ -112,6 +128,9 @@ const normalizeBioSource = (source?: string): string =>
     .toLowerCase()
     .replace(/\s+/gu, '_')
     .replace(/-/gu, '_');
+
+const isCancerSingleCellSource = (source?: string): boolean =>
+  CANCER_SINGLECELL_SOURCE_ALIASES.has(normalizeBioSource(source));
 
 const firstString = (value: unknown): string | undefined => {
   if (typeof value === 'string' && value.trim()) return value.trim();
@@ -338,6 +357,21 @@ class BioToolsGateway {
     return (await client.callTool({ name: tool, arguments: args })) as BioToolCallResult;
   }
 
+  async findTool(domain: string, candidates: string[]): Promise<string | undefined> {
+    if (!this.enabled || !this.status().configured) return undefined;
+    try {
+      const tools = await this.listTools(domain, false);
+      const names = new Set(
+        tools
+          .map((tool) => (typeof tool.name === 'string' ? tool.name : ''))
+          .filter(Boolean)
+      );
+      return candidates.find((candidate) => names.has(candidate));
+    } catch {
+      return undefined;
+    }
+  }
+
   toolDomain(tool: string): string | undefined {
     const domains = this.readDomains();
     for (const [domainName, tools] of Object.entries(domains)) {
@@ -471,6 +505,89 @@ const buildBioEvidenceDraft = ({
   };
 };
 
+const buildCancerSingleCellFallback = (source: string, query: string, maxResults: number) => ({
+  provider: 'bio_tools' as const,
+  source: normalizeBioSource(source),
+  domain: CANCER_SINGLECELL_DOMAIN,
+  found: 0,
+  status: 'needs_review',
+  rawPreview:
+    'No native TISCH2/cancer-singlecell bio-tools search route is available in this runtime. Record TISCH2 or other curated cancer single-cell database evidence through research_evidence/web/database records, then use GEO/ArrayExpress accessions only for file localization.',
+  evidenceDrafts: [
+    {
+      title: `TISCH2/cancer single-cell dataset discovery route: ${query}`,
+      sourceType: 'database_record' as const,
+      claimType: 'parsed' as const,
+      confidence: 'moderate' as const,
+      status: 'needs_review' as const,
+      summary:
+        'Preferred tumor scRNA-seq discovery source is TISCH2 or another curated cancer single-cell database. Native structured search is not exposed by the configured bio-tools provider, so the agent should register database-record evidence and localize selected archive accessions separately.',
+      database: {
+        name: 'TISCH2 / cancer single-cell resources',
+        provider: 'bio_tools' as const,
+        domain: CANCER_SINGLECELL_DOMAIN,
+        endpoint: 'curated_cancer_singlecell_discovery',
+        params: { query, maxResults, source: normalizeBioSource(source) },
+        accessDate: new Date().toISOString(),
+        warnings: [
+          'Native TISCH2 bio-tools search is unavailable.',
+          'Use GEO/ArrayExpress as localization backends after curated dataset selection.',
+        ],
+      },
+    },
+  ],
+  nextActions: [
+    {
+      id: 'record-tisch2-database-evidence',
+      tool: 'science_artifact',
+      action: 'create_evidence',
+      reason: 'Register the selected TISCH2 or curated cancer single-cell database record as Science evidence.',
+      payload: {
+        sourceType: 'database_record',
+        title: `TISCH2/cancer single-cell dataset record: ${query}`,
+        databaseName: 'TISCH2 or curated cancer single-cell resource',
+        status: 'needs_review',
+      },
+    },
+    {
+      id: 'rank-curated-candidates',
+      tool: 'bio_source',
+      action: 'rank_dataset_candidates',
+      reason: 'Rank curated cancer single-cell candidates before resolving archive accessions.',
+      payload: {
+        analysisId: '<analysisId>',
+        query,
+        disease: '<disease>',
+        organism: 'human',
+        modality: 'scRNA-seq',
+        candidates: [
+          {
+            id: '<candidate-id>',
+            sourceName: 'TISCH2',
+            datasetId: '<TISCH2 dataset id>',
+            accession: '<GEO/ArrayExpress/SRA accession if available>',
+            disease: '<disease>',
+            organism: 'human',
+            tissue: '<tissue>',
+            modality: 'scRNA-seq',
+            availability: 'public_or_needs_review',
+            licenseOrTerms: '<database/file terms>',
+            downloadRoute: '<archive or provider route>',
+            rationale: 'Curated cancer single-cell candidate selected from database evidence for exploratory analysis.',
+          },
+        ],
+      },
+    },
+    {
+      id: 'localize-selected-archive-accession',
+      tool: 'bio_source',
+      action: 'resolve_accession',
+      reason: 'Use GEO/ArrayExpress/SRA only after choosing a curated dataset candidate.',
+      payload: { sourceHint: 'GEO/ArrayExpress/SRA', accession: '' },
+    },
+  ],
+});
+
 async function main() {
   const paperclip = new PaperclipGateway();
   const bioTools = new BioToolsGateway();
@@ -487,7 +604,10 @@ async function main() {
       provider: z.enum(['auto', 'paperclip', 'bio_tools']).default('auto'),
       mode: z.enum(['medical', 'science', 'general']).default('science'),
       query: z.string().optional(),
-      source: z.string().optional().describe('PaperClip source or bio-tools source alias, e.g. pmc, pubmed, chembl, geo, alphafold.'),
+      source: z
+        .string()
+        .optional()
+        .describe('PaperClip source or bio-tools source alias, e.g. pmc, pubmed, chembl, geo, alphafold, tisch2.'),
       sources: z.array(z.string()).optional(),
       maxResults: z.number().min(1).max(50).default(8),
       sourceId: z.string().optional(),
@@ -608,9 +728,45 @@ async function main() {
         const requestedSources = sources?.length ? sources : [source || 'pmc'];
         const results = [];
         for (const item of requestedSources) {
-          const bioRoute = bioToolSearchRoutes[normalizeBioSource(item)];
+          const normalizedBioSource = normalizeBioSource(item);
+          if (isCancerSingleCellSource(item)) {
+            const nativeTool = await bioTools.findTool(CANCER_SINGLECELL_DOMAIN, CANCER_SINGLECELL_TOOL_CANDIDATES);
+            if (!nativeTool) {
+              results.push(buildCancerSingleCellFallback(item, query, maxResults));
+              continue;
+            }
+            const route: BioSearchRoute = {
+              tool: nativeTool,
+              databaseName: 'TISCH2 / cancer single-cell resources',
+              domain: CANCER_SINGLECELL_DOMAIN,
+              sourceType: 'dataset',
+              buildArguments: (searchQuery, limit) => ({ query: searchQuery, max_results: limit, limit }),
+            };
+            const args = route.buildArguments(query, maxResults);
+            const result = await bioTools.callTool(route.tool, args);
+            const output = resultText(result);
+            const parsed = result.structuredContent ?? safeJsonParse(output);
+            const counts = countFromStructured(parsed);
+            results.push({
+              provider: 'bio_tools',
+              source: normalizedBioSource,
+              tool: route.tool,
+              domain: route.domain,
+              found: counts.returnedCount || counts.retrievedCount || 0,
+              rawPreview: previewOutput(output),
+              rawOutput: output,
+              structuredContent: result.structuredContent,
+              evidenceDrafts: [buildBioEvidenceDraft({ route, tool: route.tool, args, query, output, structured: parsed })],
+            });
+            continue;
+          }
+          const bioRoute = bioToolSearchRoutes[normalizedBioSource];
           const shouldUseBioTools =
-            provider === 'bio_tools' || (provider === 'auto' && bioRoute && !paperclip.enabled) || (provider === 'auto' && bioRoute && !['pmc', 'abstracts', 'abstracts_only', 'arxiv', 'biorxiv', 'medrxiv'].includes(normalizeBioSource(item)));
+            provider === 'bio_tools' ||
+            (provider === 'auto' && bioRoute && !paperclip.enabled) ||
+            (provider === 'auto' &&
+              bioRoute &&
+              !['pmc', 'abstracts', 'abstracts_only', 'arxiv', 'biorxiv', 'medrxiv'].includes(normalizedBioSource));
           if (shouldUseBioTools) {
             if (!bioRoute) {
               throw new Error(`No bio-tools search route is defined for source "${item}". Use action="list_tools" then action="call".`);
@@ -622,7 +778,7 @@ async function main() {
             const counts = countFromStructured(parsed);
             results.push({
               provider: 'bio_tools',
-              source: normalizeBioSource(item),
+              source: normalizedBioSource,
               tool: bioRoute.tool,
               domain: bioRoute.domain,
               found: counts.returnedCount || counts.retrievedCount || 0,

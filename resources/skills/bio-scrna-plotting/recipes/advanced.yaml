@@ -1,0 +1,13 @@
+recipes:
+  - id: scp_lineage
+    objective: trajectory
+    backend: ggplot_patchwork
+    required_inputs: [object_path, lineage_result, reduction]
+  - id: scp_dynamic_heatmap
+    objective: trajectory
+    backend: complexheatmap_grid
+    required_inputs: [object_path, dynamic_features, pseudotime_column]
+  - id: plot1cell_circular
+    objective: embedding
+    backend: circlize_device
+    required_inputs: [object_path, prepared_circlize_data, metadata_tracks]

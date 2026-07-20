@@ -1,0 +1,40 @@
+# Server-side agent runtime overlay.
+#
+# Use this only for trusted remote deployments where OpenBioScience runs as the
+# execution plane. It mounts the server's Codex/Claude CLIs and auth homes into
+# the WebUI container so `/api/agents` can detect and launch them.
+services:
+  openbioscience:
+    user: ${OPENBIOSCIENCE_UID:-0}:${OPENBIOSCIENCE_GID:-0}
+    environment:
+      PATH: /opt/openbioscience/agent-node/bin:/opt/openbioscience/env/environments/official/sc-py-singlecell/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/bun-node-fallback-bin
+      HOME: /home/openbioscience-agent
+      CODEX_HOME: /home/openbioscience-agent/.codex
+      XDG_CACHE_HOME: /home/openbioscience-agent/.cache
+      XDG_CONFIG_HOME: /home/openbioscience-agent/.config
+      XDG_STATE_HOME: /home/openbioscience-agent/.local/state
+      FONTCONFIG_FILE: /etc/fonts/fonts.conf
+      FONTCONFIG_PATH: /etc/fonts
+      OPENBIOSCIENCE_WORKSPACE_ROOT: /workspace/openbioscience
+      OPENBIOSCIENCE_BIO_RESOURCE_ROOT: /app/resources/bio
+      OPENBIOSCIENCE_GENE_SET_ROOT: /app/resources/bio/gene_sets
+      OPENBIOSCIENCE_MARKER_ROOT: /app/resources/bio/markers
+      OPENBIOSCIENCE_MSIGDB_ROOT: /app/resources/bio/gene_sets/msigdb
+      OPENBIOSCIENCE_SKILL_ROOTS: /workspace/openbioscience/resources/skills:/app/resources/skills
+      OPENSCIENCE_BIO_TOOLS_ENABLED: 'true'
+      OPENSCIENCE_BIO_TOOLS_PYTHON: /opt/openbioscience/env/environments/official/sc-py-singlecell/bin/python
+      PYTHONDONTWRITEBYTECODE: '1'
+    volumes:
+      - type: bind
+        source: ${OPENBIOSCIENCE_AGENT_NODE_ROOT:?Set OPENBIOSCIENCE_AGENT_NODE_ROOT to a server Node/NVM root containing bin/node, bin/codex, and bin/claude.}
+        target: /opt/openbioscience/agent-node
+        read_only: true
+      - type: bind
+        source: ${OPENBIOSCIENCE_AGENT_HOME:?Set OPENBIOSCIENCE_AGENT_HOME to a writable server-side agent home directory.}
+        target: /home/openbioscience-agent
+      - type: bind
+        source: ${OPENBIOSCIENCE_CODEX_HOME:?Set OPENBIOSCIENCE_CODEX_HOME to the server Codex home directory.}
+        target: /home/openbioscience-agent/.codex
+      - type: bind
+        source: ${OPENBIOSCIENCE_CLAUDE_HOME:?Set OPENBIOSCIENCE_CLAUDE_HOME to the server Claude Code home directory.}
+        target: /home/openbioscience-agent/.claude

@@ -245,7 +245,7 @@ const resolveResearchEvidenceSessionMcpServer = (
 ): ISessionMcpServer | undefined => {
   if (config?.enabled === false) return undefined;
   const paperclipReady = Boolean(config?.paperclipApiKey?.trim());
-  const bioToolsReady = config?.bioToolsEnabled === true;
+  const bioToolsReady = config?.bioToolsEnabled !== false;
 
   const server = availableMcpServers.find((item) => item.name === BUILTIN_RESEARCH_EVIDENCE_NAME);
   if (!server) return undefined;

@@ -98,7 +98,7 @@ Snapshot standards:
 - include folders only when their contents are relevant;
 - never intentionally include `.env`, credentials, SSH keys, tokens, or private
   secrets;
-- expect large files to be recorded as pointers with size/hash rather than
+- expect large files to be recorded as pointers with size, location, and status rather than
   copied into git;
 - after snapshot, use the returned commit in follow-up notes when explaining
   provenance.
@@ -130,6 +130,23 @@ When creating or patching a report page/panel:
   conversions, and warnings belong in evidence metadata/provenance, not in the
   main reading flow.
 
+## Omics Exploration Panel
+
+For `omics_analysis/free_exploration`, the published Science panel should expose:
+
+1. dataset choice and source/localization evidence;
+2. project-local data manifest and canonical output root;
+3. environment bindings by workflow module;
+4. completed, blocked, and not-applicable module statuses from `workflowModules`;
+5. localized marker, atlas, and gene-set resource provenance, including
+   resource id, version/status, source path, and collection/species when relevant;
+6. main biological signals with result-strength labels;
+7. key report, script, table, figure, object, and log artifacts;
+8. provenance warnings that affect file availability, evidence, or interpretation.
+
+Terminal exploration publishing requires a current `analysisReceiptId`; the
+publisher resolves canonical files and module summaries from that receipt.
+
 ## Native Viewer Payload Rules
 
 Native scientific viewers are artifact display metadata. They are not separate
@@ -139,7 +156,7 @@ General rules:
 
 - Put viewer configuration under `payload.viewer`.
 - Use project-relative paths only.
-- Store durable paths, indexes, config files, hashes, commands, logs, and
+- Store durable paths, indexes, config files, commands, logs, and
   evidence ids. Do not store temporary local asset URLs.
 - Before patching `viewer`, call `get` and pass `baseRevision`.
 - If a viewer edit changes scientific content, use `version` rather than
@@ -307,7 +324,7 @@ Every structure artifact should normally have these evidence items:
 
 - source/database evidence: PDB, AlphaFold, UniProt, ChEMBL, PubChem, local
   upload, or generated file source.
-- validation evidence: parser/version, file hash, atom/residue/chain counts,
+- validation evidence: parser/version, parsed file identity, atom/residue/chain counts,
   ligand names, model count, missing residues/altLoc warnings, resolution or
   confidence metrics when known.
 - run evidence when generated: command, script/notebook, log, environment, and

@@ -1,0 +1,7 @@
+style:
+  preset: presentation
+  background: white
+  base_size: 12
+  legend_position: right
+  label_clusters: true
+  export_formats: [png, pdf]
