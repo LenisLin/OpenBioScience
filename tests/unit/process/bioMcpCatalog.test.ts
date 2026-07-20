@@ -5,6 +5,7 @@ import {
   BIO_MCP_PROFILES,
   BIO_PLOT_TEMPLATES,
   BIO_WORKFLOWS,
+  FREE_EXPLORATION_MODULE_PLAN,
   resolveBioProfile,
 } from '@/process/resources/builtinMcp/bio/catalog';
 
@@ -23,8 +24,25 @@ describe('OpenBioScience bio MCP catalog', () => {
     expect(BIO_MCP_PROFILES.runtime.toolName).toBe('bio_runtime');
     expect(BIO_MCP_PROFILES.source.toolName).toBe('bio_source');
     expect(BIO_MCP_PROFILES.source.actions).toContain('index_paper_sources');
+    expect(BIO_MCP_PROFILES.source.actions).toEqual(
+      expect.arrayContaining([
+        'rank_dataset_candidates',
+        'prepare_public_download',
+        'complete_public_download',
+        'complete_localization',
+      ])
+    );
     expect(BIO_MCP_PROFILES.runtime.actions).toContain('record_execution');
     expect(BIO_MCP_PROFILES.knowledge.toolName).toBe('bio_knowledge');
+    expect(BIO_MCP_PROFILES.knowledge.actions).toEqual([
+      'status',
+      'search_marker',
+      'search_atlas',
+      'resolve_gene_set',
+      'list_lr_database',
+      'map_orthologs',
+      'normalize_gene_symbols',
+    ]);
     expect(BIO_MCP_PROFILES.plot.toolName).toBe('bio_plot');
     expect(BIO_MCP_PROFILES.reproduction.toolName).toBe('bio_reproduction');
     expect(BIO_MCP_PROFILES.analysis).toMatchObject({
@@ -32,6 +50,7 @@ describe('OpenBioScience bio MCP catalog', () => {
       toolName: 'bio_analysis',
     });
     expect(BIO_MCP_PROFILES.analysis.actions).toEqual([
+      'schema',
       'status',
       'start_analysis',
       'prepare_intake',
@@ -40,6 +59,8 @@ describe('OpenBioScience bio MCP catalog', () => {
       'complete_qc',
       'prepare_baseline',
       'complete_baseline',
+      'prepare_exploration',
+      'complete_exploration',
       'prepare_episode',
       'complete_episode',
       'request_checkpoint',
@@ -100,10 +121,69 @@ describe('OpenBioScience bio MCP catalog', () => {
 
   it('keeps workflow and plot contracts separate', () => {
     expect(BIO_WORKFLOWS.map((workflow) => workflow.id)).toEqual(
-      expect.arrayContaining(['singlecell_import_summary', 'seurat_qc_preprocess', 'scrna_plot_figure_set'])
+      expect.arrayContaining([
+        'singlecell_import_summary',
+        'singlecell_qc_preprocess',
+        'seurat_qc_preprocess',
+        'public_dataset_discovery',
+        'public_dataset_localization',
+        'scrna_plot_figure_set',
+        'scrna_response_fraction_comparison',
+        'scrna_processed_feature_screening',
+        'scrna_pathway_enrichment',
+        'exploration_report_package',
+      ])
     );
+    expect(FREE_EXPLORATION_MODULE_PLAN.map((module) => module.moduleId)).toEqual([
+      'public_dataset_discovery',
+      'public_dataset_localization',
+      'singlecell_import_summary',
+      'singlecell_qc_preprocess',
+      'dim_cluster_marker',
+      'cell_annotation_review',
+      'scrna_plot_figure_set',
+      'scrna_response_fraction_comparison',
+      'scrna_processed_feature_screening',
+      'scrna_pathway_enrichment',
+      'exploration_report_package',
+    ]);
+    expect(FREE_EXPLORATION_MODULE_PLAN.find((module) => module.moduleId === 'dim_cluster_marker')).toMatchObject({
+      required: true,
+      mcpTools: expect.arrayContaining(['bio_runtime', 'bio_analysis']),
+      environmentRefs: expect.arrayContaining(['sc-py-singlecell']),
+    });
+    expect(FREE_EXPLORATION_MODULE_PLAN.find((module) => module.moduleId === 'cell_annotation_review')).toMatchObject({
+      mcpTools: expect.arrayContaining(['bio_knowledge']),
+    });
+    expect(FREE_EXPLORATION_MODULE_PLAN.find((module) => module.moduleId === 'scrna_pathway_enrichment')).toMatchObject({
+      mcpTools: expect.arrayContaining(['bio_knowledge']),
+    });
     expect(BIO_PLOT_TEMPLATES.map((template) => template.id)).toEqual(
-      expect.arrayContaining(['scrna.embedding.umap.cluster.v1', 'scrna.marker.dotplot.heatmap.v1'])
+      expect.arrayContaining([
+        'scrna.embedding.umap.cluster.v1',
+        'scrna.marker.dotplot.heatmap.v1',
+        'scrna.processed_feature.heatmap.dotplot.v1',
+        'scrna.pathway.enrichment.barplot.v1',
+        'scp_embedding_stat_inset',
+        'scp_group_heatmap',
+        'scpubr_alluvial',
+        'scpubr_volcano',
+      ])
+    );
+    expect(BIO_MCP_PROFILES.plot.actions).toEqual(
+      expect.arrayContaining([
+        'list_plot_recipes',
+        'select_plot_recipe',
+        'validate_plot_spec',
+        'render_embedding',
+        'render_expression_matrix',
+        'render_composition',
+        'render_differential',
+        'render_trajectory',
+        'render_communication',
+        'render_cnv',
+        'export_figure_bundle',
+      ])
     );
   });
 

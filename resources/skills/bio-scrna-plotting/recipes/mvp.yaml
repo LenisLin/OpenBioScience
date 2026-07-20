@@ -1,0 +1,37 @@
+recipes:
+  - id: scpubr_volcano
+    objective: differential
+    backend: ggplot_patchwork
+    required_inputs: [de_table, logfc_column, pvalue_column]
+  - id: scpubr_waffle
+    objective: composition
+    backend: ggplot_patchwork
+    required_inputs: [object_path, category_column]
+  - id: scpubr_alluvial
+    objective: composition
+    backend: ggplot_patchwork
+    required_inputs: [object_path, start_column, end_column]
+  - id: scp_group_heatmap
+    objective: expression
+    backend: complexheatmap_grid
+    required_inputs: [object_path, features, group_by]
+  - id: scrnatoolvis_annotated_dotplot
+    objective: expression
+    backend: ggplot_patchwork
+    required_inputs: [object_path, features, group_by]
+  - id: scp_embedding_stat_inset
+    objective: embedding
+    backend: ggplot_patchwork
+    required_inputs: [object_path, reduction, group_by]
+  - id: scrnatoolvis_corner_axes
+    objective: embedding
+    backend: ggplot_patchwork
+    required_inputs: [object_path, reduction, group_by]
+  - id: scrnatoolvis_average_heatmap
+    objective: expression
+    backend: ggplot_patchwork
+    required_inputs: [object_path, features, group_by]
+  - id: scrnatoolvis_marker_volcano
+    objective: differential
+    backend: ggplot_patchwork
+    required_inputs: [marker_table, cluster_column, logfc_column, pvalue_column]

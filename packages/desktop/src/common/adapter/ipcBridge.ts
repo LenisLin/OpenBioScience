@@ -2083,7 +2083,12 @@ export const mcpService = {
     IMcpServer,
     {
       id: string;
-      data: Partial<Pick<IMcpServer, 'name' | 'description' | 'transport' | 'original_json' | 'builtin'>>;
+      data: Partial<
+        Pick<
+          IMcpServer,
+          'name' | 'description' | 'transport' | 'original_json' | 'builtin' | 'tools' | 'last_test_status'
+        >
+      >;
     }
   >(
     (p) => `/api/mcp/servers/${p.id}`,

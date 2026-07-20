@@ -9,6 +9,7 @@ import {
   resolveGuidCapabilityMode,
 } from '@/renderer/pages/guid/utils/modeCapabilities';
 import {
+  BUILTIN_BIO_ANALYSIS_NAME,
   BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
   BUILTIN_BIO_KNOWLEDGE_NAME,
   BUILTIN_BIO_PLOT_NAME,
@@ -44,6 +45,7 @@ describe('guid capability mode MCP requirements', () => {
       BUILTIN_BIO_KNOWLEDGE_NAME,
       BUILTIN_BIO_PLOT_NAME,
       BUILTIN_BIO_REPRODUCTION_NAME,
+      BUILTIN_BIO_ANALYSIS_NAME,
       BUILTIN_BIO_STATISTICS_NAME,
       BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
     ]);
@@ -54,6 +56,7 @@ describe('guid capability mode MCP requirements', () => {
         BUILTIN_BIO_KNOWLEDGE_NAME,
         BUILTIN_BIO_PLOT_NAME,
         BUILTIN_BIO_REPRODUCTION_NAME,
+        BUILTIN_BIO_ANALYSIS_NAME,
         BUILTIN_BIO_STATISTICS_NAME,
         BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
       ])
@@ -72,6 +75,11 @@ describe('guid capability mode MCP requirements', () => {
       BUILTIN_BIO_SOURCE_NAME,
       BUILTIN_BIO_REPRODUCTION_NAME,
       BUILTIN_BIO_STATISTICS_NAME,
+    ]);
+    expect(resolveSkillRequiredMcpNames(['bio-omics-analysis'])).toEqual([
+      BUILTIN_BIO_RUNTIME_NAME,
+      BUILTIN_BIO_SOURCE_NAME,
+      BUILTIN_BIO_ANALYSIS_NAME,
     ]);
     expect(resolveSkillRequiredMcpNames(['bio-scrna-differential-expression'])).toEqual([
       BUILTIN_BIO_RUNTIME_NAME,
@@ -112,6 +120,14 @@ describe('guid capability mode MCP requirements', () => {
       [BUILTIN_BIO_PLOT_NAME]: ['bio-scrna-reproduction'],
       [BUILTIN_BIO_REPRODUCTION_NAME]: ['bio-scrna-reproduction'],
       [BUILTIN_BIO_STATISTICS_NAME]: ['bio-scrna-reproduction'],
+    });
+  });
+
+  it('records local analysis as the source of the Bio analysis MCP dependency', () => {
+    expect(resolveSkillRequiredMcpSources(['bio-omics-analysis'])).toEqual({
+      [BUILTIN_BIO_RUNTIME_NAME]: ['bio-omics-analysis'],
+      [BUILTIN_BIO_SOURCE_NAME]: ['bio-omics-analysis'],
+      [BUILTIN_BIO_ANALYSIS_NAME]: ['bio-omics-analysis'],
     });
   });
 

@@ -7,11 +7,17 @@ import {
   SCIENCE_ARTIFACT_SKILL_NAME,
   SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME,
   SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME,
+  SCIENCE_BIO_METHOD_PARAMETER_RECONSTRUCTION_SKILL_NAME,
+  SCIENCE_BIO_OMICS_ANALYSIS_SKILL_NAME,
+  SCIENCE_BIO_SCRNA_DIFFERENTIAL_EXPRESSION_SKILL_NAME,
   SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME,
+  SCIENCE_BIO_SINGLECELL_BASELINE_SKILL_NAME,
   SCIENCE_BIOMODELS_SKILL_NAME,
   SCIENCE_COMPUTE_SKILL_NAME,
   SCIENCE_CORE_SKILL_NAME,
   SCIENCE_DATABASES_SKILL_NAME,
+  SCIENCE_KDENSE_PATHWAY_ENRICHMENT_SKILL_NAME,
+  SCIENCE_KDENSE_SCANPY_SKILL_NAME,
   SCIENCE_ONBOARDING_SKILL_NAME,
   SCIENCE_SINGLECELL_SKILL_NAME,
   SCIENCE_VENDOR_CATALOG_SKILL_NAME,
@@ -84,6 +90,9 @@ describe('OpenScience materialized Science skill pack', () => {
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME);
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME);
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME);
+    expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_BIO_SCRNA_DIFFERENTIAL_EXPRESSION_SKILL_NAME);
+    expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_KDENSE_PATHWAY_ENRICHMENT_SKILL_NAME);
+    expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_KDENSE_SCANPY_SKILL_NAME);
     expect(DEFAULT_SCIENCE_SKILL_IDS).toContain(SCIENCE_COMPUTE_SKILL_NAME);
     expect(DEFAULT_SCIENCE_SKILL_IDS).not.toContain('openscience-empirical');
     expect(DEFAULT_SCIENCE_SKILL_IDS).not.toContain('ds-review');
@@ -126,6 +135,10 @@ describe('OpenScience materialized Science skill pack', () => {
     expect(fs.readFileSync(path.join(repoRoot, 'resources/skills/writing/SKILL.md'), 'utf8')).toContain('Merge Map');
     expect(fs.readFileSync(path.join(repoRoot, 'resources/skills/databases/SKILL.md'), 'utf8')).toContain(
       'research_evidence'
+    );
+    expect(fs.readFileSync(path.join(repoRoot, 'resources/skills/databases/SKILL.md'), 'utf8')).toContain('TISCH2');
+    expect(fs.readFileSync(path.join(repoRoot, 'resources/skills/singlecell/SKILL.md'), 'utf8')).toContain(
+      'workflowModules'
     );
     expect(fs.readFileSync(path.join(repoRoot, 'resources/skills/onboarding/SKILL.md'), 'utf8')).toContain(
       'First-time'

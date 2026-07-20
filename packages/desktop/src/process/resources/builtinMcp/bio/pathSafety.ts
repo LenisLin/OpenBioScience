@@ -14,6 +14,7 @@ const uniqueStrings = (values: Array<string | undefined>): string[] =>
 const configuredPathRoots = (): string[] =>
   uniqueStrings([
     process.env.OPENBIOSCIENCE_WORKSPACE_ROOT,
+    process.env.OPENBIOSCIENCE_ENV_ROOT,
     process.env.OPENBIOSCIENCE_RUNTIME_ROOT,
     process.env.OPENSCIENCE_RUNTIME_ROOT,
     process.env.DEEPORGANISER_WORK_DIR,

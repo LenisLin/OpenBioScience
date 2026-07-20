@@ -16,6 +16,7 @@ import type {
 } from '@/common/chat/science';
 import { resolveSafeProjectWritePath } from '../pathSafety';
 import { readReceipt } from '../receipts';
+import { FREE_EXPLORATION_MODULE_PLAN } from '../catalog';
 import {
   ANALYSIS_OUTPUT_MANIFEST_SCHEMA,
   assertAnalysisId,
@@ -49,7 +50,7 @@ const asString = (value: unknown): string => (typeof value === 'string' ? value.
 const uniqueStrings = (values: unknown[]): string[] =>
   [...new Set(values.map(asString).filter(Boolean))].toSorted((left, right) => left.localeCompare(right));
 
-const stageSchema = z.enum(['intake', 'qc', 'baseline', 'episode', 'closing']);
+const stageSchema = z.enum(['intake', 'qc', 'baseline', 'exploration', 'episode', 'closing']);
 const analysisIdSchema = z
   .string()
   .min(1)
@@ -124,6 +125,18 @@ const completeBaselinePayloadSchema = z
   })
   .strict();
 
+const completeExplorationPayloadSchema = z
+  .object({
+    analysisId: analysisIdSchema,
+    stagePlanReceiptId: z.string().min(1),
+    scriptPreflightReceiptId: z.string().min(1),
+    canonicalFilePaths: canonicalPathsSchema,
+    datasetUnitId: analysisIdSchema.optional(),
+    summary: z.record(z.unknown()).default({}),
+    externalBlockers: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 const prepareEpisodePayloadSchema = z
   .object({
     analysisId: analysisIdSchema,
@@ -167,7 +180,7 @@ const checkpointPayloadSchema = z
 const preflightPayloadSchema = z
   .object({
     analysisId: analysisIdSchema,
-    stage: z.enum(['intake', 'qc', 'baseline', 'episode']),
+    stage: z.enum(['intake', 'qc', 'baseline', 'exploration', 'episode']),
     episodeId: analysisIdSchema.optional(),
     contractReceiptId: z.string().min(1),
     scriptPaths: z.array(z.string().min(1)).min(1),
@@ -229,16 +242,38 @@ const stageSkillIds = (stage: OmicsAnalysisStage): string[] => {
   if (stage === 'intake') return [...common, 'bio-data-resolution', 'bio-singlecell-import'];
   if (stage === 'qc') return [...common, 'bio-singlecell-baseline', 'bio-qc-preprocess'];
   if (stage === 'baseline') return [...common, 'bio-singlecell-baseline', 'bio-cell-annotation'];
+  if (stage === 'exploration') {
+    return [
+      ...common,
+      'bio-singlecell-baseline',
+      'bio-analysis-script-authoring',
+      'bio-scrna-differential-expression',
+      'bio-data-resolution',
+      'bio-cell-annotation',
+      'kdense-pathway-enrichment',
+      'kdense-scanpy',
+    ];
+  }
   if (stage === 'episode') return [...common, 'bio-result-interpretation'];
   return common;
 };
 
 const bindSkills = (projectRoot: string, stage: OmicsAnalysisStage) =>
   stageSkillIds(stage).map((skillId) => {
-    const skillPath = [projectRoot, process.cwd(), process.env.OPENBIOSCIENCE_RUNTIME_ROOT]
+    const skillRootCandidates = [
+      ...(process.env.OPENBIOSCIENCE_SKILL_ROOTS || '').split(path.delimiter),
+      projectRoot,
+      process.cwd(),
+      process.env.OPENBIOSCIENCE_ENV_ROOT,
+      process.env.OPENBIOSCIENCE_RUNTIME_ROOT,
+      process.env.OPENSCIENCE_RUNTIME_ROOT,
+    ]
       .filter((root): root is string => Boolean(root))
-      .map((root) => path.join(root, 'resources', 'skills', skillId, 'SKILL.md'))
-      .find((candidate) => fs.existsSync(candidate));
+      .flatMap((root) => [
+        path.join(root, skillId, 'SKILL.md'),
+        path.join(root, 'resources', 'skills', skillId, 'SKILL.md'),
+      ]);
+    const skillPath = [...new Set(skillRootCandidates)].find((candidate) => fs.existsSync(candidate));
     if (!skillPath) throw new Error(`Required workflow Skill is unavailable: ${skillId}`);
     return { skillId, contentHash: sha256(fs.readFileSync(skillPath)) };
   });
@@ -347,7 +382,7 @@ const writeStageContract = (
   const target = resolveSafeProjectWritePath(projectRoot, relativePath);
   fs.mkdirSync(path.dirname(target), { recursive: true });
   const temporary = `${target}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`;
-  fs.writeFileSync(temporary, stableJson(content), { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+  fs.writeFileSync(temporary, stableJson(content), { encoding: 'utf8', mode: 0o644, flag: 'wx' });
   fs.renameSync(temporary, target);
   return fingerprintFile(projectRoot, relativePath);
 };
@@ -357,6 +392,7 @@ const assertPredecessorAccepted = (state: OmicsAnalysisState, stage: OmicsAnalys
     intake: undefined,
     qc: 'intake',
     baseline: 'qc',
+    exploration: undefined,
     episode: 'baseline',
     closing: 'baseline',
   };
@@ -377,6 +413,29 @@ const verifyReceiptId = (projectRoot: string, receiptId: string, analysisId: str
   return receipt;
 };
 
+const verifyScriptPreflightReceipt = (
+  projectRoot: string,
+  receiptId: string,
+  state: OmicsAnalysisState,
+  stage: OmicsAnalysisStage,
+  stagePlanReceiptId: string
+): string => {
+  const receipt = verifyReceiptId(projectRoot, receiptId, state.analysisId);
+  if (
+    receipt.action !== 'preflight_scripts' ||
+    receipt.status !== 'ready' ||
+    receipt.stage !== stage ||
+    receipt.stageStatus !== 'running'
+  ) {
+    throw new Error(`Receipt ${receiptId} is not a ready script preflight receipt for ${stage}.`);
+  }
+  const dependencies = Array.isArray(receipt.directDependencyReceiptIds) ? receipt.directDependencyReceiptIds : [];
+  if (!dependencies.includes(stagePlanReceiptId)) {
+    throw new Error(`Script preflight receipt ${receiptId} does not validate the current stage plan receipt.`);
+  }
+  return receiptId;
+};
+
 const canonicalOutputFiles = (
   projectRoot: string,
   analysisId: string,
@@ -385,6 +444,113 @@ const canonicalOutputFiles = (
   episodeId?: string
 ): AnalysisFileReference[] =>
   paths.map((candidate) => requireStageFile(projectRoot, analysisId, stage, candidate, episodeId));
+
+const collectOutputManifestPaths = (value: unknown): string[] => {
+  if (typeof value === 'string') return [value.trim()].filter(Boolean);
+  if (Array.isArray(value)) return value.flatMap(collectOutputManifestPaths);
+  const record = asRecord(value);
+  if (!record) return [];
+  return Object.values(record).flatMap(collectOutputManifestPaths);
+};
+
+const outputManifestPathIssue = (candidate: string, outputRoot: string): string | undefined => {
+  const normalized = candidate.replaceAll('\\', '/').trim();
+  if (!normalized) return undefined;
+  if (path.posix.isAbsolute(normalized) || /^[A-Za-z]:\//u.test(normalized)) {
+    return `Output manifest path must be project-relative and UI-openable: ${candidate}`;
+  }
+  if (normalized.includes('://') || normalized === '..' || normalized.startsWith('../')) {
+    return `Output manifest path is not a local project-relative path: ${candidate}`;
+  }
+  const collapsed = path.posix.normalize(normalized);
+  if (collapsed === '..' || collapsed.startsWith('../')) {
+    return `Output manifest path escapes the project root: ${candidate}`;
+  }
+  if (collapsed.startsWith(`${outputRoot}/`)) return undefined;
+  const stageLocalPrefixes = ['scripts/', 'configs/', 'results/', 'reports/', 'logs/'];
+  if (stageLocalPrefixes.some((prefix) => collapsed.startsWith(prefix))) return undefined;
+  return `Output manifest path must stay under ${outputRoot} or be relative to that stage root: ${candidate}`;
+};
+
+const validateOutputManifestPaths = (
+  manifestContent: JsonRecord,
+  analysisId: string,
+  stage: OmicsAnalysisStage,
+  episodeId?: string
+): string[] => {
+  const outputRoot = stageOutputRelativePath(analysisId, stage, episodeId);
+  return collectOutputManifestPaths(manifestContent.outputs)
+    .map((candidate) => outputManifestPathIssue(candidate, outputRoot))
+    .filter((issue): issue is string => Boolean(issue));
+};
+
+const requireStringField = (record: JsonRecord, field: string, expected?: string): string[] => {
+  const value = asString(record[field]);
+  if (!value) return [`output manifest is missing ${field}.`];
+  if (expected && value !== expected) return [`output manifest ${field} must be ${expected}.`];
+  return [];
+};
+
+const manifestOutputsByRole = (manifestContent: JsonRecord): Record<string, string[]> => {
+  const outputs = asRecord(manifestContent.outputs);
+  if (!outputs) return {};
+  return Object.fromEntries(
+    Object.entries(outputs).map(([role, value]) => [
+      role,
+      collectOutputManifestPaths(value).map((item) => item.replaceAll('\\', '/')),
+    ])
+  );
+};
+
+const hasOutputEnding = (outputs: Record<string, string[]>, role: string, suffix: string): boolean =>
+  (outputs[role] || []).some((candidate) => candidate.endsWith(suffix));
+
+const validateAnalysisOutputManifest = (
+  manifestContent: JsonRecord,
+  analysisId: string,
+  stage: OmicsAnalysisStage,
+  episodeId?: string
+): string[] => {
+  const issues = validateOutputManifestPaths(manifestContent, analysisId, stage, episodeId);
+  if (stage !== 'exploration') return issues;
+
+  issues.push(...requireStringField(manifestContent, 'workflowKind', ANALYSIS_WORKFLOW_KIND));
+  issues.push(...requireStringField(manifestContent, 'analysisId', analysisId));
+  issues.push(...requireStringField(manifestContent, 'stageOrEpisodeId', episodeId || stage));
+  issues.push(...requireStringField(manifestContent, 'environmentRef'));
+  if (!Array.isArray(manifestContent.inputs) || manifestContent.inputs.length === 0) {
+    issues.push('output manifest must declare non-empty inputs.');
+  }
+  const outputs = manifestOutputsByRole(manifestContent);
+  if (!Object.keys(outputs).length) issues.push('output manifest must declare outputs by role.');
+  for (const role of ['objects', 'tables', 'figures', 'reports', 'logs', 'scripts']) {
+    if (!outputs[role]?.length) issues.push(`output manifest must declare ${role} outputs.`);
+  }
+  if (!hasOutputEnding(outputs, 'logs', 'session_info.json') && !hasOutputEnding(outputs, 'logs', 'session_info.txt')) {
+    issues.push('exploration output manifest must include logs/session_info.json or logs/session_info.txt.');
+  }
+  if (!hasOutputEnding(outputs, 'logs', 'warnings.tsv')) {
+    issues.push('exploration output manifest must include logs/warnings.tsv.');
+  }
+  if (!hasOutputEnding(outputs, 'scripts', 'script_manifest.json')) {
+    issues.push('exploration output manifest must include scripts/script_manifest.json.');
+  }
+  return issues;
+};
+
+const explorationWorkflowModules = (
+  projectRoot: string,
+  canonicalFiles: AnalysisFileReference[]
+): unknown[] => {
+  const manifest = canonicalFiles.find((file) => file.path.endsWith('scripts/script_manifest.json'));
+  if (!manifest) return [];
+  try {
+    const parsed = JSON.parse(fs.readFileSync(path.join(projectRoot, manifest.path), 'utf8')) as JsonRecord;
+    return Array.isArray(parsed.workflowModules) ? parsed.workflowModules : [];
+  } catch {
+    return [];
+  }
+};
 
 const assertSingleDatasetUnit = (state: OmicsAnalysisState, datasetUnitId: string): void => {
   const intake = state.stages.intake;
@@ -470,6 +636,7 @@ const completeStage = (params: {
   dependencyReceiptIds?: string[];
   externalBlockers?: BioBlocker[];
   episodeId?: string;
+  reviewRequired?: boolean;
 }) => {
   const current = stageState(params.state, params.stage, params.episodeId);
   if (current.status !== 'running' || current.receiptId !== params.stagePlanReceiptId) {
@@ -484,32 +651,48 @@ const completeStage = (params: {
     const manifest = params.canonicalFiles.find((file) => file.path.endsWith('results/output_manifest.json'));
     if (!manifest) throw new Error(`${params.stage} is missing its output manifest.`);
     const manifestPath = path.join(params.projectRoot, manifest.path);
-    const manifestContent = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as { schema?: unknown };
+    const manifestContent = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as JsonRecord & { schema?: unknown };
     if (manifestContent.schema !== ANALYSIS_OUTPUT_MANIFEST_SCHEMA) {
       throw new Error(`${params.stage} output manifest must use ${ANALYSIS_OUTPUT_MANIFEST_SCHEMA}.`);
     }
+    const manifestPathIssues = validateAnalysisOutputManifest(
+      manifestContent,
+      params.state.analysisId,
+      params.stage,
+      params.episodeId
+    );
+    if (manifestPathIssues.length) {
+      throw new Error(
+        `${params.stage} output manifest declares non-canonical outputs: ${manifestPathIssues.join('; ')}`
+      );
+    }
   }
+  const reviewRequired = params.reviewRequired ?? true;
+  const nextStageStatus: OmicsAnalysisStageStatus = reviewRequired ? 'awaiting_user' : 'accepted';
+  const nextProjectStatus: OmicsAnalysisProjectStatus = reviewRequired ? 'awaiting_user' : 'accepted';
   const receipt = makeReceipt({
     projectRoot: params.projectRoot,
     analysisId: params.state.analysisId,
     modality: params.state.modality,
     action: `complete_${params.stage}`,
-    status: 'awaiting_user',
+    status: reviewRequired ? 'awaiting_user' : 'ready',
     stage: params.stage,
-    stageStatus: 'awaiting_user',
-    projectStatus: 'awaiting_user',
+    stageStatus: nextStageStatus,
+    projectStatus: nextProjectStatus,
     dependencyReceiptIds: uniqueStrings([params.stagePlanReceiptId, ...(params.dependencyReceiptIds || [])]),
     canonicalFiles: params.canonicalFiles,
     skillUses: bindSkills(params.projectRoot, params.stage),
-    nextActions: [
-      nextAction(
-        params.state.analysisId,
-        params.stage,
-        'request_checkpoint',
-        'Review the published tables and figures before allowing the next stage.',
-        params.episodeId
-      ),
-    ],
+    nextActions: reviewRequired
+      ? [
+          nextAction(
+            params.state.analysisId,
+            params.stage,
+            'request_checkpoint',
+            'Review the published tables and figures before allowing the next stage.',
+            params.episodeId
+          ),
+        ]
+      : [],
     externalBlockers: params.externalBlockers,
     summary: params.summary,
     episodeId: params.episodeId,
@@ -517,10 +700,10 @@ const completeStage = (params: {
   setStageState(
     params.state,
     params.stage,
-    { status: 'awaiting_user', receiptId: receipt.receiptId },
+    { status: nextStageStatus, receiptId: receipt.receiptId },
     params.episodeId
   );
-  params.state.projectStatus = 'awaiting_user';
+  params.state.projectStatus = nextProjectStatus;
   writeAnalysisState(params.projectRoot, params.state);
   return receipt;
 };
@@ -586,6 +769,62 @@ export const handleAnalysisAction = async (
   action: string,
   payload: JsonRecord = {}
 ): Promise<JsonRecord> => {
+  if (action === 'schema') {
+    return {
+      schema: 'openbioscience.bio_mcp.result.v2',
+      action,
+      status: 'ready',
+      actions: {
+        start_analysis: {
+          required: ['analysisId', 'inputRoot'],
+          optional: ['modality'],
+          notes: ['inputRoot must be project-relative and already exist.'],
+        },
+        prepare_exploration: {
+          required: ['analysisId'],
+          optional: [],
+          outputRoot: 'omics_analysis/<analysisId>/exploration',
+          minimumAnalysisPlan: FREE_EXPLORATION_MODULE_PLAN,
+        },
+        complete_exploration: {
+          required: ['analysisId', 'stagePlanReceiptId', 'scriptPreflightReceiptId', 'canonicalFilePaths'],
+          optional: ['datasetUnitId', 'summary', 'externalBlockers'],
+          outputRoot: 'omics_analysis/<analysisId>/exploration',
+          requiredOutputs: [
+            'scripts/',
+            'results/tables/input_inventory',
+            'results/tables/qc_metrics',
+            'results/tables/cluster_assignments',
+            'results/tables/embedding_coordinates',
+            'results/tables/cluster_markers',
+            'results/tables/major_annotation',
+            'results/tables/fraction_by_sample',
+            'results/tables/fraction_group_comparison',
+            'results/tables/processed_expression_feature_screening',
+            'results/tables/pathway_enrichment',
+            'results/tables/blocked_or_limited_contrasts',
+            'results/figures/embedding',
+            'results/figures/markers',
+            'results/figures/composition',
+            'results/figures/differential_features',
+            'results/figures/pathway_enrichment',
+            'results/output_manifest.json',
+            'reports/analysis_report',
+            'logs/',
+          ],
+          notes: [
+            'Use complete_exploration for private automated exploratory analyses that should not be forced through the baseline/episode checkpoint lifecycle.',
+            'For scRNA-seq free exploration, a valid completion is a discovery package, not an intake audit: it must include clustering/embedding, major annotation, marker figures, group-aware composition, exploratory feature ranking, enrichment, report, manifest, script, and logs unless a listed blocker makes a module impossible.',
+            'Raw integer counts are required for edgeR/DESeq2/negative-binomial pseudobulk DE, but their absence does not block Scanpy/Seurat-style processed-expression exploratory feature screening; label those outputs as exploratory and non-confirmatory.',
+            'canonicalFilePaths must be project-relative paths under omics_analysis/<analysisId>/exploration.',
+            'The UI-openable omics_analysis/<analysisId>/exploration tree is the primary deliverable; /output, output/, project_outputs/, and other external mirrors are not valid canonical outputs.',
+            'results/output_manifest.json outputs must be under the same canonical stage tree or stage-root-relative paths such as results/, reports/, logs/, scripts/, or configs/.',
+          ],
+        },
+      },
+    };
+  }
+
   if (action === 'status') {
     const analysisId = asString(payload.analysisId);
     if (!analysisId) {
@@ -649,19 +888,33 @@ export const handleAnalysisAction = async (
     };
   }
 
-  if (action === 'prepare_intake' || action === 'prepare_qc' || action === 'prepare_baseline') {
+  if (
+    action === 'prepare_intake' ||
+    action === 'prepare_qc' ||
+    action === 'prepare_baseline' ||
+    action === 'prepare_exploration'
+  ) {
     const input = stagePayloadSchema.parse({ ...payload, stage: action.replace('prepare_', '') });
     const state = readAnalysisState(projectRoot, input.analysisId);
     const stage = input.stage;
-    if (stage !== 'intake' && state.modality !== 'scrna_seq') {
+    if (stage !== 'intake' && stage !== 'exploration' && state.modality !== 'scrna_seq') {
       throw new Error(`No ${stage} adapter is implemented for modality ${state.modality}; only intake is available.`);
     }
     const dependency = assertPredecessorAccepted(state, stage);
+    const stageSummary =
+      stage === 'exploration'
+        ? {
+            inputRoot: state.inputRoot,
+            workflowKind: 'omics_analysis/free_exploration',
+            minimumAnalysisPlan: FREE_EXPLORATION_MODULE_PLAN,
+            resultStrengthLabels: ['descriptive', 'exploratory_processed_expression', 'replicate_aware_inference'],
+          }
+        : { inputRoot: state.inputRoot };
     const planned = stagePlan(
       projectRoot,
       state,
       stage,
-      { inputRoot: state.inputRoot },
+      stageSummary,
       dependency ? [dependency] : []
     );
     return {
@@ -734,6 +987,38 @@ export const handleAnalysisAction = async (
       dependencyReceiptIds: [state.stages.qc.receiptId || ''],
     });
     return { schema: 'openbioscience.bio_mcp.result.v2', action, status: 'awaiting_user', receipt };
+  }
+
+  if (action === 'complete_exploration') {
+    const input = completeExplorationPayloadSchema.parse(payload);
+    const state = readAnalysisState(projectRoot, input.analysisId);
+    const canonicalFiles = canonicalOutputFiles(projectRoot, input.analysisId, 'exploration', input.canonicalFilePaths);
+    const receipt = completeStage({
+      projectRoot,
+      state,
+      stage: 'exploration',
+      stagePlanReceiptId: input.stagePlanReceiptId,
+      canonicalFiles,
+      summary: {
+        ...input.summary,
+        ...(input.datasetUnitId ? { datasetUnitId: input.datasetUnitId } : {}),
+        exploratory: true,
+        confirmatoryInference: false,
+        workflowModules: explorationWorkflowModules(projectRoot, canonicalFiles),
+      },
+      dependencyReceiptIds: [
+        verifyScriptPreflightReceipt(
+          projectRoot,
+          input.scriptPreflightReceiptId,
+          state,
+          'exploration',
+          input.stagePlanReceiptId
+        ),
+      ],
+      externalBlockers: toBlockers(input.externalBlockers),
+      reviewRequired: false,
+    });
+    return { schema: 'openbioscience.bio_mcp.result.v2', action, status: 'ready', receipt };
   }
 
   if (action === 'prepare_episode') {

@@ -45,3 +45,5 @@ For an installed environment, the root layout is:
 
 The location is selected by `OPENBIOSCIENCE_ENV_ROOT`; its value is never
 stored in the release manifest or committed Compose configuration.
+Runtime consumers also accept `OPENBIOSCIENCE_RUNTIME_ROOT` for compatibility;
+both variables refer to the same installed root, not to one environment prefix.

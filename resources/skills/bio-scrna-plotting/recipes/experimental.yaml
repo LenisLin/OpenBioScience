@@ -1,0 +1,11 @@
+recipes:
+  - id: scpubr_ligand_receptor
+    objective: communication
+    backend: circlize_device
+    required_inputs: [lr_table, sender_column, receiver_column]
+    boundary: accepts precomputed LIANA-like results only
+  - id: scpubr_cnv_heatmap
+    objective: cnv
+    backend: complexheatmap_grid
+    required_inputs: [object_path, infercnv_output, chromosome_position_table]
+    boundary: accepts precomputed inferCNV output only

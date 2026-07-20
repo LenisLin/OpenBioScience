@@ -29,7 +29,18 @@ const DEFAULT_BIO_TOOLS_DOMAINS = [
   'structures-interactions',
   'omics-archives',
   'genes-ontologies',
+  'cancer-singlecell',
 ] as const;
+
+const resolveBioToolsEnabled = (
+  config?: ConfigKeyMap['tools.researchEvidence'],
+  existingEnv?: Record<string, string>
+): boolean => {
+  if (typeof config?.bioToolsEnabled === 'boolean') return config.bioToolsEnabled;
+  const envValue = existingEnv?.[RESEARCH_EVIDENCE_ENV_KEYS.bioToolsEnabled]?.trim().toLowerCase();
+  if (envValue === 'false' || envValue === '0' || envValue === 'no') return false;
+  return true;
+};
 
 export type ResearchEvidenceMcpEnvResolveResult =
   | {
@@ -77,16 +88,15 @@ export function resolveResearchEvidenceMcpEnv(
       ]);
   const timeoutMs = shared.timeoutMs;
   const paperclipReady = Boolean(apiKey);
-  const bioToolsEnabled = config?.bioToolsEnabled === true;
+  const bioToolsEnabled = resolveBioToolsEnabled(config, existingEnv);
   const bioToolsDefaultDomains = config?.bioToolsDefaultDomains?.length
     ? config.bioToolsDefaultDomains
     : (existingEnv?.[RESEARCH_EVIDENCE_ENV_KEYS.bioToolsDefaultDomains]?.split(',').filter(Boolean) ?? [
         ...DEFAULT_BIO_TOOLS_DOMAINS,
       ]);
-  const enabledProviders = [
-    paperclipReady ? 'paperclip' : undefined,
-    bioToolsEnabled ? 'bio_tools' : undefined,
-  ].filter(Boolean) as string[];
+  const enabledProviders = [paperclipReady ? 'paperclip' : undefined, bioToolsEnabled ? 'bio_tools' : undefined].filter(
+    Boolean
+  ) as string[];
 
   const env: Record<string, string> = {
     [RESEARCH_EVIDENCE_ENV_KEYS.paperclipEnabled]: paperclipReady ? 'true' : 'false',
@@ -103,9 +113,15 @@ export function resolveResearchEvidenceMcpEnv(
   }
   if (config?.bioToolsPythonPath?.trim()) {
     env[RESEARCH_EVIDENCE_ENV_KEYS.bioToolsPythonPath] = config.bioToolsPythonPath.trim();
+  } else if (existingEnv?.[RESEARCH_EVIDENCE_ENV_KEYS.bioToolsPythonPath]?.trim()) {
+    env[RESEARCH_EVIDENCE_ENV_KEYS.bioToolsPythonPath] =
+      existingEnv[RESEARCH_EVIDENCE_ENV_KEYS.bioToolsPythonPath].trim();
   }
   if (config?.bioToolsServerRoot?.trim()) {
     env[RESEARCH_EVIDENCE_ENV_KEYS.bioToolsServerRoot] = config.bioToolsServerRoot.trim();
+  } else if (existingEnv?.[RESEARCH_EVIDENCE_ENV_KEYS.bioToolsServerRoot]?.trim()) {
+    env[RESEARCH_EVIDENCE_ENV_KEYS.bioToolsServerRoot] =
+      existingEnv[RESEARCH_EVIDENCE_ENV_KEYS.bioToolsServerRoot].trim();
   }
 
   if (enabledProviders.length) {

@@ -272,7 +272,7 @@ export function buildBackendPath(env: NodeJS.ProcessEnv = process.env): string {
     process.platform === 'win32'
   ).join(delimiter);
   if (process.platform === 'win32') return basePath;
-  const runtimeRoot = env.OPENBIOSCIENCE_RUNTIME_ROOT || env.OPENSCIENCE_RUNTIME_ROOT;
+  const runtimeRoot = env.OPENBIOSCIENCE_RUNTIME_ROOT || env.OPENBIOSCIENCE_ENV_ROOT || env.OPENSCIENCE_RUNTIME_ROOT;
   const officialBin = runtimeRoot
     ? path.join(runtimeRoot, 'environments', 'official', 'sc-py-singlecell', 'bin')
     : undefined;

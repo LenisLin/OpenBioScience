@@ -23,10 +23,14 @@ import type { BioControlReceipt } from '@/common/chat/science';
 
 const ENV_KEYS = [
   'OPENBIOSCIENCE_WORKSPACE_ROOT',
+  'OPENBIOSCIENCE_ENV_ROOT',
   'OPENBIOSCIENCE_RUNTIME_ROOT',
   'OPENSCIENCE_RUNTIME_ROOT',
   'DEEPORGANISER_WORK_DIR',
   'OPENBIOSCIENCE_BIO_MCP_PROFILE',
+  'OPENBIOSCIENCE_GENE_SET_ROOT',
+  'OPENBIOSCIENCE_MSIGDB_ROOT',
+  'OPENBIOSCIENCE_MARKER_ROOT',
 ] as const;
 
 const previousEnv: Partial<Record<(typeof ENV_KEYS)[number], string | undefined>> = {};
@@ -94,8 +98,14 @@ const parseToolJson = (result: ToolTextResult) => {
       warnings: string[];
     }>;
     environmentRef?: string;
+    runtimeRoot?: string;
     path?: string;
     pathStatus?: string;
+    provider?: string;
+    hits?: Array<Record<string, unknown>>;
+    geneSets?: Array<Record<string, unknown>>;
+    resourceFiles?: string[];
+    resources?: Record<string, unknown>;
     environments?: Array<{
       environmentRef?: string;
       id?: string;
@@ -107,6 +117,17 @@ const parseToolJson = (result: ToolTextResult) => {
     agentExecutesBuild?: boolean;
     indexPath?: string;
     warnings?: string[];
+    selectedCandidate?: Record<string, unknown>;
+    recipes?: Array<Record<string, unknown>>;
+    selectedRecipe?: Record<string, unknown>;
+    alternatives?: Array<Record<string, unknown>>;
+    recipe?: Record<string, unknown>;
+    renderPlan?: Record<string, unknown>;
+    missingFields?: string[];
+    objectives?: Array<Record<string, unknown>>;
+    backends?: Array<Record<string, unknown>>;
+    rankedCandidates?: Array<Record<string, unknown>>;
+    canonicalFiles?: Array<{ path: string; contentHash: string }>;
     planningOnly?: boolean;
     sourceAudit?: {
       schema: string;
@@ -211,6 +232,15 @@ const withCapturedReproductionTool = async (callback: (capturedTool: CapturedToo
 
 const withCapturedStatisticsTool = async (callback: (capturedTool: CapturedTool) => Promise<void> | void) =>
   withCapturedBioTool('statistics', 'openscience-bio-statistics', 'bio_statistics', callback);
+
+const withCapturedSourceTool = async (callback: (capturedTool: CapturedTool) => Promise<void> | void) =>
+  withCapturedBioTool('source', 'openscience-bio-source', 'bio_source', callback);
+
+const withCapturedKnowledgeTool = async (callback: (capturedTool: CapturedTool) => Promise<void> | void) =>
+  withCapturedBioTool('knowledge', 'openscience-bio-knowledge', 'bio_knowledge', callback);
+
+const withCapturedPlotTool = async (callback: (capturedTool: CapturedTool) => Promise<void> | void) =>
+  withCapturedBioTool('plot', 'openscience-bio-plot', 'bio_plot', callback);
 
 const validPlan = `# Reproduction plan
 
@@ -384,6 +414,576 @@ describe('OpenBioScience bio MCP server path checks', () => {
       expect.arrayContaining(['cellranger_version', 'seurat_version', 'min_umi_counts', 'hvg_count'])
     );
     expect(inspection.externalBlockers[0]?.message).toContain('https://github.com/SGI-CRC/scRNA-seq');
+  });
+
+  it('ranks public tumor scRNA-seq dataset candidates into the canonical exploration source tree', async () => {
+    await withCapturedSourceTool(async (capturedTool) => {
+      const result = parseToolJson(
+        await capturedTool.handler({
+          action: 'rank_dataset_candidates',
+          payload: {
+            analysisId: 'gastric-public',
+            query: 'gastric cancer scRNA-seq response',
+            disease: 'gastric cancer',
+            organism: 'human',
+            modality: 'scRNA-seq',
+            candidates: [
+              {
+                id: 'geo-only',
+                sourceName: 'GEO',
+                datasetId: 'GSE000001',
+                accession: 'GSE000001',
+                disease: 'gastric cancer',
+                organism: 'human',
+                tissue: 'tumor',
+                modality: 'scRNA-seq',
+                cellCount: 1000,
+                availability: 'public',
+                licenseOrTerms: 'database terms',
+                downloadRoute: 'GEO',
+                rationale: 'Archive candidate with usable accession but less curated cancer context.',
+              },
+              {
+                id: 'tisch2-curated',
+                sourceName: 'TISCH2',
+                datasetId: 'STAD_GSE000002',
+                accession: 'GSE000002',
+                disease: 'gastric cancer',
+                organism: 'human',
+                tissue: 'tumor',
+                modality: 'scRNA-seq',
+                cellCount: 20000,
+                availability: 'public download',
+                licenseOrTerms: 'database terms',
+                downloadRoute: 'TISCH2 record with GEO accession',
+                rationale: 'Curated cancer single-cell dataset with archive accession for localization.',
+              },
+            ],
+          },
+        })
+      );
+
+      expect(result.status).toBe('ready');
+      expect(result.receipt?.producer).toBe('bio_source');
+      expect(result.selectedCandidate).toMatchObject({ id: 'tisch2-curated' });
+      expect(
+        fs.existsSync(
+          path.join(root, 'omics_analysis/gastric-public/exploration/source/dataset_candidates.json')
+        )
+      ).toBe(true);
+      expect(
+        fs.existsSync(path.join(root, 'omics_analysis/gastric-public/exploration/source/dataset_selection.tsv'))
+      ).toBe(true);
+    });
+  });
+
+  it('requires localized public dataset files to live under data/public source accession paths', async () => {
+    await withCapturedSourceTool(async (capturedTool) => {
+      const allowed = path.join(root, 'data/public/TISCH2/GSE000002/matrix.h5');
+      fs.mkdirSync(path.dirname(allowed), { recursive: true });
+      fs.writeFileSync(allowed, 'h5\n', 'utf8');
+
+      const ready = parseToolJson(
+        await capturedTool.handler({
+          action: 'complete_localization',
+          payload: {
+            analysisId: 'gastric-public',
+            sourceName: 'TISCH2',
+            datasetId: 'STAD_GSE000002',
+            accession: 'GSE000002',
+            downloadRoute: 'TISCH2 record with GEO accession',
+            localizedPaths: ['data/public/TISCH2/GSE000002/matrix.h5'],
+          },
+        })
+      );
+
+      expect(ready.status).toBe('ready');
+      expect(ready.receipt?.producer).toBe('bio_source');
+      expect(fs.existsSync(path.join(root, 'omics_analysis/gastric-public/exploration/source/data_manifest.json'))).toBe(
+        true
+      );
+
+      const blocked = parseToolJson(
+        await capturedTool.handler({
+          action: 'complete_localization',
+          payload: {
+            analysisId: 'gastric-public',
+            sourceName: 'TISCH2',
+            datasetId: 'STAD_GSE000002',
+            accession: 'GSE000002',
+            downloadRoute: 'TISCH2 record with GEO accession',
+            localizedPaths: ['demo/human_BLCA/external_matrix.h5'],
+          },
+        })
+      );
+
+      expect(blocked.status).toBe('blocked');
+      expect(blocked.warnings?.join('\n')).toContain('data/public/TISCH2/GSE000002');
+    });
+  });
+
+  it('plans and records only selected public dataset file downloads', async () => {
+    await withCapturedSourceTool(async (capturedTool) => {
+      const blockedPlan = parseToolJson(
+        await capturedTool.handler({
+          action: 'prepare_public_download',
+          payload: {
+            analysisId: 'gastric-public',
+            sourceName: 'GEO',
+            datasetId: 'GSE000002',
+            accession: 'GSE000002',
+            downloadRoute: 'GEO supplementary files',
+            rawMatrixDownloadApproved: false,
+            files: [
+              {
+                id: 'raw-counts',
+                url: 'https://example.test/raw.tar.gz',
+                kind: 'raw_matrix',
+                expectedBytes: 1000,
+              },
+            ],
+          },
+        })
+      );
+
+      expect(blockedPlan.status).toBe('blocked');
+      expect(blockedPlan.warnings?.join('\n')).toContain('raw_matrix_download_requires_user_confirmation');
+
+      const readyPlan = parseToolJson(
+        await capturedTool.handler({
+          action: 'prepare_public_download',
+          payload: {
+            analysisId: 'gastric-public',
+            sourceName: 'GEO',
+            datasetId: 'GSE000002',
+            accession: 'GSE000002',
+            downloadRoute: 'GEO supplementary files',
+            rawMatrixDownloadApproved: false,
+            files: [
+              {
+                id: 'processed-object',
+                url: 'https://example.test/processed.h5ad',
+                kind: 'processed_object',
+                expectedPath: 'data/public/GEO/GSE000002/processed.h5ad',
+                expectedBytes: 5,
+              },
+            ],
+          },
+        })
+      );
+
+      expect(readyPlan.status).toBe('ready');
+      expect(readyPlan.receipt?.receiptId).toMatch(/^bio_receipt_/u);
+      writeReceipt(root, readyPlan.receipt);
+
+      const localizedFile = path.join(root, 'data/public/GEO/GSE000002/processed.h5ad');
+      fs.mkdirSync(path.dirname(localizedFile), { recursive: true });
+      fs.writeFileSync(localizedFile, 'h5ad\n', 'utf8');
+      const completed = parseToolJson(
+        await capturedTool.handler({
+          action: 'complete_public_download',
+          payload: {
+            analysisId: 'gastric-public',
+            downloadPlanReceiptId: readyPlan.receipt.receiptId,
+            sourceName: 'GEO',
+            datasetId: 'GSE000002',
+            accession: 'GSE000002',
+            downloadRoute: 'GEO supplementary files',
+            command: 'curl -fsSL -o data/public/GEO/GSE000002/processed.h5ad <url>',
+            rawMatrixDownloadApproved: false,
+            downloadedPaths: ['data/public/GEO/GSE000002/processed.h5ad'],
+          },
+        })
+      );
+
+      expect(completed.status).toBe('ready');
+      expect(completed.canonicalFiles?.map((file) => file.path)).toEqual(
+        expect.arrayContaining([
+          'omics_analysis/gastric-public/exploration/source/download_manifest.json',
+          'omics_analysis/gastric-public/exploration/source/download_summary.tsv',
+        ])
+      );
+
+      const escaped = parseToolJson(
+        await capturedTool.handler({
+          action: 'complete_public_download',
+          payload: {
+            analysisId: 'gastric-public',
+            downloadPlanReceiptId: readyPlan.receipt.receiptId,
+            sourceName: 'GEO',
+            datasetId: 'GSE000002',
+            accession: 'GSE000002',
+            downloadRoute: 'GEO supplementary files',
+            command: 'download command',
+            rawMatrixDownloadApproved: false,
+            downloadedPaths: ['data/public/GEO/GSE000002/../GSE000002/processed.h5ad'],
+          },
+        })
+      );
+
+      expect(escaped.status).toBe('ready');
+
+      const outside = parseToolJson(
+        await capturedTool.handler({
+          action: 'complete_public_download',
+          payload: {
+            analysisId: 'gastric-public',
+            downloadPlanReceiptId: readyPlan.receipt.receiptId,
+            sourceName: 'GEO',
+            datasetId: 'GSE000002',
+            accession: 'GSE000002',
+            downloadRoute: 'GEO supplementary files',
+            command: 'download command',
+            rawMatrixDownloadApproved: false,
+            downloadedPaths: ['data/public/GEO/GSE000002/../../GSE000001/processed.h5ad'],
+          },
+        })
+      );
+
+      expect(outside.status).toBe('blocked');
+      expect(outside.warnings?.join('\n')).toContain('data/public/GEO/GSE000002');
+    });
+  });
+
+  it('reads marker evidence from localized marker JSONL resources', async () => {
+    const markerRoot = path.join(root, 'resources/bio/markers');
+    const packageRoot = path.join(markerRoot, 'fixture_package');
+    fs.mkdirSync(packageRoot, { recursive: true });
+    fs.writeFileSync(
+      path.join(packageRoot, 'fixture.v1.jsonl'),
+      `${JSON.stringify({
+        id: 'fixture.t_cell',
+        species: 'Homo sapiens',
+        context: 'human immune tissue',
+        compartment: 'immune',
+        major_type: 'T cell',
+        subtype: '',
+        state: null,
+        annotation_level: 'major',
+        ontology_id: 'CL:0000084',
+        source_paper: ['doi:10.1126/science.abl5197'],
+        markers: {
+          core: ['CD3D', 'TRAC'],
+          supporting: ['CD3E', 'IL7R'],
+          negative: ['MS4A1'],
+          state: ['PDCD1'],
+        },
+        notes: 'test marker resource',
+        aliases: ['T lymphocyte'],
+        source_url: 'https://www.science.org/doi/10.1126/science.abl5197',
+        evidence_type: 'A_exact_supplement_marker',
+        evidence_location: 'Supplementary Table fixture',
+        confidence: 'High',
+        exact_signature_genes: ['CD3D', 'TRAC', 'IL7R'],
+      })}\n${JSON.stringify({
+        id: 'fixture.cross_species_macrophage',
+        species: 'Homo sapiens;Mus musculus',
+        context: 'human mouse immune tissue',
+        compartment: 'immune',
+        major_type: 'macrophage',
+        subtype: '',
+        state: null,
+        annotation_level: 'major',
+        ontology_id: 'CL:0000235',
+        source_paper: ['doi:10.1038/example'],
+        markers: {
+          core: ['LYZ', 'C1QA'],
+          supporting: ['C1QB'],
+          negative: ['CD3D'],
+          state: [],
+        },
+        notes: 'cross-species fixture',
+      })}\n`,
+      'utf8'
+    );
+    fs.writeFileSync(
+      path.join(packageRoot, 'fixture.meta.yaml'),
+      [
+        'schema: openbioscience.marker_resource_meta.v1',
+        'resourceId: fixture_marker_resource.v1',
+        'version: 1',
+        'status: test_fixture',
+        'licenseOrTerms: test-only',
+      ].join('\n'),
+      'utf8'
+    );
+    process.env.OPENBIOSCIENCE_MARKER_ROOT = markerRoot;
+
+    await withCapturedKnowledgeTool(async (capturedTool) => {
+      const result = parseToolJson(
+        await capturedTool.handler({
+          action: 'search_marker',
+          payload: { query: 'T cell CD3D', species: 'Homo sapiens' },
+        })
+      );
+
+      expect(result.status).toBe('ready');
+      expect(result.hits?.[0]).toMatchObject({
+        id: 'fixture.t_cell',
+        major_type: 'T cell',
+        resourceMeta: expect.objectContaining({ resourceId: 'fixture_marker_resource.v1' }),
+        aliases: ['T lymphocyte'],
+        evidenceType: 'A_exact_supplement_marker',
+        evidenceLocation: 'Supplementary Table fixture',
+        confidence: 'High',
+        exactSignatureGenes: ['CD3D', 'TRAC', 'IL7R'],
+      });
+      expect(result.hits?.[0]?.resourcePath).toContain('fixture_package/fixture.v1.jsonl');
+      expect(JSON.stringify(result.warnings || [])).not.toContain('configure concrete marker/atlas providers');
+
+      const mouseResult = parseToolJson(
+        await capturedTool.handler({
+          action: 'search_marker',
+          payload: { query: 'macrophage LYZ', species: 'mouse' },
+        })
+      );
+      expect(mouseResult.status).toBe('ready');
+      expect(mouseResult.hits?.[0]).toMatchObject({
+        id: 'fixture.cross_species_macrophage',
+        species: 'Homo sapiens;Mus musculus',
+      });
+    });
+  });
+
+  it('reports atlas package index status without treating planned packages as evidence', async () => {
+    const markerRoot = path.join(root, 'resources/bio/markers');
+    fs.mkdirSync(markerRoot, { recursive: true });
+    fs.writeFileSync(
+      path.join(markerRoot, 'index.tsv'),
+      [
+        [
+          'package_id',
+          'resource_id',
+          'version',
+          'availability',
+          'resource_type',
+          'species',
+          'scope',
+          'disease',
+          'modality',
+          'record_count',
+          'records_file',
+          'sources_file',
+          'aliases_file',
+          'meta_file',
+          'record_schema',
+          'mcp_actions',
+          'skill_routes',
+          'keywords',
+          'recommended_use',
+          'license_or_terms',
+          'access_date',
+          'notes',
+        ].join('\t'),
+        [
+          'human_major_cell_markers',
+          'human_major_cell_markers.v1',
+          'v1',
+          'available',
+          'marker_dictionary',
+          'Homo sapiens',
+          'Cross-tissue major cell identity markers',
+          'none',
+          'scRNA-seq',
+          '11',
+          'human_major_cell_markers/human_major_cell_markers.v1.jsonl',
+          'human_major_cell_markers/human_major_cell_markers.sources.tsv',
+          'human_major_cell_markers/human_major_cell_markers.aliases.tsv',
+          'human_major_cell_markers/human_major_cell_markers.meta.yaml',
+          'marker_resource.schema.json',
+          'bio_knowledge.search_marker;bio_knowledge.search_atlas',
+          'bio-cell-annotation',
+          'human;major-cell-type;lineage',
+          'Major lineage annotation review',
+          'test-only',
+          '2026-07-19',
+          'fixture',
+        ].join('\t'),
+        [
+          'cellxgene_census_public_atlas',
+          'cellxgene_census_public_atlas.v1',
+          'v1',
+          'planned',
+          'metadata_atlas',
+          'Homo sapiens',
+          'CELLxGENE Census public atlas discovery',
+          'any',
+          'scRNA-seq',
+          '0',
+          'cellxgene_census_public_atlas.v1.jsonl',
+          '',
+          '',
+          '',
+          'marker_resource.schema.json',
+          'bio_knowledge.search_atlas',
+          'bio-cell-annotation',
+          'cellxgene;public-atlas',
+          'Reference atlas discovery',
+          'provider terms',
+          '',
+          'planned row only',
+        ].join('\t'),
+        '',
+      ].join('\n'),
+      'utf8'
+    );
+    process.env.OPENBIOSCIENCE_MARKER_ROOT = markerRoot;
+
+    await withCapturedKnowledgeTool(async (capturedTool) => {
+      const result = parseToolJson(
+        await capturedTool.handler({
+          action: 'search_atlas',
+          payload: { query: 'human atlas', species: 'human' },
+        })
+      );
+
+      expect(result.status).toBe('conditional');
+      expect(result.atlasProviderStatus).toBe('package_index_only');
+      expect(result.availableMarkerPackages?.map((item) => item.packageId)).toContain('human_major_cell_markers');
+      expect(result.plannedAtlasPackages?.map((item) => item.packageId)).toContain('cellxgene_census_public_atlas');
+      expect(result.plannedAtlasPackages?.[0]).toMatchObject({ availability: 'planned', recordCount: 0 });
+      expect(result.availableMarkerPackages?.[0]).toMatchObject({
+        recordsFile: 'human_major_cell_markers/human_major_cell_markers.v1.jsonl',
+        sourcesFile: 'human_major_cell_markers/human_major_cell_markers.sources.tsv',
+        aliasesFile: 'human_major_cell_markers/human_major_cell_markers.aliases.tsv',
+        metaFile: 'human_major_cell_markers/human_major_cell_markers.meta.yaml',
+      });
+    });
+  });
+
+  it('prefers localized MSigDB GMT resources over compact fallback gene sets', async () => {
+    const geneSetRoot = path.join(root, 'resources/bio/gene_sets');
+    const msigdbRoot = path.join(geneSetRoot, 'msigdb');
+    fs.mkdirSync(path.join(msigdbRoot, 'human'), { recursive: true });
+    fs.writeFileSync(
+      path.join(msigdbRoot, 'human/h.all.v2026.1.Hs.symbols.gmt'),
+      'HALLMARK_INTERFERON_GAMMA_RESPONSE\thttps://www.gsea-msigdb.org/gsea/msigdb\tSTAT1\tIRF1\tCXCL10\n',
+      'utf8'
+    );
+    fs.writeFileSync(
+      path.join(geneSetRoot, 'fallback_human.gmt'),
+      'HALLMARK_INTERFERON_GAMMA_RESPONSE\tfallback\tFALLBACK1\tFALLBACK2\n',
+      'utf8'
+    );
+    process.env.OPENBIOSCIENCE_GENE_SET_ROOT = geneSetRoot;
+    process.env.OPENBIOSCIENCE_MSIGDB_ROOT = msigdbRoot;
+
+    await withCapturedKnowledgeTool(async (capturedTool) => {
+      const result = parseToolJson(
+        await capturedTool.handler({
+          action: 'resolve_gene_set',
+          payload: { query: 'interferon gamma', species: 'human' },
+        })
+      );
+
+      expect(result.status).toBe('ready');
+      expect(result.provider).toBe('msigdb');
+      expect(result.geneSets?.[0]).toMatchObject({
+        name: 'HALLMARK_INTERFERON_GAMMA_RESPONSE',
+        provider: 'msigdb',
+        resourcePath: expect.stringContaining('msigdb/human/h.all.v2026.1.Hs.symbols.gmt'),
+        genes: ['STAT1', 'IRF1', 'CXCL10'],
+      });
+      expect(result.geneSets?.[0]?.collection).toBe('h.all.v2026.1.Hs.symbols.gmt');
+    });
+  });
+
+  it('does not report local knowledge readiness when localized resources are absent', async () => {
+    process.env.OPENBIOSCIENCE_MARKER_ROOT = path.join(root, 'empty-markers');
+    process.env.OPENBIOSCIENCE_GENE_SET_ROOT = path.join(root, 'empty-gene-sets');
+    process.env.OPENBIOSCIENCE_MSIGDB_ROOT = path.join(root, 'empty-gene-sets/msigdb');
+
+    await withCapturedKnowledgeTool(async (capturedTool) => {
+      const result = parseToolJson(
+        await capturedTool.handler({
+          action: 'search_marker',
+          payload: { query: 'T cell' },
+        })
+      );
+
+      expect(result.status).toBe('blocked');
+      expect(result.hits).toEqual([]);
+      expect(result.warnings?.join('\n')).toContain('No local marker or atlas record matched');
+    });
+  });
+
+  it('routes scRNA-seq plotting by visualization objective recipes instead of package tools', async () => {
+    await withCapturedPlotTool(async (capturedTool) => {
+      const listed = parseToolJson(
+        await capturedTool.handler({
+          action: 'list_plot_recipes',
+          payload: { objective: 'composition', status: 'mvp' },
+        })
+      );
+
+      expect(listed.status).toBe('supported');
+      expect(listed.recipes?.map((recipe) => recipe.id)).toEqual(
+        expect.arrayContaining(['scpubr_waffle', 'scpubr_alluvial'])
+      );
+
+      const selected = parseToolJson(
+        await capturedTool.handler({
+          action: 'select_plot_recipe',
+          payload: {
+            objective: 'composition',
+            intent: 'compare treatment annotation flow',
+            availableInputs: ['object_path', 'start_column', 'end_column'],
+          },
+        })
+      );
+
+      expect(selected.status).toBe('ready');
+      expect(selected.selectedRecipe).toMatchObject({
+        objective: 'composition',
+        backend: 'ggplot_patchwork',
+      });
+    });
+  });
+
+  it('validates plot specs and returns backend-aware render plans', async () => {
+    await withCapturedPlotTool(async (capturedTool) => {
+      const invalid = parseToolJson(
+        await capturedTool.handler({
+          action: 'validate_plot_spec',
+          payload: {
+            recipe: 'scp_group_heatmap',
+            input: { object_path: 'omics_analysis/a/exploration/results/objects/exploration.rds' },
+            mapping: { group_by: 'CellType' },
+          },
+        })
+      );
+
+      expect(invalid.status).toBe('conditional');
+      expect(invalid.missingFields).toContain('features');
+
+      const plan = parseToolJson(
+        await capturedTool.handler({
+          action: 'render_expression_matrix',
+          payload: {
+            recipe: 'scp_group_heatmap',
+            input: {
+              object_path: 'omics_analysis/a/exploration/results/objects/exploration.rds',
+              features: ['CD3D', 'MS4A1'],
+            },
+            mapping: { group_by: 'CellType' },
+            export: { formats: ['png', 'pdf'], width: 7, height: 6, dpi: 300 },
+          },
+        })
+      );
+
+      expect(plan.status).toBe('ready');
+      expect(plan.renderPlan).toMatchObject({
+        recipeId: 'scp_group_heatmap',
+        plotBackend: 'complexheatmap_grid',
+        environmentRef: 'sc-r-plot',
+        executeNow: false,
+        adapter: {
+          packageName: 'SCP',
+          sourceFunction: 'SCP::GroupHeatmap',
+          deviceStrategy: 'grid_device_draw',
+        },
+      });
+    });
   });
 
   it('reads public GitHub method files at a fixed commit without cloning', async () => {
@@ -1133,7 +1733,11 @@ describe('OpenBioScience bio MCP server path checks', () => {
     const envPath = path.join(root, 'environments', 'official', 'sc-py-singlecell');
     const binPath = path.join(envPath, 'bin');
     fs.mkdirSync(binPath, { recursive: true });
-    fs.writeFileSync(path.join(binPath, 'python'), '#!/bin/sh\necho 3.12.0\necho scanpy,anndata\n', 'utf8');
+    fs.writeFileSync(
+      path.join(binPath, 'python'),
+      '#!/bin/sh\necho "$MPLCONFIGDIR"\necho "$NUMBA_CACHE_DIR"\n',
+      'utf8'
+    );
     fs.chmodSync(path.join(binPath, 'python'), 0o755);
     process.env.OPENBIOSCIENCE_RUNTIME_ROOT = root;
 
@@ -1156,6 +1760,39 @@ describe('OpenBioScience bio MCP server path checks', () => {
           checks: [{ id: 'python-imports', status: 'passed', exitCode: 0 }],
         },
       });
+    });
+  });
+
+  it('resolves official environments from OPENBIOSCIENCE_ENV_ROOT when runtime root is unset', async () => {
+    const envPath = path.join(root, 'environments', 'official', 'sc-py-singlecell');
+    const binPath = path.join(envPath, 'bin');
+    fs.mkdirSync(binPath, { recursive: true });
+    fs.writeFileSync(
+      path.join(binPath, 'python'),
+      '#!/bin/sh\necho "$MPLCONFIGDIR"\necho "$NUMBA_CACHE_DIR"\n',
+      'utf8'
+    );
+    fs.chmodSync(path.join(binPath, 'python'), 0o755);
+    process.env.OPENBIOSCIENCE_ENV_ROOT = root;
+
+    await withCapturedBioTool('runtime', 'openscience-bio-runtime', 'bio_runtime', async (capturedTool) => {
+      const result = parseToolJson(
+        await capturedTool.handler({
+          action: 'probe_environment',
+          payload: { environmentRef: 'sc-py-singlecell' },
+        })
+      );
+
+      expect(result).toMatchObject({
+        environmentRef: 'sc-py-singlecell',
+        path: envPath,
+        pathStatus: 'available',
+        probe: {
+          status: 'passed',
+          checks: [{ id: 'python-imports', status: 'passed', exitCode: 0 }],
+        },
+      });
+      expect(result.probe?.checks?.[0]?.stdout).toContain('openbioscience-cache');
     });
   });
 
@@ -1965,6 +2602,35 @@ describe('OpenBioScience bio MCP server path checks', () => {
       expect(result.nextActions).toEqual(
         expect.arrayContaining([expect.objectContaining({ action: 'validate_expression_contract' })])
       );
+    });
+  });
+
+  it('blocks count-based statistics when declared counts are not raw integers', async () => {
+    await withCapturedStatisticsTool(async (capturedTool) => {
+      const result = parseToolJson(
+        await capturedTool.handler({
+          action: 'validate_expression_contract',
+          payload: {
+            counts: { location: 'X', semantics: 'raw_integer_counts', integerValues: false },
+            logNormalized: { location: 'X', transformation: 'unknown_processed_expression' },
+            analysisMatrix: { location: 'X', semantics: 'log_normalized' },
+          },
+        })
+      );
+
+      expect(result.status).toBe('needs_completion');
+      expect(result.nextActions).toEqual([
+        expect.objectContaining({
+          id: 'block-raw-count-statistics-until-counts-verified',
+          reason: expect.stringContaining('Do not relabel processed or unknown expression as raw counts'),
+          payload: expect.objectContaining({
+            whenUnavailable: expect.objectContaining({
+              status: 'blocked_invalid_expression_semantics',
+            }),
+          }),
+          stopWhenUnchanged: true,
+        }),
+      ]);
     });
   });
 

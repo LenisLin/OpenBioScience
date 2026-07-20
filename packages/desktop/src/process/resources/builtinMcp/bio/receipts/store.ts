@@ -58,7 +58,7 @@ const ensureInsideRoot = (projectRoot: string, candidate: string): string => {
 const atomicWrite = (target: string, content: string): void => {
   fs.mkdirSync(path.dirname(target), { recursive: true });
   const temporary = `${target}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`;
-  fs.writeFileSync(temporary, content, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+  fs.writeFileSync(temporary, content, { encoding: 'utf8', mode: 0o644, flag: 'wx' });
   fs.renameSync(temporary, target);
 };
 

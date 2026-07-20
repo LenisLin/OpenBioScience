@@ -37,10 +37,10 @@ const DEFAULT_RESEARCH_CONFIG: Required<
   paperclipBaseUrl: 'https://paperclip.gxl.ai',
   defaultSources: ['pmc', 'abstracts', 'biorxiv', 'medrxiv', 'arxiv'],
   timeoutMs: 30000,
-  bioToolsEnabled: false,
-  bioToolsPythonPath: 'python3',
+  bioToolsEnabled: true,
+  bioToolsPythonPath: '/opt/openbioscience/env/environments/official/sc-py-singlecell/bin/python',
   bioToolsServerRoot: '',
-  bioToolsDefaultDomains: ['pubmed', 'chembl', 'omics-archives', 'structures-interactions'],
+  bioToolsDefaultDomains: ['pubmed', 'chembl', 'omics-archives', 'structures-interactions', 'cancer-singlecell'],
 };
 
 const DEFAULT_ARTIFACT_CONFIG: Required<
