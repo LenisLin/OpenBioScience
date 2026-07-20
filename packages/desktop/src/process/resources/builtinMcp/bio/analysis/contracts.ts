@@ -10,8 +10,8 @@ export const ANALYSIS_OUTPUT_MANIFEST_SCHEMA = 'openbioscience.analysis_script.o
 export const ANALYSIS_STATE_ROOT = '.openbioscience/control/analysis/v1';
 export const ANALYSIS_OUTPUT_ROOT = 'omics_analysis';
 
-export const ANALYSIS_STAGES: OmicsAnalysisStage[] = ['intake', 'qc', 'baseline', 'episode', 'closing'];
-export const EXECUTABLE_STAGES = new Set<OmicsAnalysisStage>(['intake', 'qc', 'baseline', 'episode']);
+export const ANALYSIS_STAGES: OmicsAnalysisStage[] = ['intake', 'qc', 'baseline', 'exploration', 'episode', 'closing'];
+export const EXECUTABLE_STAGES = new Set<OmicsAnalysisStage>(['intake', 'qc', 'baseline', 'exploration', 'episode']);
 
 export type AnalysisFileReference = {
   path: string;
@@ -150,6 +150,7 @@ export const ensureAnalysisLayout = (
         stageOutputRelativePath(analysisId, 'intake'),
         stageOutputRelativePath(analysisId, 'qc'),
         stageOutputRelativePath(analysisId, 'baseline'),
+        stageOutputRelativePath(analysisId, 'exploration'),
         path.posix.join(analysisOutputRelativePath(analysisId), 'episodes'),
         stageOutputRelativePath(analysisId, 'closing'),
       ];
@@ -173,7 +174,7 @@ export const sha256 = (value: string | Buffer): string => crypto.createHash('sha
 const atomicWrite = (target: string, content: string): void => {
   fs.mkdirSync(path.dirname(target), { recursive: true });
   const temporary = `${target}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`;
-  fs.writeFileSync(temporary, content, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+  fs.writeFileSync(temporary, content, { encoding: 'utf8', mode: 0o644, flag: 'wx' });
   fs.renameSync(temporary, target);
 };
 
@@ -227,6 +228,7 @@ export const createAnalysisState = (params: {
       intake: { status: 'running', updatedAt: now },
       qc: { status: 'blocked', updatedAt: now },
       baseline: { status: 'blocked', updatedAt: now },
+      exploration: { status: 'blocked', updatedAt: now },
       closing: { status: 'blocked', updatedAt: now },
     },
     episodes: {},
@@ -313,6 +315,34 @@ export const stageArtifactRequirements = (stage: OmicsAnalysisStage): string[] =
       'results/figures/',
       'results/output_manifest.json',
       'logs/',
+    ];
+  }
+  if (stage === 'exploration') {
+    return [
+      'scripts/',
+      'scripts/script_manifest.json',
+      'results/objects/',
+      'results/tables/input_inventory',
+      'results/tables/qc_metrics',
+      'results/tables/cluster_assignments',
+      'results/tables/embedding_coordinates',
+      'results/tables/cluster_markers',
+      'results/tables/major_annotation',
+      'results/tables/fraction_by_sample',
+      'results/tables/fraction_group_comparison',
+      'results/tables/processed_expression_feature_screening',
+      'results/tables/pathway_enrichment',
+      'results/tables/blocked_or_limited_contrasts',
+      'results/figures/embedding',
+      'results/figures/markers',
+      'results/figures/composition',
+      'results/figures/differential_features',
+      'results/figures/pathway_enrichment',
+      'results/output_manifest.json',
+      'reports/analysis_report',
+      'logs/',
+      'logs/session_info',
+      'logs/warnings.tsv',
     ];
   }
   if (stage === 'episode') return ['results/output_manifest.json', 'logs/'];

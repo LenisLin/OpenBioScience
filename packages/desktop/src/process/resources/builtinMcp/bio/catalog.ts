@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { BIO_PLOT_RECIPES } from './plotRecipes';
+
 export type BioMcpProfile =
   | 'runtime'
   | 'source'
@@ -17,9 +19,20 @@ export type BioMcpProfile =
 export type BioMcpCatalogItem = {
   id: string;
   description: string;
+  aliases?: string[];
   environmentRefs?: string[];
   requiredFields?: string[];
   outputs?: string[];
+};
+
+export type FreeExplorationModulePlanItem = {
+  moduleId: string;
+  required: boolean;
+  conditionalTrigger?: string;
+  mcpTools: string[];
+  skillIds: string[];
+  environmentRefs: string[];
+  expectedOutputs: string[];
 };
 
 export type BioMcpProfileDefinition = {
@@ -59,9 +72,13 @@ export const BIO_MCP_PROFILES: Record<BioMcpProfile, BioMcpProfileDefinition> = 
       'OpenBioScience data-source control plane for accession triage, local asset verification, download planning, and data manifests.',
     actions: [
       'status',
+      'rank_dataset_candidates',
       'resolve_accession',
       'verify_local_assets',
       'plan_download',
+      'prepare_public_download',
+      'complete_public_download',
+      'complete_localization',
       'build_data_manifest',
       'inspect_method_sources',
       'index_paper_sources',
@@ -72,7 +89,7 @@ export const BIO_MCP_PROFILES: Record<BioMcpProfile, BioMcpProfileDefinition> = 
     serverName: 'openscience-bio-knowledge',
     toolName: 'bio_knowledge',
     description:
-      'OpenBioScience knowledge control plane for marker, atlas, gene-set, ligand-receptor, and ortholog evidence lookup contracts.',
+      'OpenBioScience knowledge control plane for marker, atlas, gene-set, ligand-receptor, and ortholog evidence lookup contracts. Local scRNA-seq annotation uses the compact scrna_atlas_markers.v1 package when available.',
     actions: [
       'status',
       'search_marker',
@@ -89,7 +106,25 @@ export const BIO_MCP_PROFILES: Record<BioMcpProfile, BioMcpProfileDefinition> = 
     toolName: 'bio_plot',
     description:
       'OpenBioScience scRNA-seq plotting control plane for local plot template catalogs, input validation, and plot artifact manifests.',
-    actions: ['status', 'list_plot_templates', 'validate_plot_inputs', 'render_plan', 'summarize_plot_outputs'],
+    actions: [
+      'status',
+      'list_plot_templates',
+      'list_plot_recipes',
+      'select_plot_recipe',
+      'inspect_singlecell_object',
+      'validate_plot_inputs',
+      'validate_plot_spec',
+      'render_plan',
+      'render_embedding',
+      'render_expression_matrix',
+      'render_composition',
+      'render_differential',
+      'render_trajectory',
+      'render_communication',
+      'render_cnv',
+      'export_figure_bundle',
+      'summarize_plot_outputs',
+    ],
   },
   reproduction: {
     profile: 'reproduction',
@@ -121,6 +156,7 @@ export const BIO_MCP_PROFILES: Record<BioMcpProfile, BioMcpProfileDefinition> = 
     description:
       'OpenBioScience human-in-the-loop private omics analysis control plane for intake, scRNA-seq baseline, reviewed episodes, and closure.',
     actions: [
+      'schema',
       'status',
       'start_analysis',
       'prepare_intake',
@@ -129,6 +165,8 @@ export const BIO_MCP_PROFILES: Record<BioMcpProfile, BioMcpProfileDefinition> = 
       'complete_qc',
       'prepare_baseline',
       'complete_baseline',
+      'prepare_exploration',
+      'complete_exploration',
       'prepare_episode',
       'complete_episode',
       'request_checkpoint',
@@ -218,6 +256,24 @@ export const BIO_ENVIRONMENTS: BioMcpCatalogItem[] = [
 
 export const BIO_WORKFLOWS: BioMcpCatalogItem[] = [
   {
+    id: 'public_dataset_discovery',
+    description:
+      'Rank public scRNA-seq dataset candidates from curated cancer single-cell resources before broad archive lookup.',
+    aliases: ['tisch2_dataset_discovery', 'cancer_singlecell_discovery'],
+    environmentRefs: [],
+    requiredFields: ['query', 'disease', 'organism', 'modality'],
+    outputs: ['source/dataset_candidates.json', 'source/dataset_selection.tsv'],
+  },
+  {
+    id: 'public_dataset_localization',
+    description:
+      'Resolve selected public dataset accessions and write a project-local data manifest without duplicating raw matrices.',
+    aliases: ['public_accession_localization'],
+    environmentRefs: [],
+    requiredFields: ['analysis_id', 'selected_accession', 'download_route'],
+    outputs: ['source/data_manifest.json', 'source/localization_summary.json', 'data/public/<source>/<accession>/'],
+  },
+  {
     id: 'singlecell_import_summary',
     description: 'Inspect matrix/object semantics, metadata keys, raw-count status, and downstream claim boundaries.',
     environmentRefs: ['sc-r-singlecell', 'sc-py-singlecell'],
@@ -225,8 +281,18 @@ export const BIO_WORKFLOWS: BioMcpCatalogItem[] = [
     outputs: ['reports/import_summary.json', 'tables/input_shape.tsv', 'tables/metadata_key_completeness.tsv'],
   },
   {
+    id: 'singlecell_qc_preprocess',
+    description:
+      'Run sample-aware QC, normalization, HVG selection, PCA input preparation, and preprocessing summaries.',
+    aliases: ['seurat_qc_preprocess'],
+    environmentRefs: ['sc-r-singlecell'],
+    requiredFields: ['object_path', 'sample_key'],
+    outputs: ['objects/seurat_qc.rds', 'tables/qc_metrics.tsv', 'figures/qc/*'],
+  },
+  {
     id: 'seurat_qc_preprocess',
-    description: 'Run sample-aware QC, normalization, HVG selection, and preprocessing summaries.',
+    description: 'Compatibility alias for singlecell_qc_preprocess.',
+    aliases: ['singlecell_qc_preprocess'],
     environmentRefs: ['sc-r-singlecell'],
     requiredFields: ['object_path', 'sample_key'],
     outputs: ['objects/seurat_qc.rds', 'tables/qc_metrics.tsv', 'figures/qc/*'],
@@ -251,6 +317,158 @@ export const BIO_WORKFLOWS: BioMcpCatalogItem[] = [
     environmentRefs: ['sc-r-plot'],
     requiredFields: ['object_path', 'plot_plan'],
     outputs: ['reports/plot_manifest.json', 'figures/*.pdf', 'figures/*.png'],
+  },
+  {
+    id: 'scrna_response_fraction_comparison',
+    description:
+      'Compare cell fractions by sample or patient across response/condition groups with explicit replicate units and blocked-design rows.',
+    environmentRefs: ['sc-r-clinical', 'sc-py-singlecell'],
+    requiredFields: ['cell_metadata', 'sample_key', 'group_key', 'cell_type_key'],
+    outputs: [
+      'tables/fraction_by_sample.tsv',
+      'tables/fraction_group_comparison.tsv',
+      'tables/blocked_or_limited_contrasts.tsv',
+      'figures/composition/*',
+    ],
+  },
+  {
+    id: 'scrna_processed_feature_screening',
+    description:
+      'Run processed-expression exploratory feature ranking by cell class, response group, and sample/patient context when raw-count DE is unavailable.',
+    environmentRefs: ['sc-py-singlecell', 'sc-r-singlecell'],
+    requiredFields: ['object_path', 'group_key', 'sample_key', 'cell_type_key', 'expression_semantics'],
+    outputs: [
+      'tables/processed_expression_feature_screening.tsv',
+      'tables/blocked_or_limited_contrasts.tsv',
+      'figures/differential_features/*',
+    ],
+  },
+  {
+    id: 'scrna_pathway_enrichment',
+    description:
+      'Run ranked-gene pathway enrichment for exploratory or validated feature tables with documented gene-set source and universe.',
+    environmentRefs: ['sc-py-singlecell', 'sc-r-singlecell'],
+    requiredFields: ['ranked_gene_table', 'gene_sets', 'species', 'gene_universe'],
+    outputs: ['tables/pathway_enrichment.tsv', 'figures/pathway_enrichment/*'],
+  },
+  {
+    id: 'exploration_report_package',
+    description:
+      'Write the free-exploration report, output manifest, session information, warnings table, and reusable run bundle.',
+    environmentRefs: ['sc-py-singlecell'],
+    requiredFields: ['analysis_id', 'workflow_modules', 'canonical_outputs'],
+    outputs: ['reports/analysis_report.md', 'results/output_manifest.json', 'logs/session_info.json', 'logs/warnings.tsv'],
+  },
+];
+
+export const FREE_EXPLORATION_MODULE_PLAN: FreeExplorationModulePlanItem[] = [
+  {
+    moduleId: 'public_dataset_discovery',
+    required: false,
+    conditionalTrigger: 'required when the user asks the agent to find or choose a public dataset',
+    mcpTools: ['research_evidence', 'bio_source'],
+    skillIds: ['openscience-databases', 'bio-omics-analysis'],
+    environmentRefs: [],
+    expectedOutputs: ['source/dataset_candidates.json', 'source/dataset_selection.tsv'],
+  },
+  {
+    moduleId: 'public_dataset_localization',
+    required: false,
+    conditionalTrigger: 'required when a public dataset candidate is selected for download or localization',
+    mcpTools: ['bio_source'],
+    skillIds: ['openscience-databases', 'bio-omics-analysis'],
+    environmentRefs: [],
+    expectedOutputs: ['source/data_manifest.json', 'source/localization_summary.json'],
+  },
+  {
+    moduleId: 'singlecell_import_summary',
+    required: true,
+    mcpTools: ['bio_source', 'bio_analysis', 'bio_runtime'],
+    skillIds: ['bio-omics-analysis', 'bio-singlecell-baseline'],
+    environmentRefs: ['sc-py-singlecell', 'sc-r-singlecell'],
+    expectedOutputs: ['results/tables/input_inventory.tsv'],
+  },
+  {
+    moduleId: 'singlecell_qc_preprocess',
+    required: true,
+    mcpTools: ['bio_analysis', 'bio_runtime'],
+    skillIds: ['bio-singlecell-baseline'],
+    environmentRefs: ['sc-py-singlecell', 'sc-r-singlecell'],
+    expectedOutputs: ['results/tables/qc_metrics.tsv', 'results/objects/'],
+  },
+  {
+    moduleId: 'dim_cluster_marker',
+    required: true,
+    mcpTools: ['bio_analysis', 'bio_runtime'],
+    skillIds: ['bio-singlecell-baseline', 'kdense-scanpy'],
+    environmentRefs: ['sc-py-singlecell', 'sc-r-singlecell'],
+    expectedOutputs: [
+      'results/tables/cluster_assignments.tsv',
+      'results/tables/embedding_coordinates.tsv',
+      'results/tables/cluster_markers.tsv',
+      'results/figures/embedding/',
+      'results/figures/markers/',
+    ],
+  },
+  {
+    moduleId: 'cell_annotation_review',
+    required: true,
+    mcpTools: ['bio_knowledge', 'bio_analysis'],
+    skillIds: ['bio-singlecell-baseline'],
+    environmentRefs: ['sc-py-singlecell', 'sc-r-singlecell'],
+    expectedOutputs: ['results/tables/major_annotation.tsv', 'results/figures/markers/'],
+  },
+  {
+    moduleId: 'scrna_plot_figure_set',
+    required: true,
+    mcpTools: ['bio_plot', 'bio_analysis'],
+    skillIds: ['bio-singlecell-baseline'],
+    environmentRefs: ['sc-r-plot', 'sc-py-singlecell'],
+    expectedOutputs: ['results/figures/embedding/', 'results/figures/markers/', 'results/figures/composition/'],
+  },
+  {
+    moduleId: 'scrna_response_fraction_comparison',
+    required: false,
+    conditionalTrigger: 'required when response, condition, sample, or patient metadata are available',
+    mcpTools: ['bio_analysis', 'bio_statistics'],
+    skillIds: ['bio-omics-analysis'],
+    environmentRefs: ['sc-r-clinical', 'sc-py-singlecell'],
+    expectedOutputs: ['results/tables/fraction_by_sample.tsv', 'results/tables/fraction_group_comparison.tsv'],
+  },
+  {
+    moduleId: 'scrna_processed_feature_screening',
+    required: false,
+    conditionalTrigger: 'required when group metadata exist and raw integer counts are unavailable or confirmatory DE is not claimed',
+    mcpTools: ['bio_analysis', 'bio_statistics'],
+    skillIds: ['bio-scrna-differential-expression'],
+    environmentRefs: ['sc-py-singlecell', 'sc-r-singlecell'],
+    expectedOutputs: [
+      'results/tables/processed_expression_feature_screening.tsv',
+      'results/figures/differential_features/',
+    ],
+  },
+  {
+    moduleId: 'scrna_pathway_enrichment',
+    required: false,
+    conditionalTrigger: 'required when a ranked feature table has enough mapped genes',
+    mcpTools: ['bio_knowledge', 'bio_analysis'],
+    skillIds: ['kdense-pathway-enrichment', 'bio-omics-analysis'],
+    environmentRefs: ['sc-py-singlecell', 'sc-r-singlecell'],
+    expectedOutputs: ['results/tables/pathway_enrichment.tsv', 'results/figures/pathway_enrichment/'],
+  },
+  {
+    moduleId: 'exploration_report_package',
+    required: true,
+    mcpTools: ['bio_analysis', 'science_artifact'],
+    skillIds: ['bio-analysis-script-authoring', 'openscience-science-artifact'],
+    environmentRefs: ['sc-py-singlecell'],
+    expectedOutputs: [
+      'reports/analysis_report.md',
+      'results/output_manifest.json',
+      'logs/session_info.json',
+      'logs/warnings.tsv',
+      'scripts/script_manifest.json',
+    ],
   },
 ];
 
@@ -294,11 +512,32 @@ export const BIO_PLOT_TEMPLATES: BioMcpCatalogItem[] = [
     outputs: ['figures/de/*.pdf'],
   },
   {
+    id: 'scrna.processed_feature.heatmap.dotplot.v1',
+    description:
+      'Exploratory processed-expression feature heatmap, dotplot, and ranked feature summary for log-normalized matrices.',
+    requiredFields: ['feature_screening_table', 'expression_matrix', 'group_key'],
+    outputs: ['figures/differential_features/*.pdf', 'figures/differential_features/*.png'],
+  },
+  {
+    id: 'scrna.pathway.enrichment.barplot.v1',
+    description: 'Pathway enrichment barplot, dotplot, and ranked pathway table for exploratory gene lists.',
+    requiredFields: ['pathway_enrichment_table', 'ranking_metric'],
+    outputs: ['figures/pathway_enrichment/*.pdf', 'figures/pathway_enrichment/*.png'],
+  },
+  {
     id: 'scrna.cci.lr.network.v1',
     description: 'Ligand-receptor dotplot, pathway heatmap, chord/circle/network views, and interaction summaries.',
     requiredFields: ['lr_table', 'source_cell_key', 'target_cell_key'],
     outputs: ['figures/cci/*.pdf'],
   },
+  ...BIO_PLOT_RECIPES.map((recipe) => ({
+    id: recipe.id,
+    description: `${recipe.label}: ${recipe.sourceFunction} via ${recipe.backend}.`,
+    aliases: [recipe.objective, recipe.packageName, recipe.sourceFunction],
+    environmentRefs: [recipe.environmentRef],
+    requiredFields: recipe.requiredInputs,
+    outputs: recipe.outputs,
+  })),
 ];
 
 export function resolveBioProfile(value?: string | null): BioMcpProfile {

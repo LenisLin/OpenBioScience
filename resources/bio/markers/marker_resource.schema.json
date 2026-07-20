@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openscience.local/schemas/openbioscience.marker_resource.record.v1.json",
+  "title": "OpenBioScience Marker JSONL Record",
+  "description": "Schema for one record line in resources/bio/markers/*.jsonl. Each record is marker or atlas evidence for MCP and skill discovery; source and package provenance are carried by the sibling meta, sources, aliases, and index files.",
+  "type": "object",
+  "required": [
+    "id",
+    "species",
+    "context",
+    "compartment",
+    "major_type",
+    "subtype",
+    "state",
+    "annotation_level",
+    "ontology_id",
+    "source_paper",
+    "markers",
+    "notes"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "description": "Stable record identifier inside the package."
+    },
+    "species": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Scientific species name, for example Homo sapiens or Mus musculus."
+    },
+    "context": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Tissue, disease, atlas, or workflow context for this evidence record."
+    },
+    "compartment": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Top-level compartment in the hierarchy compartment -> major_type -> subtype -> state."
+    },
+    "major_type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Major cell type or lineage label."
+    },
+    "subtype": {
+      "type": "string",
+      "description": "Subtype label. Use an empty string when the record is intentionally major-level only."
+    },
+    "state": {
+      "type": ["string", "null"],
+      "description": "Cell state, program, activation, or disease-state evidence. Use null when not applicable."
+    },
+    "annotation_level": {
+      "type": "string",
+      "enum": ["compartment", "major", "subtype", "state", "program", "reference_label"],
+      "description": "Specificity level represented by the record."
+    },
+    "ontology_id": {
+      "type": "string",
+      "description": "Cell Ontology or other stable ontology identifier where available; use an empty string if unresolved."
+    },
+    "source_paper": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "description": "Source references, normally DOI, PMID, database, atlas, or package-local source IDs."
+    },
+    "markers": {
+      "type": "object",
+      "required": ["core", "supporting", "negative", "state"],
+      "additionalProperties": true,
+      "properties": {
+        "core": {
+          "$ref": "#/$defs/geneSymbolArray",
+          "description": "Primary positive marker genes for this identity or evidence record."
+        },
+        "supporting": {
+          "$ref": "#/$defs/geneSymbolArray",
+          "description": "Additional positive marker genes that support the interpretation."
+        },
+        "negative": {
+          "$ref": "#/$defs/geneSymbolArray",
+          "description": "Genes expected to be absent or low in this identity, used for ambiguity checks."
+        },
+        "state": {
+          "$ref": "#/$defs/geneSymbolArray",
+          "description": "State or program genes. These should not replace core identity markers."
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Short curation note, limitation, or ambiguity warning."
+    }
+  },
+  "$defs": {
+    "geneSymbolArray": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

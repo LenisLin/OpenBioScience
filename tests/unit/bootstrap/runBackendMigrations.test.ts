@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { IMAGE_GEN_ENV_KEYS } from '@/common/config/imageGenerationMcpEnv';
 import {
@@ -10,9 +10,11 @@ import {
   BUILTIN_BIO_RUNTIME_LEGACY_NAMES,
   BUILTIN_BIO_SOURCE_NAME,
   BUILTIN_IMAGE_GEN_NAME,
+  BUILTIN_RESEARCH_EVIDENCE_NAME,
   type IMcpServer,
   type IProvider,
 } from '@/common/config/storage';
+import { OPENBIOSCIENCE_BIO_MCP_SCHEMA_VERSION } from '@/process/utils/openBioScienceRuntimeEnv';
 import { resolveImageGenerationMigrationConfig, runBackendMigrations } from '@/process/utils/runBackendMigrations';
 
 const {
@@ -22,6 +24,7 @@ const {
   httpRequestMock,
   listServersMock,
   testMcpConnectionMock,
+  toggleServerMock,
   updateServerMock,
   syncCodexOpenScienceMcpConfigMock,
 } = vi.hoisted(() => ({
@@ -31,6 +34,7 @@ const {
   httpRequestMock: vi.fn(),
   listServersMock: vi.fn(),
   testMcpConnectionMock: vi.fn(),
+  toggleServerMock: vi.fn(),
   updateServerMock: vi.fn(),
   syncCodexOpenScienceMcpConfigMock: vi.fn(),
 }));
@@ -44,6 +48,7 @@ vi.mock('@/common/adapter/ipcBridge', () => ({
     listServers: { invoke: listServersMock },
     batchImportServers: { invoke: batchImportServersMock },
     updateServer: { invoke: updateServerMock },
+    toggleServer: { invoke: toggleServerMock },
     testMcpConnection: { invoke: testMcpConnectionMock },
   },
 }));
@@ -119,6 +124,46 @@ const imageServer = (): IMcpServer => ({
   ),
 });
 
+const researchEvidenceEnv = {
+  PAPERCLIP_ENABLED: 'false',
+  PAPERCLIP_BASE_URL: 'https://paperclip.gxl.ai',
+  PAPERCLIP_DEFAULT_SOURCES: 'pmc,abstracts,biorxiv,medrxiv,arxiv',
+  PAPERCLIP_TIMEOUT_MS: '30000',
+  OPENSCIENCE_RESEARCH_EVIDENCE_PROVIDERS: 'bio_tools',
+  OPENSCIENCE_BIO_TOOLS_ENABLED: 'true',
+  OPENSCIENCE_BIO_TOOLS_DOMAINS:
+    'pubmed,biorxiv,chembl,structures-interactions,omics-archives,genes-ontologies,cancer-singlecell',
+};
+
+const researchEvidenceServer = (enabled: boolean): IMcpServer => ({
+  id: 'research-evidence-server-id',
+  name: BUILTIN_RESEARCH_EVIDENCE_NAME,
+  description: 'Unified research evidence bridge for PaperClip literature/files and Science database tools.',
+  enabled,
+  builtin: true,
+  transport: {
+    type: 'stdio',
+    command: 'node',
+    args: ['/mock/builtin-mcp-research-evidence.js'],
+    env: researchEvidenceEnv,
+  },
+  created_at: 1,
+  updated_at: 1,
+  original_json: JSON.stringify(
+    {
+      mcpServers: {
+        [BUILTIN_RESEARCH_EVIDENCE_NAME]: {
+          command: 'node',
+          args: ['/mock/builtin-mcp-research-evidence.js'],
+          env: researchEvidenceEnv,
+        },
+      },
+    },
+    null,
+    2
+  ),
+});
+
 const configFile = {
   get: configFileGetMock,
   set: configFileSetMock,
@@ -126,9 +171,13 @@ const configFile = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubEnv('OPENBIOSCIENCE_ENV_ROOT', openBioScienceRuntimeRoot);
+  vi.stubEnv('OPENBIOSCIENCE_RUNTIME_ROOT', undefined);
+  vi.stubEnv('OPENSCIENCE_RUNTIME_ROOT', undefined);
   configFileGetMock.mockResolvedValue(undefined);
   configFileSetMock.mockResolvedValue(undefined);
   batchImportServersMock.mockResolvedValue([]);
+  toggleServerMock.mockResolvedValue({});
   updateServerMock.mockImplementation(async ({ id, data }) => ({
     ...imageServer(),
     id,
@@ -152,6 +201,10 @@ beforeEach(() => {
     }
     return undefined;
   });
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe('resolveImageGenerationMigrationConfig', () => {
@@ -189,7 +242,7 @@ describe('runBackendMigrations', () => {
     );
   });
 
-  it('does not sync agents when only the stored image MCP JSON representation differs', async () => {
+  it('refreshes cached tools when only the stored image MCP JSON representation differs', async () => {
     const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
     listServersMock.mockResolvedValue([
       {
@@ -201,7 +254,7 @@ describe('runBackendMigrations', () => {
     await runBackendMigrations(configFile as never);
 
     expect(updateServerMock).toHaveBeenCalledOnce();
-    expect(testMcpConnectionMock).not.toHaveBeenCalled();
+    expect(testMcpConnectionMock).toHaveBeenCalledOnce();
     expect(infoSpy).toHaveBeenCalledWith(
       '[Migration] image MCP bootstrap decision, server id: %s, transport changed: %s, json changed: %s, will update: %s',
       'image-server-id',
@@ -227,6 +280,7 @@ describe('runBackendMigrations', () => {
             env: expect.objectContaining({
               OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime',
               OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+              OPENBIOSCIENCE_BIO_MCP_SCHEMA_VERSION,
             }),
           }),
         }),
@@ -350,6 +404,26 @@ describe('runBackendMigrations', () => {
     );
   });
 
+  it('enables existing research evidence MCP when the bio_tools provider is available', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const disabledResearchEvidence = researchEvidenceServer(false);
+    const enabledResearchEvidence = researchEvidenceServer(true);
+    listServersMock
+      .mockResolvedValueOnce([imageServer(), disabledResearchEvidence])
+      .mockResolvedValue([imageServer(), enabledResearchEvidence]);
+
+    await runBackendMigrations(configFile as never);
+
+    expect(toggleServerMock).toHaveBeenCalledWith({ id: 'research-evidence-server-id' });
+    expect(testMcpConnectionMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'research-evidence-server-id',
+        name: BUILTIN_RESEARCH_EVIDENCE_NAME,
+        runtime_scope_id: 'research-evidence-server-id',
+      })
+    );
+  });
+
   it('updates an existing legacy-name bio MCP server instead of importing a duplicate', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const legacyRuntimeServer: IMcpServer = {
@@ -368,7 +442,15 @@ describe('runBackendMigrations', () => {
       updated_at: 1,
       original_json: '{}',
     };
-    listServersMock.mockResolvedValue([imageServer(), legacyRuntimeServer]);
+    listServersMock.mockResolvedValueOnce([imageServer(), legacyRuntimeServer]).mockResolvedValue([
+      imageServer(),
+      {
+        ...legacyRuntimeServer,
+        name: BUILTIN_BIO_RUNTIME_NAME,
+        enabled: true,
+        builtin: true,
+      },
+    ]);
 
     await runBackendMigrations(configFile as never);
 
@@ -381,15 +463,25 @@ describe('runBackendMigrations', () => {
       data: expect.objectContaining({
         name: BUILTIN_BIO_RUNTIME_NAME,
         builtin: true,
+        tools: [],
+        last_test_status: 'disconnected',
         transport: expect.objectContaining({
           args: ['/mock/builtin-mcp-bio.js'],
           env: expect.objectContaining({
             OPENBIOSCIENCE_BIO_MCP_PROFILE: 'runtime',
             OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+            OPENBIOSCIENCE_BIO_MCP_SCHEMA_VERSION,
           }),
         }),
       }),
     });
+    expect(testMcpConnectionMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'legacy-bio-runtime-id',
+        name: BUILTIN_BIO_RUNTIME_NAME,
+        runtime_scope_id: 'legacy-bio-runtime-id',
+      })
+    );
   });
 
   it('updates an existing legacy-name reproduction MCP server instead of importing a duplicate', async () => {
@@ -423,11 +515,14 @@ describe('runBackendMigrations', () => {
       data: expect.objectContaining({
         name: BUILTIN_BIO_REPRODUCTION_NAME,
         builtin: true,
+        tools: [],
+        last_test_status: 'disconnected',
         transport: expect.objectContaining({
           args: ['/mock/builtin-mcp-bio.js'],
           env: expect.objectContaining({
             OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction',
             OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+            OPENBIOSCIENCE_BIO_MCP_SCHEMA_VERSION,
           }),
         }),
       }),

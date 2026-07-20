@@ -43,9 +43,16 @@ export const SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_PATH = 'resources/skills/bio-
 export const SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME = 'bio-analysis-script-authoring';
 export const SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_PATH =
   'resources/skills/bio-analysis-script-authoring/SKILL.md';
+export const SCIENCE_BIO_SCRNA_DIFFERENTIAL_EXPRESSION_SKILL_NAME = 'bio-scrna-differential-expression';
+export const SCIENCE_BIO_SCRNA_DIFFERENTIAL_EXPRESSION_SKILL_PATH =
+  'resources/skills/bio-scrna-differential-expression/SKILL.md';
 export const SCIENCE_BIO_METHOD_PARAMETER_RECONSTRUCTION_SKILL_NAME = 'bio-method-parameter-reconstruction';
 export const SCIENCE_BIO_METHOD_PARAMETER_RECONSTRUCTION_SKILL_PATH =
   'resources/skills/bio-method-parameter-reconstruction/SKILL.md';
+export const SCIENCE_KDENSE_PATHWAY_ENRICHMENT_SKILL_NAME = 'kdense-pathway-enrichment';
+export const SCIENCE_KDENSE_PATHWAY_ENRICHMENT_SKILL_PATH = 'resources/skills/kdense-pathway-enrichment/SKILL.md';
+export const SCIENCE_KDENSE_SCANPY_SKILL_NAME = 'kdense-scanpy';
+export const SCIENCE_KDENSE_SCANPY_SKILL_PATH = 'resources/skills/kdense-scanpy/SKILL.md';
 export const SCIENCE_COMPUTE_SKILL_NAME = 'openscience-compute';
 export const SCIENCE_COMPUTE_SKILL_PATH = 'resources/skills/compute/SKILL.md';
 export const SCIENCE_VENDOR_CATALOG_SKILL_NAME = 'openscience-science-vendor-catalog';
@@ -71,6 +78,9 @@ export const DEFAULT_SCIENCE_SKILL_IDS = [
   SCIENCE_BIO_SINGLECELL_BASELINE_SKILL_NAME,
   SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME,
   SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME,
+  SCIENCE_BIO_SCRNA_DIFFERENTIAL_EXPRESSION_SKILL_NAME,
+  SCIENCE_KDENSE_PATHWAY_ENRICHMENT_SKILL_NAME,
+  SCIENCE_KDENSE_SCANPY_SKILL_NAME,
   SCIENCE_BIO_METHOD_PARAMETER_RECONSTRUCTION_SKILL_NAME,
   SCIENCE_COMPUTE_SKILL_NAME,
 ] as const;
@@ -110,10 +120,40 @@ export function normalizeScienceDefaultSkillIds(skillIds?: readonly string[]): s
   if (isPreviousReproductionDefault) {
     return [...DEFAULT_SCIENCE_SKILL_IDS];
   }
-  const previousWithoutEnvironmentAndScriptSet = new Set<string>(
+  const previousWithoutExplorationSkillSet = new Set<string>(
+    DEFAULT_SCIENCE_SKILL_IDS.filter(
+      (id) =>
+        id !== SCIENCE_BIO_SCRNA_DIFFERENTIAL_EXPRESSION_SKILL_NAME &&
+        id !== SCIENCE_KDENSE_PATHWAY_ENRICHMENT_SKILL_NAME &&
+        id !== SCIENCE_KDENSE_SCANPY_SKILL_NAME
+    )
+  );
+  const isPreviousWithoutExplorationSkills =
+    skillIds.length === previousWithoutExplorationSkillSet.size &&
+    skillIds.every((id) => previousWithoutExplorationSkillSet.has(id));
+  if (isPreviousWithoutExplorationSkills) {
+    return [...DEFAULT_SCIENCE_SKILL_IDS];
+  }
+  const previousWithoutEnvironmentAndScriptOnlySet = new Set<string>(
     DEFAULT_SCIENCE_SKILL_IDS.filter(
       (id) =>
         id !== SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME && id !== SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME
+    )
+  );
+  const isPreviousWithoutEnvironmentAndScriptOnly =
+    skillIds.length === previousWithoutEnvironmentAndScriptOnlySet.size &&
+    skillIds.every((id) => previousWithoutEnvironmentAndScriptOnlySet.has(id));
+  if (isPreviousWithoutEnvironmentAndScriptOnly) {
+    return [...DEFAULT_SCIENCE_SKILL_IDS];
+  }
+  const previousWithoutEnvironmentAndScriptSet = new Set<string>(
+    DEFAULT_SCIENCE_SKILL_IDS.filter(
+      (id) =>
+        id !== SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME &&
+        id !== SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME &&
+        id !== SCIENCE_BIO_SCRNA_DIFFERENTIAL_EXPRESSION_SKILL_NAME &&
+        id !== SCIENCE_KDENSE_PATHWAY_ENRICHMENT_SKILL_NAME &&
+        id !== SCIENCE_KDENSE_SCANPY_SKILL_NAME
     )
   );
   const isPreviousWithoutEnvironmentAndScript =
@@ -124,12 +164,30 @@ export function normalizeScienceDefaultSkillIds(skillIds?: readonly string[]): s
   }
   const previousCompactDefaultSet = new Set<string>(
     [...previousWithoutEnvironmentAndScriptSet].filter(
-      (id) => id !== SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME
+      (id) =>
+        id !== SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME &&
+        id !== SCIENCE_BIO_SCRNA_DIFFERENTIAL_EXPRESSION_SKILL_NAME &&
+        id !== SCIENCE_KDENSE_PATHWAY_ENRICHMENT_SKILL_NAME &&
+        id !== SCIENCE_KDENSE_SCANPY_SKILL_NAME
     )
   );
   const isPreviousCompactDefault =
     skillIds.length === previousCompactDefaultSet.size && skillIds.every((id) => previousCompactDefaultSet.has(id));
   if (isPreviousCompactDefault) {
+    return [...DEFAULT_SCIENCE_SKILL_IDS];
+  }
+  const previousCompactDefaultWithExplorationSkillsSet = new Set<string>(
+    DEFAULT_SCIENCE_SKILL_IDS.filter(
+      (id) =>
+        id !== SCIENCE_BIO_OMICS_REPRODUCTION_PLANNING_SKILL_NAME &&
+        id !== SCIENCE_BIO_ENVIRONMENT_MANAGER_SKILL_NAME &&
+        id !== SCIENCE_BIO_ANALYSIS_SCRIPT_AUTHORING_SKILL_NAME
+    )
+  );
+  const isPreviousCompactDefaultWithExplorationSkills =
+    skillIds.length === previousCompactDefaultWithExplorationSkillsSet.size &&
+    skillIds.every((id) => previousCompactDefaultWithExplorationSkillsSet.has(id));
+  if (isPreviousCompactDefaultWithExplorationSkills) {
     return [...DEFAULT_SCIENCE_SKILL_IDS];
   }
   return [...skillIds];
@@ -526,9 +584,11 @@ export interface ScienceGraphWarning {
     | 'unsupported_claim'
     | 'broken_reference'
     | 'workflow_action_required'
+    | 'analysis_artifact_snapshot_empty'
     | 'stale_version'
     | 'missing_environment'
-    | 'missing_execution_log';
+    | 'missing_execution_log'
+    | 'unopenable_artifact';
   message: string;
   target?:
     | { kind: 'evidence'; id: string }
@@ -582,7 +642,7 @@ export type BioReceiptProducer = 'bio_source' | 'bio_runtime' | 'bio_reproductio
 
 export type ScienceWorkflowKind = 'omics_reproduction' | 'omics_analysis';
 
-export type OmicsAnalysisStage = 'intake' | 'qc' | 'baseline' | 'episode' | 'closing';
+export type OmicsAnalysisStage = 'intake' | 'qc' | 'baseline' | 'exploration' | 'episode' | 'closing';
 
 export type OmicsAnalysisStageStatus = 'running' | 'awaiting_user' | 'accepted' | 'needs_revision' | 'blocked';
 
@@ -1556,7 +1616,7 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '- Resolve OpenBioScience official environments through `bio_runtime` or `OPENBIOSCIENCE_RUNTIME_ROOT`; shell PATH absence alone is not evidence that an official environment is missing.',
     '- For paper, article, or demo reproduction feasibility tasks, read and follow `bio-omics-reproduction-planning` before auditing. Complete the `bio_reproduction` planning sequence (`build_source_package`, `audit_data_code_availability`, `draft_reproduction_plan`, then `validate_reproduction_plan`) and write the canonical `case_reproduction/planning/reproduction_plan.md` plus `case_reproduction/planning/source_audit.json` before publishing a feasibility conclusion. A chat summary or an ad hoc file under `outputs/` is not a substitute for this package.',
     '- Treat reproduction MCPs as phase gates, not repeated scientific auditors. Pass receipt IDs only; never copy, trim, or construct receipt objects. Reuse cache hits. For `invalid_request`, execute its exact `correctedCall` once; stop on an unchanged fingerprint or `stopWhenUnchanged`. MCP-owned source, method, and execution control files are written atomically by the MCP and must not be rewritten by the Agent.',
-    '- For scRNA-seq biological condition comparisons, load `bio-scrna-differential-expression` and use `bio_statistics`. Count independent biological replicates only after exclusions and pairing: require at least 3 per group for unpaired designs or 3 complete pairs. Block invalid contrasts without replacing them with cell-level inference. Cluster marker ranking is descriptive annotation evidence and must use log-normalized, never scaled, expression.',
+    '- For scRNA-seq biological condition comparisons, load `bio-scrna-differential-expression` and use `bio_statistics`. Count independent biological replicates only after exclusions and pairing: require at least 3 per group for unpaired designs or 3 complete pairs. Block invalid raw-count contrasts without replacing them with confirmatory cell-level inference. Raw-count DE blockage does not block Scanpy/Seurat-style processed-expression exploratory feature screening; label it as non-confirmatory and keep effect sizes, detection fractions, plots, and limitations visible. Cluster marker ranking is descriptive annotation evidence and must use log-normalized, never scaled, expression.',
     '- Before authoring reproduction scripts, call `bio_source(action="inspect_method_sources")`, then call `bio_reproduction(action="extract_method_parameters")` with its `methodSourceReceiptId`. The MCP writes `case_reproduction/planning/method_parameter_contract.json` atomically. Record only parameters supported by paper, supplement, author-code, or figure-legend evidence.',
     '- A missing, malformed, or incomplete method-parameter receipt is a correctable workflow step, not a provenance limitation. Follow the returned `nextActions` until the receipt is ready; do not publish a terminal Science status, downgrade the failure to a warning, or construct a substitute receipt manually. Use only declared Science panel statuses.',
     '- Before authoring omics reproduction execution scripts, call `bio_reproduction(action="prepare_execution_contract")`, follow its `nextActions`, and execute only modules marked required in the current contract.',
@@ -1564,8 +1624,17 @@ export const buildScienceModePrompt = (projectRoot?: string, preferredLocale?: s
     '- If execution files were generated but the execution publication remains `running`, describe them as generated outputs with incomplete control-plane validation; do not say the reproduction execution is completed.',
     '- Pass only the final `completionReceiptId` to `science_artifact(action="publish", payload={"workflowKind":"omics_reproduction", ...})`. The publisher resolves authoritative receipt state from the project store. `planningCompletion` and `executionReadiness` remain separate.',
     '- For user-authorized local/private omics data without a paper target, use `bio_analysis`, never `bio_reproduction`. Start with `start_analysis`, keep dataset units separate, and pass only `analysisReceiptId` to `science_artifact(action="publish", payload={"workflowKind":"omics_analysis", ...})`.',
-    '- The analysis lifecycle is intake -> qc -> baseline -> episode* -> closing. `complete_intake`, `complete_qc`, `complete_baseline`, and `complete_episode` remain `awaiting_user` until `bio_analysis(action="request_checkpoint")` records an accepted checkpoint. Timeouts, cancellations, and deferred checkpoints do not authorize progression.',
-    '- scRNA-seq baseline is limited to QC/preprocessing, batch diagnostics, global clustering, markers, major assisted annotation, and descriptive figures. Do not automatically run subtype, DE, composition testing, trajectory, CCI, CNV, GRN, NMF, or clinical association; create one confirmed episode for each deeper question.',
+    '### Free Exploration Workflow',
+    '- For free or automated omics exploration without a paper target, classify the task as `omics_analysis/free_exploration` and use `bio_analysis`, not `bio_reproduction`.',
+    '- Follow this order: 1. create/update the Science artifact; 2. call `research_evidence` for live dataset/source discovery; 3. for tumor scRNA-seq, search TISCH2 or other curated cancer single-cell resources before broad GEO/ArrayExpress archive search; 4. use `bio_source` for candidate ranking, accession resolution, selected-file download planning with `prepare_public_download`, completed-file registration with `complete_public_download`, localization, and data manifest; 5. call `bio_analysis.start_analysis` and `bio_analysis.prepare_exploration`; 6. bind each `BIO_WORKFLOWS` module to `skillIds`, `mcpTools`, `environmentRef`, implementation files, and expected outputs; 7. call `bio_runtime.probe_environment` for selected environments; 8. call `bio_knowledge` for localized marker, atlas, and gene-set evidence; 9. call `bio_plot` for figure plans; 10. author modular scripts and call `bio_analysis.preflight_scripts`; 11. run real Python/R scripts; 12. call `bio_analysis.complete_exploration` with the ready `scriptPreflightReceiptId`, then publish with only its `analysisReceiptId`.',
+    '- GEO, ArrayExpress, SRA, TISCH2, and similar registries remain online search/localization sources. Do not describe them as fully localized mirrors; localize only selected dataset files, exported candidate/evidence snapshots, and reusable analysis resources such as marker dictionaries or MSigDB GMTs.',
+    '- Write primary deliverables only under the UI-openable canonical tree `omics_analysis/<analysisId>/exploration/`. Public raw/downloaded data are referenced from project-local `data/public/<source>/<accession>/` through `source/data_manifest.json`; raw matrices are not duplicated into artifact snapshots.',
+    '- Exploration scripts are a readable package: one short entrypoint, helper modules under `scripts/modules/`, `scripts/script_manifest.json.workflowModules`, `scripts/script_manifest.json.scientificDecisions`, `logs/session_info.*`, `logs/warnings.tsv`, and no `__pycache__`.',
+    '- For readable scRNA-seq matrices, the standard module sequence is import/intake -> QC -> normalization/HVG -> PCA -> neighbors -> UMAP -> Leiden/resolution sweep -> markers -> major annotation -> marker heatmap/dotplot -> composition -> processed-expression feature screening -> pathway enrichment -> report package. Modules that cannot run must be declared as blocked or not_applicable in `workflowModules` and `blocked_or_limited_contrasts`.',
+    '- Report result strength as `descriptive`, `exploratory_processed_expression`, or `replicate_aware_inference` with replicate unit and method class. Raw-count DE blockage does not block processed-expression feature screening; it only limits confirmatory claims.',
+    '- Optional mirrors may be mentioned only after canonical files are complete and published. In final answers, show the full project-relative path from the opened project root.',
+    '- Free exploration uses the `exploration` stage and the ordered module plan above as its terminal workflow. Checkpointed local/private analysis uses the lifecycle intake -> qc -> baseline -> episode* -> closing, with `complete_intake`, `complete_qc`, `complete_baseline`, and `complete_episode` remaining `awaiting_user` until `bio_analysis(action="request_checkpoint")` records an accepted checkpoint.',
+    '- For checkpointed scRNA-seq baseline packages, keep the baseline to QC/preprocessing, batch diagnostics, global clustering, markers, major assisted annotation, and descriptive figures. Route deeper subtype, DE, composition, trajectory, CCI, CNV, GRN, NMF, or clinical association work to confirmed episodes; free exploration should instead follow its declared exploration modules.',
     '- For scoped scRNA-seq reproduction, also use `bio_source` for local asset/file-semantics checks and `bio_runtime(action="probe_environment")` for each selected official `environmentRef`. Report the resolved environmentRef, probe status, executable/package checks, and versions. Do not report the default shell as the analysis environment, and do not call an environment unavailable when its runtime probe passes.',
     '- For local PDFs, probe `pdftotext` directly and use it when available. If shell PATH lookup fails after an official runtime resolves, also probe `${OPENBIOSCIENCE_RUNTIME_ROOT}/environments/official/sc-py-singlecell/bin/pdftotext` before declaring the tool unavailable. If an optional preliminary utility is missing, continue to the required extraction command or an existing Python PDF fallback. Never infer that PDF extraction is unavailable from one failed chained shell command.',
     '- Reproduction feasibility wording must separate: data-supported scope, environment-probed execution readiness, planning-only modules, and unsupported exact/figure-level claims. Use `P0` or `P1` only when the report defines those levels; never label P1 executable when only its inputs can be prepared.',

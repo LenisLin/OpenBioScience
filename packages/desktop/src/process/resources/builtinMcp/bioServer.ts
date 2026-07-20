@@ -6,6 +6,7 @@
 
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -29,6 +30,16 @@ import {
   type BioMcpCatalogItem,
   type BioMcpProfile,
 } from './bio/catalog';
+import {
+  BIO_PLOT_BACKENDS,
+  BIO_PLOT_OBJECTIVES,
+  findPlotRecipe,
+  listPlotRecipes,
+  renderPlanForSpec,
+  selectPlotRecipe,
+  validatePlotSpec,
+  type BioPlotObjective,
+} from './bio/plotRecipes';
 import {
   hasCredentialLikeUrl,
   publicHttpUrlStatus,
@@ -64,6 +75,13 @@ import {
 import { preflightExecutionScripts } from './bio/reproduction/scriptPreflight';
 import { validateSkillCompliance } from './bio/reproduction/skillContract';
 import { handleAnalysisAction } from './bio/analysis/workflow';
+import { stageOutputRelativePath } from './bio/analysis/contracts';
+import {
+  canonicalSpecies,
+  resolveLocalGeneSets,
+  searchLocalMarkers,
+  summarizeKnowledgeResources,
+} from './bio/knowledgeResources';
 import { persistReceiptsFromResult, readCachedReceipt, readReceipt, receiptInputFingerprint } from './bio/receipts';
 
 type JsonRecord = Record<string, unknown>;
@@ -321,6 +339,100 @@ const recordExecutionByIdPayloadSchema = z
   })
   .strict();
 
+const publicDatasetCandidateSchema = z
+  .object({
+    id: z.string().min(1),
+    sourceName: z.string().min(1),
+    datasetId: z.string().min(1),
+    accession: z.string().min(1).optional(),
+    disease: z.string().min(1),
+    organism: z.string().min(1),
+    tissue: z.string().min(1),
+    modality: z.string().min(1),
+    sampleCount: z.number().int().nonnegative().optional(),
+    cellCount: z.number().int().nonnegative().optional(),
+    availability: z.string().min(1),
+    licenseOrTerms: z.string().min(1),
+    downloadRoute: z.string().min(1),
+    rationale: z.string().min(20),
+    evidenceIds: z.array(z.string().min(1)).optional(),
+    warnings: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+const rankDatasetCandidatesPayloadSchema = z
+  .object({
+    analysisId: z.string().min(1),
+    query: z.string().min(1),
+    disease: z.string().min(1),
+    organism: z.string().min(1),
+    modality: z.string().min(1).default('scRNA-seq'),
+    candidates: z.array(publicDatasetCandidateSchema).min(1),
+    selectedCandidateId: z.string().min(1).optional(),
+  })
+  .strict();
+
+const completeLocalizationPayloadSchema = z
+  .object({
+    analysisId: z.string().min(1),
+    sourceName: z.string().min(1),
+    datasetId: z.string().min(1),
+    accession: z.string().min(1),
+    downloadRoute: z.string().min(1),
+    localizedPaths: z.array(z.string().min(1)).min(1),
+    evidenceIds: z.array(z.string().min(1)).optional(),
+    notes: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+const publicDownloadFileSchema = z
+  .object({
+    id: z.string().min(1),
+    kind: z
+      .enum(['processed_matrix', 'processed_object', 'metadata', 'supplement', 'raw_matrix', 'unknown'])
+      .default('unknown'),
+    url: z.string().min(1).optional(),
+    accession: z.string().min(1).optional(),
+    expectedPath: z.string().min(1).optional(),
+    expectedBytes: z.number().int().nonnegative().optional(),
+    autoExtract: z.boolean().optional(),
+    notes: z.string().optional(),
+  })
+  .strict();
+
+const preparePublicDownloadPayloadSchema = z
+  .object({
+    analysisId: z.string().min(1),
+    sourceName: z.string().min(1),
+    datasetId: z.string().min(1),
+    accession: z.string().min(1),
+    downloadRoute: z.string().min(1),
+    files: z.array(publicDownloadFileSchema).min(1),
+    rawMatrixDownloadApproved: z.boolean().default(false),
+    autoExtract: z.boolean().default(true),
+    maxBytes: z.number().int().positive().optional(),
+    evidenceIds: z.array(z.string().min(1)).optional(),
+    notes: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+const completePublicDownloadPayloadSchema = z
+  .object({
+    analysisId: z.string().min(1),
+    downloadPlanReceiptId: z.string().min(1),
+    sourceName: z.string().min(1),
+    datasetId: z.string().min(1),
+    accession: z.string().min(1),
+    downloadRoute: z.string().min(1),
+    downloadedPaths: z.array(z.string().min(1)).min(1),
+    extractedPaths: z.array(z.string().min(1)).optional(),
+    command: z.string().min(1),
+    rawMatrixDownloadApproved: z.boolean().default(false),
+    evidenceIds: z.array(z.string().min(1)).optional(),
+    notes: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
 const jsonText = (value: unknown) => ({
   content: [{ type: 'text' as const, text: JSON.stringify(value, null, 2) }],
 });
@@ -412,6 +524,138 @@ const writeCanonicalJson = (relativePath: string, value: unknown): string => {
   fs.writeFileSync(temporary, content, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
   fs.renameSync(temporary, target);
   return contentHash(content);
+};
+
+const safePathSegment = (value: string): string => value.trim().replace(/[^A-Za-z0-9._-]+/gu, '_').replace(/^_+|_+$/gu, '') || 'unknown';
+
+const explorationSourceRoot = (analysisId: string): string =>
+  path.posix.join(stageOutputRelativePath(analysisId, 'exploration'), 'source');
+
+const writeCanonicalText = (relativePath: string, content: string): string => {
+  const root = workspaceRoot();
+  const target = resolveSafeProjectWritePath(root, relativePath);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  const temporary = `${target}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`;
+  fs.writeFileSync(temporary, content, { encoding: 'utf8', mode: 0o644, flag: 'wx' });
+  fs.renameSync(temporary, target);
+  return contentHash(content);
+};
+
+const sourceFileRef = (relativePath: string, hash: string) => ({ path: relativePath, contentHash: hash });
+
+const publicDatasetScore = (candidate: z.infer<typeof publicDatasetCandidateSchema>): number => {
+  const sourceScore = /tisch|cancer/i.test(candidate.sourceName) ? 30 : 0;
+  const availabilityScore = /public|download|available|open/i.test(candidate.availability) ? 20 : 0;
+  const modalityScore = /single|scrna|scRNA/i.test(candidate.modality) ? 15 : 0;
+  const countScore = Math.min(20, Math.floor((candidate.cellCount || 0) / 5000));
+  return sourceScore + availabilityScore + modalityScore + countScore;
+};
+
+const datasetSelectionTsv = (
+  candidates: Array<z.infer<typeof publicDatasetCandidateSchema> & { rank: number; score: number; selected: boolean }>
+): string => {
+  const header = [
+    'rank',
+    'selected',
+    'score',
+    'id',
+    'sourceName',
+    'datasetId',
+    'accession',
+    'disease',
+    'organism',
+    'tissue',
+    'modality',
+    'sampleCount',
+    'cellCount',
+    'availability',
+    'licenseOrTerms',
+    'downloadRoute',
+    'rationale',
+  ];
+  const rows = candidates.map((candidate) =>
+    header
+      .map((key) => String((candidate as unknown as Record<string, unknown>)[key] ?? '').replace(/\t|\r?\n/gu, ' '))
+      .join('\t')
+  );
+  return `${header.join('\t')}\n${rows.join('\n')}\n`;
+};
+
+const publicDataPrefix = (sourceName: string, accession: string): string =>
+  path.posix.join('data', 'public', safePathSegment(sourceName), safePathSegment(accession));
+
+const normalizeProjectRelativePath = (candidate: string): string =>
+  path.posix.normalize(candidate.replaceAll('\\', '/').replace(/^\.\/+/u, ''));
+
+const localizePathStatus = (candidate: string, sourceName: string, accession: string) => {
+  const normalized = normalizeProjectRelativePath(candidate);
+  const allowedPrefix = publicDataPrefix(sourceName, accession);
+  const resolved = resolveWorkspacePath(normalized);
+  const allowedAbsolute = path.resolve(workspaceRoot(), allowedPrefix);
+  const relativeToAllowed = path.relative(allowedAbsolute, resolved.path);
+  const underPublicPrefix =
+    !path.posix.isAbsolute(normalized) &&
+    normalized !== '..' &&
+    !normalized.startsWith('../') &&
+    relativeToAllowed !== '..' &&
+    !relativeToAllowed.startsWith(`..${path.sep}`) &&
+    !path.isAbsolute(relativeToAllowed);
+  return {
+    path: normalized,
+    resolvedPath: resolved.path,
+    status: resolved.status,
+    allowedPrefix,
+    underPublicPrefix,
+  };
+};
+
+const downloadFilePolicy = (
+  file: z.infer<typeof publicDownloadFileSchema>,
+  rawMatrixDownloadApproved: boolean,
+  maxBytes: number | undefined
+) => {
+  const needsRawApproval = file.kind === 'raw_matrix' && !rawMatrixDownloadApproved;
+  const exceedsLimit =
+    typeof file.expectedBytes === 'number' && typeof maxBytes === 'number' && file.expectedBytes > maxBytes;
+  return {
+    ...file,
+    status: needsRawApproval || exceedsLimit ? 'blocked' : 'planned',
+    autoExtract: file.autoExtract ?? file.kind !== 'unknown',
+    blockers: [
+      ...(needsRawApproval ? ['raw_matrix_download_requires_user_confirmation'] : []),
+      ...(exceedsLimit ? [`expected_size_exceeds_maxBytes_${maxBytes}`] : []),
+    ],
+  };
+};
+
+const concreteExpectedDownloadPaths = (plannedFiles: JsonRecord[]): string[] =>
+  uniqueStrings(
+    plannedFiles
+      .map((file) => asString(file.expectedPath))
+      .filter((expectedPath) => expectedPath && !/[<>{}*?]/u.test(expectedPath))
+      .map(normalizeProjectRelativePath)
+  );
+
+const downloadPlanTsv = (
+  plannedFiles: ReturnType<typeof downloadFilePolicy>[],
+  destinationRoot: string
+): string => {
+  const header = ['id', 'kind', 'status', 'destinationRoot', 'expectedPath', 'expectedBytes', 'autoExtract', 'blockers'];
+  const rows = plannedFiles.map((file) =>
+    [
+      file.id,
+      file.kind,
+      file.status,
+      destinationRoot,
+      file.expectedPath || '',
+      file.expectedBytes ?? '',
+      String(file.autoExtract),
+      file.blockers.join(';'),
+    ]
+      .map((value) => String(value).replace(/\t|\r?\n/gu, ' '))
+      .join('\t')
+  );
+  return `${header.join('\t')}\n${rows.join('\n')}\n`;
 };
 
 const receiptLookupFailure = (action: string, error: unknown) => ({
@@ -526,10 +770,22 @@ const asPositiveInteger = (value: unknown, fallback: number): number => {
 };
 
 const runtimeRoot = (): string =>
+  process.env.OPENBIOSCIENCE_ENV_ROOT ||
   process.env.OPENBIOSCIENCE_RUNTIME_ROOT ||
   process.env.OPENSCIENCE_RUNTIME_ROOT ||
   process.env.DEEPORGANISER_WORK_DIR ||
   DEFAULT_RUNTIME_ROOT;
+
+const writableCacheEnv = (): Record<string, string> => {
+  const cacheRoot = path.join(process.env.DEEPORGANISER_WORK_DIR || os.tmpdir(), 'openbioscience-cache');
+  const env = {
+    XDG_CACHE_HOME: path.join(cacheRoot, 'xdg'),
+    MPLCONFIGDIR: path.join(cacheRoot, 'matplotlib'),
+    NUMBA_CACHE_DIR: path.join(cacheRoot, 'numba'),
+  };
+  for (const dir of Object.values(env)) fs.mkdirSync(dir, { recursive: true });
+  return env;
+};
 
 const isCredentialKey = (key: string): boolean => {
   const normalized = key.toLowerCase();
@@ -609,6 +865,7 @@ const runEnvironmentProbeCheck = (
     encoding: 'utf8',
     env: {
       ...process.env,
+      ...writableCacheEnv(),
       PATH: [path.join(environmentPathValue, 'bin'), process.env.PATH || ''].filter(Boolean).join(path.delimiter),
     },
     timeout: ENVIRONMENT_PROBE_TIMEOUT_MS,
@@ -1199,6 +1456,20 @@ const handleRuntimeAction = (action: string, payload?: JsonRecord) => {
 };
 
 const validatePlotInputs = (action: string, payload?: JsonRecord) => {
+  const recipeId = asString(payload?.recipe || payload?.recipeId || payload?.recipe_id);
+  if (recipeId) {
+    const validation = validatePlotSpec(payload || {});
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: validation.status,
+      recipeId,
+      recipe: validation.recipe,
+      missingFields: validation.missingFields,
+      warnings: validation.warnings,
+      timestamp: Date.now(),
+    };
+  }
   const templateId = asString(payload?.templateId || payload?.template_id);
   const template = catalogById(BIO_PLOT_TEMPLATES, templateId);
   if (!template) {
@@ -1221,6 +1492,95 @@ const validatePlotInputs = (action: string, payload?: JsonRecord) => {
     template,
     missingFields: missing,
     manifestSchema: 'openbioscience.scrna_plot.manifest.v1',
+    timestamp: Date.now(),
+  };
+};
+
+const plotObjectiveForAction = (action: string): BioPlotObjective | undefined => {
+  if (action === 'render_embedding') return 'embedding';
+  if (action === 'render_expression_matrix') return 'expression';
+  if (action === 'render_composition') return 'composition';
+  if (action === 'render_differential') return 'differential';
+  if (action === 'render_trajectory') return 'trajectory';
+  if (action === 'render_communication') return 'communication';
+  if (action === 'render_cnv') return 'cnv';
+  return undefined;
+};
+
+const plotSpecPayload = (action: string, payload?: JsonRecord): JsonRecord => {
+  const objective = plotObjectiveForAction(action);
+  const base = isRecord(payload?.spec) ? payload.spec : payload || {};
+  return objective && !base.objective ? { ...base, objective } : base;
+};
+
+const inspectSingleCellObjectPlan = (action: string, payload?: JsonRecord) => {
+  const objectPath = asString(payload?.objectPath || payload?.object_path || payload?.path);
+  const objectType = asString(payload?.objectType || payload?.object_type);
+  const expectedFields = ['objectPath', 'objectType', 'assays', 'reductions', 'metadataColumns'];
+  const declaredFields = {
+    objectPath,
+    objectType,
+    assays: uniqueStrings(asArray(payload?.assays)),
+    reductions: uniqueStrings(asArray(payload?.reductions)),
+    metadataColumns: uniqueStrings(asArray(payload?.metadataColumns || payload?.metadata_columns)),
+    features: uniqueStrings(asArray(payload?.features)),
+  };
+  const missingFields = expectedFields.filter((field) => {
+    const value = declaredFields[field as keyof typeof declaredFields];
+    return Array.isArray(value) ? value.length === 0 : !value;
+  });
+  return {
+    schema: RESULT_SCHEMA,
+    action,
+    status: missingFields.length ? 'conditional' : 'ready',
+    objectSummary: declaredFields,
+    inspectionContract: {
+      supportedObjectTypes: ['rds', 'h5seurat', 'h5ad', 'table_bundle'],
+      requiredChecks: ['assays_or_layers', 'reductions', 'metadata_columns', 'cell_count', 'feature_count'],
+      execution: 'planned_only_in_current_mcp_profile',
+    },
+    missingFields,
+    warnings: missingFields.length
+      ? ['Provide object summary fields or run an approved local R/Python object inspector before rendering.']
+      : [],
+    timestamp: Date.now(),
+  };
+};
+
+const exportFigureBundlePlan = (action: string, payload?: JsonRecord) => {
+  const figureFiles = uniqueStrings(asArray(payload?.figureFiles || payload?.figure_files));
+  const configFiles = uniqueStrings(asArray(payload?.configFiles || payload?.config_files));
+  const logFiles = uniqueStrings(asArray(payload?.logFiles || payload?.log_files));
+  const missingFields = [
+    ...(!figureFiles.length ? ['figureFiles'] : []),
+    ...(!configFiles.length ? ['configFiles'] : []),
+    ...(!logFiles.length ? ['logFiles'] : []),
+  ];
+  return {
+    schema: RESULT_SCHEMA,
+    action,
+    status: missingFields.length ? 'conditional' : 'ready',
+    bundleContract: {
+      manifestSchema: 'openbioscience.scrna_plot.manifest.v1',
+      requiredFields: [
+        'inputObjectSummary',
+        'recipe',
+        'actualRFunction',
+        'parameters',
+        'packageVersions',
+        'rVersion',
+        'seed',
+        'warnings',
+        'outputFiles',
+        'sampling',
+        'dataModified',
+      ],
+      figureFiles,
+      configFiles,
+      logFiles,
+    },
+    missingFields,
+    warnings: missingFields.length ? ['A figure bundle needs figures, config/code, and logs before Science publication.'] : [],
     timestamp: Date.now(),
   };
 };
@@ -1408,6 +1768,196 @@ const handleEnvironmentManagerAction = (action: string, payload?: JsonRecord) =>
 const handleSourceAction = async (action: string, payload?: JsonRecord) => {
   if (action === 'index_paper_sources') return indexPaperSources(workspaceRoot(), payload || {});
   if (action === 'status') return statusPayload('source');
+  if (action === 'rank_dataset_candidates') {
+    const parsed = rankDatasetCandidatesPayloadSchema.safeParse(payload || {});
+    if (!parsed.success) {
+      return invalidActionPayload(
+        action,
+        parsed.error,
+        {
+          analysisId: asString(payload?.analysisId),
+          query: asString(payload?.query),
+          disease: asString(payload?.disease),
+          organism: asString(payload?.organism, 'human'),
+          modality: asString(payload?.modality, 'scRNA-seq'),
+          candidates: asArray(payload?.candidates),
+        },
+        'bio_source'
+      );
+    }
+    const sourceRoot = explorationSourceRoot(parsed.data.analysisId);
+    const ranked = parsed.data.candidates
+      .map((candidate) => ({ ...candidate, score: publicDatasetScore(candidate) }))
+      .sort((left, right) => right.score - left.score || left.id.localeCompare(right.id))
+      .map((candidate, index) => ({
+        ...candidate,
+        rank: index + 1,
+        selected: parsed.data.selectedCandidateId
+          ? candidate.id === parsed.data.selectedCandidateId
+          : index === 0,
+      }));
+    const selected = ranked.find((candidate) => candidate.selected);
+    const candidatesPath = path.posix.join(sourceRoot, 'dataset_candidates.json');
+    const selectionPath = path.posix.join(sourceRoot, 'dataset_selection.tsv');
+    const candidatesHash = writeCanonicalJson(candidatesPath, {
+      schema: 'openbioscience.public_dataset_candidates.v1',
+      query: parsed.data.query,
+      disease: parsed.data.disease,
+      organism: parsed.data.organism,
+      modality: parsed.data.modality,
+      candidates: ranked,
+      selectedCandidateId: selected?.id,
+      timestamp: new Date().toISOString(),
+    });
+    const selectionHash = writeCanonicalText(selectionPath, datasetSelectionTsv(ranked));
+    const canonicalFiles = [sourceFileRef(candidatesPath, candidatesHash), sourceFileRef(selectionPath, selectionHash)];
+    const result = {
+      schema: RESULT_SCHEMA,
+      action,
+      status: selected ? 'ready' : 'blocked',
+      analysisId: parsed.data.analysisId,
+      selectedCandidate: selected,
+      rankedCandidates: ranked,
+      canonicalFiles,
+      nextActions: selected
+        ? [
+            {
+              id: 'prepare-selected-public-download',
+              tool: 'bio_source',
+              action: 'prepare_public_download',
+              reason:
+                'Plan processed-object, metadata, supplement, and optional raw-matrix downloads before localizing selected public data.',
+              payload: {
+                analysisId: parsed.data.analysisId,
+                sourceName: selected.sourceName,
+                datasetId: selected.datasetId,
+                accession: selected.accession || selected.datasetId,
+                downloadRoute: selected.downloadRoute,
+                rawMatrixDownloadApproved: false,
+                autoExtract: true,
+                files: [
+                  {
+                    id: 'selected_public_dataset',
+                    kind: 'processed_matrix',
+                    accession: selected.accession || selected.datasetId,
+                    expectedPath: `${publicDataPrefix(
+                      selected.sourceName,
+                      selected.accession || selected.datasetId
+                    )}/<downloaded-file>`,
+                  },
+                ],
+              },
+            },
+          ]
+        : [],
+      timestamp: Date.now(),
+    };
+    return withControlReceipt('bio_source', result, {
+      analysisId: parsed.data.analysisId,
+      query: parsed.data.query,
+      disease: parsed.data.disease,
+      selectedCandidate: selected,
+      canonicalFiles,
+    });
+  }
+  if (action === 'prepare_public_download') {
+    const parsed = preparePublicDownloadPayloadSchema.safeParse(payload || {});
+    if (!parsed.success) {
+      return invalidActionPayload(
+        action,
+        parsed.error,
+        {
+          analysisId: asString(payload?.analysisId),
+          downloadPlanReceiptId: asString(payload?.downloadPlanReceiptId),
+          sourceName: asString(payload?.sourceName),
+          datasetId: asString(payload?.datasetId),
+          accession: asString(payload?.accession),
+          downloadRoute: asString(payload?.downloadRoute),
+          files: asArray(payload?.files),
+        },
+        'bio_source'
+      );
+    }
+    const sourceRoot = explorationSourceRoot(parsed.data.analysisId);
+    const destinationRoot = publicDataPrefix(parsed.data.sourceName, parsed.data.accession);
+    const plannedFiles = parsed.data.files.map((file) =>
+      downloadFilePolicy(file, parsed.data.rawMatrixDownloadApproved, parsed.data.maxBytes)
+    );
+    const blockedFiles = plannedFiles.filter((file) => file.status === 'blocked');
+    const status = blockedFiles.length ? 'blocked' : 'ready';
+    const planPath = path.posix.join(sourceRoot, 'download_plan.json');
+    const planTablePath = path.posix.join(sourceRoot, 'download_plan.tsv');
+    const plan = {
+      schema: 'openbioscience.public_download_plan.v1',
+      analysisId: parsed.data.analysisId,
+      sourceName: parsed.data.sourceName,
+      datasetId: parsed.data.datasetId,
+      accession: parsed.data.accession,
+      downloadRoute: parsed.data.downloadRoute,
+      destinationRoot,
+      rawMatrixDownloadApproved: parsed.data.rawMatrixDownloadApproved,
+      autoExtract: parsed.data.autoExtract,
+      maxBytes: parsed.data.maxBytes ?? null,
+      files: plannedFiles,
+      evidenceIds: parsed.data.evidenceIds || [],
+      notes: parsed.data.notes || [],
+      timestamp: new Date().toISOString(),
+    };
+    const planHash = writeCanonicalJson(planPath, { ...plan, status });
+    const planTableHash = writeCanonicalText(planTablePath, downloadPlanTsv(plannedFiles, destinationRoot));
+    const canonicalFiles = [sourceFileRef(planPath, planHash), sourceFileRef(planTablePath, planTableHash)];
+    const result = {
+      schema: RESULT_SCHEMA,
+      action,
+      status,
+      analysisId: parsed.data.analysisId,
+      plan,
+      canonicalFiles,
+      warnings: blockedFiles.flatMap((file) => file.blockers.map((blocker) => `${file.id}: ${blocker}`)),
+      nextActions: blockedFiles.length
+        ? [
+            {
+              id: 'confirm-raw-or-adjust-download',
+              tool: 'user_input',
+              action: 'request',
+              reason:
+                'The selected public dataset plan includes raw matrix files or files above the configured size boundary.',
+            },
+          ]
+        : [
+            {
+              id: 'run-public-download-and-record',
+              tool: 'bio_source',
+              action: 'complete_public_download',
+              reason: 'After downloading and extracting planned files, record concrete paths and file status.',
+              payload: {
+                analysisId: parsed.data.analysisId,
+                downloadPlanReceiptId: '<receiptId from prepare_public_download>',
+                sourceName: parsed.data.sourceName,
+                datasetId: parsed.data.datasetId,
+                accession: parsed.data.accession,
+                downloadRoute: parsed.data.downloadRoute,
+                downloadedPaths: [`${destinationRoot}/<downloaded-file>`],
+                command: '<download-command>',
+                rawMatrixDownloadApproved: parsed.data.rawMatrixDownloadApproved,
+              },
+            },
+          ],
+      timestamp: Date.now(),
+    };
+    return withControlReceipt('bio_source', result, {
+      analysisId: parsed.data.analysisId,
+      sourceName: parsed.data.sourceName,
+      datasetId: parsed.data.datasetId,
+      accession: parsed.data.accession,
+      downloadRoute: parsed.data.downloadRoute,
+      status,
+      destinationRoot,
+      rawMatrixDownloadApproved: parsed.data.rawMatrixDownloadApproved,
+      plannedFiles,
+      canonicalFiles,
+    });
+  }
   if (action === 'resolve_accession') {
     const accession = asString(payload?.accession);
     const sourceHint = asString(payload?.source || payload?.sourceHint || payload?.source_hint, 'auto');
@@ -1467,6 +2017,248 @@ const handleSourceAction = async (action: string, payload?: JsonRecord) => {
       timestamp: Date.now(),
     };
   }
+  if (action === 'complete_localization') {
+    const parsed = completeLocalizationPayloadSchema.safeParse(payload || {});
+    if (!parsed.success) {
+      return invalidActionPayload(
+        action,
+        parsed.error,
+        {
+          analysisId: asString(payload?.analysisId),
+          sourceName: asString(payload?.sourceName),
+          datasetId: asString(payload?.datasetId),
+          accession: asString(payload?.accession),
+          downloadRoute: asString(payload?.downloadRoute),
+          localizedPaths: asArray(payload?.localizedPaths),
+        },
+        'bio_source'
+      );
+    }
+    const sourceRoot = explorationSourceRoot(parsed.data.analysisId);
+    const localized = parsed.data.localizedPaths.map((candidate) =>
+      localizePathStatus(candidate, parsed.data.sourceName, parsed.data.accession)
+    );
+    const missing = localized.filter((item) => item.status !== 'available');
+    const outsidePublicPrefix = localized.filter((item) => !item.underPublicPrefix);
+    const status = missing.length || outsidePublicPrefix.length ? 'blocked' : 'ready';
+    const dataManifestPath = path.posix.join(sourceRoot, 'data_manifest.json');
+    const localizationSummaryPath = path.posix.join(sourceRoot, 'localization_summary.json');
+    const manifest = {
+      schema: 'openbioscience.public_data_manifest.v1',
+      analysisId: parsed.data.analysisId,
+      sourceName: parsed.data.sourceName,
+      datasetId: parsed.data.datasetId,
+      accession: parsed.data.accession,
+      downloadRoute: parsed.data.downloadRoute,
+      publicDataRoot: publicDataPrefix(parsed.data.sourceName, parsed.data.accession),
+      localizedPaths: localized.map(({ path: localPath, status: pathStatusValue }) => ({
+        path: localPath,
+        status: pathStatusValue,
+      })),
+      evidenceIds: parsed.data.evidenceIds || [],
+      notes: parsed.data.notes || [],
+      timestamp: new Date().toISOString(),
+    };
+    const dataManifestHash = writeCanonicalJson(dataManifestPath, manifest);
+    const localizationHash = writeCanonicalJson(localizationSummaryPath, {
+      ...manifest,
+      status,
+      pathChecks: localized,
+      warnings: [
+        ...missing.map((item) => `Localized path is not available: ${item.path}`),
+        ...outsidePublicPrefix.map(
+          (item) => `Localized public dataset path must live under ${item.allowedPrefix}: ${item.path}`
+        ),
+      ],
+    });
+    const canonicalFiles = [
+      sourceFileRef(dataManifestPath, dataManifestHash),
+      sourceFileRef(localizationSummaryPath, localizationHash),
+    ];
+    const result = {
+      schema: RESULT_SCHEMA,
+      action,
+      status,
+      analysisId: parsed.data.analysisId,
+      publicDataRoot: publicDataPrefix(parsed.data.sourceName, parsed.data.accession),
+      localizedPaths: localized,
+      canonicalFiles,
+      warnings: [
+        ...missing.map((item) => `Localized path is not available: ${item.path}`),
+        ...outsidePublicPrefix.map(
+          (item) => `Localized public dataset path must live under ${item.allowedPrefix}: ${item.path}`
+        ),
+      ],
+      timestamp: Date.now(),
+    };
+    return withControlReceipt('bio_source', result, {
+      analysisId: parsed.data.analysisId,
+      sourceName: parsed.data.sourceName,
+      accession: parsed.data.accession,
+      publicDataRoot: publicDataPrefix(parsed.data.sourceName, parsed.data.accession),
+      localizedPaths: localized,
+      canonicalFiles,
+    });
+  }
+  if (action === 'complete_public_download') {
+    const parsed = completePublicDownloadPayloadSchema.safeParse(payload || {});
+    if (!parsed.success) {
+      return invalidActionPayload(
+        action,
+        parsed.error,
+        {
+          analysisId: asString(payload?.analysisId),
+          sourceName: asString(payload?.sourceName),
+          datasetId: asString(payload?.datasetId),
+          accession: asString(payload?.accession),
+          downloadRoute: asString(payload?.downloadRoute),
+          downloadedPaths: asArray(payload?.downloadedPaths),
+          extractedPaths: asArray(payload?.extractedPaths),
+          command: asString(payload?.command),
+        },
+        'bio_source'
+      );
+    }
+    let downloadPlanReceipt: BioControlReceipt;
+    try {
+      downloadPlanReceipt = readStoredReceipt(parsed.data.downloadPlanReceiptId, {
+        producer: 'bio_source',
+        action: 'prepare_public_download',
+        status: 'ready',
+      });
+    } catch (error) {
+      return receiptLookupFailure(action, error);
+    }
+    const planDetails = isRecord(downloadPlanReceipt.details) ? downloadPlanReceipt.details : {};
+    const plannedFiles = asArray(planDetails.plannedFiles).filter(isRecord);
+    const planMismatches = [
+      asString(planDetails.analysisId) === parsed.data.analysisId ? '' : 'analysisId differs from download plan receipt.',
+      asString(planDetails.sourceName) === parsed.data.sourceName ? '' : 'sourceName differs from download plan receipt.',
+      asString(planDetails.datasetId) === parsed.data.datasetId ? '' : 'datasetId differs from download plan receipt.',
+      asString(planDetails.accession) === parsed.data.accession ? '' : 'accession differs from download plan receipt.',
+      asString(planDetails.downloadRoute) === parsed.data.downloadRoute
+        ? ''
+        : 'downloadRoute differs from download plan receipt.',
+      asString(planDetails.destinationRoot) === publicDataPrefix(parsed.data.sourceName, parsed.data.accession)
+        ? ''
+        : 'destinationRoot differs from the normalized public data prefix.',
+      asBoolean(planDetails.rawMatrixDownloadApproved) === parsed.data.rawMatrixDownloadApproved
+        ? ''
+        : 'rawMatrixDownloadApproved differs from download plan receipt.',
+    ].filter(Boolean);
+    const plannedRawWithoutApproval = plannedFiles.some(
+      (file) => asString(file.kind) === 'raw_matrix' && !asBoolean(planDetails.rawMatrixDownloadApproved)
+    );
+    if (planMismatches.length || plannedRawWithoutApproval) {
+      return receiptLookupFailure(
+        action,
+        new Error(
+          [
+            ...planMismatches,
+            plannedRawWithoutApproval
+              ? 'Download plan contains raw_matrix files without explicit rawMatrixDownloadApproved=true.'
+              : '',
+          ]
+            .filter(Boolean)
+            .join(' ')
+        )
+      );
+    }
+    const sourceRoot = explorationSourceRoot(parsed.data.analysisId);
+    const allPaths = [...parsed.data.downloadedPaths, ...(parsed.data.extractedPaths || [])];
+    const localized = allPaths.map((candidate) =>
+      localizePathStatus(candidate, parsed.data.sourceName, parsed.data.accession)
+    );
+    const normalizedAllPaths = new Set(allPaths.map(normalizeProjectRelativePath));
+    const missingPlannedPaths = concreteExpectedDownloadPaths(plannedFiles).filter(
+      (expectedPath) => !normalizedAllPaths.has(expectedPath)
+    );
+    const unavailable = localized.filter((item) => item.status !== 'available');
+    const outsidePublicPrefix = localized.filter((item) => !item.underPublicPrefix);
+    const status = unavailable.length || outsidePublicPrefix.length || missingPlannedPaths.length ? 'blocked' : 'ready';
+    const manifestPath = path.posix.join(sourceRoot, 'download_manifest.json');
+    const summaryPath = path.posix.join(sourceRoot, 'download_summary.tsv');
+    const manifest = {
+      schema: 'openbioscience.public_download_manifest.v1',
+      analysisId: parsed.data.analysisId,
+      downloadPlanReceiptId: parsed.data.downloadPlanReceiptId,
+      sourceName: parsed.data.sourceName,
+      datasetId: parsed.data.datasetId,
+      accession: parsed.data.accession,
+      downloadRoute: parsed.data.downloadRoute,
+      publicDataRoot: publicDataPrefix(parsed.data.sourceName, parsed.data.accession),
+      command: parsed.data.command,
+      rawMatrixDownloadApproved: parsed.data.rawMatrixDownloadApproved,
+      plannedFiles: plannedFiles.map((file) => ({
+        id: asString(file.id),
+        kind: asString(file.kind),
+        status: asString(file.status),
+        expectedPath: asString(file.expectedPath),
+        expectedBytes: typeof file.expectedBytes === 'number' ? file.expectedBytes : null,
+      })),
+      downloadedPaths: parsed.data.downloadedPaths,
+      extractedPaths: parsed.data.extractedPaths || [],
+      pathChecks: localized,
+      evidenceIds: parsed.data.evidenceIds || [],
+      notes: parsed.data.notes || [],
+      timestamp: new Date().toISOString(),
+    };
+    const manifestHash = writeCanonicalJson(manifestPath, { ...manifest, status });
+    const summary = [
+      'path\tstatus\tunderPublicPrefix',
+      ...localized.map((item) => `${item.path}\t${item.status}\t${item.underPublicPrefix}`),
+    ].join('\n');
+    const summaryHash = writeCanonicalText(summaryPath, `${summary}\n`);
+    const canonicalFiles = [sourceFileRef(manifestPath, manifestHash), sourceFileRef(summaryPath, summaryHash)];
+    const result = {
+      schema: RESULT_SCHEMA,
+      action,
+      status,
+      analysisId: parsed.data.analysisId,
+      manifest: { ...manifest, status },
+      canonicalFiles,
+      warnings: [
+        ...unavailable.map((item) => `Downloaded/localized path is not available: ${item.path}`),
+        ...outsidePublicPrefix.map(
+          (item) => `Downloaded public dataset path must live under ${item.allowedPrefix}: ${item.path}`
+        ),
+        ...missingPlannedPaths.map((expectedPath) => `Planned download path was not recorded: ${expectedPath}`),
+      ],
+      nextActions:
+        status === 'ready'
+          ? [
+              {
+                id: 'complete-localization-from-download',
+                tool: 'bio_source',
+                action: 'complete_localization',
+                reason: 'Promote downloaded public files into the canonical source data manifest.',
+                payload: {
+                  analysisId: parsed.data.analysisId,
+                  sourceName: parsed.data.sourceName,
+                  datasetId: parsed.data.datasetId,
+                  accession: parsed.data.accession,
+                  downloadRoute: parsed.data.downloadRoute,
+                  localizedPaths: allPaths,
+                },
+              },
+            ]
+          : [],
+      timestamp: Date.now(),
+    };
+    return withControlReceipt('bio_source', result, {
+      analysisId: parsed.data.analysisId,
+      downloadPlanReceiptId: parsed.data.downloadPlanReceiptId,
+      accession: parsed.data.accession,
+      status,
+      publicDataRoot: publicDataPrefix(parsed.data.sourceName, parsed.data.accession),
+      downloadedPaths: localized.map((item) => ({
+        path: item.path,
+        status: item.status,
+        underPublicPrefix: item.underPublicPrefix,
+      })),
+      canonicalFiles,
+    });
+  }
   if (action === 'inspect_method_sources') {
     const paperTextPaths = uniqueStrings(asArray(payload?.paperTextPaths || payload?.paper_text_paths));
     const supplementPaths = uniqueStrings(asArray(payload?.supplementPaths || payload?.supplement_paths));
@@ -1521,23 +2313,151 @@ const inferAccessionSources = (accession: string): string[] => {
 const inferControlledAccess = (accession: string): boolean => /^EGA[SD]\d+/iu.test(accession);
 
 const handleKnowledgeAction = (action: string, payload?: JsonRecord) => {
-  if (action === 'status') return statusPayload('knowledge');
+  if (action === 'status') {
+    const resources = summarizeKnowledgeResources();
+    return {
+      ...statusPayload('knowledge'),
+      resources,
+      localResourceStatus: {
+        markers: resources.markerFiles.length > 0 ? 'ready' : 'missing',
+        markerPackages: resources.markerPackages.filter((item) => item.availability === 'available').length,
+        plannedAtlasPackages: resources.markerPackages.filter((item) => item.availability === 'planned').length,
+        msigdb: resources.msigdbFiles.length > 0 ? 'ready' : 'missing',
+        compactGeneSets: resources.compactGeneSetFiles.length > 0 ? 'ready' : 'missing',
+      },
+    };
+  }
   const query = asString(payload?.query || payload?.term || payload?.gene || payload?.cellType || payload?.cell_type);
+  const species = asString(payload?.species || payload?.organism);
+  const canonicalSpeciesValue = canonicalSpecies(species);
+  const limit = asPositiveInteger(payload?.limit, 25);
+  const resources = summarizeKnowledgeResources();
+  const evidenceContract = {
+    mustRecordSource: true,
+    finalAnnotationDecision: 'skill_owned',
+    artifactRegistration: 'science_artifact',
+    localResourceRequired: true,
+  };
+  if (!query && action !== 'list_lr_database' && action !== 'map_orthologs' && action !== 'normalize_gene_symbols') {
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: 'blocked',
+      query,
+      resources,
+      evidenceContract,
+      warnings: [`${action} requires query, gene, term, or cellType.`],
+      timestamp: Date.now(),
+    };
+  }
+  if (action === 'search_marker') {
+    const hits = searchLocalMarkers(query, { species, limit });
+    const resourceFiles = Array.from(new Set(hits.map((hit) => hit.resourcePath)));
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: hits.length ? 'ready' : 'blocked',
+      query,
+      species: species || 'any',
+      canonicalSpecies: canonicalSpeciesValue || 'any',
+      hits,
+      resourceFiles,
+      resources,
+      evidenceContract,
+      warnings: hits.length
+        ? []
+        : [
+            `No local marker or atlas record matched "${query}". Add a localized marker JSONL package under ${resources.markerRoot}.`,
+          ],
+      timestamp: Date.now(),
+    };
+  }
+  if (action === 'search_atlas') {
+    const packageQuery = query.toLowerCase();
+    const matchesQuery = (text: string): boolean =>
+      packageQuery
+        .split(/\s+/u)
+        .filter(Boolean)
+        .some((token) => text.toLowerCase().includes(token));
+    const matchesSpecies = (text: string): boolean => {
+      if (!canonicalSpeciesValue) return true;
+      const lowered = text.toLowerCase();
+      if (canonicalSpeciesValue === 'human') return lowered.includes('homo sapiens') || lowered.includes('human');
+      if (canonicalSpeciesValue === 'mouse') return lowered.includes('mus musculus') || lowered.includes('mouse');
+      return true;
+    };
+    const markerPackages = resources.markerPackages.filter((item) => item.availability === 'available');
+    const availableMarkerPackages = markerPackages
+      .filter((item) => matchesSpecies(item.species))
+      .filter((item) => matchesQuery([item.packageId, item.scope, item.disease, item.keywords].join(' ')))
+      .slice(0, limit);
+    const plannedAtlasPackages = resources.markerPackages
+      .filter((item) => item.availability === 'planned')
+      .filter((item) => matchesSpecies(item.species))
+      .filter((item) => matchesQuery([item.packageId, item.scope, item.disease, item.keywords].join(' ')))
+      .slice(0, limit);
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: availableMarkerPackages.length || plannedAtlasPackages.length ? 'conditional' : 'blocked',
+      query,
+      species: species || 'any',
+      canonicalSpecies: canonicalSpeciesValue || 'any',
+      atlasProviderStatus: 'package_index_only',
+      availableMarkerPackages,
+      plannedAtlasPackages,
+      resources,
+      evidenceContract,
+      nextActions: [
+        {
+          id: 'use-marker-evidence-for-major-annotation',
+          tool: 'bio_knowledge',
+          action: 'search_marker',
+          reason:
+            'No local atlas backend is implemented yet; use localized marker packages for major annotation evidence.',
+              payload: { query, species, limit },
+        },
+      ],
+      warnings: plannedAtlasPackages.length
+        ? ['Atlas package rows marked planned require localization before they can support annotation evidence.']
+        : [
+            'Local atlas backend is not implemented in this MCP profile yet; search_marker remains available for localized marker evidence.',
+          ],
+      timestamp: Date.now(),
+    };
+  }
+  if (action === 'resolve_gene_set') {
+    const geneSets = resolveLocalGeneSets(query, { species, limit });
+    const provider = geneSets.some((geneSet) => geneSet.provider === 'msigdb') ? 'msigdb' : 'compact_fallback';
+    const resourceFiles = Array.from(new Set(geneSets.map((geneSet) => geneSet.resourcePath)));
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: geneSets.length ? 'ready' : 'blocked',
+      query,
+      species: species || 'any',
+      canonicalSpecies: canonicalSpeciesValue || 'any',
+      provider: geneSets.length ? provider : 'none',
+      geneSets,
+      resourceFiles,
+      resources,
+      evidenceContract,
+      warnings: geneSets.length
+        ? provider === 'compact_fallback'
+          ? [`MSigDB GMT files were not found under ${resources.msigdbRoot}; used compact fallback gene sets.`]
+          : []
+        : [`No local gene set matched "${query}". Localize MSigDB GMT files under ${resources.msigdbRoot}.`],
+      timestamp: Date.now(),
+    };
+  }
   return {
     schema: RESULT_SCHEMA,
     action,
-    status: query ? 'conditional' : 'blocked',
+    status: 'conditional',
     query,
-    evidenceContract: {
-      mustRecordSource: true,
-      finalAnnotationDecision: 'skill_owned',
-      artifactRegistration: 'science_artifact',
-    },
-    warnings: query
-      ? [
-          'This first-pass MCP records lookup intent and evidence contract; configure concrete marker/atlas providers before production lookup.',
-        ]
-      : [`${action} requires query, gene, or cellType.`],
+    resources,
+    evidenceContract,
+    warnings: [`${action} is registered, but local provider-backed execution is not implemented in this MCP profile yet.`],
     timestamp: Date.now(),
   };
 };
@@ -1550,6 +2470,8 @@ const handlePlotAction = (action: string, payload?: JsonRecord) => {
       action,
       status: 'supported',
       templates: BIO_PLOT_TEMPLATES,
+      objectives: BIO_PLOT_OBJECTIVES,
+      backends: BIO_PLOT_BACKENDS,
       styleContract: {
         source: 'local_registry',
         plottieRole: 'inspiration_and_taxonomy_only',
@@ -1558,27 +2480,99 @@ const handlePlotAction = (action: string, payload?: JsonRecord) => {
       timestamp: Date.now(),
     };
   }
-  if (action === 'validate_plot_inputs') return validatePlotInputs(action, payload);
-  if (action === 'render_plan') {
-    const templateId = asString(payload?.templateId || payload?.template_id);
-    const template = catalogById(BIO_PLOT_TEMPLATES, templateId);
+  if (action === 'list_plot_recipes') {
+    const recipes = listPlotRecipes({
+      objective: asString(payload?.objective),
+      status: asString(payload?.status),
+      backend: asString(payload?.backend),
+      packageName: asString(payload?.packageName || payload?.package_name),
+    });
     return {
       schema: RESULT_SCHEMA,
       action,
-      status: template ? 'conditional' : 'blocked',
-      template,
-      renderPlan: template
-        ? {
-            environmentRef: 'sc-r-plot',
-            executeNow: false,
-            requiredOutputs: template.outputs || [],
-            manifestSchema: 'openbioscience.scrna_plot.manifest.v1',
-          }
-        : undefined,
-      warnings: template ? [] : [`Unknown templateId "${templateId || '<missing>'}".`],
+      status: 'supported',
+      objectives: BIO_PLOT_OBJECTIVES,
+      backends: BIO_PLOT_BACKENDS,
+      recipes,
+      warnings: recipes.length ? [] : ['No recipe matched the requested filters.'],
       timestamp: Date.now(),
     };
   }
+  if (action === 'select_plot_recipe') {
+    const selection = selectPlotRecipe({
+      objective: asString(payload?.objective),
+      intent: asString(payload?.intent || payload?.question),
+      preferredStatus: asString(payload?.preferredStatus || payload?.preferred_status),
+      availableInputs: uniqueStrings(asArray(payload?.availableInputs || payload?.available_inputs)),
+    });
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: selection.selected ? 'ready' : 'blocked',
+      selectedRecipe: selection.selected,
+      alternatives: selection.alternatives,
+      warnings: selection.warnings,
+      timestamp: Date.now(),
+    };
+  }
+  if (action === 'inspect_singlecell_object') return inspectSingleCellObjectPlan(action, payload);
+  if (action === 'validate_plot_inputs') return validatePlotInputs(action, payload);
+  if (action === 'validate_plot_spec') {
+    const validation = validatePlotSpec(isRecord(payload?.spec) ? payload.spec : payload || {});
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: validation.status,
+      recipe: validation.recipe,
+      missingFields: validation.missingFields,
+      warnings: validation.warnings,
+      timestamp: Date.now(),
+    };
+  }
+  if (
+    action === 'render_plan' ||
+    action === 'render_embedding' ||
+    action === 'render_expression_matrix' ||
+    action === 'render_composition' ||
+    action === 'render_differential' ||
+    action === 'render_trajectory' ||
+    action === 'render_communication' ||
+    action === 'render_cnv'
+  ) {
+    const spec = plotSpecPayload(action, payload);
+    const legacyTemplateId = asString(spec.templateId || spec.template_id);
+    if (legacyTemplateId && !findPlotRecipe(legacyTemplateId)) {
+      const template = catalogById(BIO_PLOT_TEMPLATES, legacyTemplateId);
+      return {
+        schema: RESULT_SCHEMA,
+        action,
+        status: template ? 'conditional' : 'blocked',
+        template,
+        renderPlan: template
+          ? {
+              environmentRef: 'sc-r-plot',
+              executeNow: false,
+              requiredOutputs: template.outputs || [],
+              manifestSchema: 'openbioscience.scrna_plot.manifest.v1',
+            }
+          : undefined,
+        warnings: template ? [] : [`Unknown templateId "${legacyTemplateId || '<missing>'}".`],
+        timestamp: Date.now(),
+      };
+    }
+    const { validation, renderPlan } = renderPlanForSpec(spec);
+    return {
+      schema: RESULT_SCHEMA,
+      action,
+      status: validation.status,
+      recipe: validation.recipe,
+      missingFields: validation.missingFields,
+      renderPlan,
+      warnings: validation.warnings,
+      timestamp: Date.now(),
+    };
+  }
+  if (action === 'export_figure_bundle') return exportFigureBundlePlan(action, payload);
   if (action === 'summarize_plot_outputs') return handleRuntimeAction('summarize_outputs', payload);
   throw new Error(`Unsupported plot action "${action}".`);
 };
@@ -3065,7 +4059,9 @@ async function main() {
       const recordPayload = isRecord(payload) ? payload : {};
       const inputFingerprint = receiptInputFingerprint({ profile, action, payload: recordPayload });
       const producer = receiptProducerForProfile(profile);
-      if (producer) {
+      const dynamicProbeAction =
+        producer === 'bio_runtime' && (action === 'probe_environment' || action === 'probe_environments');
+      if (producer && !dynamicProbeAction) {
         try {
           const cachedReceipt = readCachedReceipt(workspaceRoot(), producer, action, inputFingerprint);
           if (cachedReceipt && cachedReceiptIsCurrent(cachedReceipt)) {

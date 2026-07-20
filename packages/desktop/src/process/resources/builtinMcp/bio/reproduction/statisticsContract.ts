@@ -359,6 +359,51 @@ const schemaNextAction = (action: string, reason: string, payload: Record<string
   payload,
 });
 
+const recordOrUndefined = (value: unknown): Record<string, unknown> | undefined =>
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
+
+const indicatesUnavailableRawCounts = (payload: unknown): boolean => {
+  const record = recordOrUndefined(payload);
+  const counts = recordOrUndefined(record?.counts);
+  if (!counts) return false;
+  if (counts.integerValues === false) return true;
+  const semantics = typeof counts.semantics === 'string' ? counts.semantics : '';
+  return Boolean(semantics && semantics !== 'raw_integer_counts');
+};
+
+const rawCountsBlockedNextAction = (reason: string): BioNextAction => ({
+  id: 'block-raw-count-statistics-until-counts-verified',
+  tool: 'bio_statistics',
+  action: 'validate_expression_contract',
+  reason: `${reason} Raw-count statistical contracts require verified raw integer counts. Do not relabel processed or unknown expression as raw counts; inspect the source object for a raw integer counts layer or record raw-count DE as blocked.`,
+  payload: {
+    requiredCountsEvidence: {
+      semantics: 'raw_integer_counts',
+      integerValues: true,
+      acceptableLocationExamples: ['layers[counts]', 'raw.X', 'counts matrix file'],
+    },
+    whenUnavailable: {
+      status: 'blocked_invalid_expression_semantics',
+      allowedWork: [
+        'descriptive processed-expression summaries',
+        'cluster marker review',
+        'visualization',
+        'Scanpy/Seurat-style processed-expression exploratory feature ranking',
+        'sample-level processed-expression aggregate summaries',
+        'pathway enrichment from ranked exploratory features',
+      ],
+      forbiddenWork: [
+        'edgeR pseudobulk DE',
+        'DESeq2 or negative-binomial raw-count inference',
+        'confirmatory biological DE claims',
+        'relabeling processed expression as raw counts',
+      ],
+    },
+  },
+  maxAttempts: 1,
+  stopWhenUnchanged: true,
+});
+
 const finiteJson = (value: unknown): boolean => {
   if (typeof value === 'number') return Number.isFinite(value);
   if (Array.isArray(value)) return value.every(finiteJson);
@@ -407,17 +452,20 @@ export const validateExpressionContract = (
   const parsed = expressionContractPayloadSchema.safeParse(payload);
   const validationFingerprint = fingerprint(payload);
   if (!parsed.success) {
+    const reason = parsed.error.message;
     return {
       status: 'needs_completion',
       validationFingerprint,
-      checks: [{ id: 'schema', status: 'failed', message: parsed.error.message }],
-      nextActions: [
-        schemaNextAction('validate_expression_contract', parsed.error.message, {
-          counts: { location: 'layers[counts]', semantics: 'raw_integer_counts', integerValues: true },
-          logNormalized: { location: 'layers[lognorm]', transformation: 'library_size_normalize_then_log1p' },
-          analysisMatrix: { location: 'X', semantics: 'log_normalized' },
-        }),
-      ],
+      checks: [{ id: 'schema', status: 'failed', message: reason }],
+      nextActions: indicatesUnavailableRawCounts(payload)
+        ? [rawCountsBlockedNextAction(reason)]
+        : [
+            schemaNextAction('validate_expression_contract', reason, {
+              counts: { location: 'layers[counts]', semantics: 'raw_integer_counts', integerValues: true },
+              logNormalized: { location: 'layers[lognorm]', transformation: 'library_size_normalize_then_log1p' },
+              analysisMatrix: { location: 'X', semantics: 'log_normalized' },
+            }),
+          ],
     };
   }
 
@@ -472,7 +520,11 @@ export const validateExpressionContract = (
     status: issues.length ? 'needs_completion' : 'ready',
     validationFingerprint,
     checks,
-    nextActions: issues.length ? [schemaNextAction('validate_expression_contract', issues.join(' '), value)] : [],
+    nextActions: issues.length
+      ? issues.some((message) => message.includes('raw integer counts'))
+        ? [rawCountsBlockedNextAction(issues.join(' '))]
+        : [schemaNextAction('validate_expression_contract', issues.join(' '), value)]
+      : [],
     value,
   };
 };

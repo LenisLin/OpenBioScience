@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openbioscience.scrna_plot.export.v1",
+  "type": "object",
+  "required": ["formats", "width", "height", "dpi"],
+  "properties": {
+    "formats": { "type": "array", "items": { "enum": ["png", "pdf", "svg"] } },
+    "width": { "type": "number", "exclusiveMinimum": 0 },
+    "height": { "type": "number", "exclusiveMinimum": 0 },
+    "dpi": { "type": "integer", "minimum": 72 },
+    "outputRoot": { "type": "string" }
+  },
+  "additionalProperties": true
+}

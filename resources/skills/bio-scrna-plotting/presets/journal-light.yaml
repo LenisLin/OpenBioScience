@@ -1,0 +1,7 @@
+style:
+  preset: journal-light
+  background: white
+  palette: colorblind-safe
+  base_size: 9
+  legend_position: right
+  rasterize_large_embeddings: true
