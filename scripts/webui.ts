@@ -32,6 +32,10 @@ import {
   resolveOpenBioScienceRuntimeRoot,
   resolveOpenBioScienceWorkspaceRoot,
 } from '../packages/desktop/src/process/utils/openBioScienceRuntimeEnv';
+import {
+  resolveOpenBioScienceSkillsSourceRoot,
+  syncOpenBioScienceSkills as syncOpenBioScienceSkillsToTarget,
+} from '../packages/desktop/src/process/utils/openBioScienceSkillsSync';
 import { openBrowserUrl, shouldAutoOpenBrowser } from '../packages/web-cli/src/browser.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -75,7 +79,6 @@ const DEFAULT_PORT = (() => {
   return 25809;
 })();
 const BACKEND_BINARY = process.platform === 'win32' ? 'deeporganiser-core.exe' : 'deeporganiser-core';
-const OPENSCIENCE_SKILL_SYNC_MARKER = '.openscience-skills.json';
 const DEFAULT_SCIENCE_SKILL_IDS = [
   'openscience-science',
   'openscience-science-artifact',
@@ -88,6 +91,10 @@ const DEFAULT_SCIENCE_SKILL_IDS = [
   'bio-omics-reproduction-planning',
   'bio-omics-analysis',
   'bio-singlecell-baseline',
+  'bio-protein-variant-benchmark',
+  'bio-protein-design-benchmark',
+  'bio-singlecell-vdj',
+  'bio-spatial-transcriptomics',
   'bio-environment-manager',
   'bio-analysis-script-authoring',
   'bio-scrna-differential-expression',
@@ -263,70 +270,17 @@ function resolveBackendBinary(): string {
   );
 }
 
-function copyDirectory(source: string, target: string): void {
-  fs.rmSync(target, { recursive: true, force: true });
-  fs.cpSync(source, target, {
-    recursive: true,
-    force: true,
-    dereference: false,
-    filter: (sourcePath) => {
-      const base = path.basename(sourcePath);
-      return base !== '.git' && base !== 'node_modules' && base !== '__pycache__';
+export function syncOpenBioScienceSkills(workDir: string): void {
+  syncOpenBioScienceSkillsToTarget({
+    sourceRoot: resolveOpenBioScienceSkillsSourceRoot(repoRoot),
+    targetRoot: path.join(workDir, 'builtin-skills'),
+    repoRoot,
+    markerSchema: 'openscience.webui.skill-sync.v1',
+    logger: {
+      log: (message) => console.log(message.replace('[OpenBioScience]', '[webui] OpenBioScience')),
+      warn: (message) => console.warn(message.replace('[OpenBioScience]', '[webui] OpenBioScience')),
     },
   });
-}
-
-function readJsonFile<T>(filePath: string, fallback: T): T {
-  try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf8')) as T;
-  } catch {
-    return fallback;
-  }
-}
-
-export function syncOpenBioScienceSkills(workDir: string): void {
-  const sourceRoot = path.join(repoRoot, 'resources', 'skills');
-  if (!fs.existsSync(sourceRoot)) {
-    console.warn(`[webui] OpenBioScience skills source not found: ${sourceRoot}`);
-    return;
-  }
-
-  const targetRoot = path.join(workDir, 'builtin-skills');
-  fs.mkdirSync(targetRoot, { recursive: true });
-
-  const skillNames = fs
-    .readdirSync(sourceRoot, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && fs.existsSync(path.join(sourceRoot, entry.name, 'SKILL.md')))
-    .map((entry) => entry.name)
-    .sort();
-
-  const markerPath = path.join(targetRoot, OPENSCIENCE_SKILL_SYNC_MARKER);
-  const previous = readJsonFile<{ skills?: string[] }>(markerPath, {});
-  const nextNames = new Set(skillNames);
-  for (const staleName of previous.skills ?? []) {
-    if (!nextNames.has(staleName)) {
-      fs.rmSync(path.join(targetRoot, staleName), { recursive: true, force: true });
-    }
-  }
-
-  for (const skillName of skillNames) {
-    copyDirectory(path.join(sourceRoot, skillName), path.join(targetRoot, skillName));
-  }
-
-  fs.writeFileSync(
-    markerPath,
-    `${JSON.stringify(
-      {
-        schema: 'openscience.webui.skill-sync.v1',
-        sourceRoot: path.relative(repoRoot, sourceRoot),
-        syncedAt: new Date().toISOString(),
-        skills: skillNames,
-      },
-      null,
-      2
-    )}\n`
-  );
-  console.log(`[webui] OpenBioScience skills synced: ${skillNames.length}`);
 }
 
 function builtinMcpScriptPath(scriptName: string): string | undefined {
@@ -398,6 +352,16 @@ export function buildStandaloneBioMcpServerSpecs(): StdioMcpServerBuildParams[] 
       enabled: true,
       env: buildStandaloneBioRuntimeEnv({
         OPENBIOSCIENCE_BIO_MCP_PROFILE: 'plot',
+      }),
+    },
+    {
+      name: 'openscience-bio-benchmark',
+      description:
+        'Built-in OpenBioScience benchmark control plane for blind/freeze/reveal/evaluate contracts across protein and non-omics benchmarks.',
+      scriptName: 'builtin-mcp-bio',
+      enabled: true,
+      env: buildStandaloneBioRuntimeEnv({
+        OPENBIOSCIENCE_BIO_MCP_PROFILE: 'benchmark',
       }),
     },
     {
@@ -484,6 +448,29 @@ export function buildStandaloneBuiltinMcpServers(backendPort: number): WebuiMcpS
         OPENSCIENCE_ALLOWED_DATABASE_HOSTS: '',
         OPENSCIENCE_ARTIFACT_GIT_MAX_COPY_BYTES: String(25 * 1024 * 1024),
       },
+    }),
+    buildStdioMcpServer({
+      name: 'openscience-pymol',
+      description: 'Headless PyMOL analysis, structure triage, rendering, and synchronized viewer state.',
+      scriptName: 'builtin-mcp-pymol',
+      enabled: true,
+      env: buildStandaloneBioRuntimeEnv({
+        DEEPORGANISER_BACKEND_PORT: String(backendPort),
+        OPENBIOSCIENCE_PYMOL_WORKER: path.join(
+          repoRoot,
+          'packages',
+          'desktop',
+          'src',
+          'process',
+          'resources',
+          'builtinMcp',
+          'bio',
+          'pymolWorker.py'
+        ),
+        ...(process.env.OPENBIOSCIENCE_PYMOL_PYTHON
+          ? { OPENBIOSCIENCE_PYMOL_PYTHON: process.env.OPENBIOSCIENCE_PYMOL_PYTHON }
+          : {}),
+      }),
     }),
     buildStdioMcpServer({
       name: 'openscience-lab-skill',

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { IMAGE_GEN_ENV_KEYS } from '@/common/config/imageGenerationMcpEnv';
 import {
+  BUILTIN_BIO_BENCHMARK_NAME,
   BUILTIN_BIO_KNOWLEDGE_NAME,
   BUILTIN_BIO_PLOT_NAME,
   BUILTIN_BIO_REPRODUCTION_NAME,
@@ -10,6 +11,7 @@ import {
   BUILTIN_BIO_RUNTIME_LEGACY_NAMES,
   BUILTIN_BIO_SOURCE_NAME,
   BUILTIN_IMAGE_GEN_NAME,
+  BUILTIN_PYMOL_NAME,
   BUILTIN_RESEARCH_EVIDENCE_NAME,
   type IMcpServer,
   type IProvider,
@@ -325,12 +327,31 @@ describe('runBackendMigrations', () => {
           }),
         }),
         expect.objectContaining({
+          name: BUILTIN_BIO_BENCHMARK_NAME,
+          transport: expect.objectContaining({
+            args: ['/mock/builtin-mcp-bio.js'],
+            env: expect.objectContaining({
+              OPENBIOSCIENCE_BIO_MCP_PROFILE: 'benchmark',
+              OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+            }),
+          }),
+        }),
+        expect.objectContaining({
           name: 'openscience-bio-environment-manager',
           transport: expect.objectContaining({
             args: ['/mock/builtin-mcp-bio.js'],
             env: expect.objectContaining({
               OPENBIOSCIENCE_BIO_MCP_PROFILE: 'environment_manager',
               OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+            }),
+          }),
+        }),
+        expect.objectContaining({
+          name: BUILTIN_PYMOL_NAME,
+          transport: expect.objectContaining({
+            args: ['/mock/builtin-mcp-pymol.js'],
+            env: expect.objectContaining({
+              OPENBIOSCIENCE_PYMOL_WORKER: expect.stringContaining('pymolWorker.py'),
             }),
           }),
         }),
@@ -389,6 +410,23 @@ describe('runBackendMigrations', () => {
           env: expect.objectContaining({
             OPENBIOSCIENCE_BIO_MCP_PROFILE: 'reproduction',
             OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+          }),
+        }),
+        expect.objectContaining({
+          name: BUILTIN_BIO_BENCHMARK_NAME,
+          command: 'node',
+          args: ['/mock/builtin-mcp-bio.js'],
+          env: expect.objectContaining({
+            OPENBIOSCIENCE_BIO_MCP_PROFILE: 'benchmark',
+            OPENBIOSCIENCE_RUNTIME_ROOT: openBioScienceRuntimeRoot,
+          }),
+        }),
+        expect.objectContaining({
+          name: BUILTIN_PYMOL_NAME,
+          command: 'node',
+          args: ['/mock/builtin-mcp-pymol.js'],
+          env: expect.objectContaining({
+            OPENBIOSCIENCE_PYMOL_WORKER: expect.stringContaining('pymolWorker.py'),
           }),
         }),
         expect.objectContaining({

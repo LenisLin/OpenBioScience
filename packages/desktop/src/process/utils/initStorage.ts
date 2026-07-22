@@ -28,6 +28,7 @@ import {
   hasElectronAppPath,
   verifyDirectoryFiles,
 } from './utils';
+import { resolveOpenBioScienceSkillsSourceRoot, syncOpenBioScienceSkills } from './openBioScienceSkillsSync';
 import { runLegacyDatabaseMigrations } from '@process/services/database/runLegacyDatabaseMigrations';
 import { BUILTIN_IMAGE_GEN_ID } from '../resources/builtinMcp/constants';
 // Platform and architecture types (moved from deleted updateConfig)
@@ -341,6 +342,16 @@ const ensureAssistantDirs = async (): Promise<void> => {
   if (!existsSync(assistantsDir)) mkdirSync(assistantsDir);
 };
 
+const syncBundledOpenBioScienceSkills = () => {
+  const workDir = dirConfig?.workDir || getDataPath();
+  syncOpenBioScienceSkills({
+    sourceRoot: resolveOpenBioScienceSkillsSourceRoot(process.cwd()),
+    targetRoot: path.join(workDir, LEGACY_BUILTIN_SKILLS_DIR),
+    repoRoot: process.cwd(),
+    markerSchema: 'openscience.desktop.skill-sync.v1',
+  });
+};
+
 const getBuiltinMcpBaseDir = (): string => {
   const mainModuleDir =
     typeof require !== 'undefined' && require.main?.filename ? path.dirname(require.main.filename) : __dirname;
@@ -402,6 +413,15 @@ const initStorage = async () => {
   //     before the backend took ownership of the corpus.
   cleanupLegacyBuiltinSkillsDir();
   mark('5b. legacyBuiltinSkillsCleanup');
+
+  // 5c. Mirror first-party skills into the backend work directory so desktop
+  // and WebUI expose the same built-in skill catalog after restarts.
+  try {
+    syncBundledOpenBioScienceSkills();
+    mark('5c. openBioScienceSkillsSync');
+  } catch (error) {
+    console.error('[DeepOrganiser] Failed to sync OpenBioScience skills:', error);
+  }
 
   // 6. Backend only understands the v26-era schema baseline. Older desktop
   //    users may still have a pre-v26 Electron-managed catalog, so we upgrade

@@ -5,6 +5,7 @@
  */
 
 import { execFile } from 'node:child_process';
+import path from 'node:path';
 import { migrateConfigStorage, migrateLegacyMcpConfigToDb, migrateProviders } from '@/common/config/configMigration';
 import { httpRequest } from '@/common/adapter/httpBridge';
 import { mcpService } from '@/common/adapter/ipcBridge';
@@ -40,6 +41,8 @@ import {
   BUILTIN_BIO_KNOWLEDGE_LEGACY_NAMES,
   BUILTIN_BIO_PLOT_NAME,
   BUILTIN_BIO_PLOT_LEGACY_NAMES,
+  BUILTIN_BIO_BENCHMARK_NAME,
+  BUILTIN_BIO_BENCHMARK_LEGACY_NAMES,
   BUILTIN_BIO_ANALYSIS_NAME,
   BUILTIN_BIO_ANALYSIS_LEGACY_NAMES,
   BUILTIN_BIO_REPRODUCTION_NAME,
@@ -62,6 +65,8 @@ import {
   BUILTIN_SCIENCE_ARTIFACT_LEGACY_NAMES,
   BUILTIN_USER_INPUT_NAME,
   BUILTIN_USER_INPUT_LEGACY_NAMES,
+  BUILTIN_PYMOL_NAME,
+  BUILTIN_PYMOL_LEGACY_NAMES,
   type IMcpServer,
   type IProvider,
 } from '@/common/config/storage';
@@ -83,6 +88,7 @@ type BioMcpProfile =
   | 'source'
   | 'knowledge'
   | 'plot'
+  | 'benchmark'
   | 'reproduction'
   | 'analysis'
   | 'statistics'
@@ -114,6 +120,12 @@ const BIO_MCP_SERVERS: Array<{
     profile: 'plot',
     name: BUILTIN_BIO_PLOT_NAME,
     description: 'Built-in OpenBioScience scRNA-seq plot template and plot artifact manifest contracts.',
+  },
+  {
+    profile: 'benchmark',
+    name: BUILTIN_BIO_BENCHMARK_NAME,
+    description:
+      'Built-in OpenBioScience benchmark control plane for blind/freeze/reveal/evaluate contracts across protein and non-omics benchmarks.',
   },
   {
     profile: 'reproduction',
@@ -152,10 +164,12 @@ const BUILTIN_SERVER_LEGACY_NAMES = new Map<string, readonly string[]>([
   [BUILTIN_BIO_SOURCE_NAME, BUILTIN_BIO_SOURCE_LEGACY_NAMES],
   [BUILTIN_BIO_KNOWLEDGE_NAME, BUILTIN_BIO_KNOWLEDGE_LEGACY_NAMES],
   [BUILTIN_BIO_PLOT_NAME, BUILTIN_BIO_PLOT_LEGACY_NAMES],
+  [BUILTIN_BIO_BENCHMARK_NAME, BUILTIN_BIO_BENCHMARK_LEGACY_NAMES],
   [BUILTIN_BIO_ANALYSIS_NAME, BUILTIN_BIO_ANALYSIS_LEGACY_NAMES],
   [BUILTIN_BIO_REPRODUCTION_NAME, BUILTIN_BIO_REPRODUCTION_LEGACY_NAMES],
   [BUILTIN_BIO_STATISTICS_NAME, BUILTIN_BIO_STATISTICS_LEGACY_NAMES],
   [BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME, BUILTIN_BIO_ENVIRONMENT_MANAGER_LEGACY_NAMES],
+  [BUILTIN_PYMOL_NAME, BUILTIN_PYMOL_LEGACY_NAMES],
 ]);
 
 function findExistingBuiltinServer(existingByName: Map<string, IMcpServer>, name: string): IMcpServer | undefined {
@@ -620,6 +634,37 @@ function buildBuiltinBioServer(definition: (typeof BIO_MCP_SERVERS)[number]): Mc
   };
 }
 
+function buildBuiltinPyMolServer(): McpImportServer {
+  const scriptPath = getBuiltinMcpScriptPath('builtin-mcp-pymol');
+  const workspaceRoot = resolveOpenBioScienceWorkspaceRoot(process.env, process.cwd());
+  const backendPort = (globalThis as typeof globalThis & { __backendPort?: number }).__backendPort;
+  const workerPath =
+    process.env.OPENBIOSCIENCE_PYMOL_WORKER ||
+    (process.resourcesPath
+      ? path.join(process.resourcesPath, 'pymol', 'pymolWorker.py')
+      : path.join(process.cwd(), 'packages/desktop/src/process/resources/builtinMcp/bio/pymolWorker.py'));
+  const env = buildOpenBioScienceRuntimeEnv(
+    {
+      OPENBIOSCIENCE_PYMOL_WORKER: workerPath,
+      ...(process.env.OPENBIOSCIENCE_PYMOL_PYTHON
+        ? { OPENBIOSCIENCE_PYMOL_PYTHON: process.env.OPENBIOSCIENCE_PYMOL_PYTHON }
+        : {}),
+      ...(backendPort ? { DEEPORGANISER_BACKEND_PORT: String(backendPort) } : {}),
+    },
+    process.env,
+    workspaceRoot
+  );
+  const serverConfig = { command: 'node', args: [scriptPath], env };
+  return {
+    name: BUILTIN_PYMOL_NAME,
+    description: 'Headless PyMOL analysis, structure triage, rendering, and synchronized viewer state.',
+    enabled: true,
+    builtin: true,
+    transport: { type: 'stdio', ...serverConfig },
+    original_json: JSON.stringify({ mcpServers: { [BUILTIN_PYMOL_NAME]: serverConfig } }, null, 2),
+  };
+}
+
 function areStringArraysEqual(left?: string[], right?: string[]): boolean {
   const leftValue = left || [];
   const rightValue = right || [];
@@ -705,7 +750,8 @@ function buildCodexOpenScienceMcpServers(
   medicalEvidenceServer: McpImportServer,
   researchEvidenceServer: McpImportServer,
   scienceArtifactServer: McpImportServer,
-  bioServers: McpImportServer[] = []
+  bioServers: McpImportServer[] = [],
+  pymolServer?: McpImportServer
 ): ManagedCodexMcpServer[] {
   const medicalEnv =
     medicalEvidenceServer.transport?.type === 'stdio'
@@ -721,6 +767,7 @@ function buildCodexOpenScienceMcpServers(
     toManagedCodexMcpServer(researchEvidenceServer, researchEnv),
     toManagedCodexMcpServer(scienceArtifactServer),
     ...bioServers.map((server) => toManagedCodexMcpServer(server)),
+    pymolServer ? toManagedCodexMcpServer(pymolServer) : undefined,
   ].filter((server): server is ManagedCodexMcpServer => Boolean(server));
 }
 
@@ -905,6 +952,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   const labSkillServer = buildBuiltinLabSkillServer();
   const larkProjectAgentServer = buildBuiltinLarkProjectAgentServer();
   const bioServers = BIO_MCP_SERVERS.map(buildBuiltinBioServer);
+  const pymolServer = buildBuiltinPyMolServer();
   const userInputServer = buildBuiltinUserInputServer(userInputEnv);
   const defaultServers = [...buildDefaultMcpServers(), larkProjectAgentServer];
   const missing = [
@@ -915,6 +963,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
     scienceArtifactServer,
     labSkillServer,
     userInputServer,
+    pymolServer,
     ...bioServers,
   ].filter((server) => !hasExistingBuiltinServer(existingByName, server.name));
   let imageServerUpdated = false;
@@ -924,6 +973,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   let labSkillServerUpdated = false;
   let userInputServerUpdated = false;
   let bioServerUpdated = false;
+  let pymolServerUpdated = false;
   const toolCacheRefreshNames = new Set<string>();
 
   if (missing.length > 0) {
@@ -1115,6 +1165,29 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
       await mcpService.toggleServer.invoke({ id: existingBioServer.id });
       bioServerUpdated = true;
     }
+  }
+
+  const existingPyMolServer = findExistingBuiltinServer(existingByName, BUILTIN_PYMOL_NAME);
+  if (
+    existingPyMolServer &&
+    (existingPyMolServer.builtin !== true ||
+      existingPyMolServer.name !== pymolServer.name ||
+      !existingPyMolServer.original_json ||
+      existingPyMolServer.original_json.trim() === '' ||
+      existingPyMolServer.original_json.trim() === '{}' ||
+      existingPyMolServer.original_json !== pymolServer.original_json ||
+      !isSameStdioTransport(existingPyMolServer.transport, pymolServer.transport))
+  ) {
+    await mcpService.updateServer.invoke({
+      id: existingPyMolServer.id,
+      data: buildBuiltinMcpRefreshData(pymolServer),
+    });
+    toolCacheRefreshNames.add(BUILTIN_PYMOL_NAME);
+    pymolServerUpdated = true;
+  }
+  if (existingPyMolServer && existingPyMolServer.enabled !== pymolServer.enabled) {
+    await mcpService.toggleServer.invoke({ id: existingPyMolServer.id });
+    pymolServerUpdated = true;
   }
 
   const refreshedServers = await mcpService.listServers.invoke();
@@ -1346,7 +1419,13 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
 
   try {
     const codexConfigChanged = await syncCodexOpenScienceMcpConfig(
-      buildCodexOpenScienceMcpServers(medicalEvidenceServer, researchEvidenceServer, scienceArtifactServer, bioServers)
+      buildCodexOpenScienceMcpServers(
+        medicalEvidenceServer,
+        researchEvidenceServer,
+        scienceArtifactServer,
+        bioServers,
+        pymolServer
+      )
     );
     console.info(
       '[Migration] OpenScience MCP entries in Codex config %s',
@@ -1362,7 +1441,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   }
 
   console.info(
-    '[Migration] MCP bootstrap completed, imported %d missing defaults, updated image server: %s, updated medical evidence server: %s, updated research evidence server: %s, updated science artifact server: %s, updated lab skill server: %s, updated user input server: %s, updated bio servers: %s, image config source: %s, medical evidence config source: %s, research evidence config source: %s, science artifact config source: %s, image enabled: %s',
+    '[Migration] MCP bootstrap completed, imported %d missing defaults, updated image server: %s, updated medical evidence server: %s, updated research evidence server: %s, updated science artifact server: %s, updated lab skill server: %s, updated user input server: %s, updated bio servers: %s, updated PyMOL server: %s, image config source: %s, medical evidence config source: %s, research evidence config source: %s, science artifact config source: %s, image enabled: %s',
     missing.length,
     imageServerUpdated ? 'yes' : 'no',
     medicalEvidenceServerUpdated ? 'yes' : 'no',
@@ -1371,6 +1450,7 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
     labSkillServerUpdated ? 'yes' : 'no',
     userInputServerUpdated ? 'yes' : 'no',
     bioServerUpdated ? 'yes' : 'no',
+    pymolServerUpdated ? 'yes' : 'no',
     imageConfigSource,
     medicalEvidenceConfigSource,
     researchEvidenceConfigSource,

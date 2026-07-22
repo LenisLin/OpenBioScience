@@ -13,14 +13,60 @@
 
 const esbuild = require('esbuild');
 const path = require('path');
+const fs = require('fs');
 
 const ROOT = path.resolve(__dirname, '..');
+
+function firstExisting(candidates) {
+  return candidates.find((candidate) => fs.existsSync(candidate));
+}
+
+function packageEntryDir(packageName) {
+  try {
+    return path.dirname(require.resolve(packageName, { paths: [ROOT] }));
+  } catch {
+    return undefined;
+  }
+}
+
+const dependencyCompatPlugin = {
+  name: 'builtin-mcp-dependency-compat',
+  setup(build) {
+    const gaxiosEntryDir = packageEntryDir('gaxios');
+    const entitiesEntryDir = packageEntryDir('entities');
+    const gaxiosCommon = firstExisting([
+      ...(gaxiosEntryDir ? [path.join(gaxiosEntryDir, 'common.js')] : []),
+      path.join(ROOT, 'node_modules/.bun/node_modules/gaxios/build/cjs/src/common.js'),
+      path.join(ROOT, 'node_modules/gaxios/build/cjs/src/common.js'),
+    ]);
+    const entitiesDecode = firstExisting([
+      path.join(ROOT, 'node_modules/.bun/node_modules/entities/dist/esm/decode.js'),
+      path.join(ROOT, 'node_modules/entities/dist/esm/decode.js'),
+      ...(entitiesEntryDir ? [path.join(entitiesEntryDir, '../esm/decode.js')] : []),
+    ]);
+    const unicornMagic = firstExisting([
+      path.join(ROOT, 'node_modules/.bun/unicorn-magic@0.3.0/node_modules/unicorn-magic/node.js'),
+      path.join(ROOT, 'node_modules/unicorn-magic/node.js'),
+    ]);
+    const aliases = {
+      ...(gaxiosCommon ? { 'gaxios/build/src/common': gaxiosCommon } : {}),
+      ...(entitiesDecode ? { 'entities/lib/decode.js': entitiesDecode } : {}),
+      ...(unicornMagic ? { 'unicorn-magic': unicornMagic } : {}),
+    };
+
+    build.onResolve({ filter: /^(gaxios\/build\/src\/common|entities\/lib\/decode\.js|unicorn-magic)$/ }, (args) => {
+      const alias = aliases[args.path];
+      return alias ? { path: alias } : undefined;
+    });
+  },
+};
 
 const SHARED_OPTIONS = {
   bundle: true,
   platform: 'node',
   format: 'cjs',
   external: ['electron'],
+  plugins: [dependencyCompatPlugin],
   tsconfig: path.join(ROOT, 'tsconfig.json'),
   loader: { '.wasm': 'empty' },
   define: {
@@ -71,6 +117,11 @@ async function main() {
       ...SHARED_OPTIONS,
       entryPoints: [path.join(ROOT, 'packages/desktop/src/process/resources/builtinMcp/bioServer.ts')],
       outfile: path.join(ROOT, 'out/main/builtin-mcp-bio.js'),
+    }),
+    esbuild.build({
+      ...SHARED_OPTIONS,
+      entryPoints: [path.join(ROOT, 'packages/desktop/src/process/resources/builtinMcp/bio/pymolServer.ts')],
+      outfile: path.join(ROOT, 'out/main/builtin-mcp-pymol.js'),
     }),
   ]);
 }

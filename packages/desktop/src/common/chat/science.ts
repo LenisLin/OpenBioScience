@@ -386,6 +386,14 @@ export interface ScienceArtifactViewerSpec {
   mapPath?: string;
   editable?: boolean;
   savePolicy?: 'read_only' | 'new_version_required' | 'overwrite_allowed';
+  pymol?: {
+    conversationId?: string;
+    sessionId?: string;
+    revision?: number;
+    serverOnly?: boolean;
+    renderPath?: string;
+    renderUrl?: string;
+  };
   tracks?: Array<Record<string, unknown>>;
   datasets?: Array<Record<string, unknown>>;
   layers?: Array<Record<string, unknown>>;

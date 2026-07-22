@@ -1,0 +1,40 @@
+name: bio-py-structure-benchmark
+channels:
+  - conda-forge
+dependencies:
+  # CPU-first environment for deterministic structure/variant benchmarks.
+  # ProteinMPNN, ESM/ESMFold2, CUDA runtimes, model checkpoints, and remote
+  # GPU runners intentionally live outside this environment. Their dedicated
+  # skills own checkpoint, accelerator, and driver compatibility.
+  - python=3.12.*
+  - pip
+  - numpy=2.*
+  - pandas>=2,<3
+  - scipy=1.*
+  - scikit-learn=1.*
+  - biopython=1.*
+  - gemmi=0.7.*
+  - biotite=1.*
+  - freesasa=2.*
+  # Provides the mkdssp executable consumed by Bio.PDB.DSSP.
+  - dssp=4.*
+  - matplotlib-base=3.*
+  - seaborn=0.13.*
+  - pyyaml
+  - requests
+  # The MCP worker imports pymol from this interpreter. After creating the
+  # environment, set OPENBIOSCIENCE_PYMOL_PYTHON to its python executable;
+  # activation alone is not used by pymolServer.ts for interpreter discovery.
+  - pymol-open-source=3.1.*
+  # ANARCII uses PyTorch for antibody numbering. Keep this CPU-only: it is not
+  # the execution environment for ProteinMPNN or any ESM family model.
+  - pytorch-cpu=2.*
+  - psutil
+  - msgpack-python
+  - sortedcontainers
+  - pip:
+      # These packages are not maintained as conda-forge packages. Their
+      # runtime dependencies above stay solver-owned; pin the pip layer so
+      # numbering behavior does not drift between benchmark runs.
+      - anarcii==2.0.8
+      - abnumber==0.4.4

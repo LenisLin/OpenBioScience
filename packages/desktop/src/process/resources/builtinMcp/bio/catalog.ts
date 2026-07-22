@@ -11,6 +11,7 @@ export type BioMcpProfile =
   | 'source'
   | 'knowledge'
   | 'plot'
+  | 'benchmark'
   | 'reproduction'
   | 'analysis'
   | 'statistics'
@@ -124,6 +125,22 @@ export const BIO_MCP_PROFILES: Record<BioMcpProfile, BioMcpProfileDefinition> = 
       'render_cnv',
       'export_figure_bundle',
       'summarize_plot_outputs',
+    ],
+  },
+  benchmark: {
+    profile: 'benchmark',
+    serverName: 'openscience-bio-benchmark',
+    toolName: 'bio_benchmark',
+    description:
+      'OpenBioScience benchmark control plane for non-omics blind/freeze/reveal/evaluate contracts, including protein variant mapping, interface ddG, and sequence recovery benchmarks.',
+    actions: [
+      'status',
+      'create_plan',
+      'freeze_inputs',
+      'freeze_blind_predictions',
+      'reveal',
+      'record_metrics',
+      'complete',
     ],
   },
   reproduction: {
@@ -252,6 +269,27 @@ export const BIO_ENVIRONMENTS: BioMcpCatalogItem[] = [
     environmentRefs: ['sc-r-tumor-cnv'],
     outputs: ['tables/cnv/*.tsv', 'figures/cnv/*', 'reports/cnv_summary.json'],
   },
+  {
+    id: 'bio-py-structure-benchmark',
+    description:
+      'Python structure benchmark environment for ProteinGym/SKEMPI residue mapping, SASA, DSSP, FreeSASA, ANARCII/AbNumber, and PyMOL worker discovery.',
+    environmentRefs: ['bio-py-structure-benchmark'],
+    outputs: ['tables/*variant*.csv', 'tables/*residue*.csv', 'evaluation/metrics.json', 'reports/benchmark_manifest.json'],
+  },
+  {
+    id: 'sc-py-immune-repertoire',
+    description:
+      'Python immune repertoire environment for matched 10x GEX/VDJ analysis, Scirpy/MuData, AIRR export, and SHM-gated provenance checks.',
+    environmentRefs: ['sc-py-immune-repertoire'],
+    outputs: ['tables/barcode_join_qc.tsv', 'tables/paired_airr_rearrangements.tsv', 'reports/vdj_input_audit.json'],
+  },
+  {
+    id: 'sc-py-spatial',
+    description:
+      'Python spatial transcriptomics environment for 10x Visium and Squidpy registry baselines, SpatialData IO, graph construction, and Moran statistics.',
+    environmentRefs: ['sc-py-spatial'],
+    outputs: ['results/objects/spatial_baseline.h5ad', 'results/tables/morans_i.tsv', 'results/figures/spatial_clusters.png'],
+  },
 ];
 
 export const BIO_WORKFLOWS: BioMcpCatalogItem[] = [
@@ -358,6 +396,66 @@ export const BIO_WORKFLOWS: BioMcpCatalogItem[] = [
     environmentRefs: ['sc-py-singlecell'],
     requiredFields: ['analysis_id', 'workflow_modules', 'canonical_outputs'],
     outputs: ['reports/analysis_report.md', 'results/output_manifest.json', 'logs/session_info.json', 'logs/warnings.tsv'],
+  },
+  {
+    id: 'protein_variant_structure_mapping',
+    description:
+      'Normalize single amino-acid substitutions, align sequence positions to PDB residue keys, append structure features, and produce bounded mutation-effect structure reports.',
+    aliases: ['proteingym_structure_mapping', 'gfp_variant_mapping'],
+    environmentRefs: ['bio-py-structure-benchmark'],
+    requiredFields: ['assay_table', 'mutation_column', 'reference_sequence', 'structure_id', 'chain_id'],
+    outputs: [
+      'tables/normalized_variants.csv',
+      'tables/residue_map.csv',
+      'tables/structure_variant_map.csv',
+      'reports/benchmark_manifest.json',
+    ],
+  },
+  {
+    id: 'protein_interface_ddg_benchmark',
+    description:
+      'Run a leakage-safe blind interface ddG benchmark with feature blinding, immutable prediction freeze, truth reveal, and metric recording.',
+    aliases: ['skempi_blind_ddg', 'antibody_antigen_interface_benchmark'],
+    environmentRefs: ['bio-py-structure-benchmark'],
+    requiredFields: ['source_table', 'row_id_column', 'mutation_column', 'target_column', 'structure_id'],
+    outputs: [
+      'blind/blind_features.csv',
+      'blind/blind_receipt.json',
+      'predictions/freeze_receipt.json',
+      'evaluation/metrics.json',
+    ],
+  },
+  {
+    id: 'protein_design_sequence_recovery',
+    description:
+      'Evaluate ProteinMPNN-style backbone-conditioned sequence recovery with fixed seeds, native recovery, diversity, supplied ESM scores, and structure self-consistency metrics.',
+    aliases: ['proteinmpnn_sequence_recovery', 'gb1_recovery_benchmark'],
+    environmentRefs: ['bio-py-structure-benchmark'],
+    requiredFields: ['native_fasta', 'backbone_structure', 'design_positions', 'model_manifest'],
+    outputs: ['run_manifest.json', 'sequence_metrics.csv', 'sequence_summary.json', 'structure_summary.json'],
+  },
+  {
+    id: 'singlecell_vdj_integration',
+    description:
+      'Audit matched 10x GEX and BCR VDJ barcodes, apply productive/high-confidence chain QC, define clonotypes, and export paired AIRR-compatible VH/VL rows.',
+    aliases: ['bcr_vdj_barcode_join', 'healthy_pbmc_bcr'],
+    environmentRefs: ['sc-py-immune-repertoire'],
+    requiredFields: ['gex_barcodes', 'filtered_contig_annotations', 'sample_id', 'barcode_policy'],
+    outputs: ['reports/vdj_input_audit.json', 'tables/barcode_join_qc.tsv', 'tables/paired_airr_rearrangements.tsv'],
+  },
+  {
+    id: 'spatial_visium_baseline',
+    description:
+      'Validate localized Visium or Squidpy-registry spatial inputs, check image-coordinate alignment, run spot QC, clustering, markers, spatial graph, and Moran statistics.',
+    aliases: ['squidpy_visium_baseline', 'mouse_brain_visium_baseline'],
+    environmentRefs: ['sc-py-spatial'],
+    requiredFields: ['spatial_input_manifest', 'sample_id', 'matrix_semantics'],
+    outputs: [
+      'results/tables/coordinate_validation.tsv',
+      'results/tables/cluster_markers.tsv',
+      'results/tables/morans_i.tsv',
+      'reports/analysis_report.md',
+    ],
   },
 ];
 
@@ -546,6 +644,7 @@ export function resolveBioProfile(value?: string | null): BioMcpProfile {
     value === 'source' ||
     value === 'knowledge' ||
     value === 'plot' ||
+    value === 'benchmark' ||
     value === 'reproduction' ||
     value === 'analysis' ||
     value === 'statistics' ||

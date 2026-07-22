@@ -126,6 +126,8 @@ extraResources:
     to: bio
     filter:
       - '**/*'
+  - from: packages/desktop/src/process/resources/builtinMcp/bio/pymolWorker.py
+    to: pymol/pymolWorker.py
 win:
   target:
     - nsis
@@ -228,6 +230,7 @@ asarUnpack:
   - 'out/main/builtin-mcp-lab-skill.js'
   - 'out/main/builtin-mcp-user-input.js'
   - 'out/main/builtin-mcp-bio.js'
+  - 'out/main/builtin-mcp-pymol.js'
   - 'out/main/team-mcp-stdio.js'
   - 'out/main/team-guide-mcp-stdio.js'
 

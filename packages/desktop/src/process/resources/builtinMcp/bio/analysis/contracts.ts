@@ -12,6 +12,13 @@ export const ANALYSIS_OUTPUT_ROOT = 'omics_analysis';
 
 export const ANALYSIS_STAGES: OmicsAnalysisStage[] = ['intake', 'qc', 'baseline', 'exploration', 'episode', 'closing'];
 export const EXECUTABLE_STAGES = new Set<OmicsAnalysisStage>(['intake', 'qc', 'baseline', 'exploration', 'episode']);
+export const ANALYSIS_SPECIALIZED_ARTIFACT_TYPES = [
+  'vdj_airr_rearrangements',
+  'vdj_barcode_join_qc',
+  'spatial_coordinate_validation',
+  'spatial_neighbors',
+  'spatial_autocorrelation',
+] as const;
 
 export type AnalysisFileReference = {
   path: string;
@@ -347,6 +354,25 @@ export const stageArtifactRequirements = (stage: OmicsAnalysisStage): string[] =
   }
   if (stage === 'episode') return ['results/output_manifest.json', 'logs/'];
   return ['final_report', 'coverage_contract'];
+};
+
+export const modalityArtifactRequirements = (modality: string): string[] => {
+  if (modality === 'singlecell_vdj' || modality === 'immune_repertoire') {
+    return [
+      'reports/vdj_input_audit.json',
+      'tables/barcode_join_qc.tsv',
+      'tables/paired_airr_rearrangements.tsv',
+    ];
+  }
+  if (modality === 'spatial_transcriptomics' || modality === 'visium') {
+    return [
+      'results/tables/coordinate_validation.tsv',
+      'results/tables/spatial_neighbors_summary.tsv',
+      'results/tables/morans_i.tsv',
+      'results/figures/spatial_clusters',
+    ];
+  }
+  return [];
 };
 
 export const assertStageArtifactCoverage = (files: AnalysisFileReference[], stage: OmicsAnalysisStage): string[] => {
