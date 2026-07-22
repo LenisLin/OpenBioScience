@@ -1,0 +1,4 @@
+interface:
+  display_name: "Protein Variant Benchmark"
+  short_description: "Benchmark protein mutations against structures"
+  default_prompt: "Use $bio-protein-variant-benchmark to map protein variants to structure or run a leakage-safe blind interface benchmark."

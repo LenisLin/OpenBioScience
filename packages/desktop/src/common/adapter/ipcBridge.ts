@@ -61,6 +61,14 @@ import type {
   SetConfigOptionResponse,
 } from '../types/platform/acpTypes';
 import type {
+  PyMolRenderReadyEvent,
+  PyMolSessionCommand,
+  PyMolSessionResult,
+  PyMolSessionStatusEvent,
+  PyMolStateChangedEvent,
+  PyMolViewerState,
+} from '../types/platform/pymolTypes';
+import type {
   ComputeSshHostContextResult,
   ComputeSshHostPublic,
   ComputeSshHostSaveResult,
@@ -2140,6 +2148,30 @@ export const mcpService = {
   loginMcpOAuth: httpPost<{ success: boolean; error?: string }, { server_url: string }>('/api/mcp/oauth/login'),
   logoutMcpOAuth: httpPost<void, { server_url: string }>('/api/mcp/oauth/logout'),
   getAuthenticatedServers: httpGet<string[], void>('/api/mcp/oauth/authenticated'),
+};
+
+// ---------------------------------------------------------------------------
+// PyMOL session service - implemented by deeporganiser-core.
+// ---------------------------------------------------------------------------
+
+export const pymolService = {
+  ensureSession: httpPost<PyMolSessionResult, { conversationId: string }>('/api/pymol/sessions/ensure'),
+  getSession: httpGet<PyMolViewerState, { conversationId: string }>(
+    (p) => `/api/pymol/sessions/${encodeURIComponent(p.conversationId)}`,
+    { silentStatuses: [404] }
+  ),
+  command: httpPost<PyMolSessionResult, { conversationId: string; command: PyMolSessionCommand }>(
+    (p) => `/api/pymol/sessions/${encodeURIComponent(p.conversationId)}/commands`,
+    (p) => p.command
+  ),
+  closeSession: httpDelete<void, { conversationId: string }>(
+    (p) => `/api/pymol/sessions/${encodeURIComponent(p.conversationId)}`
+  ),
+  sessionStatus: wsEmitter<PyMolSessionStatusEvent>('pymol.sessionStatus'),
+  stateChanged: wsEmitter<PyMolStateChangedEvent>('pymol.stateChanged'),
+  renderReady: wsEmitter<PyMolRenderReadyEvent>('pymol.renderReady'),
+  transportOpen: wsEmitter('__transport.open'),
+  transportClose: wsEmitter('__transport.close'),
 };
 
 export const openclawConversation = {

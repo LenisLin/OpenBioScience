@@ -1,0 +1,1 @@
+Smoke fixture only: no ProteinMPNN, ESM, or structure-prediction model was executed.

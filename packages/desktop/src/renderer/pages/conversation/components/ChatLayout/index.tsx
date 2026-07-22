@@ -360,6 +360,7 @@ const ChatLayout: React.FC<{
                   })}
                 <div className='h-full w-full overflow-hidden rounded-[15px]'>
                   <PreviewPanel
+                    conversationId={conversation_id}
                     previewLayoutMode={previewLayoutMode}
                     onPreviewLayoutModeChange={handlePreviewLayoutModeChange}
                     onRequestHalfPanel={requestHalfPreviewPanel}

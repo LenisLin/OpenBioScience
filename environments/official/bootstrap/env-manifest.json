@@ -53,6 +53,24 @@
       "yaml": "environments/official/sc-network-grn-r.yml",
       "relativePrefix": "environments/official/sc-network-grn-r",
       "requiredCommands": ["Rscript"]
+    },
+    {
+      "name": "bio-py-structure-benchmark",
+      "yaml": "environments/official/bio-py-structure-benchmark.yml",
+      "relativePrefix": "environments/official/bio-py-structure-benchmark",
+      "requiredCommands": ["python", "python3"]
+    },
+    {
+      "name": "sc-py-immune-repertoire",
+      "yaml": "environments/official/sc-py-immune-repertoire.yml",
+      "relativePrefix": "environments/official/sc-py-immune-repertoire",
+      "requiredCommands": ["python", "python3"]
+    },
+    {
+      "name": "sc-py-spatial",
+      "yaml": "environments/official/sc-py-spatial.yml",
+      "relativePrefix": "environments/official/sc-py-spatial",
+      "requiredCommands": ["python", "python3"]
     }
   ]
 }

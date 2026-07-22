@@ -76,6 +76,7 @@ import { preflightExecutionScripts } from './bio/reproduction/scriptPreflight';
 import { validateSkillCompliance } from './bio/reproduction/skillContract';
 import { handleAnalysisAction } from './bio/analysis/workflow';
 import { stageOutputRelativePath } from './bio/analysis/contracts';
+import { applyBenchmarkAction, benchmarkControlRelativePath, benchmarkOutputRelativePath } from './bio/benchmark';
 import {
   canonicalSpecies,
   resolveLocalGeneSets,
@@ -1119,7 +1120,10 @@ const statusPayload = (profile: BioMcpProfile) => {
   return {
     schema: RESULT_SCHEMA,
     action: 'status',
-    status: profile === 'reproduction' || profile === 'analysis' || profile === 'statistics' ? 'ready' : 'supported',
+    status:
+      profile === 'reproduction' || profile === 'analysis' || profile === 'statistics' || profile === 'benchmark'
+        ? 'ready'
+        : 'supported',
     profile,
     serverName: definition.serverName,
     toolName: definition.toolName,
@@ -1630,6 +1634,38 @@ const userEnvironmentPlan = (action: string, payload?: JsonRecord) => {
           'This MCP returns a user environment contract only. The agent/runtime must create, derive, and debug the actual environment outside this MCP.',
         ],
     timestamp: Date.now(),
+  };
+};
+
+const handleBenchmarkAction = (action: string, payload?: JsonRecord) => {
+  if (action === 'status') {
+    return {
+      ...statusPayload('benchmark'),
+      benchmarkContract: {
+        stateSchema: 'openbioscience.bio_benchmark.state.v1',
+        transitionModel: 'blind_freeze_reveal_evaluate',
+        controlRoot: '.openbioscience/control/benchmark/v1',
+        outputRootPattern: 'benchmarks/<benchmarkId>',
+      },
+      supportedKinds: ['variant_structure_mapping', 'interface_ddg', 'sequence_recovery', 'generic'],
+      requiredBoundary:
+        'Truth-bearing fields must be absent from blind predictions and only joined after prediction freeze.',
+    };
+  }
+  const record = payload || {};
+  const { state, ...actionPayload } = record;
+  const currentState = isRecord(state) ? (state as Parameters<typeof applyBenchmarkAction>[0]) : undefined;
+  const nextState = applyBenchmarkAction(currentState, { action, ...actionPayload });
+  return {
+    schema: RESULT_SCHEMA,
+    action,
+    status: nextState.status,
+    benchmarkId: nextState.benchmarkId,
+    revision: nextState.revision,
+    controlPath: benchmarkControlRelativePath(nextState.benchmarkId),
+    defaultOutputRoot: benchmarkOutputRelativePath(nextState.benchmarkId),
+    declaredOutputRoot: nextState.plan.outputRoot,
+    state: nextState,
   };
 };
 
@@ -4092,13 +4128,15 @@ async function main() {
               ? handleKnowledgeAction(action, recordPayload)
               : profile === 'plot'
                 ? handlePlotAction(action, recordPayload)
-                : profile === 'statistics'
-                  ? handleStatisticsAction(action, recordPayload)
-                  : profile === 'environment_manager'
-                    ? handleEnvironmentManagerAction(action, recordPayload)
-                    : profile === 'analysis'
-                      ? await handleAnalysisAction(workspaceRoot(), action, recordPayload)
-                      : handleReproductionAction(action, recordPayload);
+                : profile === 'benchmark'
+                  ? handleBenchmarkAction(action, recordPayload)
+                  : profile === 'statistics'
+                    ? handleStatisticsAction(action, recordPayload)
+                    : profile === 'environment_manager'
+                      ? handleEnvironmentManagerAction(action, recordPayload)
+                      : profile === 'analysis'
+                        ? await handleAnalysisAction(workspaceRoot(), action, recordPayload)
+                        : handleReproductionAction(action, recordPayload);
       const receiptIds = persistReceiptsFromResult(workspaceRoot(), result, { inputFingerprint, action });
       return jsonText({
         ...result,

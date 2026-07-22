@@ -740,6 +740,9 @@ export const BUILTIN_BIO_KNOWLEDGE_LEGACY_NAMES = ['deeporganiser-bio-knowledge'
 export const BUILTIN_BIO_PLOT_ID = 'builtin-bio-plot';
 export const BUILTIN_BIO_PLOT_NAME = 'openscience-bio-plot';
 export const BUILTIN_BIO_PLOT_LEGACY_NAMES = ['deeporganiser-bio-plot'] as const;
+export const BUILTIN_BIO_BENCHMARK_ID = 'builtin-bio-benchmark';
+export const BUILTIN_BIO_BENCHMARK_NAME = 'openscience-bio-benchmark';
+export const BUILTIN_BIO_BENCHMARK_LEGACY_NAMES = ['deeporganiser-bio-benchmark'] as const;
 export const BUILTIN_BIO_REPRODUCTION_ID = 'builtin-bio-reproduction';
 export const BUILTIN_BIO_REPRODUCTION_NAME = 'openscience-bio-reproduction';
 export const BUILTIN_BIO_REPRODUCTION_LEGACY_NAMES = ['deeporganiser-bio-reproduction'] as const;
@@ -752,6 +755,9 @@ export const BUILTIN_BIO_STATISTICS_LEGACY_NAMES = ['deeporganiser-bio-statistic
 export const BUILTIN_BIO_ENVIRONMENT_MANAGER_ID = 'builtin-bio-environment-manager';
 export const BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME = 'openscience-bio-environment-manager';
 export const BUILTIN_BIO_ENVIRONMENT_MANAGER_LEGACY_NAMES = ['deeporganiser-bio-environment-manager'] as const;
+export const BUILTIN_PYMOL_ID = 'builtin-pymol';
+export const BUILTIN_PYMOL_NAME = 'openscience-pymol';
+export const BUILTIN_PYMOL_LEGACY_NAMES = ['deeporganiser-pymol'] as const;
 
 export interface IMcpTool {
   name: string;

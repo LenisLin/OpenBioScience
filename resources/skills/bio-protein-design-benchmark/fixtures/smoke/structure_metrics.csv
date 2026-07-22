@@ -1,0 +1,5 @@
+candidate_id,model_id,status,mean_plddt,ptm,iptm,pae_mean,aligned_ca_rmsd,tm_score,coverage
+design_exact,seed_1,completed,92.0,0.91,,2.1,0.45,0.96,1.0
+design_exact,seed_2,completed,89.0,0.89,,2.5,0.50,0.95,1.0
+design_two_changes,seed_1,completed,84.0,0.82,,3.4,0.90,0.88,0.98
+design_three_changes,seed_1,failed,,,,,,,

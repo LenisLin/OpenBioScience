@@ -93,12 +93,14 @@ const provenanceStatusFallback = (status?: ScienceArtifactFileProvenanceResult['
 export type PreviewPanelLayoutMode = 'split' | 'fullscreen';
 
 interface PreviewPanelProps {
+  conversationId?: string;
   previewLayoutMode?: PreviewPanelLayoutMode;
   onPreviewLayoutModeChange?: (mode: PreviewPanelLayoutMode) => void;
   onRequestHalfPanel?: () => void;
 }
 
 const PreviewPanel: React.FC<PreviewPanelProps> = ({
+  conversationId,
   previewLayoutMode = 'split',
   onPreviewLayoutModeChange,
   onRequestHalfPanel,
@@ -969,6 +971,11 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
           file_name={metadata?.file_name || metadata?.title}
           workspace={metadata?.workspace}
           artifact={activeScienceArtifact}
+          conversationId={
+            metadata?.science?.panel?.conversationId ||
+            activeScienceArtifact?.viewer?.pymol?.conversationId ||
+            conversationId
+          }
         />
       );
     } else if (content_type === 'url') {

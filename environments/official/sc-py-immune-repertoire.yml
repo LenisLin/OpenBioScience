@@ -1,0 +1,40 @@
+name: sc-py-immune-repertoire
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # Reproducible Python base for matched 10x GEX and immune-receptor analysis.
+  # Keep IgBLAST, germline databases, and Change-O in the optional SHM profile
+  # because their database provenance is part of the scientific contract.
+  - python=3.12.*
+  - pip
+  - git
+
+  # GEX and multimodal object IO
+  - numpy=2.2.*
+  - pandas=2.2.*
+  - scipy=1.15.*
+  - h5py=3.13.*
+  - anndata=0.11.*
+  - scanpy=1.11.*
+  - mudata=0.3.*
+  - muon=0.1.*
+
+  # AIRR and repertoire analysis
+  - scirpy=0.22.*
+  - airr=1.5.*
+  - awkward=2.8.*
+  - pyarrow=19.*
+  - python-igraph=0.11.*
+  - leidenalg=0.10.*
+  - numba=0.61.*
+
+  # Plotting and report tables
+  - matplotlib-base=3.10.*
+  - seaborn=0.13.*
+
+  # Optional SHM contract (install as a separately versioned enhancement):
+  # - bioconda::igblast plus checksum-pinned IMGT-compatible germline files
+  # - bioconda::changeo for germline reconstruction and mutation summaries
+  # Record the IgBLAST command, database release/source, and file checksums in
+  # openbioscience.igblast_germline_provenance.v1 before reporting SHM.

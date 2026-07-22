@@ -190,6 +190,43 @@
     "inspectElementEnable": "开启审核元素",
     "inspectElementDisable": "关闭审核元素"
   },
+  "pymol": {
+    "structure": "结构",
+    "representation": "显示方式",
+    "color": "着色",
+    "background": "背景",
+    "backgrounds": {
+      "light": "浅色背景",
+      "dark": "深色背景",
+      "transparent": "透明背景"
+    },
+    "reset": "重置",
+    "snapshot": "快照",
+    "rayRender": "PyMOL 光线追踪",
+    "renderer": "渲染器",
+    "evidence": "证据",
+    "syncLabel": "PyMOL 同步",
+    "selection": "选择",
+    "send": "发送",
+    "selectHint": "点击一个原子或残基",
+    "noEvidence": "尚未记录证据 ID",
+    "loading": "正在加载结构...",
+    "previewFailed": "结构预览失败",
+    "renderFailed": "无法渲染该坐标文件。",
+    "noCoordinates": "没有提供该结构的坐标内容。",
+    "readFailed": "无法读取结构文件。",
+    "serverOnly": "PyMOL 保真视图",
+    "serverRenderAlt": "服务器生成的权威 PyMOL 渲染图",
+    "atomCount": "{{count}} 个原子",
+    "residueCount": "{{count}} 个残基",
+    "chainCount": "{{count}} 条链",
+    "sync": {
+      "disabled": "本地查看器",
+      "connecting": "正在连接",
+      "ready": "已同步",
+      "unavailable": "Core 同步不可用"
+    }
+  },
   "ppt": {
     "loading": "正在启动 PPT 预览...",
     "installing": "正在安装预览组件...",

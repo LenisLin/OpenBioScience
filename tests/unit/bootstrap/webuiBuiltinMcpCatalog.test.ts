@@ -76,20 +76,62 @@ describe('standalone WebUI built-in MCP catalog', () => {
     );
   });
 
+  it('registers the OpenBioScience benchmark MCP profile', () => {
+    expect(buildStandaloneBioMcpServerSpecs()).toContainEqual(
+      expect.objectContaining({
+        name: 'openscience-bio-benchmark',
+        scriptName: 'builtin-mcp-bio',
+        enabled: true,
+        env: expect.objectContaining({
+          OPENBIOSCIENCE_BIO_MCP_PROFILE: 'benchmark',
+        }),
+      })
+    );
+  });
+
   it('enables all first-party Bio MCP control planes', () => {
     expect(buildStandaloneBioMcpServerSpecs().every((server) => server.enabled === true)).toBe(true);
+  });
+
+  it('registers the synchronized PyMOL MCP with the core port and worker path', () => {
+    const pymol = buildStandaloneBuiltinMcpServers(25809).find((server) => server.name === 'openscience-pymol');
+
+    expect(pymol).toEqual(
+      expect.objectContaining({
+        enabled: true,
+        transport: expect.objectContaining({
+          args: [expect.stringContaining('builtin-mcp-pymol.js')],
+          env: expect.objectContaining({
+            DEEPORGANISER_BACKEND_PORT: '25809',
+            OPENBIOSCIENCE_PYMOL_WORKER: expect.stringContaining('pymolWorker.py'),
+          }),
+        }),
+      })
+    );
   });
 
   it('syncs OpenBioScience skills into the standalone WebUI work directory', () => {
     const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openscience-webui-skills-'));
     syncOpenBioScienceSkills(workDir);
 
-    for (const dir of ['databases', 'singlecell', 'bio-omics-analysis', 'bio-analysis-script-authoring']) {
+    for (const dir of [
+      'databases',
+      'singlecell',
+      'bio-omics-analysis',
+      'bio-protein-variant-benchmark',
+      'bio-protein-design-benchmark',
+      'bio-singlecell-vdj',
+      'bio-spatial-transcriptomics',
+      'bio-analysis-script-authoring',
+      'openscience-pymol',
+      'openscience-structure-triage',
+    ]) {
       const sourcePath = path.join(process.cwd(), 'resources/skills', dir, 'SKILL.md');
       const targetPath = path.join(workDir, 'builtin-skills', dir, 'SKILL.md');
       expect(fs.existsSync(targetPath)).toBe(true);
       expect(fs.readFileSync(targetPath, 'utf8')).toBe(fs.readFileSync(sourcePath, 'utf8'));
     }
+    expect(fs.existsSync(path.join(workDir, 'builtin-skills', '_shared', 'README.md'))).toBe(true);
   });
 
   it('passes the official OpenBioScience runtime root to standalone bio MCP servers', () => {
@@ -109,6 +151,12 @@ describe('standalone WebUI built-in MCP catalog', () => {
         }),
         expect.objectContaining({
           name: 'openscience-bio-analysis',
+          env: expect.objectContaining({
+            OPENBIOSCIENCE_RUNTIME_ROOT: '/mnt/NAS_21T/ProjectData/OpenBioScience',
+          }),
+        }),
+        expect.objectContaining({
+          name: 'openscience-bio-benchmark',
           env: expect.objectContaining({
             OPENBIOSCIENCE_RUNTIME_ROOT: '/mnt/NAS_21T/ProjectData/OpenBioScience',
           }),
@@ -150,6 +198,10 @@ describe('standalone WebUI built-in MCP catalog', () => {
 
     expect(defaultSkillIds).toContain('bio-omics-reproduction-planning');
     expect(defaultSkillIds).toContain('bio-omics-analysis');
+    expect(defaultSkillIds).toContain('bio-protein-variant-benchmark');
+    expect(defaultSkillIds).toContain('bio-protein-design-benchmark');
+    expect(defaultSkillIds).toContain('bio-singlecell-vdj');
+    expect(defaultSkillIds).toContain('bio-spatial-transcriptomics');
     expect(defaultSkillIds).toContain('bio-singlecell-baseline');
     expect(defaultSkillIds).toContain('bio-environment-manager');
     expect(defaultSkillIds).toContain('bio-analysis-script-authoring');

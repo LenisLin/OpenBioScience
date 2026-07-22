@@ -104,6 +104,15 @@ describe('syncCodexOpenScienceMcpConfig', () => {
         },
       },
       {
+        name: 'openscience-bio-benchmark',
+        command: 'node',
+        args: ['/managed/builtin-mcp-bio.js'],
+        env: {
+          OPENBIOSCIENCE_BIO_MCP_PROFILE: 'benchmark',
+          OPENBIOSCIENCE_RUNTIME_ROOT: '/mnt/NAS_21T/ProjectData/OpenBioScience',
+        },
+      },
+      {
         name: 'openscience-bio-statistics',
         command: 'node',
         args: ['/managed/builtin-mcp-bio.js'],
@@ -126,11 +135,13 @@ describe('syncCodexOpenScienceMcpConfig', () => {
     expect(block).toContain('[mcp_servers.openscience-bio-runtime]');
     expect(block).toContain('[mcp_servers.openscience-bio-source]');
     expect(block).toContain('[mcp_servers.openscience-bio-reproduction]');
+    expect(block).toContain('[mcp_servers.openscience-bio-benchmark]');
     expect(block).toContain('[mcp_servers.openscience-bio-statistics]');
     expect(block).toContain('[mcp_servers.openscience-bio-environment-manager]');
     expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "runtime"');
     expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "source"');
     expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "reproduction"');
+    expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "benchmark"');
     expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "statistics"');
     expect(block).toContain('OPENBIOSCIENCE_BIO_MCP_PROFILE = "environment_manager"');
     expect(block).toContain('OPENBIOSCIENCE_RUNTIME_ROOT = "/mnt/NAS_21T/ProjectData/OpenBioScience"');

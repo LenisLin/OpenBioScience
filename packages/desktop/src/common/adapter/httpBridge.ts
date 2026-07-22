@@ -339,6 +339,16 @@ let ws: WebSocket | null = null;
 let wsReconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let wsReconnectAttempt = 0;
 
+const emitWsLocalEvent = (eventName: string, payload?: unknown): void => {
+  for (const listener of wsListeners.get(eventName) || []) {
+    try {
+      listener(payload);
+    } catch {
+      // Transport lifecycle observers must not break WebSocket recovery.
+    }
+  }
+};
+
 function ensureWs(): void {
   if (typeof window === 'undefined') {
     console.debug('[ensureWs] skipped: no window');
@@ -364,11 +374,13 @@ function ensureWs(): void {
   current.addEventListener('open', () => {
     console.debug('[ensureWs] CONNECTED');
     wsReconnectAttempt = 0;
+    emitWsLocalEvent('__transport.open');
   });
 
   current.addEventListener('close', (e) => {
     console.debug('[ensureWs] CLOSED code=' + e.code + ' reason=' + e.reason);
     if (ws === current) ws = null;
+    emitWsLocalEvent('__transport.close');
     scheduleWsReconnect();
   });
 
