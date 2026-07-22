@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spatial Transcriptomics Baseline"
+  short_description: "Run reproducible Visium spatial baselines"
+  default_prompt: "Use $bio-spatial-transcriptomics to validate and analyze a localized Visium dataset."

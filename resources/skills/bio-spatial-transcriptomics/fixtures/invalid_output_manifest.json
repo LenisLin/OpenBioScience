@@ -1,0 +1,21 @@
+{
+  "schema": "openbioscience.analysis_script.outputs.v2",
+  "workflowKind": "omics_analysis",
+  "environmentRef": "sc-py-singlecell",
+  "modality": "spatial_transcriptomics",
+  "sourceKind": "squidpy_registry",
+  "matrixSemantics": "raw_counts",
+  "outputs": {},
+  "coordinateValidation": {
+    "status": "passed",
+    "barcodeMatchFraction": 1.5,
+    "imageAvailable": true,
+    "pixelBoundsPassed": false
+  },
+  "statistics": {
+    "markerMultipleTesting": "none",
+    "moranMultipleTesting": "none",
+    "moranTestedFeatures": 0
+  },
+  "workflowModules": []
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "openbioscience.spatial_input.v1",
+  "datasetId": "squidpy-v1-adult-mouse-brain",
+  "source": {
+    "kind": "squidpy_registry",
+    "uri": "https://github.com/scverse/squidpy",
+    "version": "registry-snapshot",
+    "localized": true,
+    "checksumAlgorithm": "sha256"
+  },
+  "sampleId": "adult-mouse-brain",
+  "files": {
+    "expression": {
+      "path": "input/V1_Adult_Mouse_Brain.h5ad",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "positions": { "embedded": true },
+    "scalefactors": { "embedded": true },
+    "image": { "embedded": true }
+  },
+  "matrixSemantics": "raw_counts",
+  "species": "Mus musculus"
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Protein Design Benchmark"
+  short_description: "Benchmark sequence recovery and fold self-consistency"
+  default_prompt: "Use $bio-protein-design-benchmark to evaluate ProteinMPNN designs with sequence recovery and structure self-consistency metrics."
