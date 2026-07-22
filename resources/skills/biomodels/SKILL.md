@@ -24,7 +24,9 @@ and biomolecular design tasks.
   `kdense-deepchem`, `kdense-medchem`, `kdense-molfeat`,
   `kdense-diffdock`.
 - Viewer/editing: artifact viewer metadata for 3Dmol/Mol\*, Ketcher, and
-  molecule/structure Preview pages.
+  molecule/structure Preview pages; `openscience-pymol` for synchronized
+  headless PyMOL analysis and `openscience-structure-triage` for prediction
+  confidence review.
 
 ## SOP
 

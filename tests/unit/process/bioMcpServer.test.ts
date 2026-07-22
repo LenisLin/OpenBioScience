@@ -242,6 +242,9 @@ const withCapturedKnowledgeTool = async (callback: (capturedTool: CapturedTool) 
 const withCapturedPlotTool = async (callback: (capturedTool: CapturedTool) => Promise<void> | void) =>
   withCapturedBioTool('plot', 'openscience-bio-plot', 'bio_plot', callback);
 
+const withCapturedBenchmarkTool = async (callback: (capturedTool: CapturedTool) => Promise<void> | void) =>
+  withCapturedBioTool('benchmark', 'openscience-bio-benchmark', 'bio_benchmark', callback);
+
 const validPlan = `# Reproduction plan
 
 ## Reproduction objective
@@ -1382,6 +1385,85 @@ describe('OpenBioScience bio MCP server path checks', () => {
         'unresolved',
         'fatal_block',
       ]);
+    });
+  });
+
+  it('exposes benchmark state transitions through the bio_benchmark profile', async () => {
+    await withCapturedBenchmarkTool(async (capturedTool) => {
+      const hash = 'a'.repeat(64);
+      const status = parseToolJson(await capturedTool.handler({ action: 'status' }));
+
+      expect(status).toMatchObject({
+        profile: 'benchmark',
+        toolName: 'bio_benchmark',
+        benchmarkContract: expect.objectContaining({
+          transitionModel: 'blind_freeze_reveal_evaluate',
+        }),
+      });
+
+      const planned = parseToolJson(
+        await capturedTool.handler({
+          action: 'create_plan',
+          payload: {
+            plan: {
+              schema: 'openbioscience.bio_benchmark.plan.v1',
+              benchmarkId: 'gfp-structure',
+              title: 'GFP structure benchmark',
+              kind: 'variant_structure_mapping',
+              objective: 'Map single substitutions to structure features.',
+              outputRoot: 'benchmarks/gfp-structure',
+              blindProtocol: {
+                unitIdField: 'variant_id',
+                hiddenFields: ['observed_score'],
+                revealSourceId: 'protein-gym',
+                leakageControls: ['Do not read observed scores before prediction freeze.'],
+              },
+              expectedMetrics: [{ name: 'spearman', direction: 'higher_is_better' }],
+              createdAt: 1,
+            },
+          },
+        })
+      );
+      const frozen = parseToolJson(
+        await capturedTool.handler({
+          action: 'freeze_inputs',
+          payload: {
+            state: planned.state,
+            benchmarkId: 'gfp-structure',
+            expectedRevision: planned.revision,
+            planHash: planned.state.plan.artifactHash,
+            frozenAt: 2,
+            files: [
+              {
+                inputId: 'structure',
+                role: 'structure',
+                path: 'inputs/1ema.cif',
+                checksum: hash,
+                sizeBytes: 10,
+                provenance: [
+                  {
+                    sourceId: 'rcsb-1ema',
+                    kind: 'structure',
+                    checksum: hash,
+                    uri: 'https://www.rcsb.org/structure/1EMA',
+                  },
+                ],
+              },
+            ],
+          },
+        })
+      );
+
+      expect(planned).toMatchObject({
+        status: 'planned',
+        benchmarkId: 'gfp-structure',
+        controlPath: '.openbioscience/control/benchmark/v1/gfp-structure/state.json',
+      });
+      expect(frozen).toMatchObject({
+        status: 'inputs_frozen',
+        revision: 1,
+        defaultOutputRoot: 'benchmarks/gfp-structure',
+      });
     });
   });
 

@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "benchmark_id": "script-smoke-fixture-v1",
+  "benchmark_kind": "backbone_sequence_recovery",
+  "run": {
+    "mode": "smoke_fixture",
+    "status": "completed",
+    "started_at": "2026-07-20T00:00:00Z",
+    "completed_at": "2026-07-20T00:00:01Z",
+    "command_log": "commands.txt",
+    "environment": "environment.txt"
+  },
+  "inputs": {
+    "native_fasta": {
+      "path": "native.fasta",
+      "sha256": "275d4661b5294e65800fa07c5c848597d42841b5b77ac1998457d28a0bce0c2f"
+    }
+  },
+  "design_protocol": {
+    "indexing": "sequence_1_based",
+    "design_positions": [2, 4, 5, 7],
+    "fixed_positions": [1, 3, 6, 8]
+  },
+  "stages": {
+    "proteinmpnn": {
+      "status": "skipped",
+      "reason": "The smoke fixture tests deterministic scripts and is not model output."
+    },
+    "sequence_scoring": {
+      "status": "skipped",
+      "reason": "No ESM-family model is executed by the smoke fixture."
+    },
+    "folding": {
+      "status": "skipped",
+      "reason": "The structure table contains synthetic metrics for parser testing only."
+    }
+  },
+  "outputs": {
+    "design_fasta": {
+      "path": "designs.fasta",
+      "sha256": "a1d3397a75a35f26424db08f8e7a46271044c4c56a148680427c1b5c55b69875"
+    },
+    "structure_metrics_table": {
+      "path": "structure_metrics.csv",
+      "sha256": "5219ed0c8616ed4dcbf6992982eae5ddc63ea9b25ef041b8d62fd0836abcab75"
+    }
+  }
+}

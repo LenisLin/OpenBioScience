@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.0](https://github.com/LenisLin/OpenBioScience/compare/v0.1.2...v0.2.0) (2026-07-22)
+
+### Desktop
+
+#### Features
+
+- **pymol:** add synchronized structure viewer state, typed PyMOL MCP tools, server render support, and packaged PyMOL worker assets
+- **bio:** add benchmark control plane with blind/freeze/reveal/evaluate contracts and strict benchmark state schemas
+- **environments:** add official structure benchmark, immune repertoire, and spatial transcriptomics Conda manifests
+- **skills:** add OpenBioScience protein benchmark, VDJ, spatial transcriptomics, PyMOL, and structure triage skills
+- **demo:** add numbered reproducible bio demo cases for GB1 sequence recovery, BLCA exploration, ICI reproduction, and CRC reproduction
+
+### Core
+
+- Uses existing bundled `deeporganiser-core` `v0.1.34`; no core version change in this release batch.
+
+---
+
 ## [2.1.22](https://github.com/ResearAI/DeepOrganiser/compare/v2.1.21...v2.1.22) (2026-06-22)
 
 ### Desktop

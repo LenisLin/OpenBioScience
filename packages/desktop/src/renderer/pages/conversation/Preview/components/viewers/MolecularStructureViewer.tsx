@@ -13,8 +13,23 @@ import type {
   ScienceStructureViewerAnnotation,
   ScienceStructureViewerSelection,
 } from '@/common/chat/science';
+import type {
+  PyMolCommandAction,
+  PyMolStateChangedEvent,
+  PyMolViewerState,
+} from '@/common/types/platform/pymolTypes';
+import {
+  pyMolSelectionToViewerSelection,
+  pyMolViewToViewerView,
+  reducePyMolViewerState,
+  shouldApplyPyMolState,
+  shouldReplayPyMolCommand,
+  viewerViewToPyMolView,
+} from '@/common/types/platform/pymolState';
 import { usePreviewContext } from '../../context/PreviewContext';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Button, Select } from '@arco-design/web-react';
+import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './MolecularStructureViewer.css';
 
 type ThreeDmolAtom = {
@@ -55,6 +70,9 @@ type ThreeDmolViewer = {
   resize: () => unknown;
   clear: () => unknown;
   pngURI?: () => string;
+  getView: () => number[];
+  setView: (view: number[]) => unknown;
+  setViewChangeCallback: (callback: (view: number[]) => void) => unknown;
 };
 
 type ThreeDmolNamespace = {
@@ -265,9 +283,8 @@ const estimateStats = (content: string, format: ScienceStructureFormat): Structu
 
 const atomLabel = (atom: ThreeDmolAtom): string => {
   const residue = [atom.resn, atom.resi].filter(Boolean).join(' ');
-  const chain = atom.chain ? `chain ${atom.chain}` : 'no chain';
-  const atomName = atom.atom || atom.elem || 'atom';
-  return [chain, residue, atomName].filter(Boolean).join(' · ');
+  const atomName = atom.atom || atom.elem || '-';
+  return [atom.chain || '-', residue, atomName].filter(Boolean).join(' / ');
 };
 
 const backgroundFor = (background: 'light' | 'dark' | 'transparent'): { color: string | number; alpha: number } => {
@@ -282,6 +299,7 @@ export interface MolecularStructureViewerProps {
   file_name?: string;
   workspace?: string;
   artifact?: ScienceArtifact;
+  conversationId?: string;
 }
 
 const MolecularStructureViewer: React.FC<MolecularStructureViewerProps> = ({
@@ -290,7 +308,9 @@ const MolecularStructureViewer: React.FC<MolecularStructureViewerProps> = ({
   file_name,
   workspace,
   artifact,
+  conversationId,
 }) => {
+  const { t } = useTranslation();
   const { addToSendBox } = usePreviewContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<ThreeDmolViewer | null>(null);
@@ -298,7 +318,17 @@ const MolecularStructureViewer: React.FC<MolecularStructureViewerProps> = ({
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'failed'>('ready');
   const [error, setError] = useState<string | null>(null);
   const [selectedAtom, setSelectedAtom] = useState<ThreeDmolAtom | null>(null);
-
+  const [pymolState, dispatchPyMolState] = useReducer(reducePyMolViewerState, null);
+  const pymolStateRef = useRef<PyMolViewerState | null>(null);
+  const [pymolSyncStatus, setPyMolSyncStatus] = useState<'disabled' | 'connecting' | 'ready' | 'unavailable'>(
+    conversationId ? 'connecting' : 'disabled'
+  );
+  const pymolSyncStatusRef = useRef(pymolSyncStatus);
+  const revisionRef = useRef(0);
+  const applyingRemoteViewRef = useRef(false);
+  const cameraTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const renderTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const remoteApplyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialFormat = useMemo(
     () => detectFormat(file_name || file_path, normalizeStructureFormat(artifact?.viewer?.format), structureContent || content),
     [artifact?.viewer?.format, content, file_name, file_path, structureContent]
@@ -308,6 +338,140 @@ const MolecularStructureViewer: React.FC<MolecularStructureViewerProps> = ({
   const [representation, setRepresentation] = useState<ScienceStructureRepresentation>(defaultRepresentation);
   const [colorBy, setColorBy] = useState<ScienceStructureColorBy>(defaultColorBy);
   const [background, setBackground] = useState<'light' | 'dark' | 'transparent'>(artifact?.viewer?.background || 'light');
+
+  useEffect(() => {
+    pymolSyncStatusRef.current = pymolSyncStatus;
+  }, [pymolSyncStatus]);
+
+  const applyIncomingState = useCallback((incoming: PyMolViewerState, force = false) => {
+    if (!force && !shouldApplyPyMolState(revisionRef.current, incoming)) return;
+    revisionRef.current = incoming.revision;
+    pymolStateRef.current = incoming;
+    dispatchPyMolState({ type: 'snapshot', state: incoming, force });
+    setPyMolSyncStatus(incoming.status === 'ready' ? 'ready' : 'connecting');
+    if (incoming.background) setBackground(incoming.background);
+    const firstObject = incoming.objects[0];
+    if (firstObject?.representation) setRepresentation(firstObject.representation);
+    const remoteView = incoming.camera?.viewerView?.length
+      ? incoming.camera.viewerView
+      : incoming.camera?.pymolView?.length === 18
+        ? pyMolViewToViewerView(incoming.camera.pymolView)
+        : undefined;
+    if (remoteView?.length === 8 && viewerRef.current) {
+      applyingRemoteViewRef.current = true;
+      viewerRef.current.setView(remoteView);
+      viewerRef.current.render();
+      if (remoteApplyTimerRef.current) clearTimeout(remoteApplyTimerRef.current);
+      remoteApplyTimerRef.current = setTimeout((): void => {
+        applyingRemoteViewRef.current = false;
+      }, 0);
+    }
+  }, []);
+
+  const refreshPyMolState = useCallback(async () => {
+    if (!conversationId) return undefined;
+    const state = await ipcBridge.pymolService.getSession.invoke({ conversationId });
+    if (state) applyIncomingState(state, true);
+    return state;
+  }, [applyIncomingState, conversationId]);
+
+  const sendPyMolCommand = useCallback(
+    async (action: PyMolCommandAction, payload: Record<string, unknown>) => {
+      if (!conversationId || pymolSyncStatus === 'unavailable') return undefined;
+      const execute = async (retry: boolean) => {
+        try {
+          const result = await ipcBridge.pymolService.command.invoke({
+            conversationId,
+            command: {
+              commandId: crypto.randomUUID(),
+              baseRevision: revisionRef.current,
+              source: 'ui',
+              action,
+              payload,
+            },
+          });
+          applyIncomingState(result.state, true);
+          return result;
+        } catch (commandError) {
+          const status =
+            commandError && typeof commandError === 'object' && 'status' in commandError
+              ? Number((commandError as { status: unknown }).status)
+              : 0;
+          if (shouldReplayPyMolCommand(status, retry)) {
+            await refreshPyMolState();
+            return await execute(false);
+          }
+          if (status === 404 || status === 501 || status === 0) setPyMolSyncStatus('unavailable');
+          throw commandError;
+        }
+      };
+      return await execute(true);
+    },
+    [applyIncomingState, conversationId, pymolSyncStatus, refreshPyMolState]
+  );
+
+  useEffect(() => {
+    if (!conversationId) {
+      setPyMolSyncStatus('disabled');
+      return;
+    }
+    let cancelled = false;
+    setPyMolSyncStatus('connecting');
+    void ipcBridge.pymolService.ensureSession
+      .invoke({ conversationId })
+      .then((result) => {
+        if (!cancelled) applyIncomingState(result.state, true);
+      })
+      .catch(() => {
+        if (!cancelled) setPyMolSyncStatus('unavailable');
+      });
+    const offState = ipcBridge.pymolService.stateChanged.on((event: PyMolStateChangedEvent) => {
+      if (!cancelled && event.conversationId === conversationId) applyIncomingState(event.state);
+    });
+    const offStatus = ipcBridge.pymolService.sessionStatus.on((event) => {
+      if (cancelled || event.conversationId !== conversationId) return;
+      setPyMolSyncStatus(event.status === 'ready' ? 'ready' : event.status === 'error' ? 'unavailable' : 'connecting');
+    });
+    const offRender = ipcBridge.pymolService.renderReady.on((event) => {
+      if (cancelled || event.conversationId !== conversationId || event.revision < revisionRef.current) return;
+      revisionRef.current = event.revision;
+      const current = pymolStateRef.current;
+      if (current) {
+        pymolStateRef.current = {
+          ...current,
+          revision: event.revision,
+          renderPath: event.path,
+          renderUrl: event.url,
+        };
+      }
+      dispatchPyMolState({ type: 'renderReady', event });
+    });
+    const offTransportOpen = ipcBridge.pymolService.transportOpen.on(() => {
+      if (cancelled) return;
+      void ipcBridge.pymolService.ensureSession
+        .invoke({ conversationId })
+        .then((result) => {
+          if (!cancelled) applyIncomingState(result.state, true);
+        })
+        .catch(() => {
+          if (!cancelled) setPyMolSyncStatus('unavailable');
+        });
+    });
+    const offTransportClose = ipcBridge.pymolService.transportClose.on(() => {
+      if (!cancelled && pymolSyncStatusRef.current !== 'unavailable') setPyMolSyncStatus('connecting');
+    });
+    return () => {
+      cancelled = true;
+      offState();
+      offStatus();
+      offRender();
+      offTransportOpen();
+      offTransportClose();
+      if (cameraTimerRef.current) clearTimeout(cameraTimerRef.current);
+      if (renderTimerRef.current) clearTimeout(renderTimerRef.current);
+      if (remoteApplyTimerRef.current) clearTimeout(remoteApplyTimerRef.current);
+    };
+  }, [applyIncomingState, conversationId, refreshPyMolState]);
 
   useEffect(() => {
     setRepresentation(defaultRepresentation);
@@ -327,7 +491,7 @@ const MolecularStructureViewer: React.FC<MolecularStructureViewerProps> = ({
     if (!file_path) {
       setStructureContent('');
       setLoadState('failed');
-      setError('No coordinate content was provided for this structure.');
+      setError(t('preview.pymol.noCoordinates'));
       return;
     }
     setLoadState('loading');
@@ -338,7 +502,7 @@ const MolecularStructureViewer: React.FC<MolecularStructureViewerProps> = ({
         if (cancelled) return;
         if (!value) {
           setLoadState('failed');
-          setError('Unable to read the structure file.');
+          setError(t('preview.pymol.readFailed'));
           return;
         }
         setStructureContent(value);
@@ -352,7 +516,7 @@ const MolecularStructureViewer: React.FC<MolecularStructureViewerProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [content, file_path, workspace]);
+  }, [content, file_path, t, workspace]);
 
   const stats = useMemo(() => estimateStats(structureContent, initialFormat), [initialFormat, structureContent]);
   const viewerKey = JSON.stringify(artifact?.viewer || {});
@@ -377,10 +541,52 @@ const MolecularStructureViewer: React.FC<MolecularStructureViewerProps> = ({
         viewer.addModel(structureContent, parserFormat(initialFormat));
         applyViewerStyle(viewer, threeDmol, initialFormat, representation, colorBy);
         applyAnnotations(viewer, artifact?.viewer?.annotations?.filter(isStructureAnnotation));
-        viewer.setClickable({}, true, (atom) => setSelectedAtom(atom));
-        const focusSelection = selectionFromSpec(artifact?.viewer?.focus);
-        const hasFocus = Object.keys(focusSelection).length > 0;
-        viewer.zoomTo(hasFocus ? focusSelection : undefined);
+        const remoteSelection = pymolStateRef.current?.selections.at(-1);
+        const viewerSelection = remoteSelection
+          ? pyMolSelectionToViewerSelection(remoteSelection.expression)
+          : undefined;
+        if (viewerSelection) viewer.addStyle(viewerSelection, { stick: { radius: 0.24, colorscheme: 'cyanCarbon' } });
+        viewer.setClickable({}, true, (atom: ThreeDmolAtom): void => {
+          setSelectedAtom(atom);
+          if (!conversationId || pymolSyncStatus !== 'ready') return;
+          const expression = [atom.chain ? `chain ${atom.chain}` : '', atom.resi != null ? `resi ${atom.resi}` : '', atom.atom ? `name ${atom.atom}` : '']
+            .filter(Boolean)
+            .join(' and ');
+          if (expression) void sendPyMolCommand('select', { name: 'ui_selection', expression }).catch((): undefined => undefined);
+        });
+        viewer.setViewChangeCallback((view: number[]): void => {
+          if (applyingRemoteViewRef.current || !conversationId || pymolSyncStatus !== 'ready') return;
+          if (cameraTimerRef.current) clearTimeout(cameraTimerRef.current);
+          cameraTimerRef.current = setTimeout((): void => {
+            void sendPyMolCommand('display', {
+              camera: { viewerView: view, pymolView: viewerViewToPyMolView(view) },
+            }).catch((): undefined => undefined);
+          }, 100);
+          if (pymolStateRef.current?.serverOnly) {
+            if (renderTimerRef.current) clearTimeout(renderTimerRef.current);
+            renderTimerRef.current = setTimeout((): void => {
+              void sendPyMolCommand('render', { width: 800, height: 600, ray: false }).catch((): undefined => undefined);
+            }, 250);
+          }
+        });
+        const remoteCamera = pymolStateRef.current?.camera;
+        const remoteView = remoteCamera?.viewerView?.length
+          ? remoteCamera.viewerView
+          : remoteCamera?.pymolView?.length === 18
+            ? pyMolViewToViewerView(remoteCamera.pymolView)
+            : undefined;
+        if (remoteView?.length === 8) {
+          applyingRemoteViewRef.current = true;
+          viewer.setView(remoteView);
+          if (remoteApplyTimerRef.current) clearTimeout(remoteApplyTimerRef.current);
+          remoteApplyTimerRef.current = setTimeout((): void => {
+            applyingRemoteViewRef.current = false;
+          }, 0);
+        } else {
+          const focusSelection = selectionFromSpec(artifact?.viewer?.focus);
+          const hasFocus = Object.keys(focusSelection).length > 0;
+          viewer.zoomTo(hasFocus ? focusSelection : undefined);
+        }
         viewer.render();
       })
       .catch((err) => {
@@ -398,7 +604,20 @@ const MolecularStructureViewer: React.FC<MolecularStructureViewerProps> = ({
       viewerRef.current = null;
       if (container) container.innerHTML = '';
     };
-  }, [artifact?.viewer?.annotations, artifact?.viewer?.focus, background, colorBy, initialFormat, loadState, representation, structureContent, viewerKey]);
+  }, [
+    artifact?.viewer?.annotations,
+    artifact?.viewer?.focus,
+    background,
+    colorBy,
+    conversationId,
+    initialFormat,
+    loadState,
+    pymolSyncStatus,
+    representation,
+    sendPyMolCommand,
+    structureContent,
+    viewerKey,
+  ]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -411,10 +630,40 @@ const MolecularStructureViewer: React.FC<MolecularStructureViewerProps> = ({
     return () => observer.disconnect();
   }, []);
 
+  const handleRepresentationChange = useCallback(
+    (value: ScienceStructureRepresentation) => {
+      setRepresentation(value);
+      if (value !== 'auto')
+        void sendPyMolCommand('display', { selection: 'all', representation: value }).catch((): undefined => undefined);
+    },
+    [sendPyMolCommand]
+  );
+
+  const handleColorChange = useCallback(
+    (value: ScienceStructureColorBy) => {
+      setColorBy(value);
+      if (value === 'plddt')
+        void sendPyMolCommand('display', { selection: 'all', colorBy: 'plddt' }).catch((): undefined => undefined);
+    },
+    [sendPyMolCommand]
+  );
+
+  const handleBackgroundChange = useCallback(
+    (value: 'light' | 'dark' | 'transparent') => {
+      setBackground(value);
+      void sendPyMolCommand('display', { background: value }).catch((): undefined => undefined);
+    },
+    [sendPyMolCommand]
+  );
+
   const handleResetView = useCallback(() => {
     viewerRef.current?.zoomTo();
     viewerRef.current?.render();
   }, []);
+
+  const handlePyMolRender = useCallback(() => {
+    void sendPyMolCommand('render', { width: 1200, height: 900, ray: true }).catch((): undefined => undefined);
+  }, [sendPyMolCommand]);
 
   const handleDownloadSnapshot = useCallback(() => {
     const uri = viewerRef.current?.pngURI?.();
@@ -445,89 +694,104 @@ const MolecularStructureViewer: React.FC<MolecularStructureViewerProps> = ({
     addToSendBox(lines.join('\n'));
   }, [addToSendBox, artifact, file_path, initialFormat, selectedAtom]);
 
-  const evidenceHint = artifact?.evidenceIds?.length ? artifact.evidenceIds.join(', ') : 'no evidence ids recorded';
+  const evidenceHint = artifact?.evidenceIds?.length
+    ? artifact.evidenceIds.join(', ')
+    : t('preview.pymol.noEvidence');
+  const syncLabel = t(`preview.pymol.sync.${pymolSyncStatus}`);
 
   return (
     <section className='molecular-structure-viewer' data-testid='molecular-structure-viewer'>
       <div className='molecular-structure-viewer__toolbar'>
         <div className='molecular-structure-viewer__identity'>
-          <span>{file_name || artifact?.title || 'Structure'}</span>
+          <span>{file_name || artifact?.title || t('preview.pymol.structure')}</span>
           <b>
             {stats.format.toUpperCase()}
-            {stats.atoms ? ` · ${stats.atoms.toLocaleString()} atoms` : ''}
-            {stats.residues ? ` · ${stats.residues.toLocaleString()} residues` : ''}
-            {stats.chains ? ` · ${stats.chains} chains` : ''}
+            {stats.atoms ? ` / ${t('preview.pymol.atomCount', { count: stats.atoms })}` : ''}
+            {stats.residues ? ` / ${t('preview.pymol.residueCount', { count: stats.residues })}` : ''}
+            {stats.chains ? ` / ${t('preview.pymol.chainCount', { count: stats.chains })}` : ''}
           </b>
         </div>
         <label>
-          <span>Representation</span>
-          <select value={representation} onChange={(event) => setRepresentation(event.target.value as ScienceStructureRepresentation)}>
-            {representationOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          <span>{t('preview.pymol.representation')}</span>
+          <Select
+            size='mini'
+            value={representation}
+            options={representationOptions.map((option) => ({ label: option, value: option }))}
+            onChange={(value) => handleRepresentationChange(value as ScienceStructureRepresentation)}
+          />
         </label>
         <label>
-          <span>Color</span>
-          <select value={colorBy} onChange={(event) => setColorBy(event.target.value as ScienceStructureColorBy)}>
-            {colorOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          <span>{t('preview.pymol.color')}</span>
+          <Select
+            size='mini'
+            value={colorBy}
+            options={colorOptions.map((option) => ({ label: option, value: option }))}
+            onChange={(value) => handleColorChange(value as ScienceStructureColorBy)}
+          />
         </label>
-        <div className='molecular-structure-viewer__backgrounds' aria-label='Background'>
+        <div className='molecular-structure-viewer__backgrounds' aria-label={t('preview.pymol.background')}>
           {(['light', 'dark', 'transparent'] as const).map((item) => (
-            <button
+            <Button
               key={item}
-              type='button'
+              size='mini'
+              type={background === item ? 'primary' : 'secondary'}
               className={background === item ? 'is-active' : undefined}
-              onClick={() => setBackground(item)}
-              title={`${item} background`}
+              onClick={() => handleBackgroundChange(item)}
+              title={t(`preview.pymol.backgrounds.${item}`)}
             >
               {item.slice(0, 1).toUpperCase()}
-            </button>
+            </Button>
           ))}
         </div>
-        <button type='button' onClick={handleResetView}>
-          Reset
-        </button>
-        <button type='button' onClick={handleDownloadSnapshot}>
-          Snapshot
-        </button>
+        <Button size='mini' onClick={handleResetView}>
+          {t('preview.pymol.reset')}
+        </Button>
+        <Button size='mini' onClick={handleDownloadSnapshot}>
+          {t('preview.pymol.snapshot')}
+        </Button>
+        <Button size='mini' disabled={pymolSyncStatus !== 'ready'} onClick={handlePyMolRender}>
+          {t('preview.pymol.rayRender')}
+        </Button>
       </div>
 
       <div className='molecular-structure-viewer__stage'>
         {loadState === 'loading' ? (
-          <div className='molecular-structure-viewer__state'>Loading structure...</div>
+          <div className='molecular-structure-viewer__state'>{t('preview.pymol.loading')}</div>
         ) : null}
         {loadState === 'failed' ? (
           <div className='molecular-structure-viewer__state is-error'>
-            <b>Structure preview failed</b>
-            <span>{error || 'Unable to render this coordinate file.'}</span>
+            <b>{t('preview.pymol.previewFailed')}</b>
+            <span>{error || t('preview.pymol.renderFailed')}</span>
           </div>
         ) : null}
         <div ref={containerRef} className='molecular-structure-viewer__canvas' />
+        {pymolState?.serverOnly && pymolState.renderUrl ? (
+          <aside className='molecular-structure-viewer__fidelity' data-testid='pymol-fidelity-render'>
+            <span>{t('preview.pymol.serverOnly')}</span>
+            <img src={pymolState.renderUrl} alt={t('preview.pymol.serverRenderAlt')} />
+          </aside>
+        ) : null}
       </div>
 
       <div className='molecular-structure-viewer__footer'>
         <div>
-          <span>Renderer</span>
+          <span>{t('preview.pymol.renderer')}</span>
           <b>3Dmol.js</b>
         </div>
         <div>
-          <span>Evidence</span>
+          <span>{t('preview.pymol.evidence')}</span>
           <b>{evidenceHint}</b>
         </div>
+        <div>
+          <span>{t('preview.pymol.syncLabel')}</span>
+          <b>{syncLabel}</b>
+        </div>
         <div className='molecular-structure-viewer__selection'>
-          <span>Selection</span>
-          <b>{selectedAtom ? atomLabel(selectedAtom) : 'click an atom or residue'}</b>
-          <button type='button' disabled={!selectedAtom} onClick={handleSendSelection}>
-            Send
-          </button>
+          <span>{t('preview.pymol.selection')}</span>
+          <b>{selectedAtom ? atomLabel(selectedAtom) : t('preview.pymol.selectHint')}</b>
+          <Button size='mini' disabled={!selectedAtom} onClick={handleSendSelection}>
+            {t('preview.pymol.send')}
+          </Button>
         </div>
       </div>
     </section>

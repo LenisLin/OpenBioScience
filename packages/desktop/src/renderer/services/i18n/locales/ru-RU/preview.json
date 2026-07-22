@@ -134,6 +134,43 @@
     "inspectElementEnable": "Включить инспектор элементов",
     "inspectElementDisable": "Отключить инспектор элементов"
   },
+  "pymol": {
+    "structure": "Structure",
+    "representation": "Representation",
+    "color": "Color",
+    "background": "Background",
+    "backgrounds": {
+      "light": "Light background",
+      "dark": "Dark background",
+      "transparent": "Transparent background"
+    },
+    "reset": "Reset",
+    "snapshot": "Snapshot",
+    "rayRender": "PyMOL ray render",
+    "renderer": "Renderer",
+    "evidence": "Evidence",
+    "syncLabel": "PyMOL sync",
+    "selection": "Selection",
+    "send": "Send",
+    "selectHint": "Click an atom or residue",
+    "noEvidence": "No evidence IDs recorded",
+    "loading": "Loading structure...",
+    "previewFailed": "Structure preview failed",
+    "renderFailed": "Unable to render this coordinate file.",
+    "noCoordinates": "No coordinate content was provided for this structure.",
+    "readFailed": "Unable to read the structure file.",
+    "serverOnly": "PyMOL fidelity view",
+    "serverRenderAlt": "Authoritative PyMOL server render",
+    "atomCount": "{{count}} atom(s)",
+    "residueCount": "{{count}} residue(s)",
+    "chainCount": "{{count}} chain(s)",
+    "sync": {
+      "disabled": "Local viewer",
+      "connecting": "Connecting",
+      "ready": "Synchronized",
+      "unavailable": "Core sync unavailable"
+    }
+  },
   "ppt": {
     "loading": "Запуск предпросмотра PPT...",
     "installing": "Установка компонента предпросмотра...",

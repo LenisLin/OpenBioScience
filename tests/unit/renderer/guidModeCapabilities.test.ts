@@ -20,6 +20,7 @@ import {
   BUILTIN_IMAGE_GEN_NAME,
   BUILTIN_LAB_SKILL_NAME,
   BUILTIN_MEDICAL_EVIDENCE_NAME,
+  BUILTIN_PYMOL_NAME,
   BUILTIN_RESEARCH_EVIDENCE_NAME,
   BUILTIN_SCIENCE_ARTIFACT_NAME,
   BUILTIN_USER_INPUT_NAME,
@@ -48,6 +49,7 @@ describe('guid capability mode MCP requirements', () => {
       BUILTIN_BIO_ANALYSIS_NAME,
       BUILTIN_BIO_STATISTICS_NAME,
       BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
+      BUILTIN_PYMOL_NAME,
     ]);
     expect(getGuidModeRequiredMcpNames('science')).not.toEqual(
       expect.arrayContaining([
@@ -59,6 +61,7 @@ describe('guid capability mode MCP requirements', () => {
         BUILTIN_BIO_ANALYSIS_NAME,
         BUILTIN_BIO_STATISTICS_NAME,
         BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
+        BUILTIN_PYMOL_NAME,
       ])
     );
   });
@@ -67,6 +70,13 @@ describe('guid capability mode MCP requirements', () => {
     expect(isGuidMcpServerVisible({ builtin: true, name: BUILTIN_BIO_RUNTIME_NAME }, 'science')).toBe(true);
     expect(isGuidMcpServerVisible({ builtin: true, name: 'unrelated-builtin' }, 'science')).toBe(false);
     expect(isGuidMcpServerVisible({ builtin: false, name: 'user-mcp' }, 'science')).toBe(true);
+  });
+
+  it('routes PyMOL leaf skills to the optional PyMOL MCP', () => {
+    expect(resolveSkillRequiredMcpNames(['openscience-pymol'])).toEqual([BUILTIN_PYMOL_NAME]);
+    expect(resolveSkillRequiredMcpSources(['openscience-pymol', 'openscience-structure-triage'])).toEqual({
+      [BUILTIN_PYMOL_NAME]: ['openscience-pymol', 'openscience-structure-triage'],
+    });
   });
 
   it('loads Bio MCP dependencies from enabled reproduction skills', () => {

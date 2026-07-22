@@ -1,0 +1,9 @@
+interface:
+  display_name: "Structure Prediction Triage"
+  short_description: "Review pLDDT, pTM, ipTM, and PAE evidence"
+  default_prompt: "Use $openscience-structure-triage to rank and review these predicted structures."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "openscience-pymol"
+      description: "Predicted-structure metrics, triage, and rendering tools"

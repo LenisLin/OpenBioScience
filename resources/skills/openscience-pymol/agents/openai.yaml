@@ -1,0 +1,9 @@
+interface:
+  display_name: "OpenScience PyMOL"
+  short_description: "Control and analyze structures with headless PyMOL"
+  default_prompt: "Use $openscience-pymol to load, inspect, and render this molecular structure."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "openscience-pymol"
+      description: "Headless PyMOL session and structural analysis tools"

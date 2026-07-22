@@ -36,12 +36,16 @@ export const BUILTIN_BIO_KNOWLEDGE_ID = 'builtin-bio-knowledge';
 export const BUILTIN_BIO_KNOWLEDGE_NAME = 'openscience-bio-knowledge';
 export const BUILTIN_BIO_PLOT_ID = 'builtin-bio-plot';
 export const BUILTIN_BIO_PLOT_NAME = 'openscience-bio-plot';
+export const BUILTIN_BIO_BENCHMARK_ID = 'builtin-bio-benchmark';
+export const BUILTIN_BIO_BENCHMARK_NAME = 'openscience-bio-benchmark';
 export const BUILTIN_BIO_REPRODUCTION_ID = 'builtin-bio-reproduction';
 export const BUILTIN_BIO_REPRODUCTION_NAME = 'openscience-bio-reproduction';
 export const BUILTIN_BIO_ANALYSIS_ID = 'builtin-bio-analysis';
 export const BUILTIN_BIO_ANALYSIS_NAME = 'openscience-bio-analysis';
 export const BUILTIN_BIO_STATISTICS_ID = 'builtin-bio-statistics';
 export const BUILTIN_BIO_STATISTICS_NAME = 'openscience-bio-statistics';
+export const BUILTIN_PYMOL_ID = 'builtin-pymol';
+export const BUILTIN_PYMOL_NAME = 'openscience-pymol';
 
 export function isBuiltinImageGenName(name?: string | null): boolean {
   if (!name) return false;

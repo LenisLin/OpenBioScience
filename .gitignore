@@ -199,6 +199,14 @@ tests/e2e/report/
 # This file has no meaning and should never be committed.
 $null
 
+# Windows shell/device-name mistakes and Python bytecode are local artifacts.
+NUL
+**/__pycache__/
+*.pyc
+
+# Runtime backups under tmp are operational evidence, not source documents.
+tmp/**/runtime-backups/
+
 # vx tool manager (local development only, not used in CI)
 vx.lock
 vx.toml

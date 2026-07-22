@@ -13,6 +13,7 @@ describe('OpenBioScience bio MCP catalog', () => {
   it('defines independent control-plane profiles including statistical validation', () => {
     expect(Object.keys(BIO_MCP_PROFILES).toSorted()).toEqual([
       'analysis',
+      'benchmark',
       'environment_manager',
       'knowledge',
       'plot',
@@ -44,6 +45,19 @@ describe('OpenBioScience bio MCP catalog', () => {
       'normalize_gene_symbols',
     ]);
     expect(BIO_MCP_PROFILES.plot.toolName).toBe('bio_plot');
+    expect(BIO_MCP_PROFILES.benchmark).toMatchObject({
+      serverName: 'openscience-bio-benchmark',
+      toolName: 'bio_benchmark',
+    });
+    expect(BIO_MCP_PROFILES.benchmark.actions).toEqual([
+      'status',
+      'create_plan',
+      'freeze_inputs',
+      'freeze_blind_predictions',
+      'reveal',
+      'record_metrics',
+      'complete',
+    ]);
     expect(BIO_MCP_PROFILES.reproduction.toolName).toBe('bio_reproduction');
     expect(BIO_MCP_PROFILES.analysis).toMatchObject({
       serverName: 'openscience-bio-analysis',
@@ -114,6 +128,9 @@ describe('OpenBioScience bio MCP catalog', () => {
         'sc-r-trajectory',
         'sc-network-grn-r',
         'sc-r-tumor-cnv',
+        'bio-py-structure-benchmark',
+        'sc-py-immune-repertoire',
+        'sc-py-spatial',
       ])
     );
     expect(JSON.stringify(BIO_ENVIRONMENTS)).not.toContain('/mnt/NAS');
@@ -132,6 +149,11 @@ describe('OpenBioScience bio MCP catalog', () => {
         'scrna_processed_feature_screening',
         'scrna_pathway_enrichment',
         'exploration_report_package',
+        'protein_variant_structure_mapping',
+        'protein_interface_ddg_benchmark',
+        'protein_design_sequence_recovery',
+        'singlecell_vdj_integration',
+        'spatial_visium_baseline',
       ])
     );
     expect(FREE_EXPLORATION_MODULE_PLAN.map((module) => module.moduleId)).toEqual([
@@ -193,6 +215,7 @@ describe('OpenBioScience bio MCP catalog', () => {
     expect(resolveBioProfile('source')).toBe('source');
     expect(resolveBioProfile('reproduction')).toBe('reproduction');
     expect(resolveBioProfile('analysis')).toBe('analysis');
+    expect(resolveBioProfile('benchmark')).toBe('benchmark');
     expect(resolveBioProfile('statistics')).toBe('statistics');
     expect(resolveBioProfile('environment_manager')).toBe('environment_manager');
     expect(() => resolveBioProfile('typo')).toThrow('Invalid OpenBioScience bio MCP profile');

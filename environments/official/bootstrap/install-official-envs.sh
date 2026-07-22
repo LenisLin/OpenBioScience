@@ -75,7 +75,7 @@ install_env() {
 
 for env_name in "$@"; do
   case "${env_name}" in
-    sc-py-singlecell|sc-r-singlecell|sc-r-plot|sc-r-clinical|sc-cci-r|sc-r-trajectory|sc-r-tumor-cnv|sc-network-grn-r)
+    sc-py-singlecell|sc-r-singlecell|sc-r-plot|sc-r-clinical|sc-cci-r|sc-r-trajectory|sc-r-tumor-cnv|sc-network-grn-r|bio-py-structure-benchmark|sc-py-immune-repertoire|sc-py-spatial)
       install_env "${env_name}" "environments/official/${env_name}.yml"
       ;;
     *)

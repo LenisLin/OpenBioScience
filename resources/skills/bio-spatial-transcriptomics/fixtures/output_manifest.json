@@ -1,0 +1,50 @@
+{
+  "schema": "openbioscience.analysis_script.outputs.v2",
+  "workflowKind": "omics_analysis",
+  "analysisId": "spatial-smoke",
+  "stageOrEpisodeId": "baseline",
+  "environmentRef": "sc-py-spatial",
+  "modality": "spatial_transcriptomics",
+  "sourceKind": "squidpy_registry",
+  "matrixSemantics": "raw_counts",
+  "inputs": ["input/input_manifest.json"],
+  "outputs": {
+    "objects": ["results/objects/spatial_baseline.h5ad"],
+    "tables": [
+      "results/tables/coordinate_validation.tsv",
+      "results/tables/qc_metrics.tsv",
+      "results/tables/spot_filter_status.tsv",
+      "results/tables/cluster_markers.tsv",
+      "results/tables/spatial_neighbors_summary.tsv",
+      "results/tables/morans_i.tsv"
+    ],
+    "figures": ["results/figures/alignment_overlay.png"],
+    "reports": ["reports/analysis_report.md"],
+    "logs": ["logs/session_info.json", "logs/warnings.tsv"],
+    "scripts": ["scripts/run_spatial_baseline.py", "scripts/script_manifest.json"]
+  },
+  "coordinateValidation": {
+    "status": "passed",
+    "barcodeMatchFraction": 1.0,
+    "imageAvailable": true,
+    "pixelBoundsPassed": true,
+    "overlayPath": "results/figures/alignment_overlay.png"
+  },
+  "statistics": {
+    "markerMultipleTesting": "benjamini-hochberg",
+    "moranMultipleTesting": "benjamini-hochberg",
+    "moranTestedFeatures": 1000
+  },
+  "workflowModules": [
+    {"moduleId": "spatial_source_localization", "status": "completed", "environmentRef": "sc-py-spatial"},
+    {"moduleId": "spatial_input_validation", "status": "completed", "environmentRef": "sc-py-spatial"},
+    {"moduleId": "spatial_spot_qc", "status": "completed", "environmentRef": "sc-py-spatial"},
+    {"moduleId": "spatial_cluster_marker", "status": "completed", "environmentRef": "sc-py-spatial"},
+    {"moduleId": "spatial_neighborhood", "status": "completed", "environmentRef": "sc-py-spatial"},
+    {"moduleId": "spatial_morans_i", "status": "completed", "environmentRef": "sc-py-spatial"},
+    {"moduleId": "spatial_figure_set", "status": "completed", "environmentRef": "sc-py-spatial"},
+    {"moduleId": "spatial_report_package", "status": "completed", "environmentRef": "sc-py-spatial"}
+  ],
+  "assumptions": ["Clusters are descriptive spot groups."],
+  "warnings": []
+}

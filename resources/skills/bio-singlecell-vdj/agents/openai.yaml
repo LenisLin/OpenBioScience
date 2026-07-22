@@ -1,0 +1,4 @@
+interface:
+  display_name: "Single-cell BCR/VDJ"
+  short_description: "Audit and analyze paired single-cell BCR repertoires"
+  default_prompt: "Use $bio-singlecell-vdj to audit 10x GEX and BCR VDJ inputs, define clonotypes, and export paired VH/VL AIRR records."

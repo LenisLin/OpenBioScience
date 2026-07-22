@@ -5,6 +5,7 @@ import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { modalityArtifactRequirements } from '@/process/resources/builtinMcp/bio/analysis/contracts';
 import { handleAnalysisAction } from '@/process/resources/builtinMcp/bio/analysis/workflow';
 import { writeReceipt } from '@/process/resources/builtinMcp/bio/receipts';
 
@@ -21,6 +22,16 @@ describe('bio analysis workflow', () => {
   let previousGatewayToken: string | undefined;
   let previousEnvRoot: string | undefined;
   let previousMarkerRoot: string | undefined;
+
+  it('declares specialized VDJ and spatial artifacts without absorbing protein benchmarks', () => {
+    expect(modalityArtifactRequirements('singlecell_vdj')).toEqual(
+      expect.arrayContaining(['tables/paired_airr_rearrangements.tsv', 'tables/barcode_join_qc.tsv'])
+    );
+    expect(modalityArtifactRequirements('spatial_transcriptomics')).toEqual(
+      expect.arrayContaining(['results/tables/coordinate_validation.tsv', 'results/tables/morans_i.tsv'])
+    );
+    expect(modalityArtifactRequirements('protein_variant_structure_mapping')).toEqual([]);
+  });
 
   beforeEach(() => {
     projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'openbioscience-analysis-'));

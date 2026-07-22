@@ -19,6 +19,7 @@ import {
   BUILTIN_IMAGE_GEN_NAME,
   BUILTIN_LAB_SKILL_NAME,
   BUILTIN_MEDICAL_EVIDENCE_NAME,
+  BUILTIN_PYMOL_NAME,
   BUILTIN_RESEARCH_EVIDENCE_NAME,
   BUILTIN_SCIENCE_ARTIFACT_NAME,
   BUILTIN_USER_INPUT_NAME,
@@ -80,6 +81,7 @@ export function getGuidModeSelectableBuiltinMcpNames(mode: GuidCapabilityMode): 
       BUILTIN_BIO_ANALYSIS_NAME,
       BUILTIN_BIO_STATISTICS_NAME,
       BUILTIN_BIO_ENVIRONMENT_MANAGER_NAME,
+      BUILTIN_PYMOL_NAME,
     ];
   }
   return [];
@@ -113,6 +115,8 @@ const BIO_SKILL_MCP_DEPENDENCIES: Record<string, string[]> = {
     BUILTIN_BIO_REPRODUCTION_NAME,
     BUILTIN_BIO_STATISTICS_NAME,
   ],
+  'openscience-pymol': [BUILTIN_PYMOL_NAME],
+  'openscience-structure-triage': [BUILTIN_PYMOL_NAME],
 };
 
 export function resolveSkillRequiredMcpNames(skillIds: readonly string[] = []): string[] {

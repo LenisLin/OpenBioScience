@@ -134,6 +134,43 @@
     "inspectElementEnable": "啟用元素檢查",
     "inspectElementDisable": "停用元素檢查"
   },
+  "pymol": {
+    "structure": "結構",
+    "representation": "顯示方式",
+    "color": "著色",
+    "background": "背景",
+    "backgrounds": {
+      "light": "淺色背景",
+      "dark": "深色背景",
+      "transparent": "透明背景"
+    },
+    "reset": "重設",
+    "snapshot": "快照",
+    "rayRender": "PyMOL 光線追蹤",
+    "renderer": "算繪器",
+    "evidence": "證據",
+    "syncLabel": "PyMOL 同步",
+    "selection": "選取",
+    "send": "傳送",
+    "selectHint": "點選一個原子或殘基",
+    "noEvidence": "尚未記錄證據 ID",
+    "loading": "正在載入結構...",
+    "previewFailed": "結構預覽失敗",
+    "renderFailed": "無法算繪此座標檔案。",
+    "noCoordinates": "未提供此結構的座標內容。",
+    "readFailed": "無法讀取結構檔案。",
+    "serverOnly": "PyMOL 保真檢視",
+    "serverRenderAlt": "伺服器產生的權威 PyMOL 算繪圖",
+    "atomCount": "{{count}} 個原子",
+    "residueCount": "{{count}} 個殘基",
+    "chainCount": "{{count}} 條鏈",
+    "sync": {
+      "disabled": "本機檢視器",
+      "connecting": "正在連線",
+      "ready": "已同步",
+      "unavailable": "Core 同步無法使用"
+    }
+  },
   "ppt": {
     "loading": "正在啟動 PPT 預覽...",
     "installing": "正在安裝預覽元件...",
